@@ -119,6 +119,10 @@ class DownloadFragmentChild() : Fragment() {
                 fun deleteFile() {
                     if (file.exists()) {
                         file.delete()
+                        val dir = File(file.absoluteFile.parent)
+                        if (dir.listFiles().isEmpty()){
+                            dir.delete()
+                        }
                     }
                     activity?.runOnUiThread {
                         card.visibility = GONE

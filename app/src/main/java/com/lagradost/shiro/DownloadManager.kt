@@ -308,19 +308,19 @@ object DownloadManager {
 
                 // =================== DOWNLOAD POSTERS AND SETUP PATH ===================
                 val path = basePath.toString() +
-                        "/Shiro/Anime/" +
+                        "/Shiro/" +
                         censorFilename(mainTitle) +
                         if (isMovie)
                             ".mp4"
                         else
                             "/" + censorFilename("E${info.episodeIndex + 1} $title") + ".mp4"
 
-                val posterPath = path.replace("/Anime/", "/Posters/").replace(".mp4", ".jpg")
+                val posterPath = path/*.replace("/Anime/", "/Posters/")*/.replace(".mp4", ".jpg")
                 //downloadPoster(posterPath, getFullUrlCdn(info.animeData.image))
                 val mainPosterPath =
                     //android.os.Environment.getExternalStorageDirectory().path +
                     activity!!.filesDir.toString() +
-                            "/Shiro/MainPosters/" +
+                            "/Downloads/MainPosters/" +
                             censorFilename(info.animeData.name) + ".jpg"
 
                 downloadPoster(mainPosterPath, getFullUrlCdn(info.animeData.image))
