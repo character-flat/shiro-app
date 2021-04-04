@@ -98,6 +98,7 @@ class EpisodeAdapter(
         val last = getLatestSeenEpisode(data)
         val context = _context
         val card: LinearLayout = itemView.episode_result_root
+
         // Downloads is only updated when re-bound!
         fun bind(position: Int) {
             val key = getViewKey(data.slug, position)
@@ -188,7 +189,8 @@ class EpisodeAdapter(
                 // Otherwise color is recycled
                 activity?.let {
                     card.cardBg.setCardBackgroundColor(
-                        ContextCompat.getColor(activity!!,
+                        ContextCompat.getColor(
+                            activity!!,
                             R.color.darkBar
                         )
                     )
@@ -250,6 +252,10 @@ class EpisodeAdapter(
                         fun deleteFile() {
                             if (file.exists()) {
                                 file.delete()
+                                val dir = File(file.absoluteFile.parent)
+                                if (dir.listFiles().isEmpty()) {
+                                    dir.delete()
+                                }
                             }
                             activity?.runOnUiThread {
                                 DataStore.removeKey(DOWNLOAD_CHILD_KEY, key)

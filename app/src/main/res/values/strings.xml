@@ -1,7 +1,8 @@
 <resources>
     <string name="version_code">1.4.2 Public Release</string>
     <string name="changelog">\n
-        - Added option to download to sdcard\n
+        - Added option to download to external storage\n
+        - Fixed crash added in previous update\n
     </string>
     <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>
