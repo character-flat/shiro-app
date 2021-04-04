@@ -45,7 +45,7 @@ import kotlin.concurrent.thread
 
 const val DESCRIPTION_LENGTH1 = 200
 
-class ShiroResultFragment : Fragment() {
+class ResultFragment : Fragment() {
     var data: ShiroApi.AnimePageData? = null
     var dataOther: ShiroApi.AnimePageData? = null
     var isDefaultData = true
@@ -80,7 +80,7 @@ class ShiroResultFragment : Fragment() {
         }
 
         fun newInstance(data: ShiroApi.ShiroSearchResponseShow) =
-            ShiroResultFragment().apply {
+            ResultFragment().apply {
                 arguments = Bundle().apply {
                     //println(data)
                     putString("ShiroSearchResponseShow", mapper.writeValueAsString(data))
@@ -88,7 +88,7 @@ class ShiroResultFragment : Fragment() {
             }
 
         fun newInstance(data: ShiroApi.AnimePageData) =
-            ShiroResultFragment().apply {
+            ResultFragment().apply {
                 arguments = Bundle().apply {
                     //println(data)
                     putString("AnimePageData", mapper.writeValueAsString(data))
@@ -97,7 +97,7 @@ class ShiroResultFragment : Fragment() {
 
         /*Creating a new Instance of the given data*/
         fun newInstance(data: BookmarkedTitle) =
-            ShiroResultFragment().apply {
+            ResultFragment().apply {
                 arguments = Bundle().apply {
                     //println(data)
                     putString("BookmarkedTitle", mapper.writeValueAsString(data))
@@ -151,7 +151,7 @@ class ShiroResultFragment : Fragment() {
                 // Somehow the above animation doesn't trigger sometimes on lower android versions
                 thread {
                     Timer().schedule(500){
-                        requireActivity().runOnUiThread {
+                        activity?.runOnUiThread {
                             loading_overlay.alpha = 0f
                         }
                     }

@@ -52,8 +52,8 @@ import com.lagradost.shiro.ui.PlayerEventType
 import com.lagradost.shiro.ui.PlayerFragment
 import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
-import com.lagradost.shiro.ui.result.ShiroResultFragment
-import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.isInResults
+import com.lagradost.shiro.ui.result.ResultFragment
+import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import kotlinx.android.synthetic.main.update_dialog.*
 import java.lang.Exception
 import java.net.URL
@@ -470,7 +470,7 @@ class MainActivity : AppCompatActivity() {
 
             activity?.supportFragmentManager?.beginTransaction()
                 ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                ?.add(R.id.homeRoot, ShiroResultFragment.newInstance(card))
+                ?.add(R.id.homeRoot, ResultFragment.newInstance(card))
                 ?.commit()
             /*
             activity?.runOnUiThread {

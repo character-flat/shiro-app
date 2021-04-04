@@ -26,9 +26,9 @@ import java.io.File
 
 import com.lagradost.shiro.MainActivity
 import com.lagradost.shiro.ui.PlayerFragment
-import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.fixEpTitle
-import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.isInResults
-import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.isViewState
+import com.lagradost.shiro.ui.result.ResultFragment.Companion.fixEpTitle
+import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
+import com.lagradost.shiro.ui.result.ResultFragment.Companion.isViewState
 
 
 class DownloadFragmentChild() : Fragment() {

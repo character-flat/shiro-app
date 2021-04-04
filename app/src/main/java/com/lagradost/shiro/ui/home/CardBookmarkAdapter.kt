@@ -12,7 +12,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.lagradost.shiro.*
 import com.lagradost.shiro.MainActivity.Companion.fixCardTitle
 import com.lagradost.shiro.ui.GlideApp
-import com.lagradost.shiro.ui.result.ShiroResultFragment
+import com.lagradost.shiro.ui.result.ResultFragment
 import kotlinx.android.synthetic.main.home_card.view.*
 
 /*Creates card adapters for the bookmarks list*/
@@ -72,7 +72,7 @@ class CardBookmarkAdapter(
                 itemView.home_card_root.setOnClickListener {
                     MainActivity.activity?.supportFragmentManager?.beginTransaction()
                         ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                        ?.add(R.id.homeRoot, ShiroResultFragment.newInstance(cardInfo))
+                        ?.add(R.id.homeRoot, ResultFragment.newInstance(cardInfo))
                         ?.commit()
 
                 }

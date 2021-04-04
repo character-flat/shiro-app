@@ -11,7 +11,7 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.lagradost.shiro.ui.result.ShiroResultFragment
+import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.*
 import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.ShiroApi.Companion.requestHome
@@ -79,7 +79,7 @@ class CardContinueAdapter(
                     itemView.infoButton.setOnClickListener {
                         activity?.supportFragmentManager?.beginTransaction()
                             ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                            ?.add(R.id.homeRoot, ShiroResultFragment.newInstance(cardInfo.id))
+                            ?.add(R.id.homeRoot, ResultFragment.newInstance(cardInfo.id))
                             ?.commit()
 
                     }
