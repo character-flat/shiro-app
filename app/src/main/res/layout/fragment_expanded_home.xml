@@ -5,14 +5,14 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical"
-              android:background="@color/background"
+              android:background="?attr/background"
               android:clickable="true"
               android:focusable="true"
 >
     <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/colorPrimaryMegaDark"
+            android:backgroundTint="?attr/colorPrimaryMegaDark"
             app:cardCornerRadius="15dp"
             android:layout_margin="5dp"
 
@@ -45,8 +45,8 @@
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:layout_gravity="center"
-                        app:tint="@color/focused_primary_color"
                         android:src="@drawable/arrow_back"
+                        app:tint="@android:color/white"
                         android:contentDescription="@string/go_back">
                 </ImageView>
 
@@ -59,7 +59,7 @@
                     android:gravity="center|start"
                     android:paddingStart="20dp"
                     android:paddingEnd="20dp"
-                    android:textColor="@color/white"
+                    android:textColor="@android:color/white"
                     android:id="@+id/title_text"
             >
 

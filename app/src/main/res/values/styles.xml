@@ -2,17 +2,20 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.MaterialComponents.NoActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="android:fontFamily">@font/opensans_regular</item>
         <!--<item name="android:windowTranslucentStatus">true</item>-->
-        <item name="android:navigationBarColor">@color/darkBar</item>
+        <item name="android:navigationBarColor">?attr/darkBar</item>
         <!--<item name="android:statusBarColor">@color/transparent</item>-->
-        <item name="android:statusBarColor">@color/darkBar</item>
-        <item name="tabBackground">@color/darkBar</item>
+        <item name="android:statusBarColor">?attr/darkBar</item>
+        <item name="tabBackground">?attr/darkBar</item>
+        <item name="android:textColor">?attr/textColor</item>
+        <item name="mediaRouteButtonTint">?attr/white</item>
+        <item name="android:textColorSecondary">?attr/textColorGray</item>
         <item name="android:scrollbarThumbHorizontal">@color/transparent</item>
         <item name="android:scrollbarThumbVertical">@color/transparent</item>
-        <item name="colorSurface">@color/darkBar</item>
+        <item name="colorSurface">?attr/darkBar</item>
         <item name="bottomNavigationStyle">@style/Widget.App.BottomNavigationView</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -22,7 +25,7 @@
         <!-- <item name="android:windowBackground">@drawable/splash_background</item> -->
         <item name="colorPrimaryMegaDark">@color/colorPrimaryMegaDark</item>
         <item name="colorPrimaryDarker">@color/colorPrimaryDarker</item>
-        <!-- <item name="android:windowBackground">@color/darkBar</item>-->
+        <!-- <item name="android:windowBackground">?attr/darkBar</item>-->
         <item name="castExpandedControllerStyle">
             @style/CustomCastExpandedController
         </item>
@@ -36,11 +39,12 @@
     </style>
 
     <style name="NavigationView" parent="Theme.MaterialComponents.Light">
-        <item name="colorPrimary">@color/textColor</item>
+        <item name="colorPrimary">?attr/textColor</item>
+        <item name="android:background">?attr/background</item>
     </style>
 
     <style name="DialogButton" parent="@style/Widget.AppCompat.Button.Borderless">
-        <item name="android:textColor">@color/textColor</item>
+        <item name="android:textColor">?attr/textColor</item>
         <item name="android:backgroundTint">@color/transparent</item>
         <item name="android:textSize">20sp</item>
         <item name="android:paddingStart">50dp</item>
@@ -60,6 +64,17 @@
         <item name="colorOnPrimary">#007dfe</item>
     </style>
 
+    <style name="LightMode">
+        <item name="darkBar">@color/lightDarkBar</item>
+        <item name="darkBarLight">@color/lightDarkBarLight</item>
+        <item name="darkBarTransparent">@color/lightDarkBarTransparent</item>
+        <item name="backgroundLight">@color/lightBackgroundLight</item>
+        <item name="background">@color/lightBackground</item>
+        <item name="white">@android:color/black</item>
+        <item name="textColor">@color/lightTextColor</item>
+        <item name="textColorGray">@color/lightTextColorGray</item>
+        <item name="textColorGrayWhite">@color/lightTextColorGrayWhite</item>
+    </style>
 
     <style name="CustomCastExpandedController" parent="CastExpandedController">
         <item name="castControlButtons">
@@ -67,7 +82,7 @@
         </item>
         <item name="castButtonColor">@null</item>
         <item name="castSeekBarProgressAndThumbColor">@color/white</item>
-        <item name="castSeekBarSecondaryProgressColor">@color/darkBar</item>
+        <item name="castSeekBarSecondaryProgressColor">?attr/darkBar</item>
         <item name="castBackground">?attr/colorPrimary</item>
         <item name="castProgressBarColor">?attr/colorPrimary</item>
         <item name="castPlayButtonDrawable">@drawable/netflix_play</item>
@@ -83,7 +98,7 @@
         <item name="castShowImageThumbnail">true</item>
         <item name="castTitleTextAppearance">@style/TextAppearance.AppCompat.Subhead</item>
         <item name="castSubtitleTextAppearance">@style/TextAppearance.AppCompat.Caption</item>
-        <item name="castBackground">@color/darkBar</item>
+        <item name="castBackground">?attr/darkBar</item>
         <item name="castProgressBarColor">?attr/colorPrimary</item>
         <item name="castStopButtonDrawable">@drawable/cast_ic_mini_controller_stop</item>'
         <item name="castLargeStopButtonDrawable">@drawable/cast_ic_mini_controller_stop_large</item>

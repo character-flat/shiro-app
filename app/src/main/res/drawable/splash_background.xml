@@ -2,7 +2,7 @@
 
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
-        <color android:color="@color/darkBar"/>
+        <color android:color="?attr/darkBar"/>
     </item>
     <item android:width="120dp" android:height="120dp" android:gravity="center" android:drawable="@drawable/fastani_logo_svg">
     </item>

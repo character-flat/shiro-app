@@ -136,7 +136,7 @@ class DownloadFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val path = requireActivity().filesDir.toString() + "/Download/"
+        val path = MainActivity.activity?.filesDir.toString() + "/Download/"
         File(path).walk().forEach {
             println("PATH: $it")
         }

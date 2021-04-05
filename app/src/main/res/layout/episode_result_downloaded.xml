@@ -13,7 +13,7 @@
             app:cardCornerRadius="4dp"
             android:id="@+id/cardBg"
 
-            app:cardBackgroundColor="@color/darkBar">
+            app:cardBackgroundColor="?attr/darkBar">
         <!-- USING CROP RATIO (182/268), centerCrop for fill -->
         <!--<ImageView
                 android:id="@+id/imageView"
@@ -37,6 +37,7 @@
 
         <!-- STYLE HERE IS IMPORTANT OR ELSE IT WILL LOOK UGLY -->
         <androidx.core.widget.ContentLoadingProgressBar
+                android:background="@color/transparent"
                 android:id="@+id/video_progress"
                 android:layout_width="match_parent"
                 android:indeterminate="false"
@@ -48,11 +49,13 @@
         </androidx.core.widget.ContentLoadingProgressBar>
         <!--TODO FIX-->
         <LinearLayout
+                android:background="@color/transparent"
                 android:layout_marginStart="50dp"
                 android:layout_marginEnd="50dp"
                 android:layout_gravity="center_vertical"
                 android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
             <TextView
+                    android:background="@color/transparent"
                     android:id="@+id/cardTitle"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -63,6 +66,7 @@
             >
             </TextView>
             <TextView
+                    android:background="@color/transparent"
                     android:id="@+id/cardTitleExtra"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -75,6 +79,7 @@
         </LinearLayout>
 
         <ProgressBar
+
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:id="@+id/progressBar"
@@ -102,6 +107,7 @@
         <ImageView android:layout_width="30dp"
                    android:layout_height="30dp"
                    android:layout_margin="10dp"
+                   app:tint="@color/white"
                    android:id="@+id/cardRemoveIcon"
                    android:src="@drawable/ic_baseline_delete_24"
                    android:layout_gravity="end|center_vertical"

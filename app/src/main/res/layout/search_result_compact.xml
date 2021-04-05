@@ -16,7 +16,7 @@
             android:layout_marginBottom="2dp"
             android:elevation="10dp"
             app:cardCornerRadius="2dp"
-            app:cardBackgroundColor="@color/grayItem"
+            app:cardBackgroundColor="?attr/darkBar"
             android:clickable="true"
             android:focusable="true"
             android:nextFocusRight="@+id/bookmark_holder"
@@ -38,7 +38,7 @@
                 android:layout_gravity="center"
                 android:layout_marginStart="70dp"
                 android:layout_marginEnd="70dp"
-                android:textColor="@color/white"
+                android:textColor="?attr/white"
                 android:id="@+id/imageText"
                 android:textStyle="bold"
                 android:maxLines="3"
@@ -46,6 +46,7 @@
 
         <ImageView
                 android:id="@+id/title_bookmark"
+                android:background="@color/transparent"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:elevation="10dp"

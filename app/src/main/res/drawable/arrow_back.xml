@@ -1,4 +1,4 @@
-<vector android:tint="#FFFFFF"
+<vector android:tint="?attr/white"
         android:autoMirrored="true"
         android:viewportHeight="25"
         android:viewportWidth="25"

@@ -297,7 +297,7 @@ class PlayerFragment : Fragment() {
         MainActivity.showSystemUI()
         MainActivity.onPlayerEvent -= ::handlePlayerEvent
         MainActivity.onAudioFocusEvent -= ::handleAudioFocusEvent
-        requireActivity().contentResolver.unregisterContentObserver(volumeObserver)
+        MainActivity.activity!!.contentResolver.unregisterContentObserver(volumeObserver)
         super.onDestroy()
         //MainActivity.showSystemUI()
     }
@@ -467,7 +467,7 @@ class PlayerFragment : Fragment() {
         // No swiping on unloaded
         // https://exoplayer.dev/doc/reference/constant-values.html
         if (isLocked || exoPlayer.duration == -9223372036854775807L || (!swipeEnabled && !swipeVerticalEnabled)) return
-        val audioManager = requireActivity().getSystemService(AUDIO_SERVICE) as AudioManager
+        val audioManager = MainActivity.activity!!.getSystemService(AUDIO_SERVICE) as AudioManager
 
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -585,7 +585,7 @@ class PlayerFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
-        requireActivity().contentResolver
+        MainActivity.activity!!.contentResolver
             .registerContentObserver(
                 android.provider.Settings.System.CONTENT_URI, true, volumeObserver
             )

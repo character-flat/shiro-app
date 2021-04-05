@@ -2,10 +2,7 @@ package com.lagradost.shiro
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.app.AppOpsManager
-import android.app.Dialog
-import android.app.PictureInPictureParams
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -30,6 +27,7 @@ import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -721,6 +719,7 @@ class MainActivity : AppCompatActivity() {
         }
         if (settingsManager.getBoolean("cool_mode", false)) {
             theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
+            //theme.applyStyle(R.style.LightMode, true)
         }
         changeStatusBarState(settingsManager.getBoolean("statusbar_hidden", true))
         //window.statusBarColor = R.color.transparent

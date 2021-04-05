@@ -85,7 +85,7 @@
                 app:defaultValue="false"
         />
         <SwitchPreference
-                android:icon="@drawable/exo_controls_fastforward"
+                android:icon="@drawable/ic_baseline_fast_forward_24"
                 app:key="skip_op_enabled"
                 android:title="Skip OP button"
                 app:defaultValue="false"

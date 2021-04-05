@@ -19,7 +19,7 @@
             android:elevation="10dp"
             app:cardCornerRadius="4dp"
             android:id="@+id/cardBg"
-            app:cardBackgroundColor="@color/darkBar">
+            app:cardBackgroundColor="?attr/darkBar">
         <!-- USING CROP RATIO (182/268), centerCrop for fill -->
         <ImageView
                 android:id="@+id/imageView"
@@ -53,6 +53,7 @@
         <!--TODO FIX-->
         <TextView
                 android:id="@+id/cardTitle"
+                android:textColor="?attr/textColor"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
@@ -79,6 +80,7 @@
                    android:layout_height="40dp"
                    android:layout_margin="10dp"
                    android:src="@drawable/netflix_download"
+                   app:tint="?attr/white"
                    android:id="@+id/cdi"
                    android:nextFocusRight="@+id/episode_result_root"
                    android:nextFocusLeft="@+id/episode_result_root"

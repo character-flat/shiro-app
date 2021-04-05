@@ -18,7 +18,7 @@
             app:cardCornerRadius="2dp"
             android:id="@+id/cardBg"
 
-            app:cardBackgroundColor="@color/darkBar">
+            app:cardBackgroundColor="?attr/darkBar">
         <!-- USING CROP RATIO (182/268), centerCrop for fill -->
         <ImageView
                 android:clickable="true"
@@ -58,7 +58,7 @@
                 android:textSize="15sp"
                 android:layout_marginTop="110dp"
                 android:ellipsize="end"
-                android:textColor="@color/textColor"
+                android:textColor="?attr/textColor"
                 android:layout_marginStart="5dp"
                 android:layout_marginEnd="27.5dp"
                 android:singleLine="true">

@@ -4,6 +4,10 @@ import android.content.*
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.provider.Settings
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.*
@@ -14,14 +18,20 @@ import com.lagradost.shiro.*
 import com.lagradost.shiro.DataStore.getKeys
 import com.lagradost.shiro.DataStore.removeKeys
 import com.lagradost.shiro.MainActivity.Companion.checkWrite
+import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import com.lagradost.shiro.MainActivity.Companion.isDonor
 import com.lagradost.shiro.MainActivity.Companion.md5
 import com.lagradost.shiro.MainActivity.Companion.requestRW
 import com.lagradost.shiro.R
 import com.lagradost.shiro.VIEW_LST_KEY
+import java.io.File
 import kotlin.concurrent.thread
 
 class SettingsFragment : PreferenceFragmentCompat() {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        super.onCreateView(inflater, container, savedInstanceState)?.apply {
+            setBackgroundColor(MainActivity.activity!!.getColorFromAttr(R.attr.background))
+        }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.settings, rootKey)
@@ -63,7 +73,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 }
                 // Set other dialog properties
                 builder.setTitle("Clear watch history")
-
                 // Create the AlertDialog
                 builder.create()
             }
@@ -78,6 +87,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
             glide.clearMemory()
             thread {
                 glide.clearDiskCache()
+            }
+            val updateFile = File(activity!!.filesDir.toString() + "/Download/apk/update.apk")
+            if (updateFile.exists()){
+                updateFile.delete()
             }
             Toast.makeText(context, "Cleared image cache", Toast.LENGTH_LONG).show()
             return@setOnPreferenceClickListener true
@@ -119,14 +132,16 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 val alertDialog: AlertDialog? = activity?.let {
                     val builder = AlertDialog.Builder(it)
                     builder.apply {
-                        setPositiveButton("Logout"
+                        setPositiveButton(
+                            "Logout"
                         ) { dialog, id ->
                             DataStore.removeKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID)
                             DataStore.removeKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID)
                             DataStore.removeKey(ANILIST_USER_KEY, ANILIST_ACCOUNT_ID)
                             anilistButton.summary = if (isLoggedIntoMal()) "Logged in" else "Not logged in"
                         }
-                        setNegativeButton("Cancel"
+                        setNegativeButton(
+                            "Cancel"
                         ) { dialog, id ->
                             // User cancelled the dialog
                         }
@@ -155,7 +170,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 val alertDialog: AlertDialog? = activity?.let {
                     val builder = AlertDialog.Builder(it)
                     builder.apply {
-                        setPositiveButton("Logout"
+                        setPositiveButton(
+                            "Logout"
                         ) { dialog, id ->
                             DataStore.removeKey(MAL_TOKEN_KEY, MAL_ACCOUNT_ID)
                             DataStore.removeKey(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID)
@@ -163,7 +179,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
                             DataStore.removeKey(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID)
                             malButton.summary = if (isLoggedIntoMal()) "Logged in" else "Not logged in"
                         }
-                        setNegativeButton("Cancel"
+                        setNegativeButton(
+                            "Cancel"
                         ) { dialog, id ->
                             // User cancelled the dialog
                         }

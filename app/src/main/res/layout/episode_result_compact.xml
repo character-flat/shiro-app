@@ -20,7 +20,7 @@
             android:elevation="10dp"
             app:cardCornerRadius="4dp"
             android:id="@+id/cardBg"
-            app:cardBackgroundColor="@color/darkBar">
+            app:cardBackgroundColor="?attr/darkBar">
         <!-- USING CROP RATIO (182/268), centerCrop for fill -->
 
         <com.google.android.material.progressindicator.LinearProgressIndicator
@@ -48,7 +48,7 @@
                     android:layout_gravity="center_vertical"
                     android:layout_marginStart="160dp"
                     android:layout_marginEnd="50dp"
-                    android:textColor="@color/white"
+                    android:textColor="?attr/textColor"
             >
             </TextView>
 
@@ -68,6 +68,7 @@
                            app:layout_constraintStart_toEndOf="@id/cardTitle"
                            app:layout_constraintEnd_toEndOf="parent"
                            android:src="@drawable/netflix_download"
+                           app:tint="?attr/white"
                            android:layout_margin="10dp"
                            android:id="@+id/cdi"
                            android:nextFocusRight="@+id/episode_result_root"

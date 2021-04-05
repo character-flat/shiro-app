@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:background="@color/transparent"
         android:orientation="vertical">
     <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
@@ -13,7 +14,7 @@
             app:cardCornerRadius="4dp"
             android:id="@+id/cardBg"
 
-            app:cardBackgroundColor="@color/darkBar">
+            app:cardBackgroundColor="?attr/darkBar">
         <!-- USING CROP RATIO (182/268), centerCrop for fill -->
         <ImageView
                 android:id="@+id/imageView"
@@ -27,6 +28,7 @@
         </ImageView>
 
         <LinearLayout
+                android:background="@color/transparent"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
@@ -34,6 +36,7 @@
         >
 
             <TextView
+                    android:background="@color/transparent"
                     android:id="@+id/cardTitle"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -42,10 +45,11 @@
                     android:layout_gravity="center_vertical"
                     android:layout_marginStart="88dp"
                     android:layout_marginEnd="70dp"
-                    android:textColor="@color/textColor"
+                    android:textColor="?attr/textColor"
             >
             </TextView>
             <TextView
+                    android:background="@color/transparent"
                     android:id="@+id/cardInfo"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -54,7 +58,7 @@
                     android:layout_gravity="center_vertical"
                     android:layout_marginStart="88dp"
                     android:layout_marginEnd="70dp"
-                    android:textColor="@color/textColorGray"
+                    android:textColor="?attr/textColorGray"
             >
             </TextView>
         </LinearLayout>

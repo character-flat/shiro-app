@@ -11,8 +11,8 @@
     <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:backgroundTint="@color/background"
-            android:background="@color/background"
+            android:backgroundTint="?attr/background"
+            android:background="?attr/background"
             tools:context=".ui.downloads.DownloadFragmentChild">
         <LinearLayout android:orientation="vertical" android:layout_height="wrap_content"
                       android:layout_width="match_parent">

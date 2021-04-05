@@ -189,9 +189,8 @@ class EpisodeAdapter(
                 // Otherwise color is recycled
                 activity?.let {
                     card.cardBg.setCardBackgroundColor(
-                        ContextCompat.getColor(
-                            activity!!,
-                            R.color.darkBar
+                        activity!!.getColorFromAttr(
+                            R.attr.darkBar
                         )
                     )
                 }

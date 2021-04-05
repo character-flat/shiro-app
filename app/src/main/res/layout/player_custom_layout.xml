@@ -344,7 +344,7 @@
                     android:includeFontPadding="false"
                     android:paddingLeft="4dp"
                     android:paddingRight="4dp"
-                    android:textColor="@color/textColor"
+                    android:textColor="@android:color/white"
                     android:textSize="14sp"
                     android:textStyle="bold"/>
 
@@ -354,7 +354,7 @@
                     android:layout_height="26dp"
                     android:layout_weight="1"
                     app:played_color="?attr/colorPrimary"
-                    app:unplayed_color="@color/darkBar"/>
+                    app:unplayed_color="?attr/darkBar"/>
 
             <TextView
                     android:id="@id/exo_duration"
@@ -363,7 +363,7 @@
                     android:includeFontPadding="false"
                     android:paddingLeft="4dp"
                     android:paddingRight="4dp"
-                    android:textColor="@color/textColor"
+                    android:textColor="@android:color/white"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:layout_marginEnd="20dp"
@@ -378,7 +378,9 @@
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_baseline_aspect_ratio_24">
+                        android:src="@drawable/ic_baseline_aspect_ratio_24"
+                        app:tint="@android:color/white"
+                >
                 </ImageView>
                 <ImageView
                         android:id="@+id/resize_player"
@@ -439,7 +441,9 @@
                         android:layout_marginTop="15dp"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
-                        android:src="@drawable/ic_baseline_speed_24">
+                        android:src="@drawable/ic_baseline_speed_24"
+                        app:tint="@android:color/white"
+                >
                 </ImageView>
                 <ImageView
                         android:id="@+id/playback_speed_btt"
@@ -488,6 +492,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_baseline_volume_up_24"
+                    app:tint="@android:color/white"
             >
 
             </ImageView>
@@ -528,6 +533,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_baseline_brightness_7_24"
+                    app:tint="@android:color/white"
             >
 
             </ImageView>

@@ -9,6 +9,8 @@
         tools:context=".ui.home.HomeFragment"
         android:orientation="vertical"
         android:tag="fragment_home_tag"
+        android:backgroundTint="?attr/background"
+        android:background="?attr/background"
 >
     <ProgressBar
             android:layout_width="50dp"
@@ -20,8 +22,8 @@
 
     <Button android:text="@string/error_connecting_reload"
             android:alpha="0"
-            android:backgroundTint="@color/textColor"
-            android:textColor="@color/background"
+            android:backgroundTint="?attr/textColor"
+            android:textColor="?attr/background"
             android:gravity="center"
             android:layout_gravity="center"
             android:id="@+id/main_reload_data_btt"
@@ -42,16 +44,18 @@
             <FrameLayout android:layout_width="match_parent"
                          android:layout_height="wrap_content"
                          android:paddingBottom="20dp"
+                         android:background="@color/transparent"
             >
 
                 <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:id="@+id/main_poster_holder"
-
+                        android:background="@color/transparent"
                 >
 
                     <ImageView
+                            android:background="@color/transparent"
                             android:id="@+id/main_poster"
                             android:layout_width="match_parent"
                             android:layout_height="300dp"
@@ -70,8 +74,6 @@
                     305 dp here (+ a new view) is needed to hide a
                     parallax scrolling bug making the gradient not cover the image
                      -->
-
-
                     <View
                             android:layout_width="match_parent"
                             android:layout_height="305dp"
@@ -81,6 +83,7 @@
 
 
                 <LinearLayout
+                        android:background="@color/transparent"
                         android:id="@+id/main_layout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -118,9 +121,11 @@
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
                             android:id="@+id/main_poster_text_holder"
+                            android:background="@color/transparent"
                     >
 
                         <TextView
+                                android:background="@color/transparent"
                                 android:id="@+id/main_name"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -130,11 +135,12 @@
                                 android:textStyle="bold"
                                 android:paddingTop="5dp"
                                 android:textSize="30sp"
-                                android:textColor="@color/textColor"
+                                android:textColor="?attr/textColor"
                         >
                         </TextView>
 
                         <TextView
+                                android:background="@color/transparent"
                                 android:visibility="gone"
                                 android:id="@+id/main_name_jap"
                                 android:layout_width="match_parent"
@@ -149,13 +155,13 @@
                         </TextView>
 
                         <TextView
+                                android:background="@color/transparent"
                                 android:id="@+id/main_genres"
                                 android:layout_marginStart="20dp"
                                 android:layout_marginEnd="20dp"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:textColor="@color/textColor"
-
+                                android:textColor="?attr/textColor"
                                 android:text="">
 
                         </TextView>
@@ -164,6 +170,7 @@
                                 android:layout_marginBottom="20dp"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:background="@color/transparent"
                         >
                             <com.google.android.material.button.MaterialButton
                                     app:icon="@drawable/netflix_play"
@@ -177,7 +184,7 @@
                                     android:layout_gravity="center_horizontal"
                                     android:background="@drawable/button_ripple"
                                     android:foreground="@drawable/button_outline"
-                                    android:textColor="@color/textColor"
+                                    android:textColor="?attr/textColor"
                                     android:clickable="true"
                                     android:focusable="true"
                                     android:id="@+id/main_watch_button"
@@ -185,6 +192,7 @@
                                     app:layout_constraintTop_toTopOf="parent"
                                     app:layout_constraintStart_toStartOf="parent"
                                     app:layout_constraintEnd_toStartOf="@+id/main_info_button"
+                                    app:layout_constraintBottom_toBottomOf="parent"
                                     android:nextFocusRight="@+id/main_info_button"
                             >
                             </com.google.android.material.button.MaterialButton>
@@ -209,6 +217,7 @@
                                     android:nextFocusLeft="@+id/main_watch_button"
                                     app:layout_constraintTop_toTopOf="parent"
                                     app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintBottom_toBottomOf="parent"
                                     app:layout_constraintStart_toEndOf="@+id/main_watch_button">
                             </com.google.android.material.button.MaterialButton>
                         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -216,6 +225,7 @@
 
 
                     <LinearLayout
+                            android:background="@color/transparent"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:orientation="vertical"
@@ -223,23 +233,26 @@
                     >
 
                         <TextView
+                                android:background="@color/transparent"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:text="@string/continue_watching"
                                 android:gravity="center_horizontal"
                                 android:textStyle="bold"
-                                android:textColor="@color/textColor"
+                                android:textColor="?attr/textColor"
                                 android:textSize="16sp"
                                 android:padding="10dp"
                         >
                         </TextView>
 
                         <RelativeLayout
+                                android:background="@color/transparent"
                                 android:layout_width="wrap_content"
                                 android:layout_height="200dp"
                                 android:layout_marginBottom="20dp"
                         >
                             <androidx.recyclerview.widget.RecyclerView
+                                    android:background="@color/transparent"
                                     tools:listitem="@layout/home_card_recently_seen"
                                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                                     android:id="@+id/recentlySeenScrollView"
@@ -262,7 +275,7 @@
                                 android:text="@string/favorites"
                                 android:gravity="center_horizontal"
                                 android:textStyle="bold"
-                                android:textColor="@color/textColor"
+                                android:textColor="?attr/textColor"
                                 android:textSize="16sp"
                                 android:padding="10dp"
                         >
@@ -298,7 +311,7 @@
                             android:text="@string/trending_anime"
                             android:gravity="center_horizontal"
                             android:textStyle="bold"
-                            android:textColor="@color/textColor"
+                            android:textColor="?attr/textColor"
                             android:textSize="16sp"
                             android:padding="10dp"
                             android:id="@+id/trending_text"
@@ -323,7 +336,7 @@
                     <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/textColor"
+                            android:textColor="?attr/textColor"
                             android:gravity="center_horizontal"
                             android:text="@string/home_recently_updated"
                             android:textSize="16sp"
@@ -352,7 +365,7 @@
                     <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/textColor"
+                            android:textColor="?attr/textColor"
                             android:gravity="center_horizontal"
                             android:text="@string/home_ongoing"
                             android:textSize="16sp"
@@ -380,7 +393,7 @@
                     <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/textColor"
+                            android:textColor="?attr/textColor"
                             android:gravity="center_horizontal"
                             android:text="@string/latest_anime"
                             android:textSize="16sp"
@@ -416,7 +429,7 @@
                         <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:textColor="@color/textColor"
+                                android:textColor="?attr/textColor"
                                 android:gravity="center_horizontal"
                                 android:text="@string/schedule"
                                 android:textSize="16sp"

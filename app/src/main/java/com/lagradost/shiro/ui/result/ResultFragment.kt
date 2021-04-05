@@ -28,6 +28,7 @@ import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
 import com.lagradost.shiro.*
 import com.lagradost.shiro.DataStore.mapper
+import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import com.lagradost.shiro.ShiroApi.Companion.getAnimePage
 import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.ShiroApi.Companion.requestHome
@@ -46,7 +47,8 @@ import kotlin.concurrent.thread
 const val DESCRIPTION_LENGTH1 = 200
 
 class ResultFragment : Fragment() {
-    var data: ShiroApi.AnimePageData? = null
+    private var data: ShiroApi.AnimePageData? = null
+    private var slug: String? = null
     private var dataOther: ShiroApi.AnimePageData? = null
     private var isDefaultData = true
 
@@ -149,7 +151,7 @@ class ResultFragment : Fragment() {
 
                 // Somehow the above animation doesn't trigger sometimes on lower android versions
                 thread {
-                    Timer().schedule(500){
+                    Timer().schedule(500) {
                         activity?.runOnUiThread {
                             loading_overlay.alpha = 0f
                         }
@@ -166,8 +168,8 @@ class ResultFragment : Fragment() {
                         .into(title_background)
                 }
 
-                val textColor = resources.getString(R.color.textColor).substring(3)
-                val textColorGrey = resources.getString(R.color.textColorGray).substring(3)
+                val textColor = Integer.toHexString(MainActivity.activity!!.getColorFromAttr(R.attr.textColor))
+                val textColorGrey = Integer.toHexString(MainActivity.activity!!.getColorFromAttr(R.attr.textColorGray))
                 if (data.status != null) {
                     // fromHtml is depreciated, but works on android 6 as opposed to the new
                     title_status.text =
@@ -264,66 +266,47 @@ class ResultFragment : Fragment() {
         }
     }
 
+    private fun initData() {
+        slug = data?.slug
+        onLoaded.invoke(true)
+        isSubbed = slug?.endsWith("-dubbed")?.not()
+
+        dataOther = if (isSubbed == true) {
+            data?.let { it1 -> getAnimePage(it1.slug + "-dubbed")?.data }
+        } else {
+            data?.let { it1 -> getAnimePage(it1.slug.substring(0, it1.slug.length - 7))?.data }
+        }
+        if (dataOther != null) {
+            onLoadedOther.invoke(true)
+        }
+    }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         println("Attached result fragment")
         arguments?.getString("ShiroSearchResponseShow")?.let {
             thread {
                 data = getAnimePage(mapper.readValue(it, ShiroApi.ShiroSearchResponseShow::class.java))?.data
-                onLoaded.invoke(true)
-                isSubbed = data?.slug?.endsWith("-dubbed")?.not()
-
-                dataOther = if (isSubbed == true) {
-                    data?.let { it1 -> getAnimePage(it1.slug + "-dubbed")?.data }
-                } else {
-                    data?.let { it1 -> getAnimePage(it1.slug.substring(0, it1.slug.length - 7))?.data }
-                }
-                if (dataOther != null) {
-                    onLoadedOther.invoke(true)
-                }
+                initData()
             }
         }
+
         // Kinda hacky solution, but works
         arguments?.getString("AnimePageData")?.let {
             thread {
                 val pageData = mapper.readValue(it, ShiroApi.AnimePageData::class.java)
-                println("DATA $pageData")
-                data = getAnimePage(
-                    pageData.slug
-                )?.data
-                isSubbed = data?.slug?.endsWith("-dubbed")?.not()
-                onLoaded.invoke(true)
-
-                dataOther = if (isSubbed == true) {
-                    data?.let { it1 -> getAnimePage(it1.slug + "-dubbed")?.data }
-                } else {
-                    data?.let { it1 -> getAnimePage(it1.slug.substring(0, it1.slug.length - 7))?.data }
-                }
-                if (dataOther != null) {
-                    onLoadedOther.invoke(true)
-                }
-
-
+                data = getAnimePage(pageData.slug)?.data
+                initData()
             }
         }
 
-        /*Calling the getAnimePage function to get the page*/
         arguments?.getString("BookmarkedTitle")?.let {
             thread {
                 data = getAnimePage(mapper.readValue(it, BookmarkedTitle::class.java))?.data
-                isSubbed = data?.slug?.endsWith("-dubbed")?.not()
-                onLoaded.invoke(true)
-
-                dataOther = if (isSubbed == true) {
-                    data?.let { it1 -> getAnimePage(it1.slug + "-dubbed")?.data }
-                } else {
-                    data?.let { it1 -> getAnimePage(it1.slug.substring(0, it1.slug.length - 7))?.data }
-                }
-                if (dataOther != null) {
-                    onLoadedOther.invoke(true)
-                }
+                initData()
             }
         }
+
         //isMovie = data!!.episodes == 1 && data!!.status == "FINISHED"
     }
     /*
@@ -368,13 +351,12 @@ class ResultFragment : Fragment() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        println("onCreate")
         if (savedInstanceState != null) {
-            data = savedInstanceState.getString("data")?.let { mapper.readValue(it) }
-            dataOther = savedInstanceState.getString("dataOther")?.let { mapper.readValue(it) }
-        }
-        if (data != null) {
-            onLoaded.invoke(true)
+            slug = savedInstanceState.getString("slug")
+            thread {
+                data = slug?.let { getAnimePage(it)?.data }
+                initData()
+            }
         }
         super.onCreate(savedInstanceState)
 
@@ -382,10 +364,7 @@ class ResultFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         if (data != null) {
-            outState.putString("data", mapper.writeValueAsString(data))
-        }
-        if (dataOther != null) {
-            outState.putString("dataOther", mapper.writeValueAsString(data))
+            outState.putString("slug", data!!.slug)
         }
         super.onSaveInstanceState(outState)
     }
