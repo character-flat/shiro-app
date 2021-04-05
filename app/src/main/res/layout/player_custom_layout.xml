@@ -24,7 +24,7 @@
                 android:layout_margin="5dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-        >
+                tools:ignore="UselessParent">
             <ImageView
                     android:layout_width="30dp"
                     android:layout_height="30dp"
@@ -113,7 +113,7 @@
                 android:layout_marginTop="10dp"
                 android:textColor="@color/white"
                 android:id="@+id/video_title"
-                android:text="Hello world"
+                tools:text="Hello world"
         >
         </TextView>
         <LinearLayout
@@ -140,10 +140,9 @@
                     card_view:cardElevation="0dp"
             >
                 <TextView
-
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:text="Next episode"
+                        android:text="@string/next_episode"
                         android:gravity="start|center"
                         android:paddingStart="10dp"
                         android:paddingEnd="10dp"
@@ -206,7 +205,7 @@
                 <TextView
                         android:id="@+id/exo_rew_text"
                         android:textColor="@color/white"
-                        android:text="10"
+                        android:text="@string/player_skip_button_text"
                         android:textSize="15sp"
                         android:layout_gravity="center"
                         android:textFontWeight="900"
@@ -259,7 +258,7 @@
                 <TextView
                         android:id="@+id/exo_ffwd_text"
                         android:textColor="@color/white"
-                        android:text="10"
+                        android:text="@string/player_skip_button_text"
                         android:textSize="15sp"
                         android:layout_gravity="center"
                         android:textFontWeight="900"

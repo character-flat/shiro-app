@@ -4,10 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 
 const val PREFERENCES_NAME: String = "rebuild_preference"
 const val VIEW_POS_KEY: String = "view_pos" // VIDEO POSITION
@@ -37,7 +35,7 @@ const val MAL_USER_KEY: String = "mal_user" // user data like profile
 object DataStore {
 
     val mapper = JsonMapper.builder().addModule(KotlinModule())
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()!!
 
     private fun getPreferences(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)

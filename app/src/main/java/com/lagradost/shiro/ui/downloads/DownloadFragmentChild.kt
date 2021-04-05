@@ -1,7 +1,6 @@
 package com.lagradost.shiro.ui.downloads
 
 import android.annotation.SuppressLint
-import android.content.DialogInterface
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -31,7 +30,7 @@ import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isViewState
 
 
-class DownloadFragmentChild() : Fragment() {
+class DownloadFragmentChild : Fragment() {
     var slug: String? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -57,7 +56,7 @@ class DownloadFragmentChild() : Fragment() {
         isInResults = false
     }
 
-    fun onPlayerLeft(it: Boolean) {
+    private fun onPlayerLeft(it: Boolean) {
         loadData()
     }
 
@@ -76,7 +75,7 @@ class DownloadFragmentChild() : Fragment() {
             episodeKeys!!.associateBy({ DataStore.getKey<DownloadManager.DownloadFileMetadata>(it) }, { it }).toList()
                 .sortedBy { (key, _) -> key?.episodeIndex }.toMap()
 
-        sortedEpisodeKeys.forEach {
+        sortedEpisodeKeys.forEach { it ->
             val child = it.key
 
             if (child != null) {
@@ -95,7 +94,7 @@ class DownloadFragmentChild() : Fragment() {
                 val key = MainActivity.getViewKey(slug!!, child.episodeIndex)
                 card.cardBg.setOnClickListener {
                     if (save) {
-                        DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
+                        DataStore.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
                     }
                     MainActivity.loadPlayer(
                         PlayerData(
@@ -139,14 +138,14 @@ class DownloadFragmentChild() : Fragment() {
                     val alertDialog: AlertDialog? = activity?.let {
                         val builder = AlertDialog.Builder(it)
                         builder.apply {
-                            setPositiveButton("Delete",
-                                DialogInterface.OnClickListener { dialog, id ->
-                                    deleteFile()
-                                })
-                            setNegativeButton("Cancel",
-                                DialogInterface.OnClickListener { dialog, id ->
-                                    // User cancelled the dialog
-                                })
+                            setPositiveButton("Delete"
+                            ) { dialog, id ->
+                                deleteFile()
+                            }
+                            setNegativeButton("Cancel"
+                            ) { dialog, id ->
+                                // User cancelled the dialog
+                            }
                         }
                         // Set other dialog properties
                         builder.setTitle("Delete ${child.videoTitle} - E${child.episodeIndex + 1}")
@@ -162,7 +161,7 @@ class DownloadFragmentChild() : Fragment() {
                         if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
                             DataStore.removeKey(VIEWSTATE_KEY, key)
                         } else {
-                            DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
+                            DataStore.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
                         }
                         loadData()
                     }
@@ -176,12 +175,12 @@ class DownloadFragmentChild() : Fragment() {
 
                 fun updateIcon(megabytes: Int) {
                     if (megabytes + 3 >= megaBytesTotal) {
-                        card.progressBar.visibility = View.GONE
-                        card.cardPauseIcon.visibility = View.GONE
+                        card.progressBar.visibility = GONE
+                        card.cardPauseIcon.visibility = GONE
                         card.cardRemoveIcon.visibility = View.VISIBLE
                     } else {
                         card.progressBar.visibility = View.VISIBLE
-                        card.cardRemoveIcon.visibility = View.GONE
+                        card.cardRemoveIcon.visibility = GONE
                         card.cardPauseIcon.visibility = View.VISIBLE
                     }
                 }
@@ -275,7 +274,7 @@ class DownloadFragmentChild() : Fragment() {
                     activity?.runOnUiThread {
                         if (it.downloadEvent.id == child.internalId) {
                             val megaBytes = DownloadManager.convertBytesToAny(it.downloadEvent.bytes, 0, 2.0).toInt()
-                            card.cardTitleExtra.text = "${megaBytes} / $megaBytesTotal MB"
+                            card.cardTitleExtra.text = "$megaBytes / $megaBytesTotal MB"
                             card.progressBar.progress = maxOf(minOf(megaBytes * 100 / megaBytesTotal, 100), 0)
                             updateIcon(megaBytes)
                         }

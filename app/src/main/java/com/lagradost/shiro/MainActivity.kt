@@ -35,7 +35,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -100,6 +99,8 @@ data class BookmarkedTitle(
 class MainActivity : AppCompatActivity() {
     companion object {
         var isInPIPMode = false
+
+        @SuppressLint("StaticFieldLeak")
         var navController: NavController? = null
         var statusHeight: Int = 0
         var activity: MainActivity? = null
@@ -159,7 +160,7 @@ class MainActivity : AppCompatActivity() {
                 audioManager.requestAudioFocus(focusRequest!!)
             } else {
                 val audioManager: AudioManager =
-                    activity?.getSystemService(Context.AUDIO_SERVICE) as AudioManager;
+                    activity?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
                 audioManager.requestAudioFocus(
                     null,
                     AudioManager.STREAM_MUSIC,
@@ -191,13 +192,13 @@ class MainActivity : AppCompatActivity() {
             val key = getViewKey(aniListId, episodeIndex)
 
             return EpisodePosDurInfo(
-                DataStore.getKey<Long>(VIEW_POS_KEY, key, -1L)!!,
-                DataStore.getKey<Long>(VIEW_DUR_KEY, key, -1L)!!,
+                DataStore.getKey(VIEW_POS_KEY, key, -1L)!!,
+                DataStore.getKey(VIEW_DUR_KEY, key, -1L)!!,
                 DataStore.containsKey(VIEWSTATE_KEY, key)
             )
         }
 
-        fun canPlayNextEpisode(card: ShiroApi.AnimePageData?, seasonIndex: Int, episodeIndex: Int): NextEpisode {
+        private fun canPlayNextEpisode(card: ShiroApi.AnimePageData?, episodeIndex: Int): NextEpisode {
             val canNext = card!!.episodes!!.size > episodeIndex + 1
 
             return if (canNext) {
@@ -231,7 +232,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             while (true) { // IF PROGRESS IS OVER 95% CONTINUE SEARCH FOR NEXT EPISODE
-                val next = canPlayNextEpisode(data, seasonIndex, episodeIndex)
+                val next = canPlayNextEpisode(data, episodeIndex)
                 if (next.isFound) {
                     val nextPro = getViewPosDur(data.slug, next.episodeIndex)
                     seasonIndex = next.seasonIndex
@@ -263,13 +264,13 @@ class MainActivity : AppCompatActivity() {
             var seasonIndex = data.seasonIndex!!
             val maxValue = 90
             var canContinue: Boolean = (pos * 100 / dur) > maxValue
-            var isFound: Boolean = true
+            var isFound = true
             var _pos = pos
             var _dur = dur
 
             val card = data.card
             while (canContinue) { // IF PROGRESS IS OVER 95% CONTINUE SEARCH FOR NEXT EPISODE
-                val next = canPlayNextEpisode(card, seasonIndex, episodeIndex)
+                val next = canPlayNextEpisode(card, episodeIndex)
                 if (next.isFound) {
                     val nextPro = getViewPosDur(card.slug, next.episodeIndex)
                     seasonIndex = next.seasonIndex
@@ -342,16 +343,16 @@ class MainActivity : AppCompatActivity() {
             }" else title.replace(" (Anime)", "")
         }
 
-        fun splitQuery(url: URL): Map<String, String>? {
-            val query_pairs: MutableMap<String, String> = LinkedHashMap()
-            val query: String = url.getQuery()
+        fun splitQuery(url: URL): Map<String, String> {
+            val queryPairs: MutableMap<String, String> = LinkedHashMap()
+            val query: String = url.query
             val pairs = query.split("&").toTypedArray()
             for (pair in pairs) {
                 val idx = pair.indexOf("=")
-                query_pairs[URLDecoder.decode(pair.substring(0, idx), "UTF-8")] =
+                queryPairs[URLDecoder.decode(pair.substring(0, idx), "UTF-8")] =
                     URLDecoder.decode(pair.substring(idx + 1), "UTF-8")
             }
-            return query_pairs
+            return queryPairs
         }
 
         fun popCurrentPage() {
@@ -499,7 +500,7 @@ class MainActivity : AppCompatActivity() {
         if (intent != null) {
             val dataString = intent.dataString
             if (dataString != null && dataString != "") {
-                println("GOT fastaniapp auth" + dataString)
+                println("GOT fastaniapp auth$dataString")
                 if (dataString.contains("fastaniapp")) {
                     if (dataString.contains("/anilistlogin")) {
                         AniListApi.authenticateLogin(dataString)
@@ -533,7 +534,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun enterPIPMode() {
-        if (!shouldShowPIPMode() || !canShowPipMode) return;
+        if (!shouldShowPIPMode() || !canShowPipMode) return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             try {
                 enterPictureInPictureMode(PictureInPictureParams.Builder().build())
@@ -648,7 +649,7 @@ class MainActivity : AppCompatActivity() {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
         if (settingsManager.getBoolean("use_external_storage", false)) {
-            if (!checkWrite()){
+            if (!checkWrite()) {
                 Toast.makeText(activity, "Accept storage permissions to download", Toast.LENGTH_LONG).show()
                 requestRW()
             }
@@ -789,12 +790,12 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        val layout = listOf(
+        /*val layout = listOf(
             R.id.navigation_home, R.id.navigation_search, /*R.id.navigation_downloads,*/ R.id.navigation_settings
         )
         val appBarConfiguration = AppBarConfiguration(
             layout.toSet()
-        )
+        )*/
 
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
@@ -841,14 +842,14 @@ class MainActivity : AppCompatActivity() {
             return@setOnKeyListener true
         }*/
 
-        window.setBackgroundDrawableResource(R.color.background);
+        window.setBackgroundDrawableResource(R.color.background)
         //val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
         val data: Uri? = intent?.data
 
         if (data != null) {
             val dataString = data.toString()
             if (dataString != "") {
-                println("GOT fastaniapp auth awake: " + dataString)
+                println("GOT fastaniapp auth awake: $dataString")
                 if (dataString.contains("fastaniapp")) {
                     if (dataString.contains("/anilistlogin")) {
                         AniListApi.authenticateLogin(dataString)
@@ -859,7 +860,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             thread {
-                val urlRegex = Regex("""fastani\.net\/watch\/(.*?)\/(\d+)\/(\d+)""")
+                val urlRegex = Regex("""fastani\.net/watch/(.*?)/(/d+)/(/+)""")
                 val found = urlRegex.find(data.toString())
                 if (found != null) {
                     val (id, season, episode) = found.destructured

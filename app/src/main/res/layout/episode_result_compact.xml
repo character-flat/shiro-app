@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
         android:orientation="vertical"
         android:clickable="true"
         android:focusable="true"
@@ -73,9 +74,10 @@
                            android:nextFocusLeft="@+id/episode_result_root"
                            android:layout_gravity="end|center_vertical"
                            android:background="?android:attr/selectableItemBackgroundBorderless"
-                />
+                           android:contentDescription="@string/start_download"/>
 
-                <ImageView android:layout_width="40dp" android:layout_height="40dp"
+                <ImageView android:layout_width="40dp"
+                           android:layout_height="40dp"
                            android:src="@drawable/exo_icon_stop"
                            android:id="@+id/progressBarStop"
                            android:layout_gravity="end|center_vertical"
@@ -83,7 +85,7 @@
                            app:tint="@color/white"
                            android:visibility="gone"
                            android:layout_margin="10dp"
-                />
+                           android:contentDescription="@string/stop_download"/>
 
                 <ProgressBar
                         android:layout_width="40dp"
@@ -109,15 +111,17 @@
                            android:layout_gravity="end|center_vertical"
                            android:visibility="gone"
                            android:background="?android:attr/selectableItemBackgroundBorderless"
-                />
-                <ImageView android:layout_width="30dp" android:layout_height="30dp"
+                           android:contentDescription="@string/stop_download"/>
+
+                <ImageView android:layout_width="30dp"
+                           android:layout_height="30dp"
                            android:id="@+id/cardRemoveIcon"
                            android:layout_margin="15dp"
                            android:src="@drawable/ic_baseline_delete_24"
                            android:layout_gravity="end|center_vertical"
                            android:visibility="gone"
                            android:background="?android:attr/selectableItemBackgroundBorderless"
-                />
+                           android:contentDescription="@string/remove_download"/>
                 <!--
                 <TextView
                         android:id="@+id/cardDescription"

@@ -25,8 +25,8 @@ private const val spanCountPortrait = 3
 class ExpandedHomeFragment : Fragment() {
     private var cardList: List<ShiroApi.AnimePageData?>? = null
     private var title: String? = null
-    val mapper = JsonMapper.builder().addModule(KotlinModule())
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
+    private val mapper = JsonMapper.builder().addModule(KotlinModule())
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,7 +67,7 @@ class ExpandedHomeFragment : Fragment() {
         title_go_back_holder.setOnClickListener {
             popCurrentPage()
         }
-        val orientation = resources.configuration.orientation;
+        val orientation = resources.configuration.orientation
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             expanded_card_list_view.spanCount = spanCountLandscape
         } else {
@@ -77,8 +77,7 @@ class ExpandedHomeFragment : Fragment() {
         val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
             CardAdapter(
                 it,
-                ArrayList<ShiroApi.AnimePageData?>(),
-                expanded_card_list_view,
+                ArrayList(),
             )
         }
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)

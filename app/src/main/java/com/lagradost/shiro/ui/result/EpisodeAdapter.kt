@@ -48,12 +48,12 @@ var downloadFun: ((DownloadManager.DownloadEventAndChild) -> Unit)? = null
 class EpisodeAdapter(
     val context: Context,
     val data: ShiroApi.AnimePageData,
-    val resView: AutofitRecyclerView,
-    val save: Boolean
+    private val resView: AutofitRecyclerView,
+    private val save: Boolean
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var episodes = data.episodes
-    var prevFocus: Int? = null
+    private var prevFocus: Int? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         resView.spanCount = if (isDonor) 2 else 3
@@ -90,7 +90,7 @@ class EpisodeAdapter(
 
     class CardViewHolder
     constructor(
-        itemView: View, _context: Context, resView: RecyclerView, val save: Boolean,
+        itemView: View, _context: Context, resView: RecyclerView, private val save: Boolean,
         val data: ShiroApi.AnimePageData
     ) :
         RecyclerView.ViewHolder(itemView) {
@@ -133,7 +133,7 @@ class EpisodeAdapter(
 
             itemView.cardBg.setOnClickListener {
                 if (save) {
-                    DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
+                    DataStore.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
                 }
 
                 if (isCastApiAvailable()) {
@@ -248,7 +248,7 @@ class EpisodeAdapter(
                         val localBytesTotal =
                             maxOf(DownloadManager.convertBytesToAny(file.length(), 0, 2.0).toInt(), 1)
 
-                        println("FILE EXISTS:" + position)
+                        println("FILE EXISTS:$position")
                         fun deleteFile() {
                             if (file.exists()) {
                                 file.delete()
@@ -272,14 +272,14 @@ class EpisodeAdapter(
                             val alertDialog: AlertDialog? = activity?.let {
                                 val builder = AlertDialog.Builder(it)
                                 builder.apply {
-                                    setPositiveButton("Delete",
-                                        DialogInterface.OnClickListener { dialog, id ->
-                                            deleteFile()
-                                        })
-                                    setNegativeButton("Cancel",
-                                        DialogInterface.OnClickListener { dialog, id ->
-                                            // User cancelled the dialog
-                                        })
+                                    setPositiveButton("Delete"
+                                    ) { dialog, id ->
+                                        deleteFile()
+                                    }
+                                    setNegativeButton("Cancel"
+                                    ) { dialog, id ->
+                                        // User cancelled the dialog
+                                    }
                                 }
                                 // Set other dialog properties
                                 builder.setTitle("Delete ${child.videoTitle} - E${child.episodeIndex + 1}")
@@ -408,7 +408,7 @@ class EpisodeAdapter(
 
         }
 
-        fun castEpisode(data: ShiroApi.AnimePageData, episodeIndex: Int) {
+        private fun castEpisode(data: ShiroApi.AnimePageData, episodeIndex: Int) {
             val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
             castContext.castOptions
             val key = getViewKey(data.slug, episodeIndex)
@@ -441,7 +441,7 @@ class EpisodeAdapter(
                         castPlayer.loadItems(
                             mediaItems,
                             0,
-                            DataStore.getKey<Long>(VIEW_POS_KEY, key, 0L)!!,
+                            DataStore.getKey(VIEW_POS_KEY, key, 0L)!!,
                             Player.REPEAT_MODE_OFF
                         )
                     }

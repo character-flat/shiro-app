@@ -18,19 +18,16 @@ import kotlinx.android.synthetic.main.home_card.view.*
 /*Creates card adapters for the bookmarks list*/
 class CardBookmarkAdapter(
     context: Context,
-    animeList: List<BookmarkedTitle?>?,
-    resView: RecyclerView
+    animeList: List<BookmarkedTitle?>?
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var cardList = animeList
     var context: Context? = context
-    var resView: RecyclerView? = resView
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return CardViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.home_card, parent, false),
-            context!!,
-            resView!!
+            context!!
         )
     }
 
@@ -47,8 +44,7 @@ class CardBookmarkAdapter(
         return if (cardList?.size == null) 0 else cardList!!.size
     }
 
-    class CardViewHolder
-    constructor(itemView: View, _context: Context, resView: RecyclerView) : RecyclerView.ViewHolder(itemView) {
+    class CardViewHolder(itemView: View, _context: Context) : RecyclerView.ViewHolder(itemView) {
         val context = _context
         val card: ImageView = itemView.imageView
         fun bind(cardInfo: BookmarkedTitle?) {

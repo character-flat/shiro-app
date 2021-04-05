@@ -40,7 +40,7 @@ class SearchFragment : Fragment() {
                 WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
             )
         }
-        val orientation = resources.configuration.orientation;
+        val orientation = resources.configuration.orientation
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             cardSpace.spanCount = spanCountLandscape
         } else {
@@ -57,7 +57,7 @@ class SearchFragment : Fragment() {
         val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
             ResAdapter(
                 it,
-                ArrayList<ShiroApi.ShiroSearchResponseShow>(),
+                ArrayList(),
                 cardSpace,
             )
         }

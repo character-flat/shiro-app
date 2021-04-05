@@ -26,7 +26,7 @@ import kotlinx.android.synthetic.main.search_result_compact.view.*
 import kotlin.concurrent.thread
 import kotlin.math.roundToInt
 
-val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
+val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)!!
 
 class ResAdapter(
     context: Context,
@@ -36,7 +36,7 @@ class ResAdapter(
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var cardList = animeList
     var context: Context? = context
-    var resView: AutofitRecyclerView? = resView
+    private var resView: AutofitRecyclerView? = resView
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val compactView = settingsManager.getBoolean("compact_search_enabled", true)
@@ -90,7 +90,7 @@ class ResAdapter(
                     toggleHeartVisual(_isBookmarked)
                     /*Saving the new bookmark in the database*/
                     if (_isBookmarked) {
-                        DataStore.setKey<BookmarkedTitle>(
+                        DataStore.setKey(
                             BOOKMARK_KEY,
                             card.slug,
                             BookmarkedTitle(

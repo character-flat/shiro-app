@@ -2,6 +2,4 @@ package com.lagradost.shiro.ui.result
 
 import androidx.lifecycle.ViewModel
 
-class ResultViewModel : ViewModel() {
-
-}
+class ResultViewModel : ViewModel()

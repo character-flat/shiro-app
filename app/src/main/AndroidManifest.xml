@@ -23,7 +23,7 @@
             android:theme="@style/AppTheme"
             android:name=".AcraApplication"
             android:banner="@drawable/fastani_logo_svg"
-    >
+            android:fullBackupContent="@xml/backup_descriptor">
         <!-- //TODO FIX BANNER! -->
         <provider
                 android:name="androidx.core.content.FileProvider"

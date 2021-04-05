@@ -28,28 +28,28 @@
                 android:id="@+id/update_now"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Update now"
+                android:text="@string/update_dialog_update_now"
                 style="@style/DialogButton"
         />
         <Button
                 android:id="@+id/update_changelog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Changelog"
+                android:text="@string/update_dialog_changelog"
                 style="@style/DialogButton"
         />
         <Button
                 android:id="@+id/update_never"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Don't ask again"
+                android:text="@string/update_dialog_dont_ask_again"
                 style="@style/DialogButton"
         />
         <Button
                 android:id="@+id/update_later"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Update later"
+                android:text="@string/update_dialog_update_later"
                 style="@style/DialogButton"
         />
     </LinearLayout>

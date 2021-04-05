@@ -252,7 +252,7 @@
                                 android:id="@+id/episodes_text"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Episodes"
+                                android:text="@string/episodes"
                                 android:textStyle="bold"
                         >
 
@@ -321,7 +321,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                class="com.google.android.gms.cast.framework.media.widget.MiniControllerFragment">
+                class="com.google.android.gms.cast.framework.media.widget.MiniControllerFragment"
+                tools:ignore="FragmentTagUsage">
 
         </fragment>
     </LinearLayout>

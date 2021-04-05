@@ -27,7 +27,7 @@
                 android:layout_width="142dp"
                 android:layout_height="80dp"
                 android:foreground="?android:attr/selectableItemBackgroundBorderless"
-        >
+                android:contentDescription="@string/video_thumbnail">
         </ImageView>
         <ImageView
                 android:scaleType="centerInside"
@@ -36,7 +36,7 @@
                 android:scaleX="0.5"
                 android:scaleY="0.5"
                 android:src="@drawable/nexflix_play_btt"
-        >
+                android:contentDescription="@string/video_play_button">
         </ImageView>
 
         <!-- STYLE HERE IS IMPORTANT OR ELSE IT WILL LOOK UGLY -->
@@ -64,14 +64,16 @@
         </TextView>
 
 
-        <ImageView android:layout_width="40dp" android:layout_height="40dp" android:layout_margin="10dp"
+        <ImageView android:layout_width="40dp"
+                   android:layout_height="40dp"
+                   android:layout_margin="10dp"
                    android:src="@drawable/exo_icon_stop"
                    android:id="@+id/progressBarStop"
                    android:layout_gravity="end|center_vertical"
                    android:background="?android:attr/selectableItemBackgroundBorderless"
                    app:tint="@color/white"
                    android:visibility="gone"
-        />
+                   android:contentDescription="@string/stop_download"/>
 
         <ImageView android:layout_width="40dp"
                    android:layout_height="40dp"
@@ -82,7 +84,7 @@
                    android:nextFocusLeft="@+id/episode_result_root"
                    android:layout_gravity="end|center_vertical"
                    android:background="?android:attr/selectableItemBackgroundBorderless"
-        />
+                   android:contentDescription="@string/start_download"/>
         <ProgressBar
                 android:layout_width="40dp"
                 android:layout_height="40dp"
@@ -105,14 +107,15 @@
                    android:visibility="gone"
                    android:layout_gravity="end|center_vertical"
                    android:background="?android:attr/selectableItemBackgroundBorderless"
-        />
+                   android:contentDescription="@string/stop_download"/>
+
         <ImageView android:layout_width="30dp" android:layout_height="30dp" android:layout_margin="10dp"
                    android:id="@+id/cardRemoveIcon"
                    android:visibility="gone"
                    android:src="@drawable/ic_baseline_delete_24"
                    android:layout_gravity="end|center_vertical"
                    android:background="?android:attr/selectableItemBackgroundBorderless"
-        />
+                   android:contentDescription="@string/remove_download"/>
         <!--
         <TextView
                 android:id="@+id/cardDescription"

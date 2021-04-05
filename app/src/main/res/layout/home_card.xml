@@ -31,7 +31,7 @@
                 android:layout_height="200dp"
                 android:scaleType="centerCrop"
                 android:id="@+id/imageView"
-        >
+                android:contentDescription="@string/series_thumbnail">
         </ImageView>
         <TextView
                 android:layout_width="127dp"

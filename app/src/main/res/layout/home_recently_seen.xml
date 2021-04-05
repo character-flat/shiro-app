@@ -71,7 +71,7 @@
                 android:src="@drawable/ic_outline_info_24"
                 android:layout_gravity="end|bottom"
                 android:layout_margin="5dp"
-                android:contentDescription="Info"/>
+                android:contentDescription="@string/continue_watching_info_button"/>
 
         <ImageView
                 android:background="?android:attr/selectableItemBackgroundBorderless"
@@ -82,7 +82,7 @@
                 android:layout_gravity="end|top"
                 android:layout_margin="5dp"
 
-                android:contentDescription="Remove"
+                android:contentDescription="@string/continue_watching_remove_button"
         />
 
 

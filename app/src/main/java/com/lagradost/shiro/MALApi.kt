@@ -15,11 +15,11 @@ const val MAL_ACCOUNT_ID = "0" // MIGHT WANT TO BE USED IF YOU WANT MULTIPLE ACC
 
 class MALApi {
     companion object {
-        val mapper = JsonMapper.builder().addModule(KotlinModule())
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
+        private val mapper = JsonMapper.builder().addModule(KotlinModule())
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()!!
 
-        var requestId = 0
-        var codeVerifier = ""
+        private var requestId = 0
+        private var codeVerifier = ""
 
         fun authenticate() {
             // It is recommended to use a URL-safe string as code_verifier.
@@ -32,7 +32,7 @@ class MALApi {
                 Base64.encodeToString(codeVerifierBytes, Base64.DEFAULT).trimEnd('=').replace("+", "-")
                     .replace("/", "_").replace("\n", "")
             val codeChallenge = codeVerifier
-            println("codeVerifier" + codeVerifier)
+            println("codeVerifier$codeVerifier")
             val request =
                 "https://myanimelist.net/v1/oauth2/authorize?response_type=code&client_id=$MAL_CLIENT_ID&code_challenge=$codeChallenge&state=RequestID$requestId"
             MainActivity.openBrowser(request)
@@ -41,9 +41,9 @@ class MALApi {
         fun authenticateLogin(data: String) {
             try {
                 val sanitizer =
-                    MainActivity.splitQuery(URL(data.replace("fastaniapp", "https").replace("/#", "?")))!! // FIX ERROR
+                    MainActivity.splitQuery(URL(data.replace("fastaniapp", "https").replace("/#", "?"))) // FIX ERROR
                 val state = sanitizer["state"]!!
-                if (state == "RequestID" + requestId) {
+                if (state == "RequestID$requestId") {
                     val currentCode = sanitizer["code"]!!
                     thread {
                         var res = ""
@@ -73,10 +73,10 @@ class MALApi {
             }
         }
 
-        fun storeToken(response: String) {
+        private fun storeToken(response: String) {
             try {
                 if (response != "") {
-                    var token = mapper.readValue<ResponseToken>(response)
+                    val token = mapper.readValue<ResponseToken>(response)
                     DataStore.setKey(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID, (token.expires_in + MainActivity.unixTime()))
                     DataStore.setKey(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID, token.refresh_token)
                     DataStore.setKey(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, token.access_token)
@@ -86,14 +86,14 @@ class MALApi {
             }
         }
 
-        fun refreshToken() {
+        private fun refreshToken() {
             try {
                 val res = khttp.post(
                     "https://myanimelist.net/v1/oauth2/token",
                     data = mapOf(
                         "client_id" to MAL_CLIENT_ID,
                         "grant_type" to "refresh_token",
-                        "refresh_token" to DataStore.getKey<String>(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID)!!
+                        "refresh_token" to DataStore.getKey(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID)!!
                     )
                 ).text
                 storeToken(res)
@@ -102,7 +102,7 @@ class MALApi {
             }
         }
 
-        val allTitles = hashMapOf<Int, MalTitleHolder>()
+        private val allTitles = hashMapOf<Int, MalTitleHolder>()
 
         fun getDataAboutId(id: Int): MalAnime? {
             return try {
@@ -148,7 +148,7 @@ class MALApi {
             }
         }
 
-        fun checkToken() {
+        private fun checkToken() {
             if (MainActivity.unixTime() > DataStore.getKey<Long>(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID)!!) {
                 refreshToken()
             }
@@ -178,7 +178,7 @@ class MALApi {
             }
         }
 
-        val malStatusAsString = arrayOf("watching", "completed", "on_hold", "dropped", "plan_to_watch")
+        private val malStatusAsString = arrayOf("watching", "completed", "on_hold", "dropped", "plan_to_watch")
 
         enum class MalStatusType(var value: Int) {
             Watching(0),
@@ -189,16 +189,16 @@ class MALApi {
             None(-1)
         }
 
-        fun fromIntToAnimeStatus(inp: Int): MALApi.Companion.MalStatusType {//= AniListStatusType.values().first { it.value == inp }
+        fun fromIntToAnimeStatus(inp: Int): MalStatusType {//= AniListStatusType.values().first { it.value == inp }
             return when (inp) {
-                -1 -> MALApi.Companion.MalStatusType.None
-                0 -> MALApi.Companion.MalStatusType.Watching
-                1 -> MALApi.Companion.MalStatusType.Completed
-                2 -> MALApi.Companion.MalStatusType.OnHold
-                3 -> MALApi.Companion.MalStatusType.Dropped
-                4 -> MALApi.Companion.MalStatusType.PlanToWatch
-                5 -> MALApi.Companion.MalStatusType.Watching
-                else -> MALApi.Companion.MalStatusType.None
+                -1 -> MalStatusType.None
+                0 -> MalStatusType.Watching
+                1 -> MalStatusType.Completed
+                2 -> MalStatusType.OnHold
+                3 -> MalStatusType.Dropped
+                4 -> MalStatusType.PlanToWatch
+                5 -> MalStatusType.Watching
+                else -> MalStatusType.None
             }
         }
 

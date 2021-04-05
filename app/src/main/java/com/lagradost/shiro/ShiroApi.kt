@@ -463,7 +463,7 @@ class ShiroApi {
 
 
         // OTHERWISE CRASH AT BOOT FROM HAVING OLD FAVORITES SYSTEM
-        fun convertOldFavorites() {
+        private fun convertOldFavorites() {
             try {
                 val keys = DataStore.getKeys(BOOKMARK_KEY)
                 thread {
@@ -480,7 +480,7 @@ class ShiroApi {
                             DataStore.removeKey(it)
                         }
                     }
-                    DataStore.setKey<Boolean>(LEGACY_BOOKMARKS, false)
+                    DataStore.setKey(LEGACY_BOOKMARKS, false)
                 }
             } catch (e: Exception) {
                 return
@@ -490,7 +490,7 @@ class ShiroApi {
 
 
         private fun getFav(): List<BookmarkedTitle?> {
-            val legacyBookmarks = DataStore.getKey<Boolean>(LEGACY_BOOKMARKS, true)
+            val legacyBookmarks = DataStore.getKey(LEGACY_BOOKMARKS, true)
             if (legacyBookmarks == true) {
                 convertOldFavorites()
             }
@@ -504,7 +504,7 @@ class ShiroApi {
 
             return keys.map {
                 println(it)
-                DataStore.getKey<BookmarkedTitle>(it)
+                DataStore.getKey(it)
             }
         }
 
@@ -538,7 +538,7 @@ class ShiroApi {
             } else null
         }
 
-        fun getHome(canBeCached: Boolean): ShiroHomePage? {
+        private fun getHome(canBeCached: Boolean): ShiroHomePage? {
             var res: ShiroHomePage? = null
             if (canBeCached && cachedHome != null) {
                 res = cachedHome
@@ -572,7 +572,7 @@ class ShiroApi {
             return res
         }
 
-        var currentToken: Token? = null
+        private var currentToken: Token? = null
         var currentHeaders: MutableMap<String, String>? = null
         var onHomeFetched = Event<ShiroHomePage?>()
         var onHomeError = Event<Boolean>() // TRUE IF FULL RELOAD OF TOKEN, FALSE IF JUST HOME

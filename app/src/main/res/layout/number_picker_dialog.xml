@@ -46,7 +46,7 @@
             android:layout_margin="20dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Set progress"
+            android:text="@string/number_picker_set_progress"
             android:textColor="@color/textColor"
             android:id="@+id/episode_progress_btt"
     >

@@ -28,7 +28,8 @@
                             android:layout_width="30dp"
                             android:layout_height="30dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/arrow_back">
+                            android:src="@drawable/arrow_back"
+                            android:contentDescription="@string/go_back">
                     </ImageView>
                     <ImageView
                             android:id="@+id/download_go_back"
@@ -37,7 +38,9 @@
                             android:layout_gravity="center"
                             android:focusable="true"
                             android:clickable="true"
-                            android:background="@drawable/video_tap_button">
+                            android:background="@drawable/video_tap_button"
+                            android:contentDescription="@string/go_back"
+                    >
                     </ImageView>
                 </FrameLayout>
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content"

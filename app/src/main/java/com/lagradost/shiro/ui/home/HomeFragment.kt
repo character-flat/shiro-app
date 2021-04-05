@@ -34,8 +34,8 @@ import kotlinx.android.synthetic.main.home_card_schedule.view.*
 import kotlinx.android.synthetic.main.home_recently_seen.view.*
 import kotlin.concurrent.thread
 
-const val MAXIMUM_FADE = 0.3f
-const val FADE_SCROLL_DISTANCE = 700f
+//const val MAXIMUM_FADE = 0.3f
+//const val FADE_SCROLL_DISTANCE = 700f
 
 class HomeFragment : Fragment() {
 
@@ -87,8 +87,7 @@ class HomeFragment : Fragment() {
                 val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
                     CardAdapter(
                         it,
-                        ArrayList<ShiroApi.AnimePageData?>(),
-                        scrollView,
+                        ArrayList(),
                     )
                 }
                 val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
@@ -123,8 +122,7 @@ class HomeFragment : Fragment() {
                 val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
                     CardContinueAdapter(
                         it,
-                        listOf<LastEpisodeInfo?>(),
-                        scrollView,
+                        listOf(),
                     )
                 }
 
@@ -140,8 +138,7 @@ class HomeFragment : Fragment() {
                 val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
                     CardBookmarkAdapter(
                         it,
-                        listOf<BookmarkedTitle?>(),
-                        scrollView,
+                        listOf(),
                     )
                 }
 

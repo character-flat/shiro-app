@@ -59,7 +59,7 @@ class DownloadFragment : Fragment() {
                         if (childMetadataKeys.containsKey(child.slug)) {
                             childMetadataKeys[child.slug]?.add(k)
                         } else {
-                            childMetadataKeys[child.slug] = mutableListOf<String>(k)
+                            childMetadataKeys[child.slug] = mutableListOf(k)
                         }
 
                         val id = child.slug
@@ -86,7 +86,7 @@ class DownloadFragment : Fragment() {
             for (k in keys) {
                 val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(k)
                 if (parent != null) {
-                    println("KEY::: " + k)
+                    println("KEY::: $k")
                     if (epData.containsKey(parent.slug)) {
                         val cardView = inflator.inflate(R.layout.download_card, null)
 
@@ -138,7 +138,7 @@ class DownloadFragment : Fragment() {
         super.onCreate(savedInstanceState)
         val path = requireActivity().filesDir.toString() + "/Download/"
         File(path).walk().forEach {
-            println("PATH: " + it)
+            println("PATH: $it")
         }
     }
 

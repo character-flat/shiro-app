@@ -11,14 +11,14 @@
             android:id="@+id/status_currently_watching"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Watching"
+            android:text="@string/status_picker_watching"
             style="@style/DialogButton"
     />
     <Button
             android:id="@+id/status_completed"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Completed"
+            android:text="@string/status_picker_completed"
             style="@style/DialogButton"
     >
     </Button>
@@ -26,28 +26,28 @@
             android:id="@+id/status_paused"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Paused"
+            android:text="@string/status_picker_paused"
             style="@style/DialogButton"
     />
     <Button
             android:id="@+id/status_dropped"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Dropped"
+            android:text="@string/status_picker_dropped"
             style="@style/DialogButton"
     />
     <Button
             android:id="@+id/status_plan_to_watch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Planning to watch"
+            android:text="@string/status_picker_planning_to_watch"
             style="@style/DialogButton"
     />
     <Button
             android:id="@+id/status_rewatching"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Rewatching"
+            android:text="@string/status_picker_rewatching"
             style="@style/DialogButton"
     />
     <Button
@@ -55,7 +55,7 @@
             android:id="@+id/status_none"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="None"
+            android:text="@string/status_picker_none"
             style="@style/DialogButton"
     />
 </LinearLayout>

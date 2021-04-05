@@ -40,7 +40,7 @@
                 android:scaleX="0.5"
                 android:scaleY="0.5"
                 android:src="@drawable/nexflix_play_btt"
-        >
+                android:contentDescription="@string/continue_watching_play_episode_button">
         </ImageView>
         <RelativeLayout
                 android:layout_width="127dp"
@@ -85,7 +85,7 @@
                 android:paddingTop="5dp"
                 android:src="@drawable/ic_outline_info_24"
                 android:layout_gravity="top|start"
-                android:contentDescription="Info"/>
+                android:contentDescription="@string/continue_watching_info_button"/>
 
         <ImageView
                 android:background="?android:attr/selectableItemBackgroundBorderless"
@@ -98,7 +98,7 @@
                 android:paddingTop="5dp"
                 android:src="@drawable/ic_baseline_clear_24"
                 android:layout_gravity="end|top"
-                android:contentDescription="Remove"
+                android:contentDescription="@string/continue_watching_remove_button"
         />
     </androidx.cardview.widget.CardView>
 </LinearLayout>

@@ -19,7 +19,7 @@
             android:layout_height="match_parent"
             tools:layout="@layout/fragment_search"/>
 
-    --<fragment
+    <fragment
             android:id="@+id/navigation_downloads"
             android:layout_height="match_parent"
             android:name="com.lagradost.shiro.ui.downloads.DownloadFragment"

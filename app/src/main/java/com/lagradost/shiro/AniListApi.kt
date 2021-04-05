@@ -17,10 +17,10 @@ const val ANILIST_ACCOUNT_ID = "0" // MIGHT WANT TO BE USED IF YOU WANT MULTIPLE
 
 class AniListApi {
     companion object {
-        val aniListStatusString = arrayOf("CURRENT", "COMPLETED", "PAUSED", "DROPPED", "PLANNING", "REPEATING")
+        private val aniListStatusString = arrayOf("CURRENT", "COMPLETED", "PAUSED", "DROPPED", "PLANNING", "REPEATING")
 
-        val mapper = JsonMapper.builder().addModule(KotlinModule())
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
+        private val mapper = JsonMapper.builder().addModule(KotlinModule())
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()!!
 
 
         // Changing names of these will show up in UI
@@ -34,7 +34,7 @@ class AniListApi {
             None(-1)
         }
 
-        fun fromIntToAnimeStatus(inp: Int): AniListStatusType {//= AniListStatusType.values().first { it.value == inp }
+        private fun fromIntToAnimeStatus(inp: Int): AniListStatusType {//= AniListStatusType.values().first { it.value == inp }
             return when (inp) {
                 -1 -> AniListStatusType.None
                 0 -> AniListStatusType.Watching
@@ -48,8 +48,8 @@ class AniListApi {
         }
 
         fun authenticate() {
-            val request = "https://anilist.co/api/v2/oauth/authorize?client_id=$ANILIST_CLIENT_ID&response_type=token";
-            MainActivity.openBrowser(request);
+            val request = "https://anilist.co/api/v2/oauth/authorize?client_id=$ANILIST_CLIENT_ID&response_type=token"
+            MainActivity.openBrowser(request)
         }
 
         fun initGetUser() {
@@ -62,10 +62,10 @@ class AniListApi {
         fun authenticateLogin(data: String) {
             try {
                 val sanitizer =
-                    MainActivity.splitQuery(URL(data.replace("fastaniapp", "https").replace("/#", "?")))!! // FIX ERROR
+                    MainActivity.splitQuery(URL(data.replace("fastaniapp", "https").replace("/#", "?"))) // FIX ERROR
                 val token = sanitizer["access_token"]!!
                 val expiresIn = sanitizer["expires_in"]!!
-                println("DATA: " + token + "|" + expiresIn)
+                println("DATA: $token|$expiresIn")
 
                 val endTime = MainActivity.unixTime() + expiresIn.toLong()
 
@@ -81,20 +81,20 @@ class AniListApi {
             }
         }
 
-        fun checkToken(): Boolean {
+        private fun checkToken(): Boolean {
             if (MainActivity.unixTime() > DataStore.getKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, 0L)!!) {
                 activity!!.runOnUiThread {
                     val alertDialog: AlertDialog? = activity?.let {
                         val builder = AlertDialog.Builder(it)
                         builder.apply {
-                            setPositiveButton("Login",
-                                DialogInterface.OnClickListener { dialog, id ->
-                                    authenticate()
-                                })
-                            setNegativeButton("Cancel",
-                                DialogInterface.OnClickListener { dialog, id ->
-                                    // User cancelled the dialog
-                                })
+                            setPositiveButton("Login"
+                            ) { dialog, id ->
+                                authenticate()
+                            }
+                            setNegativeButton("Cancel"
+                            ) { dialog, id ->
+                                // User cancelled the dialog
+                            }
                         }
                         // Set other dialog properties
                         builder.setTitle("AniList token has expired")
@@ -150,7 +150,7 @@ class AniListApi {
                 }
             }"""
             try {
-                println("ID::::: " + id)
+                println("ID::::: $id")
                 val data = postApi("https://graphql.anilist.co", q)
                 var d: GetDataRoot? = null
                 try {
@@ -221,11 +221,11 @@ class AniListApi {
                 }"""
 
             val data = postApi("https://graphql.anilist.co", q)
-            println("POST:" + data)
+            println("POST:$data")
             return data != ""
         }
 
-        fun getUser(setSettings: Boolean = true): AniListUser? {
+        private fun getUser(setSettings: Boolean = true): AniListUser? {
             val q: String = """
 				{
   					Viewer {
@@ -246,7 +246,7 @@ class AniListApi {
             try {
                 val data = postApi("https://graphql.anilist.co", q)
                 if (data == "") return null
-                println("RESULT: " + data)
+                println("RESULT: $data")
                 val userData = mapper.readValue<AniListRoot>(data)
                 val u = userData.data.Viewer
                 val user = AniListUser(
@@ -268,7 +268,7 @@ class AniListApi {
             }
         }
 
-        fun getSeason(id: Int): SeasonResponse? {
+        private fun getSeason(id: Int): SeasonResponse? {
             val q: String = """
                query (${'$'}id: Int = $id) {
                    Media (id: ${'$'}id, type: ANIME) {

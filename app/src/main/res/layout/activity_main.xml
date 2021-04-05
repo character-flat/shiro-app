@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <FrameLayout
-        android:id="@+id/videoRoot"
+        xmlns:tools="http://schemas.android.com/tools" android:id="@+id/videoRoot"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -10,7 +10,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/homeRoot"
-    >
+            tools:ignore="UselessParent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/container"
@@ -41,7 +41,7 @@
                     app:layout_constraintBottom_toTopOf="@id/cast_mini_controller_holder"
                     app:layout_constraintTop_toTopOf="parent"
                     app:navGraph="@navigation/mobile_navigation"
-            />
+                    tools:ignore="FragmentTagUsage"/>
             <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -54,7 +54,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:visibility="gone"
-                        class="com.google.android.gms.cast.framework.media.widget.MiniControllerFragment">
+                        class="com.google.android.gms.cast.framework.media.widget.MiniControllerFragment"
+                        tools:ignore="FragmentTagUsage">
 
                 </fragment>
             </LinearLayout>

@@ -8,7 +8,6 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.provider.Settings
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -21,7 +20,6 @@ import com.lagradost.shiro.ShiroApi.Companion.getVideoLink
 import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import com.lagradost.shiro.MainActivity.Companion.isDonor
-import com.lagradost.shiro.MainActivity.Companion.md5
 import com.lagradost.shiro.ShiroApi.Companion.USER_AGENT
 import kotlin.concurrent.thread
 import kotlin.math.pow
@@ -30,11 +28,13 @@ import java.lang.Exception
 import java.net.URL
 import java.net.URLConnection
 import java.io.*
+import java.util.*
+import kotlin.collections.ArrayList
 
 const val UPDATE_TIME = 1000
 const val CHANNEL_ID = "fastani.general"
 const val CHANNEL_NAME = "Downloads"
-const val CHANNEL_DESCRIPT = "The download notification channel for the fastani app"
+const val CHANNEL_DESCRIPTION = "The download notification channel for the fastani app"
 
 // USED TO STOP, CANCEL AND RESUME FROM ACTION IN NOTIFICATION
 class DownloadService : IntentService("DownloadService") {
@@ -61,14 +61,14 @@ class DownloadService : IntentService("DownloadService") {
 object DownloadManager {
     private var localContext: Context? = null
     val downloadStatus = hashMapOf<Int, DownloadStatusType>()
-    val downloadMustUpdateStatus = hashMapOf<Int, Boolean>()
+    private val downloadMustUpdateStatus = hashMapOf<Int, Boolean>()
 
     // THIS IS GLUE TO MAKE IT INVOKE WITH ON PARAMETER
     val downloadEvent = Event<DownloadEventAndChild>()
     val downloadPauseEvent = Event<Int>()
     val downloadDeleteEvent = Event<Int>()
     val downloadStartEvent = Event<String>()
-    val txt = "Not authorized."
+    private const val txt = "Not authorized."
     fun init(_context: Context) {
         localContext = _context
         createNotificationChannel()
@@ -79,7 +79,7 @@ object DownloadManager {
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = CHANNEL_NAME //getString(R.string.channel_name)
-            val descriptionText = CHANNEL_DESCRIPT//getString(R.string.channel_description)
+            val descriptionText = CHANNEL_DESCRIPTION//getString(R.string.channel_description)
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
@@ -165,7 +165,7 @@ object DownloadManager {
         }
     }
 
-    fun Double.round(decimals: Int): Double {
+    private fun Double.round(decimals: Int): Double {
         var multiplier = 1.0
         repeat(decimals) { multiplier *= 10 }
         return round(this * multiplier) / multiplier
@@ -175,9 +175,9 @@ object DownloadManager {
         return (bytes / 1024.0.pow(steps)).round(digits)
     }
 
-    val cachedBitmaps = hashMapOf<String, Bitmap>()
+    private val cachedBitmaps = hashMapOf<String, Bitmap>()
 
-    fun getImageBitmapFromUrl(url: String): Bitmap? {
+    private fun getImageBitmapFromUrl(url: String): Bitmap? {
         if (cachedBitmaps.containsKey(url)) {
             return cachedBitmaps[url]
         }
@@ -192,21 +192,21 @@ object DownloadManager {
         return null
     }
 
-    fun censorFilename(_name: String, toLower: Boolean = false): String {
+    private fun censorFilename(_name: String, toLower: Boolean = false): String {
         val rex = Regex.fromLiteral("[^A-Za-z0-9\\.\\-\\: ]")
         var name = _name
         rex.replace(name, "")//Regex.Replace(name, @"[^A-Za-z0-9\.]+", String.Empty)
         name.replace(" ", "")
         if (toLower) {
-            name = name.toLowerCase()
+            name = name.toLowerCase(Locale.ROOT)
         }
         return name
     }
 
-    fun downloadPoster(path: String, url: String) {
+    private fun downloadPoster(path: String, url: String) {
         thread {
             try {
-                val rFile: File = File(path)
+                val rFile = File(path)
                 if (rFile.exists()) {
                     return@thread
                 }
@@ -231,7 +231,7 @@ object DownloadManager {
                         " ",
                         "%20"
                     )
-                println("RRLL: " + rUrl)
+                println("RRLL: $rUrl")
                 val _url = URL(rUrl)
                 val connection: URLConnection = _url.openConnection()
                 for (k in ShiroApi.currentHeaders?.keys!!) {
@@ -241,8 +241,8 @@ object DownloadManager {
                 val input: InputStream = BufferedInputStream(connection.inputStream)
                 val output: OutputStream = FileOutputStream(rFile, true)
 
-                val buffer: ByteArray = ByteArray(1024)
-                var count = 0
+                val buffer = ByteArray(1024)
+                var count: Int
 
                 while (true) {
                     try {
@@ -327,7 +327,7 @@ object DownloadManager {
 
 
                 // =================== MAKE DIRS ===================
-                val rFile: File = File(path)
+                val rFile = File(path)
                 try {
                     rFile.parentFile.mkdirs()
                 } catch (_ex: Exception) {
@@ -368,7 +368,7 @@ object DownloadManager {
                 // =================== CONNECTION ===================
                 connection.setRequestProperty("Accept-Encoding", "identity")
                 if (referer != "") {
-                    println("REFERER: " + referer)
+                    println("REFERER: $referer")
                     connection.setRequestProperty("Referer", referer)
                     connection.setRequestProperty("User-Agent", USER_AGENT)
                 }
@@ -377,7 +377,7 @@ object DownloadManager {
                 try {
                     connection.connect()
                     clen = connection.contentLength
-                    println("CONTENTN LENGTH: " + clen)
+                    println("CONTENTNT LENGTH: $clen")
                 } catch (_ex: Exception) {
                     println("CONNECT:::$_ex")
                     _ex.printStackTrace()
@@ -398,8 +398,8 @@ object DownloadManager {
                 val input: InputStream = BufferedInputStream(connection.inputStream)
                 val output: OutputStream = FileOutputStream(rFile, true)
                 var bytesPerSec = 0L
-                val buffer: ByteArray = ByteArray(1024)
-                var count = 0
+                val buffer = ByteArray(1024)
+                var count: Int
                 var lastUpdate = System.currentTimeMillis()
 
                 // =================== SET KEYS ===================
@@ -548,8 +548,7 @@ object DownloadManager {
 
         val progressPro = minOf(maxOf((progress * 100 / maxOf(total, 1)).toInt(), 0), 100)
 
-        val ep =
-            info.animeData.episodes?.get(info.episodeIndex)//.card.cdnData.seasons[info.seasonIndex].episodes[info.episodeIndex]
+        //val ep = info.animeData.episodes?.get(info.episodeIndex)//.card.cdnData.seasons[info.seasonIndex].episodes[info.episodeIndex]
         val id = (info.animeData.slug + "E${info.episodeIndex}").hashCode()
 
         var title = info.animeData.name
@@ -616,17 +615,17 @@ object DownloadManager {
             }
         }
         if (body.contains("\n") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            println("BIG TEXT: " + body)
+            println("BIG TEXT: $body")
             val b = NotificationCompat.BigTextStyle()
             b.bigText(body)
             builder.setStyle(b)
         } else {
-            println("SMALL TEXT: " + body)
+            println("SMALL TEXT: $body")
             builder.setContentText(body)
         }
 
         if ((type == DownloadType.IsDownloading || type == DownloadType.IsPaused) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val actionTypes: MutableList<DownloadActionType> = ArrayList<DownloadActionType>()
+            val actionTypes: MutableList<DownloadActionType> = ArrayList()
             // INIT
             if (type == DownloadType.IsDownloading) {
                 actionTypes.add(DownloadActionType.Pause)
@@ -693,7 +692,7 @@ object DownloadManager {
                         "/Download/apk/update.apk"
 
                 // =================== MAKE DIRS ===================
-                val rFile: File = File(path)
+                val rFile = File(path)
                 try {
                     rFile.parentFile.mkdirs()
                 } catch (_ex: Exception) {
@@ -746,12 +745,12 @@ object DownloadManager {
                 }
 
                 // =================== SETUP VARIABLES ===================
-                val bytesTotal: Long = (clen + bytesRead.toInt()).toLong()
+                //val bytesTotal: Long = (clen + bytesRead.toInt()).toLong()
                 val input: InputStream = BufferedInputStream(connection.inputStream)
                 val output: OutputStream = FileOutputStream(rFile, true)
                 var bytesPerSec = 0L
-                val buffer: ByteArray = ByteArray(1024)
-                var count = 0
+                val buffer = ByteArray(1024)
+                var count: Int
                 var lastUpdate = System.currentTimeMillis()
 
                 while (true) {
@@ -827,10 +826,10 @@ object DownloadManager {
                     with(NotificationManagerCompat.from(localContext!!)) {
                         cancel(-1)
                     }
-                } else {
+                } /*else {
                     //showNot(bytesRead, bytesTotal, 0, DownloadType.IsDone, info)
                     //downloadEvent.invoke(DownloadEvent(-1, bytesRead))
-                }
+                }*/
 
                 output.flush()
                 output.close()
@@ -870,9 +869,9 @@ object DownloadManager {
                 if (downloadStatus.containsKey(-1)) {
                     downloadStatus.remove(-1)
                 }
-                if (fullResume) {
+                /*if (fullResume) {
                     //downloadUpdate(url)
-                }
+                }*/
             }
         }
 

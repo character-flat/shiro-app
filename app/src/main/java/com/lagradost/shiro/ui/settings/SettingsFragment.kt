@@ -37,27 +37,29 @@ class SettingsFragment : PreferenceFragmentCompat() {
             val alertDialog: AlertDialog? = activity?.let {
                 val builder = AlertDialog.Builder(it)
                 builder.apply {
-                    setPositiveButton("OK",
-                        DialogInterface.OnClickListener { dialog, id ->
-                            val amount = removeKeys(VIEW_POS_KEY) + removeKeys(VIEWSTATE_KEY)
-                            removeKeys(VIEW_LST_KEY)
-                            removeKeys(VIEW_DUR_KEY)
-                            if (amount != 0) {
-                                Toast.makeText(
-                                    context,
-                                    "Cleared $amount item${if (amount == 1) "" else "s"}",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
-                            thread {
-                                ShiroApi.requestHome(true)
-                            }
-                            clearHistory.summary = "0 items"
-                        })
-                    setNegativeButton("Cancel",
-                        DialogInterface.OnClickListener { dialog, id ->
-                            // User cancelled the dialog
-                        })
+                    setPositiveButton(
+                        "OK"
+                    ) { dialog, id ->
+                        val amount = removeKeys(VIEW_POS_KEY) + removeKeys(VIEWSTATE_KEY)
+                        removeKeys(VIEW_LST_KEY)
+                        removeKeys(VIEW_DUR_KEY)
+                        if (amount != 0) {
+                            Toast.makeText(
+                                context,
+                                "Cleared $amount item${if (amount == 1) "" else "s"}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                        thread {
+                            ShiroApi.requestHome(true)
+                        }
+                        clearHistory.summary = "0 items"
+                    }
+                    setNegativeButton(
+                        "Cancel"
+                    ) { dialog, id ->
+                        // User cancelled the dialog
+                    }
                 }
                 // Set other dialog properties
                 builder.setTitle("Clear watch history")
@@ -117,17 +119,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 val alertDialog: AlertDialog? = activity?.let {
                     val builder = AlertDialog.Builder(it)
                     builder.apply {
-                        setPositiveButton("Logout",
-                            DialogInterface.OnClickListener { dialog, id ->
-                                DataStore.removeKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID)
-                                DataStore.removeKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID)
-                                DataStore.removeKey(ANILIST_USER_KEY, ANILIST_ACCOUNT_ID)
-                                anilistButton.summary = if (isLoggedIntoMal()) "Logged in" else "Not logged in"
-                            })
-                        setNegativeButton("Cancel",
-                            DialogInterface.OnClickListener { dialog, id ->
-                                // User cancelled the dialog
-                            })
+                        setPositiveButton("Logout"
+                        ) { dialog, id ->
+                            DataStore.removeKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID)
+                            DataStore.removeKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID)
+                            DataStore.removeKey(ANILIST_USER_KEY, ANILIST_ACCOUNT_ID)
+                            anilistButton.summary = if (isLoggedIntoMal()) "Logged in" else "Not logged in"
+                        }
+                        setNegativeButton("Cancel"
+                        ) { dialog, id ->
+                            // User cancelled the dialog
+                        }
                     }
                     // Set other dialog properties
                     builder.setTitle("Logout from AniList")
@@ -153,18 +155,18 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 val alertDialog: AlertDialog? = activity?.let {
                     val builder = AlertDialog.Builder(it)
                     builder.apply {
-                        setPositiveButton("Logout",
-                            DialogInterface.OnClickListener { dialog, id ->
-                                DataStore.removeKey(MAL_TOKEN_KEY, MAL_ACCOUNT_ID)
-                                DataStore.removeKey(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID)
-                                DataStore.removeKey(MAL_USER_KEY, MAL_ACCOUNT_ID)
-                                DataStore.removeKey(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID)
-                                malButton.summary = if (isLoggedIntoMal()) "Logged in" else "Not logged in"
-                            })
-                        setNegativeButton("Cancel",
-                            DialogInterface.OnClickListener { dialog, id ->
-                                // User cancelled the dialog
-                            })
+                        setPositiveButton("Logout"
+                        ) { dialog, id ->
+                            DataStore.removeKey(MAL_TOKEN_KEY, MAL_ACCOUNT_ID)
+                            DataStore.removeKey(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID)
+                            DataStore.removeKey(MAL_USER_KEY, MAL_ACCOUNT_ID)
+                            DataStore.removeKey(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID)
+                            malButton.summary = if (isLoggedIntoMal()) "Logged in" else "Not logged in"
+                        }
+                        setNegativeButton("Cancel"
+                        ) { dialog, id ->
+                            // User cancelled the dialog
+                        }
                     }
                     // Set other dialog properties
                     builder.setTitle("Logout from MAL")

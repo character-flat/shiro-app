@@ -1,5 +1,6 @@
 package com.lagradost.shiro.ui.result
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
@@ -25,7 +26,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
-import com.google.android.gms.cast.framework.CastStateListener
 import com.lagradost.shiro.*
 import com.lagradost.shiro.DataStore.mapper
 import com.lagradost.shiro.ShiroApi.Companion.getAnimePage
@@ -47,13 +47,12 @@ const val DESCRIPTION_LENGTH1 = 200
 
 class ResultFragment : Fragment() {
     var data: ShiroApi.AnimePageData? = null
-    var dataOther: ShiroApi.AnimePageData? = null
-    var isDefaultData = true
+    private var dataOther: ShiroApi.AnimePageData? = null
+    private var isDefaultData = true
 
     private lateinit var resultViewModel: ResultViewModel
-    private var isMovie: Boolean = false
-    var isBookmarked = false
-    var isSubbed: Boolean? = null
+    private var isBookmarked = false
+    private var isSubbed: Boolean? = null
 
 
     companion object {
@@ -70,10 +69,10 @@ class ResultFragment : Fragment() {
                 title = "Episode $epNum"
             }
             if (!isMovie) {
-                if (formatBefore) {
-                    title = "E$epNum $title" //•
+                title = if (formatBefore) {
+                    "E$epNum $title" //•
                 } else {
-                    title = "$epNum. $title"
+                    "$epNum. $title"
                 }
             }
             return title
@@ -117,8 +116,8 @@ class ResultFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_results_new, container, false)
     }
 
-    var onLoaded = Event<Boolean>()
-    var onLoadedOther = Event<Boolean>()
+    private var onLoaded = Event<Boolean>()
+    private var onLoadedOther = Event<Boolean>()
 
     private fun onLoadOtherEvent(isSucc: Boolean) {
         activity?.runOnUiThread {
@@ -201,7 +200,7 @@ class ResultFragment : Fragment() {
                     title_genres.text =
                         Html.fromHtml(
                             "<font color=#${textColor}>Status:</font><font color=#${textColorGrey}> ${
-                                data.genres?.joinToString(
+                                data.genres.joinToString(
                                     ", "
                                 )
                             }</font>"/*,
@@ -351,7 +350,7 @@ class ResultFragment : Fragment() {
         val data = (if (isDefaultData) data else dataOther) ?: return
         /*Saving the new bookmark in the database*/
         if (_isBookmarked) {
-            DataStore.setKey<BookmarkedTitle>(
+            DataStore.setKey(
                 BOOKMARK_KEY,
                 data.slug,
                 BookmarkedTitle(
@@ -418,16 +417,17 @@ class ResultFragment : Fragment() {
         isInResults = false
     }
 
-    fun onLeftVideoPlayer(event: Boolean) {
+    private fun onLeftVideoPlayer(event: Boolean) {
         loadSeason()
     }
 
-    fun onDownloadStarted(id: String) {
+    private fun onDownloadStarted(id: String) {
         requireActivity().runOnUiThread {
             (title_season_cards.adapter as EpisodeAdapter).notifyDataSetChanged()
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         isInResults = true
@@ -438,17 +438,17 @@ class ResultFragment : Fragment() {
         if (isCastApiAvailable()) {
             val mMediaRouteButton = view.findViewById<MediaRouteButton>(R.id.media_route_button)
 
-            CastButtonFactory.setUpMediaRouteButton(activity, mMediaRouteButton);
+            CastButtonFactory.setUpMediaRouteButton(activity, mMediaRouteButton)
             val castContext = CastContext.getSharedInstance(requireActivity().applicationContext)
 
-            if (castContext.castState != CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.VISIBLE
-            castContext.addCastStateListener(CastStateListener { state ->
+            if (castContext.castState != CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = VISIBLE
+            castContext.addCastStateListener { state ->
                 if (media_route_button != null) {
-                    if (state == CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.GONE else {
-                        if (media_route_button.visibility == GONE) media_route_button.visibility = View.VISIBLE
+                    if (state == CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = GONE else {
+                        if (media_route_button.visibility == GONE) media_route_button.visibility = VISIBLE
                     }
                 }
-            })
+            }
         }
         //isViewState = false
         PlayerFragment.onLeftPlayer += ::onLeftVideoPlayer

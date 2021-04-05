@@ -30,13 +30,13 @@ data class GrdLayoutManager(val context: Context, val spanCoun: Int) : GridLayou
     }
 
     private fun getNextViewPos(fromPos: Int, direction: Int): Int {
-        val offset = calcOffsetToNextView(direction);
+        val offset = calcOffsetToNextView(direction)
 
         if (hitBorder(fromPos, offset)) {
-            return fromPos;
+            return fromPos
         }
 
-        return fromPos + offset;
+        return fromPos + offset
     }
 
     private fun calcOffsetToNextView(direction: Int): Int {
@@ -83,12 +83,12 @@ data class GrdLayoutManager(val context: Context, val spanCoun: Int) : GridLayou
         val spanCount = spanCount
 
         return if (abs(offset) == 1) {
-            val spanIndex = from % spanCount;
-            val newSpanIndex = spanIndex +offset;
-            newSpanIndex < 0 || newSpanIndex >= spanCount;
+            val spanIndex = from % spanCount
+            val newSpanIndex = spanIndex +offset
+            newSpanIndex < 0 || newSpanIndex >= spanCount
         } else {
-            val newPos = from +offset;
-            newPos in spanCount..-1;
+            val newPos = from +offset
+            newPos in spanCount..-1
         }
     }
 }

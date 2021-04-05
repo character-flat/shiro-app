@@ -33,7 +33,6 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
-import android.preference.PreferenceManager
 import androidx.transition.Fade
 import androidx.transition.Transition
 import android.view.*
@@ -43,6 +42,7 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AlertDialog
+import androidx.preference.PreferenceManager
 import androidx.transition.TransitionManager
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -61,7 +61,6 @@ import java.io.File
 import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
 import kotlin.math.*
-
 
 const val STATE_RESUME_WINDOW = "resumeWindow"
 const val STATE_RESUME_POSITION = "resumePosition"
@@ -95,7 +94,7 @@ enum class PlayerEventType(val value: Int) {
     PlayPauseToggle(6)
 }
 
-class PlayerFragment() : Fragment() {
+class PlayerFragment : Fragment() {
     var data: PlayerData? = null
     private val mapper = JsonMapper.builder().addModule(KotlinModule())
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
@@ -154,7 +153,7 @@ class PlayerFragment() : Fragment() {
     private var preventHorizontalSwipe = false
     private var hasPassedVerticalSwipeThreshold = false
 
-    private var playbackSpeed = DataStore.getKey<Float>(PLAYBACK_SPEED_KEY, 1f)
+    private var playbackSpeed = DataStore.getKey(PLAYBACK_SPEED_KEY, 1f)
     private val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
     private val swipeEnabled = settingsManager.getBoolean("swipe_enabled", true)
     private val swipeVerticalEnabled = settingsManager.getBoolean("swipe_vertical_enabled", true)
@@ -169,14 +168,14 @@ class PlayerFragment() : Fragment() {
         AspectRatioFrameLayout.RESIZE_MODE_FILL,
         AspectRatioFrameLayout.RESIZE_MODE_ZOOM,
     )
-    private var resizeMode = DataStore.getKey<Int>(RESIZE_MODE_KEY, 0)
+    private var resizeMode = DataStore.getKey(RESIZE_MODE_KEY, 0)
 
     // width as it's rotated
     private var width = Resources.getSystem().displayMetrics.heightPixels
     private var height = Resources.getSystem().displayMetrics.widthPixels
     private var prevDiffX = 0.0
 
-    abstract class DoubleClickListener(ctx: PlayerFragment) : OnTouchListener {
+    abstract class DoubleClickListener(private val ctx: PlayerFragment) : OnTouchListener {
         // The time in which the second tap should be done in order to qualify as
         // a double click
 
@@ -185,7 +184,6 @@ class PlayerFragment() : Fragment() {
         private var clicksLeft = 0
         private var clicksRight = 0
         private var fingerLeftScreen = true
-        private val ctx = ctx
         abstract fun onDoubleClickRight(clicks: Int)
         abstract fun onDoubleClickLeft(clicks: Int)
         abstract fun onSingleClick()
@@ -278,7 +276,7 @@ class PlayerFragment() : Fragment() {
         return getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { getVideoLink(it) }
     }
 
-    fun savePos() {
+    private fun savePos() {
         if (this::exoPlayer.isInitialized) {
             if (((data?.slug != null
                         && data?.seasonIndex != null
@@ -299,7 +297,7 @@ class PlayerFragment() : Fragment() {
         MainActivity.showSystemUI()
         MainActivity.onPlayerEvent -= ::handlePlayerEvent
         MainActivity.onAudioFocusEvent -= ::handleAudioFocusEvent
-        requireActivity().contentResolver.unregisterContentObserver(volumeObserver);
+        requireActivity().contentResolver.unregisterContentObserver(volumeObserver)
         super.onDestroy()
         //MainActivity.showSystemUI()
     }
@@ -315,12 +313,16 @@ class PlayerFragment() : Fragment() {
         exo_play.isClickable = isClick
         exo_pause.isClickable = isClick
         exo_ffwd.isClickable = isClick
+        exo_rew.isClickable = isClick
         exo_prev.isClickable = isClick
         video_go_back.isClickable = isClick
         exo_progress.isClickable = isClick
         next_episode_btt.isClickable = isClick
         playback_speed_btt.isClickable = isClick
         skip_op.isClickable = isClick
+
+        // Clickable doesn't seem to work on com.google.android.exoplayer2.ui.DefaultTimeBar
+        exo_progress.visibility = if (isLocked) INVISIBLE else VISIBLE
 
         val fadeTo = if (!isLocked) 1f else 0f
         val fadeAnimation = AlphaAnimation(1f - fadeTo, fadeTo)
@@ -329,7 +331,6 @@ class PlayerFragment() : Fragment() {
         fadeAnimation.fillAfter = true
 
         shadow_overlay.startAnimation(fadeAnimation)
-
     }
 
     private var receiver: BroadcastReceiver? = null
@@ -801,7 +802,7 @@ class PlayerFragment() : Fragment() {
             var currentUrl = getCurrentUrl()
             if (currentUrl == null) {
                 requireActivity().runOnUiThread {
-                    Toast.makeText(activity, "Error getting link", Toast.LENGTH_LONG).show()
+                    Toast.makeText(activity, "Error getting link", LENGTH_LONG).show()
                     //MainActivity.popCurrentPage()
                 }
                 currentUrl = ""
@@ -1012,8 +1013,7 @@ class PlayerFragment() : Fragment() {
         savedInstanceState: Bundle?,
     ): View? {
         // Inflate the layout for this fragment
-        val playerView = inflater.inflate(R.layout.player, container, false)
-        return playerView
+        return inflater.inflate(R.layout.player, container, false)
 
     }
 }
