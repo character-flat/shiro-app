@@ -184,6 +184,12 @@
                 android:icon="@drawable/ic_baseline_warning_24"
         />
         <SwitchPreference
+                app:key="light_mode"
+                android:title="Light mode"
+                app:defaultValue="false"
+                android:icon="@drawable/ic_baseline_color_lens_24"
+        />
+        <SwitchPreference
                 app:key="auto_update"
                 android:title="Automatically check for updates"
                 app:defaultValue="true"

@@ -89,7 +89,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 glide.clearDiskCache()
             }
             val updateFile = File(activity!!.filesDir.toString() + "/Download/apk/update.apk")
-            if (updateFile.exists()){
+            if (updateFile.exists()) {
                 updateFile.delete()
             }
             Toast.makeText(context, "Cleared image cache", Toast.LENGTH_LONG).show()
@@ -259,6 +259,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
             return@setOnPreferenceClickListener true
         }
         coolMode?.setOnPreferenceChangeListener { preference, newValue ->
+            activity?.recreate()
+            return@setOnPreferenceChangeListener true
+        }
+        val lightMode = findPreference("light_mode") as SwitchPreference?
+        lightMode?.setOnPreferenceChangeListener { preference, newValue ->
             activity?.recreate()
             return@setOnPreferenceChangeListener true
         }

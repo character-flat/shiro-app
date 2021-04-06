@@ -717,9 +717,12 @@ class MainActivity : AppCompatActivity() {
                 WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
             )
         }
+        //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         if (settingsManager.getBoolean("cool_mode", false)) {
             theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
-            //theme.applyStyle(R.style.LightMode, true)
+        }
+        if (settingsManager.getBoolean("light_mode", false)) {
+            theme.applyStyle(R.style.LightMode, true)
         }
         changeStatusBarState(settingsManager.getBoolean("statusbar_hidden", true))
         //window.statusBarColor = R.color.transparent
@@ -802,6 +805,7 @@ class MainActivity : AppCompatActivity() {
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
         navController = findNavController(R.id.nav_host_fragment)
         navView.setupWithNavController(navController!!)
+        navView.itemBackground = ColorDrawable(activity!!.getColorFromAttr(R.attr.darkBar))
 
         /*navView.setOnKeyListener { v, keyCode, event ->
             println("$keyCode $event")

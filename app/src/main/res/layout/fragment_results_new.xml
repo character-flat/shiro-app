@@ -8,8 +8,6 @@
         android:id="@+id/results_root"
         android:background="?attr/background"
 >
-
-
     <LinearLayout android:layout_width="match_parent"
                   android:background="?attr/backgroundLight"
                   android:layout_height="match_parent">
