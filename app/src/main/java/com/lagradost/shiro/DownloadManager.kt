@@ -304,7 +304,7 @@ object DownloadManager {
 
                 val basePath =
                     if (useExternalStorage) Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                    else activity!!.filesDir
+                    else activity?.filesDir
 
                 // =================== DOWNLOAD POSTERS AND SETUP PATH ===================
                 val path = basePath.toString() +
@@ -319,7 +319,7 @@ object DownloadManager {
                 //downloadPoster(posterPath, getFullUrlCdn(info.animeData.image))
                 val mainPosterPath =
                     //android.os.Environment.getExternalStorageDirectory().path +
-                    activity!!.filesDir.toString() +
+                    activity?.filesDir.toString() +
                             "/Downloads/MainPosters/" +
                             censorFilename(info.animeData.name) + ".jpg"
 
@@ -688,7 +688,7 @@ object DownloadManager {
             try {
 
                 // =================== DOWNLOAD POSTERS AND SETUP PATH ===================
-                val path = activity!!.filesDir.toString() +
+                val path = activity?.filesDir.toString() +
                         "/Download/apk/update.apk"
 
                 // =================== MAKE DIRS ===================

@@ -11,6 +11,7 @@
         <item name="android:statusBarColor">?attr/darkBar</item>
         <item name="tabBackground">?attr/darkBar</item>
         <item name="android:textColor">?attr/textColor</item>
+        <item name="android:textColorHint">?attr/textColor</item>
         <item name="mediaRouteButtonTint">?attr/white</item>
         <item name="android:textColorSecondary">?attr/textColorGray</item>
         <item name="android:scrollbarThumbHorizontal">@color/transparent</item>
@@ -33,6 +34,7 @@
         <item name="android:windowAllowReturnTransitionOverlap">true</item>
         <item name="android:windowAllowEnterTransitionOverlap">true</item>
 
+        <!-- default theme -->
         <item name="darkBar">@color/darkBar</item>
         <item name="darkBarLight">@color/darkBarLight</item>
         <item name="darkBarTransparent">@color/darkBarTransparent</item>
@@ -42,6 +44,10 @@
         <item name="textColor">@color/textColor</item>
         <item name="textColorGray">@color/textColorGray</item>
         <item name="textColorGrayWhite">@color/textColorGrayWhite</item>
+        <!-- prefrencescreen switch color -->
+        <item name="android:colorForeground">?attr/white</item>
+        <item name="android:colorControlHighlight">?attr/white</item>
+
     </style>
 
     <style name="Widget.App.BottomNavigationView" parent="Widget.Design.BottomNavigationView">

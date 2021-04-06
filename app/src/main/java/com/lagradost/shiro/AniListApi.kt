@@ -83,7 +83,7 @@ class AniListApi {
 
         private fun checkToken(): Boolean {
             if (MainActivity.unixTime() > DataStore.getKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, 0L)!!) {
-                activity!!.runOnUiThread {
+                activity?.runOnUiThread {
                     val alertDialog: AlertDialog? = activity?.let {
                         val builder = AlertDialog.Builder(it)
                         builder.apply {

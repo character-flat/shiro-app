@@ -401,7 +401,7 @@ class ResultFragment : Fragment() {
     }
 
     private fun onDownloadStarted(id: String) {
-        requireActivity().runOnUiThread {
+        activity?.runOnUiThread {
             (title_season_cards.adapter as EpisodeAdapter).notifyDataSetChanged()
         }
     }

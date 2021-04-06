@@ -208,7 +208,7 @@ class HomeFragment : Fragment() {
             val random: ShiroApi.AnimePage? = randomPage ?: getRandomAnimePage()
             cachedHome?.random = random
             val randomData = random?.data
-            requireActivity().runOnUiThread {
+            activity?.runOnUiThread {
                 try {
                     if (randomData != null) {
                         // This can throw NPE as main_layout isn't guaranteed to be inflated

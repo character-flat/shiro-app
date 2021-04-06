@@ -297,7 +297,7 @@ class PlayerFragment : Fragment() {
         MainActivity.showSystemUI()
         MainActivity.onPlayerEvent -= ::handlePlayerEvent
         MainActivity.onAudioFocusEvent -= ::handleAudioFocusEvent
-        MainActivity.activity!!.contentResolver.unregisterContentObserver(volumeObserver)
+        MainActivity.activity?.contentResolver?.unregisterContentObserver(volumeObserver)
         super.onDestroy()
         //MainActivity.showSystemUI()
     }
@@ -354,13 +354,13 @@ class PlayerFragment : Fragment() {
             filter.addAction(
                 ACTION_MEDIA_CONTROL
             )
-            activity!!.registerReceiver(receiver, filter)
+            activity?.registerReceiver(receiver, filter)
             updatePIPModeActions()
         } else {
             // Restore the full-screen UI.
             player_holder.alpha = 1f
             receiver?.let {
-                activity!!.unregisterReceiver(it)
+                activity?.unregisterReceiver(it)
             }
             hideSystemUI()
             hideKeyboard()
@@ -403,7 +403,7 @@ class PlayerFragment : Fragment() {
         }
 
         actions.add(getRemoteAction(R.drawable.go_forward_30, "Go Forward", PlayerEventType.SeekForward))
-        activity!!.setPictureInPictureParams(PictureInPictureParams.Builder().setActions(actions).build())
+        activity?.setPictureInPictureParams(PictureInPictureParams.Builder().setActions(actions).build())
     }
 
     private fun onClickChange() {
@@ -467,7 +467,7 @@ class PlayerFragment : Fragment() {
         // No swiping on unloaded
         // https://exoplayer.dev/doc/reference/constant-values.html
         if (isLocked || exoPlayer.duration == -9223372036854775807L || (!swipeEnabled && !swipeVerticalEnabled)) return
-        val audioManager = MainActivity.activity!!.getSystemService(AUDIO_SERVICE) as AudioManager
+        val audioManager = MainActivity.activity?.getSystemService(AUDIO_SERVICE) as AudioManager
 
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -585,8 +585,8 @@ class PlayerFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
-        MainActivity.activity!!.contentResolver
-            .registerContentObserver(
+        MainActivity.activity?.contentResolver
+            ?.registerContentObserver(
                 android.provider.Settings.System.CONTENT_URI, true, volumeObserver
             )
 
@@ -801,14 +801,14 @@ class PlayerFragment : Fragment() {
         thread {
             var currentUrl = getCurrentUrl()
             if (currentUrl == null) {
-                requireActivity().runOnUiThread {
+                activity?.runOnUiThread {
                     Toast.makeText(activity, "Error getting link", LENGTH_LONG).show()
                     //MainActivity.popCurrentPage()
                 }
                 currentUrl = ""
             }
             try {
-                requireActivity().runOnUiThread {
+                activity?.runOnUiThread {
                     val isOnline =
                         currentUrl?.startsWith("https://") == true || currentUrl?.startsWith("http://") == true
 

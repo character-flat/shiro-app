@@ -154,7 +154,7 @@ class MainActivity : AppCompatActivity() {
 
         fun requestAudioFocus() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && focusRequest != null) {
-                val audioManager = activity!!.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                val audioManager = activity?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
                 audioManager.requestAudioFocus(focusRequest!!)
             } else {
                 val audioManager: AudioManager =
@@ -169,7 +169,7 @@ class MainActivity : AppCompatActivity() {
 
         fun changeStatusBarState(hide: Boolean) {
             statusHeight = if (hide) {
-                activity!!.window.setFlags(
+                activity?.window?.setFlags(
                     WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN
                 )
@@ -314,21 +314,25 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun checkWrite(): Boolean {
-            return (ContextCompat.checkSelfPermission(
-                activity!!,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) == PackageManager.PERMISSION_GRANTED)
+            return (activity?.let {
+                ContextCompat.checkSelfPermission(
+                    it,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+            } == PackageManager.PERMISSION_GRANTED)
         }
 
         fun requestRW() {
-            ActivityCompat.requestPermissions(
-                activity!!,
-                arrayOf(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE
-                ),
-                1337
-            )
+            activity?.let {
+                ActivityCompat.requestPermissions(
+                    it,
+                    arrayOf(
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE
+                    ),
+                    1337
+                )
+            }
         }
 
         fun fixCardTitle(title: String): String {
@@ -398,16 +402,18 @@ class MainActivity : AppCompatActivity() {
             // Enables regular immersive mode.
             // For "lean back" mode, remove SYSTEM_UI_FLAG_IMMERSIVE.
             // Or for "sticky immersive," replace it with SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            activity!!.window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    // Set the content to appear under the system bars so that the
-                    // content doesn't resize when the system bars hide and show.
-                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    // Hide the nav bar and status bar
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN
-                    )
+            if (activity != null) {
+                activity!!.window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        // Set the content to appear under the system bars so that the
+                        // content doesn't resize when the system bars hide and show.
+                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        // Hide the nav bar and status bar
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        )
+            }
         }
 
         fun String.md5(): String {
@@ -428,9 +434,12 @@ class MainActivity : AppCompatActivity() {
         // Shows the system bars by removing all the flags
 // except for the ones that make the content appear under the system bars.
         fun showSystemUI() {
-            activity!!.window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+            if (activity != null){
+                activity!!.window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+
+            }
         }
 
         fun loadPlayer(episodeIndex: Int, startAt: Long, card: ShiroApi.AnimePageData) {
