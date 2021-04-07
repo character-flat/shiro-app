@@ -18,35 +18,270 @@
 
     </ImageView>
 
-    <LinearLayout android:layout_width="match_parent"
-                  android:background="@android:color/transparent"
-                  android:layout_height="match_parent">
+    <FrameLayout android:layout_width="match_parent"
+                 android:layout_height="match_parent"
+    >
 
-        <androidx.cardview.widget.CardView
-                android:id="@+id/title_holder"
+        <ScrollView
+                android:layout_marginBottom="50dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:backgroundTint="@color/grayBackground"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp"
-                android:layout_marginBottom="-10dp"
         >
+            <FrameLayout android:layout_width="match_parent"
+                         android:layout_height="wrap_content"
+            >
+
+                <androidx.cardview.widget.CardView
+                        android:id="@+id/title_holder"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="?attr/background"
+                        app:cardCornerRadius="25dp"
+                        android:layout_marginTop="43dp"
+                        android:layout_marginStart="13dp"
+                        android:layout_marginEnd="13dp"
+                        android:layout_marginBottom="-23dp"
+                >
+                    <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                    >
+                        <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                        >
+
+                            <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_margin="15dp"
+                                    android:orientation="vertical"
+                            >
+
+                                <TextView
+                                        android:layout_marginLeft="130dp"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="start"
+                                        tools:text="The Promised Neverland"
+                                        android:id="@+id/title_name"
+                                        android:textColor="?attr/textColor"
+                                        android:textStyle="bold"
+                                        android:textSize="17sp"
+                                        android:layout_marginBottom="10dp"
+                                >
+                                </TextView>
+                                <TextView
+                                        android:layout_marginLeft="130dp"
+                                        android:id="@+id/title_status"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:textColor="?attr/textColorGrayWhite"
+                                        tools:text="Status: Finished"
+                                        android:textSize="12sp"
+                                        android:layout_marginBottom="10dp"
+                                >
+                                </TextView>
+                                <TextView
+                                        android:layout_marginLeft="130dp"
+                                        android:id="@+id/title_genres"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:textColor="?attr/textColorGrayWhite"
+                                        tools:text="Genres: Sci-Fi, Mystery, Horror"
+                                        android:textSize="12sp"
+                                        android:layout_marginBottom="10dp"
+                                >
+                                </TextView>
+                                <TextView
+                                        android:layout_marginLeft="130dp"
+                                        android:id="@+id/title_episodes"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:textColor="?attr/textColorGrayWhite"
+                                        tools:text="Episodes: 12"
+                                        android:textSize="12sp"
+                                        android:layout_marginBottom="20dp"
+                                >
+                                </TextView>
+                                <TextView
+                                        android:id="@+id/title_year"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:textColor="?attr/textColorGrayWhite"
+                                        tools:text="Year: 2020"
+                                        android:textSize="12sp"
+                                        android:layout_marginBottom="10dp"
+                                >
+                                </TextView>
+                                <TextView
+                                        android:id="@+id/title_day_of_week"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:textColor="?attr/textColorGrayWhite"
+                                        tools:text="Schedule: Tuesday"
+                                        android:textSize="12sp"
+                                >
+                                </TextView>
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                                android:id="@+id/description_holder"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                    android:layout_margin="10dp"
+                                    android:id="@+id/title_descript"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="?attr/textColor"
+                                    tools:text="The orphans at Grace Field House have only ever known peace. Their home is nice, their bellies stay full, and their caretaker, Mom, loves them very much. But their world turns upside down when the smartest children of the bunch—Emma, Ray, and Norman—learn what horror awaits them on adoption day. Now, their cultivated wit may be their only chance of survival. (Source: Funimation)"
+                            >
+
+                            </com.google.android.material.textview.MaterialTextView>
+                        </LinearLayout>
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="5dp"
+                                android:layout_marginBottom="5dp"
+                                android:id="@+id/episodes_text_holder"
+                        >
+                            <androidx.cardview.widget.CardView
+                                    android:backgroundTint="?attr/textColorGray"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintEnd_toStartOf="@+id/episodes_text"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    android:id="@+id/startLine"
+                                    android:layout_width="0dp"
+                                    android:layout_height="2dp"
+                                    android:layout_marginEnd="20dp"
+                                    android:layout_marginStart="20dp"
+                            >
+
+                            </androidx.cardview.widget.CardView>
+                            <TextView
+                                    android:textSize="17sp"
+                                    android:textColor="?attr/textColor"
+                                    app:layout_constraintStart_toEndOf="@id/startLine"
+                                    app:layout_constraintEnd_toStartOf="@id/endLine"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    android:id="@+id/episodes_text"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/episodes"
+                                    android:textStyle="bold"
+                            >
+
+                            </TextView>
+                            <androidx.cardview.widget.CardView
+                                    android:backgroundTint="?attr/textColorGray"
+                                    android:layout_marginEnd="20dp"
+                                    android:layout_marginStart="20dp"
+                                    app:layout_constraintEnd_toStartOf="@id/language_button"
+                                    app:layout_constraintStart_toEndOf="@id/episodes_text"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    android:id="@+id/endLine"
+                                    android:layout_width="0dp"
+                                    android:layout_height="2dp"
+                            >
+
+                            </androidx.cardview.widget.CardView>
+
+                            <ImageView
+                                    android:id="@+id/language_button"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintHorizontal_bias="1"
+                                    app:layout_constraintStart_toEndOf="@id/episodes_text"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    android:layout_marginEnd="20dp"
+                                    android:src="@drawable/ic_baseline_language_24"
+                                    android:visibility="gone"
+                                    tools:visibility="visible"
+                            >
+                            </ImageView>
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                        <com.lagradost.shiro.ui.AutofitRecyclerView
+                                android:clipToPadding="false"
+                                android:descendantFocusability="afterDescendants"
+                                android:paddingBottom="100dp"
+                                android:layout_marginEnd="10dp"
+                                android:layout_marginStart="10dp"
+                                android:layout_marginTop="10dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:id="@+id/title_season_cards"
+                                android:orientation="vertical"
+                                android:minHeight="250dp"
+                        >
+
+                        </com.lagradost.shiro.ui.AutofitRecyclerView>
+                    </LinearLayout>
+
+
+                </androidx.cardview.widget.CardView>
+                <androidx.cardview.widget.CardView
+                        android:layout_marginTop="15dp"
+                        android:layout_marginStart="28dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="10dp"
+                        app:cardBackgroundColor="?attr/darkBar"
+                >
+
+                    <!-- Width: 1280, Height 1802 -->
+                    <ImageView
+                            android:foreground="?attr/selectableItemBackgroundBorderless"
+                            android:layout_width="107dp"
+                            android:id="@+id/title_background"
+                            android:layout_height="150dp"
+                            android:scaleType="centerCrop"
+                            android:alpha="1"
+                            android:clickable="true"
+                            android:focusable="true"
+                    />
+
+                </androidx.cardview.widget.CardView>
+            </FrameLayout>
+
+        </ScrollView>
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_gravity="bottom"
+        >
+
             <RelativeLayout
                     android:background="?attr/background"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
+                    android:layout_marginStart="13dp"
+                    android:layout_marginEnd="13dp"
+                    android:paddingBottom="20dp"
+                    android:layout_marginBottom="-10dp"
+                    android:paddingTop="10dp"
             >
                 <!--
-                Moved back button to overlay!
+                Moved back button to overlay!-->
                 <FrameLayout
-
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/title_go_back_holder"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
                 >
                     <ImageView
                             android:layout_width="30dp"
@@ -63,7 +298,7 @@
                             android:clickable="true"
                             android:background="@drawable/video_tap_button">
                     </ImageView>
-                </FrameLayout>-->
+                </FrameLayout>
                 <FrameLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -83,6 +318,8 @@
                              android:layout_alignParentEnd="true"
                              android:id="@+id/title_bookmark_holder"
                              android:background="@color/transparent"
+                             android:layout_marginStart="10dp"
+                             android:layout_marginEnd="10dp"
                 >
                     <ImageView
                             android:id="@+id/title_bookmark"
@@ -106,244 +343,28 @@
                     </ImageView>
                 </FrameLayout>
             </RelativeLayout>
-            <ScrollView
-                    android:layout_marginTop="50dp"
-                    android:background="?attr/background"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+            <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
             >
-                <LinearLayout
+
+                <fragment
+                        app:castControlButtons="@array/cast_mini_controller_control_buttons"
+                        android:id="@+id/cast_mini_controller"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                >
-                    <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                    >
-
-                        <androidx.cardview.widget.CardView
-                                android:layout_marginTop="15dp"
-                                android:layout_marginStart="15dp"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                app:cardCornerRadius="10dp"
-                                app:cardBackgroundColor="?attr/darkBar"
-                                android:elevation="10dp"
-                        >
-
-                            <!-- Width: 1280, Height 1802 -->
-                            <ImageView
-                                    android:foreground="?attr/selectableItemBackgroundBorderless"
-                                    android:id="@+id/title_background"
-                                    android:layout_width="107dp"
-                                    android:layout_height="150dp"
-                                    android:scaleType="centerCrop"
-                                    android:alpha="1"
-                                    android:clickable="true"
-                                    android:focusable="true"
-                            />
-
-                        </androidx.cardview.widget.CardView>
-                        <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_margin="15dp"
-                                android:orientation="vertical"
-                        >
-
-                            <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="start"
-                                    tools:text="The Promised Neverland"
-                                    android:id="@+id/title_name"
-                                    android:textColor="?attr/textColor"
-                                    android:textStyle="bold"
-                                    android:textSize="17sp"
-                                    android:layout_marginBottom="10dp"
-                            >
-                            </TextView>
-                            <TextView
-                                    android:id="@+id/title_status"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:textColor="?attr/textColorGrayWhite"
-                                    tools:text="Status: Finished"
-                                    android:textSize="12sp"
-                                    android:layout_marginBottom="10dp"
-                            >
-                            </TextView>
-                            <TextView
-                                    android:id="@+id/title_genres"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:textColor="?attr/textColorGrayWhite"
-                                    tools:text="Genres: Sci-Fi, Mystery, Horror"
-                                    android:textSize="12sp"
-                                    android:layout_marginBottom="10dp"
-                            >
-                            </TextView>
-                            <TextView
-                                    android:id="@+id/title_episodes"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:textColor="?attr/textColorGrayWhite"
-                                    tools:text="Episodes: 12"
-                                    android:textSize="12sp"
-                                    android:layout_marginBottom="10dp"
-                            >
-                            </TextView>
-                            <TextView
-                                    android:id="@+id/title_year"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:textColor="?attr/textColorGrayWhite"
-                                    tools:text="Year: 2020"
-                                    android:textSize="12sp"
-                                    android:layout_marginBottom="10dp"
-                            >
-                            </TextView>
-                            <TextView
-                                    android:id="@+id/title_day_of_week"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:textColor="?attr/textColorGrayWhite"
-                                    tools:text="Schedule: Tuesday"
-                                    android:textSize="12sp"
-                            >
-                            </TextView>
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <LinearLayout
-                            android:id="@+id/description_holder"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-
-                        <com.google.android.material.textview.MaterialTextView
-                                android:layout_margin="10dp"
-                                android:id="@+id/title_descript"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:textColor="?attr/textColor"
-                                tools:text="The orphans at Grace Field House have only ever known peace. Their home is nice, their bellies stay full, and their caretaker, Mom, loves them very much. But their world turns upside down when the smartest children of the bunch—Emma, Ray, and Norman—learn what horror awaits them on adoption day. Now, their cultivated wit may be their only chance of survival. (Source: Funimation)"
-                        >
-
-                        </com.google.android.material.textview.MaterialTextView>
-                    </LinearLayout>
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="5dp"
-                            android:layout_marginBottom="5dp"
-                            android:id="@+id/episodes_text_holder"
-                    >
-                        <androidx.cardview.widget.CardView
-                                android:backgroundTint="?attr/textColorGray"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintEnd_toStartOf="@+id/episodes_text"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                android:id="@+id/startLine"
-                                android:layout_width="0dp"
-                                android:layout_height="2dp"
-                                android:layout_marginEnd="20dp"
-                                android:layout_marginStart="20dp"
-                        >
-
-                        </androidx.cardview.widget.CardView>
-                        <TextView
-                                android:textSize="17sp"
-                                android:textColor="?attr/textColor"
-                                app:layout_constraintStart_toEndOf="@id/startLine"
-                                app:layout_constraintEnd_toStartOf="@id/endLine"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                android:id="@+id/episodes_text"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/episodes"
-                                android:textStyle="bold"
-                        >
-
-                        </TextView>
-                        <androidx.cardview.widget.CardView
-                                android:backgroundTint="?attr/textColorGray"
-                                android:layout_marginEnd="20dp"
-                                android:layout_marginStart="20dp"
-                                app:layout_constraintEnd_toStartOf="@id/language_button"
-                                app:layout_constraintStart_toEndOf="@id/episodes_text"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                android:id="@+id/endLine"
-                                android:layout_width="0dp"
-                                android:layout_height="2dp"
-                        >
-
-                        </androidx.cardview.widget.CardView>
-
-                        <ImageView
-                                android:id="@+id/language_button"
-                                android:layout_width="wrap_content"
-                                android:layout_height="match_parent"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintHorizontal_bias="1"
-                                app:layout_constraintStart_toEndOf="@id/episodes_text"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                android:layout_marginEnd="20dp"
-                                android:src="@drawable/ic_baseline_language_24"
-                                android:visibility="gone"
-                                tools:visibility="visible"
-                        >
-                        </ImageView>
-
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-                    <com.lagradost.shiro.ui.AutofitRecyclerView
-                            android:clipToPadding="false"
-                            android:descendantFocusability="afterDescendants"
-                            android:paddingBottom="100dp"
-                            android:layout_marginEnd="10dp"
-                            android:layout_marginStart="10dp"
-                            android:layout_marginTop="10dp"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:id="@+id/title_season_cards"
-                            android:orientation="vertical"
-                            android:minHeight="250dp"
-                    >
-
-                    </com.lagradost.shiro.ui.AutofitRecyclerView>
-                </LinearLayout>
-            </ScrollView>
-        </androidx.cardview.widget.CardView>
-    </LinearLayout>
-    <LinearLayout
-            android:background="@color/transparent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-    >
-
-        <fragment
-                app:castControlButtons="@array/cast_mini_controller_control_buttons"
-                android:id="@+id/cast_mini_controller"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
-                class="com.google.android.gms.cast.framework.media.widget.MiniControllerFragment"
-                tools:ignore="FragmentTagUsage">
-
-        </fragment>
-    </LinearLayout>
+                        android:visibility="gone"
+                        class="com.google.android.gms.cast.framework.media.widget.MiniControllerFragment"
+                        tools:ignore="FragmentTagUsage"/>
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
     <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/transparent"
     >
-
         <FrameLayout
                 android:background="?attr/background"
                 android:backgroundTint="?attr/background"
@@ -360,23 +381,26 @@
             >
             </ProgressBar>
         </FrameLayout>
-        <ImageView
-                android:layout_margin="20dp"
+        <!--<ImageView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:layout_gravity="top|start"
+                android:layout_marginStart="23dp"
+                android:layout_marginEnd="23dp"
+                android:layout_marginBottom="10dp"
+                android:layout_gravity="bottom|start"
                 android:src="@drawable/arrow_back">
         </ImageView>
         <ImageView
-                android:layout_margin="10dp"
+                android:layout_marginStart="13dp"
+                android:layout_marginEnd="13dp"
                 android:id="@+id/title_go_back"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:layout_gravity="top|start"
+                android:layout_gravity="bottom|start"
                 android:focusable="true"
                 android:clickable="true"
                 android:background="@drawable/video_tap_button">
-        </ImageView>
+        </ImageView>-->
     </FrameLayout>
 
 </FrameLayout>
