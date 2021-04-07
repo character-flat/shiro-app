@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="darkBar">#121212</color>
-    <color name="darkBarLight">#303030</color>
-    <color name="darkBarTransparent">#C0121212</color>
-    <color name="backgroundLight">#232323</color>
-    <color name="background">#050505</color>
     <color name="white">#FFF</color>
     <color name="grayBackground">#333333</color>
     <color name="grayItem">#21201e</color>
@@ -19,19 +14,31 @@
     <color name="colorPrimaryMegaDark">#210303</color>
     <color name="colorAccent">#ed2c2b</color>
 
+    <!-- Default theme -->
     <color name="textColor">#e6e6e6</color>
     <color name="textColorGray">#b0b0b0</color>
     <color name="textColorGrayWhite">#bababa</color>
+    <color name="darkBar">#121212</color>
+    <color name="darkBarLight">#303030</color>
+    <color name="darkBarTransparent">#C0121212</color>
+    <color name="backgroundLight">#232323</color>
+    <color name="background">#050505</color>
 
+    <!-- Light theme -->
     <color name="lightTextColor">#191919</color>
     <color name="lightTextColorGray">#4F4F4F</color>
     <color name="lightTextColorGrayWhite">#454545</color>
-
     <color name="lightDarkBar">#EDEDED</color>
     <color name="lightDarkBarLight">#CFCFCF</color>
     <color name="lightDarkBarTransparent">#BFEDEDED</color>
     <color name="lightBackgroundLight">#DFDFDF</color>
     <color name="lightBackground">#FAFAFA</color>
 
+    <!-- Dark theme -->
+    <color name="darkDarkBar">#272727</color>
+    <color name="darkDarkBarLight">#424242</color>
+    <color name="darkDarkBarTransparent">#BF303030</color>
+    <color name="darkBackgroundLight">#323232</color>
+    <color name="darkBackground">#232323</color>
 
 </resources>

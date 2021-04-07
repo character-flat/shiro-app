@@ -337,6 +337,7 @@
                 android:id="@+id/linearLayout">
 
             <TextView
+                    tools:text="15:30"
                     android:layout_marginStart="20dp"
                     android:id="@id/exo_position"
                     android:layout_width="wrap_content"
@@ -354,9 +355,10 @@
                     android:layout_height="26dp"
                     android:layout_weight="1"
                     app:played_color="?attr/colorPrimary"
-                    app:unplayed_color="?attr/darkBar"/>
+                    app:unplayed_color="@color/darkBar"/>
 
             <TextView
+                    tools:text="23:20"
                     android:id="@id/exo_duration"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -404,6 +406,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
         >
             <RelativeLayout
+                    tools:visibility="visible"
                     android:layout_width="match_parent"
                     android:gravity="center|end"
                     android:layout_height="wrap_content"
@@ -429,6 +432,7 @@
                 </ImageView>
             </RelativeLayout>
             <RelativeLayout
+                    tools:visibility="visible"
                     android:layout_width="match_parent"
                     android:gravity="center|start"
                     android:layout_height="wrap_content"
@@ -475,6 +479,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
         <RelativeLayout
+                tools:alpha="1"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
@@ -516,6 +521,7 @@
             </ProgressBar>
         </RelativeLayout>
         <RelativeLayout
+                tools:alpha="1"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintRight_toRightOf="parent"

@@ -7,7 +7,6 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.*
@@ -41,6 +40,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val clearHistory = findPreference("clear_history") as Preference?
         //setKey(VIEW_POS_KEY, "GGG", 2L)
         val historyItems = getKeys(VIEW_POS_KEY).size + getKeys(VIEWSTATE_KEY).size
+
+        findPreference<ListPreference>("theme")?.setOnPreferenceChangeListener { preference, newValue ->
+            activity?.recreate()
+            return@setOnPreferenceChangeListener true
+        }
 
         clearHistory?.summary = "$historyItems item${if (historyItems == 1) "" else "s"}"
         clearHistory?.setOnPreferenceClickListener {
@@ -262,11 +266,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             activity?.recreate()
             return@setOnPreferenceChangeListener true
         }
-        val lightMode = findPreference("light_mode") as SwitchPreference?
-        lightMode?.setOnPreferenceChangeListener { preference, newValue ->
-            activity?.recreate()
-            return@setOnPreferenceChangeListener true
-        }
+
         val forceLandscape = findPreference("force_landscape") as SwitchPreference?
         forceLandscape?.setOnPreferenceChangeListener { preference, newValue ->
             if (newValue == true) {

@@ -91,6 +91,18 @@
         <item name="textColorGrayWhite">@color/lightTextColorGrayWhite</item>
     </style>
 
+    <style name="DarkMode">
+        <item name="darkBar">@color/darkDarkBar</item>
+        <item name="darkBarLight">@color/darkDarkBarLight</item>
+        <item name="darkBarTransparent">@color/darkDarkBarTransparent</item>
+        <item name="backgroundLight">@color/darkBackgroundLight</item>
+        <item name="background">@color/darkBackground</item>
+        <item name="white">@android:color/white</item>
+        <item name="textColor">@color/textColor</item>
+        <item name="textColorGray">@color/textColorGray</item>
+        <item name="textColorGrayWhite">@color/textColorGrayWhite</item>
+    </style>
+
     <style name="CustomCastExpandedController" parent="CastExpandedController">
         <item name="castControlButtons">
             @array/cast_expanded_controller_control_buttons

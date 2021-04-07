@@ -1,8 +1,9 @@
 <resources>
-    <string name="version_code">1.4.2 Public Release</string>
+    <string name="version_code">1.5.0 Public Release</string>
     <string name="changelog">\n
-        - Added option to download to external storage\n
-        - Fixed crash added in previous update\n
+        - Added themes\n
+        - Fixed some crashes\n
+        - Temporarily removed description expansion since it causes crashes on some phones\n
     </string>
     <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>
@@ -11,9 +12,6 @@
     <string name="search_hint">Search anime…</string>
     <string name="trending_anime">Trending</string>
     <string name="home_ongoing">Ongoing</string>
-    <string name="name">SHIRO</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="main_watch_button_text">Play</string>
     <string name="main_info_button_text">Info</string>
     <string name="bookmark_btt">Bookmark</string>

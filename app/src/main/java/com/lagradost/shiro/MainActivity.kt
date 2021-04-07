@@ -434,7 +434,7 @@ class MainActivity : AppCompatActivity() {
         // Shows the system bars by removing all the flags
 // except for the ones that make the content appear under the system bars.
         fun showSystemUI() {
-            if (activity != null){
+            if (activity != null) {
                 activity!!.window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
@@ -726,22 +726,27 @@ class MainActivity : AppCompatActivity() {
                 WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
             )
         }
+
+        // ----- Themes ----
         //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
+        val currentTheme = when (settingsManager.getString("theme", "Black")) {
+            "Black" -> R.style.AppTheme
+            "Dark" -> R.style.DarkMode
+            "Light" -> R.style.LightMode
+            else -> R.style.AppTheme
+        }
+
+        theme.applyStyle(currentTheme, true)
         if (settingsManager.getBoolean("cool_mode", false)) {
             theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
         }
-        if (settingsManager.getBoolean("light_mode", false)) {
-            theme.applyStyle(R.style.LightMode, true)
-        }
+        // -----------------
+
         changeStatusBarState(settingsManager.getBoolean("statusbar_hidden", true))
-        //window.statusBarColor = R.color.transparent
 
         //https://stackoverflow.com/questions/52594181/how-to-know-if-user-has-disabled-picture-in-picture-feature-permission
         //https://developer.android.com/guide/topics/ui/picture-in-picture
-
-        //val action: String? = intent?.action
-
-
         canShowPipMode =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && // OS SUPPORT
                     packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE) && // HAS FEATURE, MIGHT BE BLOCKED DUE TO POWER DRAIN

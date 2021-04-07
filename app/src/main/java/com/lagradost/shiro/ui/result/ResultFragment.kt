@@ -232,8 +232,8 @@ class ResultFragment : Fragment() {
                     .replace("\n", " ")
 
                 // Somehow for an unknown reason (I haven't even found online) setting a textview with large amount of text
-                // 'crashes' (hangs for a good while) the application on low android versions. I'm betting Nougat+ works.
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                // 'crashes' (hangs for a good while), so far only observed on samsung phones
+                /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     title_descript.text = if (fullDescription.length > 200) Html.fromHtml(
                         fullDescription.substring(0, minOf(fullDescription.length, DESCRIPTION_LENGTH1 - 3)) +
                                 "<font color=#${textColorGrey}>...<i> Read more</i></font>"/*,
@@ -256,7 +256,8 @@ class ResultFragment : Fragment() {
 
                 } else {
                     title_descript.text = fullDescription.substring(0, DESCRIPTION_LENGTH1 - 3) + "..."
-                }
+                }*/
+                title_descript.text = fullDescription.substring(0, DESCRIPTION_LENGTH1 - 3) + "..."
 
                 /*var ratTxt = (data!!.averageScore / 10f).toString().replace(',', '.') // JUST IN CASE DUE TO LANG SETTINGS
                 if (!ratTxt.contains('.')) ratTxt += ".0"
