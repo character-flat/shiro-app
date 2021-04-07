@@ -171,27 +171,41 @@ class EpisodeAdapter(
                 if (last.isFound && last.episodeIndex == position) {
                     activity?.let {
                         card.cardBg.setCardBackgroundColor(
-                            it.getColorFromAttr(
-                                R.attr.colorPrimaryDark
-                            )
+                            it.getColorFromAttr(R.attr.colorPrimaryDark)
                         )
                     }
                 } else {
                     activity?.let {
                         card.cardBg.setCardBackgroundColor(
-                            it.getColorFromAttr(
-                                R.attr.colorPrimaryDarker
-                            )
+                            it.getColorFromAttr(R.attr.colorPrimaryDarker)
                         )
                     }
+                }
+                activity?.let {
+                    card.cardTitle.setTextColor(
+                        ContextCompat.getColor(it, R.color.textColor)
+                    )
+                    card.cdi.setColorFilter(
+                        ContextCompat.getColor(it, R.color.white)
+                    )
+                    card.cardRemoveIcon.setColorFilter(
+                        ContextCompat.getColor(it, R.color.white)
+                    )
                 }
             } else {
                 // Otherwise color is recycled
                 activity?.let {
+                    card.cardTitle.setTextColor(
+                        it.getColorFromAttr(R.attr.textColor)
+                    )
                     card.cardBg.setCardBackgroundColor(
-                        activity!!.getColorFromAttr(
-                            R.attr.darkBar
-                        )
+                        it.getColorFromAttr(R.attr.darkBar)
+                    )
+                    card.cdi.setColorFilter(
+                        it.getColorFromAttr(R.attr.white)
+                    )
+                    card.cardRemoveIcon.setColorFilter(
+                        it.getColorFromAttr(R.attr.white)
                     )
                 }
             }
@@ -271,11 +285,13 @@ class EpisodeAdapter(
                             val alertDialog: AlertDialog? = activity?.let {
                                 val builder = AlertDialog.Builder(it)
                                 builder.apply {
-                                    setPositiveButton("Delete"
+                                    setPositiveButton(
+                                        "Delete"
                                     ) { dialog, id ->
                                         deleteFile()
                                     }
-                                    setNegativeButton("Cancel"
+                                    setNegativeButton(
+                                        "Cancel"
                                     ) { dialog, id ->
                                         // User cancelled the dialog
                                     }

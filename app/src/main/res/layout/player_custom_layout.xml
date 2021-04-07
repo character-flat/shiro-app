@@ -173,7 +173,9 @@
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/arrow_back">
+                    android:src="@drawable/arrow_back"
+                    app:tint="@android:color/white"
+            >
             </ImageView>
             <ImageView
                     android:id="@+id/video_go_back"

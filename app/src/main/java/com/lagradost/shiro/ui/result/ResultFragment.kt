@@ -36,7 +36,9 @@ import com.lagradost.shiro.MainActivity.Companion.hideKeyboard
 import com.lagradost.shiro.MainActivity.Companion.isCastApiAvailable
 import com.lagradost.shiro.MainActivity.Companion.popCurrentPage
 import com.lagradost.shiro.ui.GlideApp
+import com.lagradost.shiro.ui.GlideOptions.bitmapTransform
 import com.lagradost.shiro.ui.PlayerFragment
+import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.episode_result.view.*
 import kotlinx.android.synthetic.main.fragment_results_new.*
 import java.util.*
@@ -162,10 +164,15 @@ class ResultFragment : Fragment() {
                     GlideUrl(
                         getFullUrlCdn(data.image)
                     )
+
                 context?.let {
                     GlideApp.with(it)
                         .load(glideUrl)
                         .into(title_background)
+                    GlideApp.with(it)
+                        .load(glideUrl)
+                        .apply(bitmapTransform(BlurTransformation(100, 3)))
+                        .into(result_poster_blur)
                 }
 
                 val textColor = Integer.toHexString(MainActivity.activity!!.getColorFromAttr(R.attr.textColor))

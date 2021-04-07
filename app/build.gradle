@@ -87,8 +87,14 @@ dependencies {
     // Bug reports
     implementation "ch.acra:acra-core:5.7.0"
     implementation "ch.acra:acra-toast:5.7.0"
-
+    
+    // Parallax scroll
     implementation 'com.github.nirhart:ParallaxScroll:dd53d1f9d1'
+
+    // Blur
+    implementation 'jp.wasabeef:glide-transformations:4.0.0'
+
+    // Css selectors
     implementation 'org.jsoup:jsoup:1.13.1'
 
 
