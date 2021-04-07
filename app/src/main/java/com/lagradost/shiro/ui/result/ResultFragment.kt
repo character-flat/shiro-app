@@ -264,7 +264,7 @@ class ResultFragment : Fragment() {
                 } else {
                     title_descript.text = fullDescription.substring(0, DESCRIPTION_LENGTH1 - 3) + "..."
                 }*/
-                title_descript.text = fullDescription.substring(0, DESCRIPTION_LENGTH1 - 3) + "..."
+                title_descript.text = fullDescription.substring(0, minOf(DESCRIPTION_LENGTH1 - 3, fullDescription.length)) + "..."
 
                 /*var ratTxt = (data!!.averageScore / 10f).toString().replace(',', '.') // JUST IN CASE DUE TO LANG SETTINGS
                 if (!ratTxt.contains('.')) ratTxt += ".0"
