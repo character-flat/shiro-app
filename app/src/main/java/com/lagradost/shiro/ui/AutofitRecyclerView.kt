@@ -96,7 +96,7 @@ data class GrdLayoutManager(val context: Context, val spanCoun: Int) : GridLayou
 class AutofitRecyclerView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
     RecyclerView(context, attrs) {
 
-    private val manager = GrdLayoutManager(context, 3) // THIS CONTROLS SPANS
+    private val manager = GrdLayoutManager(context, 2) // THIS CONTROLS SPANS
 
     private var columnWidth = -1
 

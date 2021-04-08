@@ -40,7 +40,7 @@
                     android:layout_gravity="end|center_vertical"
                     android:focusable="true"
                     android:clickable="true"
-                    android:background="@drawable/video_tap_button">
+                    android:background="@drawable/video_tap_button_always_white">
             </ImageView>
 
         </FrameLayout>
@@ -184,7 +184,7 @@
                     android:layout_gravity="center"
                     android:focusable="true"
                     android:clickable="true"
-                    android:background="@drawable/video_tap_button">
+                    android:background="@drawable/video_tap_button_always_white">
             </ImageView>
 
         </FrameLayout>
@@ -237,7 +237,7 @@
                     android:layout_height="70dp"
                     android:layout_width="70dp"
                     android:layout_gravity="center"
-                    android:background="@drawable/video_tap_button"
+                    android:background="@drawable/video_tap_button_always_white"
                     android:foreground="@drawable/netflix_play"
                     android:clickable="true"
                     android:focusable="true"/>
@@ -247,7 +247,7 @@
                     android:layout_height="70dp"
                     android:layout_width="70dp"
                     android:layout_gravity="center"
-                    android:background="@drawable/video_tap_button"
+                    android:background="@drawable/video_tap_button_always_white"
                     android:foreground="@drawable/netflix_pause"
                     android:clickable="true"
                     android:focusable="true"/>
@@ -393,7 +393,7 @@
                         android:layout_gravity="center"
                         android:focusable="true"
                         android:clickable="true"
-                        android:background="@drawable/video_tap_button">
+                        android:background="@drawable/video_tap_button_always_white">
                 </ImageView>
 
             </FrameLayout>
@@ -429,7 +429,7 @@
                         android:layout_height="60dp"
                         android:focusable="true"
                         android:clickable="true"
-                        android:background="@drawable/video_tap_button"
+                        android:background="@drawable/video_tap_button_always_white"
                 >
                 </ImageView>
             </RelativeLayout>
@@ -457,7 +457,7 @@
                         android:layout_height="60dp"
                         android:focusable="true"
                         android:clickable="true"
-                        android:background="@drawable/video_tap_button"
+                        android:background="@drawable/video_tap_button_always_white"
                 >
                 </ImageView>
             </RelativeLayout>

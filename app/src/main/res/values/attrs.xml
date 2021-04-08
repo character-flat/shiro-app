@@ -13,10 +13,10 @@
         <attr name="textColorGray" format="color"/>
         <attr name="textColorGrayWhite" format="color"/>
         <attr name="white" format="color"/>
+        <attr name="video_ripple" format="color"/>
+
+
+
     </declare-styleable>
-    <string-array name="Themes">
-        <item>Black</item>
-        <item>Dark</item>
-        <item>Light</item>
-    </string-array>
+
 </resources>

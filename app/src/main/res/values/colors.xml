@@ -33,6 +33,7 @@
     <color name="lightDarkBarTransparent">#BFEDEDED</color>
     <color name="lightBackgroundLight">#DFDFDF</color>
     <color name="lightBackground">#FAFAFA</color>
+    <color name="lightVideo_ripple">#80000000</color>
 
     <!-- Dark theme -->
     <color name="darkDarkBar">#272727</color>

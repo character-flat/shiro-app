@@ -10,33 +10,12 @@
             android:title="General"
             app:isPreferenceVisible="true"
     >
-        <ListPreference
-                app:key="theme"
-                android:title="Theme"
-                android:icon="@drawable/ic_baseline_color_lens_24"
-                app:useSimpleSummaryProvider="true"
-                android:entries="@array/Themes"
-                android:entryValues="@array/Themes"
-        />
-        <SwitchPreference
-                android:icon="@drawable/ic_baseline_fullscreen_24"
-                app:key="statusbar_hidden"
-                android:title="Hide statusbar"
-                app:defaultValue="true"
-        />
         <SwitchPreference
                 android:icon="@drawable/ic_baseline_screen_lock_landscape_24"
                 app:key="force_landscape"
                 android:title="Force landscape"
                 android:summary="Useful for tablets"
                 app:defaultValue="false"
-        />
-
-        <SwitchPreference
-                android:icon="@drawable/ic_baseline_view_list_24"
-                app:key="compact_search_enabled"
-                android:title="Compact search results"
-                app:defaultValue="true"
         />
         <SwitchPreference
                 android:icon="@drawable/ic_baseline_language_24"
@@ -58,7 +37,38 @@
                           android:defaultValue="false"/>
 
     </PreferenceCategory>
-
+    <PreferenceCategory
+            android:key="style"
+            android:title="Style"
+            app:isPreferenceVisible="true"
+    >
+        <ListPreference
+                app:key="theme"
+                android:title="Theme"
+                android:icon="@drawable/ic_baseline_color_lens_24"
+                app:useSimpleSummaryProvider="true"
+                android:entries="@array/Themes"
+                android:entryValues="@array/Themes"
+        />
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_fullscreen_24"
+                app:key="statusbar_hidden"
+                android:title="Hide statusbar"
+                app:defaultValue="true"
+        />
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_view_list_24"
+                app:key="compact_search_enabled"
+                android:title="Compact search results"
+                app:defaultValue="true"
+        />
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_new_releases_24"
+                app:key="new_results_page"
+                android:title="Use new anime info page"
+                app:defaultValue="false"
+        />
+    </PreferenceCategory>
     <PreferenceCategory
             android:key="player"
             android:title="Player"

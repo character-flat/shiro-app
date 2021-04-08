@@ -11,4 +11,9 @@
         <item>@id/cast_button_type_forward_30_seconds</item>
         <item>@id/cast_button_type_mute_toggle</item>
     </array>
+    <string-array name="Themes">
+        <item>Black</item>
+        <item>Dark</item>
+        <item>Light</item>
+    </string-array>
 </resources>

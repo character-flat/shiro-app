@@ -44,6 +44,7 @@
         <item name="textColor">@color/textColor</item>
         <item name="textColorGray">@color/textColorGray</item>
         <item name="textColorGrayWhite">@color/textColorGrayWhite</item>
+        <item name="video_ripple">@color/video_ripple</item>
         <!-- prefrencescreen switch color -->
         <item name="android:colorForeground">?attr/white</item>
         <item name="android:colorControlHighlight">?attr/white</item>
@@ -89,6 +90,7 @@
         <item name="textColor">@color/lightTextColor</item>
         <item name="textColorGray">@color/lightTextColorGray</item>
         <item name="textColorGrayWhite">@color/lightTextColorGrayWhite</item>
+        <item name="video_ripple">@color/lightVideo_ripple</item>
     </style>
 
     <style name="DarkMode">

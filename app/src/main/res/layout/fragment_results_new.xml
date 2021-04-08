@@ -13,7 +13,7 @@
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
             android:alpha="0.3"
-            android:background="@color/darkBackground"
+            android:background="?attr/background"
             android:id="@+id/result_poster_blur">
 
     </ImageView>
@@ -23,9 +23,12 @@
     >
 
         <ScrollView
-                android:layout_marginBottom="50dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:fillViewport="true"
+                android:layout_marginStart="13dp"
+                android:layout_marginEnd="13dp"
+                android:overScrollMode="never"
         >
             <FrameLayout android:layout_width="match_parent"
                          android:layout_height="wrap_content"
@@ -34,22 +37,23 @@
                 <androidx.cardview.widget.CardView
                         android:id="@+id/title_holder"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:backgroundTint="?attr/background"
                         app:cardCornerRadius="25dp"
                         android:layout_marginTop="43dp"
-                        android:layout_marginStart="13dp"
-                        android:layout_marginEnd="13dp"
                         android:layout_marginBottom="-23dp"
                 >
                     <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:orientation="vertical"
+                            android:paddingBottom="100dp"
+
                     >
                         <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginLeft="130dp"
                         >
 
                             <LinearLayout
@@ -60,7 +64,6 @@
                             >
 
                                 <TextView
-                                        android:layout_marginLeft="130dp"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
                                         android:gravity="start"
@@ -73,7 +76,6 @@
                                 >
                                 </TextView>
                                 <TextView
-                                        android:layout_marginLeft="130dp"
                                         android:id="@+id/title_status"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
@@ -84,7 +86,6 @@
                                 >
                                 </TextView>
                                 <TextView
-                                        android:layout_marginLeft="130dp"
                                         android:id="@+id/title_genres"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
@@ -95,14 +96,13 @@
                                 >
                                 </TextView>
                                 <TextView
-                                        android:layout_marginLeft="130dp"
                                         android:id="@+id/title_episodes"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
                                         android:textColor="?attr/textColorGrayWhite"
                                         tools:text="Episodes: 12"
                                         android:textSize="12sp"
-                                        android:layout_marginBottom="20dp"
+                                        android:layout_marginBottom="10dp"
                                 >
                                 </TextView>
                                 <TextView
@@ -133,7 +133,7 @@
                                 android:layout_height="wrap_content">
 
                             <com.google.android.material.textview.MaterialTextView
-                                    android:layout_margin="10dp"
+                                    android:layout_margin="15dp"
                                     android:id="@+id/title_descript"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
@@ -208,6 +208,7 @@
                                     android:src="@drawable/ic_baseline_language_24"
                                     android:visibility="gone"
                                     tools:visibility="visible"
+                                    android:background="@drawable/video_tap_button"
                             >
                             </ImageView>
 
@@ -216,14 +217,15 @@
                                 android:clipToPadding="false"
                                 android:descendantFocusability="afterDescendants"
                                 android:paddingBottom="100dp"
-                                android:layout_marginEnd="10dp"
-                                android:layout_marginStart="10dp"
+                                android:layout_marginEnd="15dp"
+                                android:layout_marginStart="15dp"
                                 android:layout_marginTop="10dp"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:id="@+id/title_season_cards"
                                 android:orientation="vertical"
-                                android:minHeight="250dp"
+                                app:spanCount="2"
+                                tools:listitem="@layout/episode_result_compact"
                         >
 
                         </com.lagradost.shiro.ui.AutofitRecyclerView>
@@ -261,15 +263,22 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:layout_gravity="bottom"
+                android:layout_marginStart="13dp"
+                android:layout_marginEnd="13dp"
+                android:clickable="true"
+                android:focusable="true"
         >
 
+            <!--<View
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp"
+                    android:background="@drawable/gradient"
+            />-->
             <RelativeLayout
                     android:background="?attr/background"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginStart="13dp"
-                    android:layout_marginEnd="13dp"
                     android:paddingBottom="20dp"
                     android:layout_marginBottom="-10dp"
                     android:paddingTop="10dp"
@@ -327,12 +336,10 @@
                             android:layout_height="30dp"
                             android:elevation="10dp"
                             android:background="@color/transparent"
-
                             android:src="@drawable/outlined_heart"
                             android:layout_gravity="center"
                             android:contentDescription="@string/bookmark_btt_hint"/>
                     <ImageView
-
                             android:layout_width="50dp"
                             android:layout_height="50dp"
                             android:layout_gravity="center"
@@ -384,21 +391,22 @@
         <!--<ImageView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:layout_marginStart="23dp"
-                android:layout_marginEnd="23dp"
-                android:layout_marginBottom="10dp"
+                android:layout_marginStart="33dp"
+                android:layout_marginEnd="33dp"
+                android:layout_marginBottom="20dp"
                 android:layout_gravity="bottom|start"
                 android:src="@drawable/arrow_back">
         </ImageView>
         <ImageView
-                android:layout_marginStart="13dp"
-                android:layout_marginEnd="13dp"
+                android:layout_marginStart="23dp"
+                android:layout_marginEnd="23dp"
                 android:id="@+id/title_go_back"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_gravity="bottom|start"
                 android:focusable="true"
                 android:clickable="true"
+                android:layout_marginBottom="10.8dp"
                 android:background="@drawable/video_tap_button">
         </ImageView>-->
     </FrameLayout>

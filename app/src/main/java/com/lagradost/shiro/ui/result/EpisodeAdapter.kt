@@ -43,8 +43,6 @@ import java.io.File
 import kotlin.concurrent.thread
 import kotlin.reflect.KFunction1
 
-var downloadFun: ((DownloadManager.DownloadEventAndChild) -> Unit)? = null
-
 class EpisodeAdapter(
     val context: Context,
     val data: ShiroApi.AnimePageData,

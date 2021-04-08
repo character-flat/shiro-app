@@ -2,7 +2,6 @@ package com.lagradost.shiro.ui.result
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.text.Html
 import android.transition.ChangeBounds
@@ -22,7 +21,7 @@ import androidx.mediarouter.app.MediaRouteButton
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
@@ -116,8 +115,10 @@ class ResultFragment : Fragment() {
     ): View? {
         resultViewModel =
             activity?.let { ViewModelProviders.of(it).get(ResultViewModel::class.java) }!!
-
-        return inflater.inflate(R.layout.fragment_results_new, container, false)
+        val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
+        val useNewLayout = settingsManager.getBoolean("new_results_page", false)
+        val layout = if (useNewLayout) R.layout.fragment_results_new else R.layout.fragment_results
+        return inflater.inflate(layout, container, false)
     }
 
     private var onLoaded = Event<Boolean>()
@@ -168,9 +169,11 @@ class ResultFragment : Fragment() {
                 context?.let {
                     GlideApp.with(it)
                         .load(glideUrl)
+                        .transition(DrawableTransitionOptions.withCrossFade(200))
                         .into(title_background)
                     GlideApp.with(it)
                         .load(glideUrl)
+                        .transition(DrawableTransitionOptions.withCrossFade(200))
                         .apply(bitmapTransform(BlurTransformation(100, 3)))
                         .into(result_poster_blur)
                 }
@@ -264,7 +267,8 @@ class ResultFragment : Fragment() {
                 } else {
                     title_descript.text = fullDescription.substring(0, DESCRIPTION_LENGTH1 - 3) + "..."
                 }*/
-                title_descript.text = fullDescription.substring(0, minOf(DESCRIPTION_LENGTH1 - 3, fullDescription.length)) + "..."
+                title_descript.text =
+                    fullDescription.substring(0, minOf(DESCRIPTION_LENGTH1 - 3, fullDescription.length)) + "..."
 
                 /*var ratTxt = (data!!.averageScore / 10f).toString().replace(',', '.') // JUST IN CASE DUE TO LANG SETTINGS
                 if (!ratTxt.contains('.')) ratTxt += ".0"
