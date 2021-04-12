@@ -211,7 +211,7 @@ class ResultFragment : Fragment() {
                 if (data.genres != null) {
                     title_genres.text =
                         Html.fromHtml(
-                            "<font color=#${textColor}>Status:</font><font color=#${textColorGrey}> ${
+                            "<font color=#${textColor}>Genres:</font><font color=#${textColorGrey}> ${
                                 data.genres.joinToString(
                                     ", "
                                 )
