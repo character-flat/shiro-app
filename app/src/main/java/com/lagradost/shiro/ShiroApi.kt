@@ -538,7 +538,7 @@ class ShiroApi {
             } else null
         }
 
-        private fun getHome(canBeCached: Boolean): ShiroHomePage? {
+        fun getHome(canBeCached: Boolean): ShiroHomePage? {
             var res: ShiroHomePage? = null
             if (canBeCached && cachedHome != null) {
                 res = cachedHome

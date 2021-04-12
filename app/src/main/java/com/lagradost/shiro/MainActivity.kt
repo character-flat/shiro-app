@@ -540,7 +540,7 @@ class MainActivity : AppCompatActivity() {
         return result
     }
 
-    private fun enterPIPMode() {
+    fun enterPIPMode() {
         if (!shouldShowPIPMode() || !canShowPipMode) return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             try {

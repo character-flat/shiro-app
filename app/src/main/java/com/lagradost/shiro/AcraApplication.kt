@@ -39,12 +39,15 @@ class CustomSenderFactory : ReportSenderFactory {
         return true
     }
 }
-@AcraToast(resText= R.string.acra_report_toast,
-        length = Toast.LENGTH_LONG)
+
+@AcraToast(
+    resText = R.string.acra_report_toast,
+    length = Toast.LENGTH_LONG
+)
 @AcraCore(reportSenderFactoryClasses = [CustomSenderFactory::class])
 class AcraApplication : Application() {
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
-        ACRA.init(this)
+        if (BuildConfig.DEBUG) ACRA.init(this)
     }
 }

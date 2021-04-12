@@ -50,7 +50,7 @@
         <item name="android:colorControlHighlight">?attr/white</item>
 
     </style>
-
+    
     <style name="Widget.App.BottomNavigationView" parent="Widget.Design.BottomNavigationView">
         <item name="materialThemeOverlay">@style/NavigationView</item>
     </style>

@@ -16,17 +16,25 @@ data class GrdLayoutManager(val context: Context, val spanCoun: Int) : GridLayou
         recycler: RecyclerView.Recycler,
         state: RecyclerView.State
     ): View? {
-        val fromPos = getPosition(focused)
-        println("Search failed $fromPos")
-        val nextPos = getNextViewPos(fromPos, focusDirection)
-        return findViewByPosition(nextPos)
+        return try {
+            val fromPos = getPosition(focused)
+            println("Search failed $fromPos")
+            val nextPos = getNextViewPos(fromPos, focusDirection)
+            findViewByPosition(nextPos)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     // Allows moving right and left with focus https://gist.github.com/vganin/8930b41f55820ec49e4d
     override fun onInterceptFocusSearch(focused: View, direction: Int): View? {
-        val fromPos = getPosition(focused)
-        val nextPos = getNextViewPos(fromPos, direction)
-        return findViewByPosition(nextPos)
+        return try {
+            val fromPos = getPosition(focused)
+            val nextPos = getNextViewPos(fromPos, direction)
+            findViewByPosition(nextPos)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     private fun getNextViewPos(fromPos: Int, direction: Int): Int {
@@ -84,10 +92,10 @@ data class GrdLayoutManager(val context: Context, val spanCoun: Int) : GridLayou
 
         return if (abs(offset) == 1) {
             val spanIndex = from % spanCount
-            val newSpanIndex = spanIndex +offset
+            val newSpanIndex = spanIndex + offset
             newSpanIndex < 0 || newSpanIndex >= spanCount
         } else {
-            val newPos = from +offset
+            val newPos = from + offset
             newPos in spanCount..-1
         }
     }
