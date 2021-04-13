@@ -54,7 +54,7 @@ class EpisodeAdapter(
     private var prevFocus: Int? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        resView.spanCount = if (isDonor) 2 else 3
+        //resView.spanCount = if (isDonor) 2 else 3
         return CardViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.episode_result_compact, parent, false),
             context,

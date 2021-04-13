@@ -311,8 +311,9 @@
                             android:id="@+id/title_season_cards"
                             android:orientation="vertical"
                             android:minHeight="250dp"
+                            app:spanCount="3"
                     >
-
+                        <requestFocus/>
                     </com.lagradost.shiro.ui.AutofitRecyclerView>
                 </LinearLayout>
             </ScrollView>

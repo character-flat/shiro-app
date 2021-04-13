@@ -6,10 +6,8 @@ import android.view.View
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlin.math.abs
-import kotlin.math.max
 
-data class GrdLayoutManager(val context: Context, val spanCoun: Int) : GridLayoutManager(context, spanCoun) {
-
+class GrdLayoutManager(val context: Context, val spanCoun: Int) : GridLayoutManager(context, spanCoun) {
     override fun onFocusSearchFailed(
         focused: View,
         focusDirection: Int,
@@ -26,9 +24,22 @@ data class GrdLayoutManager(val context: Context, val spanCoun: Int) : GridLayou
         }
     }
 
+    override fun onRequestChildFocus(
+        parent: RecyclerView,
+        state: RecyclerView.State,
+        child: View,
+        focused: View?
+    ): Boolean {
+        println("REQUEST CHILD")
+        val pos = maxOf(0, getPosition(focused!!) - 2)
+        parent.scrollToPosition(pos)
+        return super.onRequestChildFocus(parent, state, child, focused)
+    }
+
     // Allows moving right and left with focus https://gist.github.com/vganin/8930b41f55820ec49e4d
     override fun onInterceptFocusSearch(focused: View, direction: Int): View? {
         return try {
+            println("Intercept")
             val fromPos = getPosition(focused)
             val nextPos = getNextViewPos(fromPos, direction)
             findViewByPosition(nextPos)
@@ -38,6 +49,7 @@ data class GrdLayoutManager(val context: Context, val spanCoun: Int) : GridLayou
     }
 
     private fun getNextViewPos(fromPos: Int, direction: Int): Int {
+        println("nextViewPos")
         val offset = calcOffsetToNextView(direction)
 
         if (hitBorder(fromPos, offset)) {
@@ -48,6 +60,8 @@ data class GrdLayoutManager(val context: Context, val spanCoun: Int) : GridLayou
     }
 
     private fun calcOffsetToNextView(direction: Int): Int {
+        println("calc")
+
         val spanCount = this.spanCoun
         val orientation = this.orientation
 
@@ -131,17 +145,11 @@ class AutofitRecyclerView @JvmOverloads constructor(context: Context, attrs: Att
     }
 
 
-    /*override fun onFocusSearchFailed(focused: View, focusDirection: Int,
-                                     recycler: RecyclerView.Recycler, state: RecyclerView.State ) {
-        println("TEAST")
-    }*/
-
-
-    override fun onMeasure(widthSpec: Int, heightSpec: Int) {
+    /*override fun onMeasure(widthSpec: Int, heightSpec: Int) {
         super.onMeasure(widthSpec, heightSpec)
         if (spanCount == 0 && columnWidth > 0) {
             val count = max(1, measuredWidth / columnWidth)
             spanCount = count
         }
-    }
+    }*/
 }
