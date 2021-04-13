@@ -17,6 +17,7 @@ android {
         versionName "1.5.0"
 
         testInstrumentationRunner "androidx.mal_logo.runner.AndroidJUnitRunner"
+        buildConfigField "Boolean", "DEBUG_MODE", "false"
     }
 
     buildTypes {

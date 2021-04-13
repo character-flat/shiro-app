@@ -134,7 +134,7 @@ class EpisodeAdapter(
                     DataStore.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
                 }
 
-                if (isCastApiAvailable()) {
+                if (activity?.isCastApiAvailable() == true) {
                     val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
                     println("SSTATE: " + castContext.castState + "<<")
                     if (castContext.castState == CastState.CONNECTED) {

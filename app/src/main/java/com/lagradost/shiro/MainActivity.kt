@@ -114,12 +114,12 @@ class MainActivity : AppCompatActivity() {
             return System.currentTimeMillis() / 1000L
         }
 
-        fun isCastApiAvailable(): Boolean {
+        fun Context.isCastApiAvailable(): Boolean {
             val isCastApiAvailable =
                 GoogleApiAvailability.getInstance()
-                    .isGooglePlayServicesAvailable(activity?.applicationContext) == ConnectionResult.SUCCESS
+                    .isGooglePlayServicesAvailable(applicationContext) == ConnectionResult.SUCCESS
             try {
-                activity?.applicationContext?.let { CastContext.getSharedInstance(it) }
+                applicationContext?.let { CastContext.getSharedInstance(it) }
             } catch (e: Exception) {
                 // track non-fatal
                 return false

@@ -178,8 +178,8 @@ class ResultFragment : Fragment() {
                         .into(result_poster_blur)
                 }
 
-                val textColor = Integer.toHexString(MainActivity.activity!!.getColorFromAttr(R.attr.textColor))
-                val textColorGrey = Integer.toHexString(MainActivity.activity!!.getColorFromAttr(R.attr.textColorGray))
+                val textColor = Integer.toHexString(requireActivity().getColorFromAttr(R.attr.textColor))
+                val textColorGrey = Integer.toHexString(requireActivity().getColorFromAttr(R.attr.textColorGray))
                 if (data.status != null) {
                     // fromHtml is depreciated, but works on android 6 as opposed to the new
                     title_status.text =
@@ -382,7 +382,7 @@ class ResultFragment : Fragment() {
     }
 
     private fun loadSeason() {
-        val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
+        val settingsManager = PreferenceManager.getDefaultSharedPreferences(requireActivity())
         val save = settingsManager.getBoolean("save_history", true)
         val data = if (isDefaultData) data else dataOther
         if (data?.episodes?.isNotEmpty() == true) {
@@ -397,6 +397,7 @@ class ResultFragment : Fragment() {
             title_season_cards.adapter = adapter
             (title_season_cards.adapter as EpisodeAdapter).episodes =
                 data.episodes
+            println("SIZE: ${data.episodes?.size}")
             (title_season_cards.adapter as EpisodeAdapter).notifyDataSetChanged()
         }
     }
@@ -426,7 +427,7 @@ class ResultFragment : Fragment() {
 
         hideKeyboard()
         //title_duration.text = data!!.duration.toString() + "min"
-        if (isCastApiAvailable()) {
+        if (activity?.isCastApiAvailable() == true) {
             val mMediaRouteButton = view.findViewById<MediaRouteButton>(R.id.media_route_button)
 
             CastButtonFactory.setUpMediaRouteButton(activity, mMediaRouteButton)

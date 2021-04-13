@@ -29,17 +29,19 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.leanback.app.BrowseSupportFragment
 
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.lagradost.shiro.DataStore.mapper
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ShiroApi
+import com.lagradost.shiro.ui.result.ResultFragment
 
 /**
  * Loads a grid of cards with movies to browse.
  */
-class MainFragmentTV : BrowseFragment() {
+class MainFragmentTV : BrowseSupportFragment() {
 
     private val mHandler = Handler()
     private lateinit var mBackgroundManager: BackgroundManager
@@ -70,10 +72,10 @@ class MainFragmentTV : BrowseFragment() {
     private fun prepareBackgroundManager() {
 
         mBackgroundManager = BackgroundManager.getInstance(activity)
-        mBackgroundManager.attach(activity.window)
-        mDefaultBackground = ContextCompat.getDrawable(activity, R.drawable.default_background)
+        mBackgroundManager.attach(requireActivity().window)
+        mDefaultBackground = ContextCompat.getDrawable(requireActivity(), R.drawable.default_background)
         mMetrics = DisplayMetrics()
-        activity.windowManager.defaultDisplay.getMetrics(mMetrics)
+        requireActivity().windowManager.defaultDisplay.getMetrics(mMetrics)
     }
 
     private fun setupUIElements() {
@@ -83,9 +85,9 @@ class MainFragmentTV : BrowseFragment() {
         isHeadersTransitionOnBackEnabled = true
 
         // set fastLane (or headers) background color
-        brandColor = ContextCompat.getColor(activity, R.color.fastlane_background)
+        brandColor = ContextCompat.getColor(requireActivity(), R.color.fastlane_background)
         // set search icon color
-        searchAffordanceColor = ContextCompat.getColor(activity, R.color.search_opaque)
+        searchAffordanceColor = ContextCompat.getColor(requireActivity(), R.color.search_opaque)
     }
 
     private fun loadRows() {
@@ -156,16 +158,21 @@ class MainFragmentTV : BrowseFragment() {
 
             if (item is ShiroApi.AnimePageData) {
                 Log.d(TAG, "Item: $item")
-                val intent = Intent(activity, DetailsActivityTV::class.java)
-                intent.putExtra(DetailsActivityTV.MOVIE, mapper.writeValueAsString(item))
+                activity?.supportFragmentManager?.beginTransaction()
+                    ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                    ?.add(R.id.main_browse_fragment, ResultFragment.newInstance(item))
+                    ?.commit()
+                /*val intent = Intent(activity, DetailsActivityTV::class.java)
+                    intent.putExtra(DetailsActivityTV.MOVIE, mapper.writeValueAsString(item))
 
-                val bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                    activity,
-                    (itemViewHolder.view as ImageCardView).mainImageView,
-                    DetailsActivityTV.SHARED_ELEMENT_NAME
-                )
-                    .toBundle()
-                activity.startActivity(intent, bundle)
+                    val bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                        requireActivity(),
+                        (itemViewHolder.view as ImageCardView).mainImageView,
+                        DetailsActivityTV.SHARED_ELEMENT_NAME
+                    )
+                        .toBundle()
+                    requireActivity().startActivity(intent, bundle)*/
+
             } else if (item is String) {
                 if (item.contains(getString(R.string.error_fragment))) {
                     val intent = Intent(activity, BrowseErrorActivity::class.java)
@@ -192,7 +199,7 @@ class MainFragmentTV : BrowseFragment() {
     private fun updateBackground(uri: String?) {
         val width = mMetrics.widthPixels
         val height = mMetrics.heightPixels
-        Glide.with(activity)
+        Glide.with(requireActivity())
             .load(uri)
             .centerCrop()
             .error(mDefaultBackground)
@@ -232,7 +239,7 @@ class MainFragmentTV : BrowseFragment() {
             view.layoutParams = ViewGroup.LayoutParams(GRID_ITEM_WIDTH, GRID_ITEM_HEIGHT)
             view.isFocusable = true
             view.isFocusableInTouchMode = true
-            view.setBackgroundColor(ContextCompat.getColor(activity, R.color.default_background))
+            view.setBackgroundColor(ContextCompat.getColor(requireActivity(), R.color.default_background))
             view.setTextColor(Color.WHITE)
             view.gravity = Gravity.CENTER
             return Presenter.ViewHolder(view)
