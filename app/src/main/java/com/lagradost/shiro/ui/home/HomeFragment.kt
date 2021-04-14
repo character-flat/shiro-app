@@ -18,20 +18,19 @@ import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.shiro.*
-import com.lagradost.shiro.DataStore.mapper
-import com.lagradost.shiro.ShiroApi.Companion.cachedHome
-import com.lagradost.shiro.ShiroApi.Companion.getAnimePage
-import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.ShiroApi.Companion.getRandomAnimePage
-import com.lagradost.shiro.ShiroApi.Companion.requestHome
-import com.lagradost.shiro.MainActivity.Companion.getNextEpisode
-import com.lagradost.shiro.MainActivity.Companion.loadPlayer
-import com.lagradost.shiro.ui.GlideApp
+import com.lagradost.shiro.utils.DataStore.mapper
+import com.lagradost.shiro.utils.ShiroApi.Companion.cachedHome
+import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.utils.ShiroApi.Companion.getRandomAnimePage
+import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
+import com.lagradost.shiro.ui.*
+import com.lagradost.shiro.utils.AppApi.Companion.getNextEpisode
+import com.lagradost.shiro.utils.AppApi.Companion.loadPage
+import com.lagradost.shiro.utils.AppApi.Companion.loadPlayer
+import com.lagradost.shiro.utils.ShiroApi
 import kotlinx.android.synthetic.main.download_card.*
 import kotlinx.android.synthetic.main.fragment_home.*
-import kotlinx.android.synthetic.main.home_card.view.*
-import kotlinx.android.synthetic.main.home_card_schedule.view.*
-import kotlinx.android.synthetic.main.home_recently_seen.view.*
 import kotlin.concurrent.thread
 
 //const val MAXIMUM_FADE = 0.3f
@@ -96,7 +95,6 @@ class HomeFragment : Fragment() {
                 scrollView.adapter = adapter
                 (scrollView.adapter as CardAdapter).cardList = filteredData as ArrayList<ShiroApi.AnimePageData?>
                 (scrollView.adapter as CardAdapter).notifyDataSetChanged()
-
 
                 textView.setOnClickListener {
                     MainActivity.activity?.supportFragmentManager?.beginTransaction()
@@ -243,7 +241,7 @@ class HomeFragment : Fragment() {
                                 val page = getAnimePage(randomData.slug)
                                 if (page != null) {
                                     val nextEpisode = getNextEpisode(page.data)
-                                    loadPlayer(nextEpisode.episodeIndex, 0L, page.data)
+                                    MainActivity.activity?.loadPlayer(nextEpisode.episodeIndex, 0L, page.data)
                                 } else {
                                     activity?.runOnUiThread {
                                         Toast.makeText(activity, "Loading link failed", Toast.LENGTH_SHORT).show()
@@ -264,7 +262,7 @@ class HomeFragment : Fragment() {
                             return@setOnLongClickListener true
                         }
                         main_info_button.setOnClickListener {
-                            MainActivity.loadPage(randomData)
+                            MainActivity.activity?.loadPage(randomData)
                         }
                     } else {
                         main_poster_holder.visibility = GONE

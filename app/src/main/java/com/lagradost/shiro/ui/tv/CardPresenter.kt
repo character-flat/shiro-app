@@ -7,12 +7,10 @@ import androidx.core.content.ContextCompat
 import android.util.Log
 import android.view.ViewGroup
 
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ShiroApi
-import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.utils.ShiroApi
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.ui.GlideApp
 import kotlin.properties.Delegates
 

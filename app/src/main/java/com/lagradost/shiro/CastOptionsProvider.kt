@@ -7,6 +7,7 @@ import com.google.android.gms.cast.framework.SessionProvider
 import com.google.android.gms.cast.framework.media.CastMediaOptions
 import com.google.android.gms.cast.framework.media.MediaIntentReceiver
 import com.google.android.gms.cast.framework.media.NotificationOptions
+import com.lagradost.shiro.ui.ControllerActivity
 import java.util.*
 
 class CastOptionsProvider : OptionsProvider {

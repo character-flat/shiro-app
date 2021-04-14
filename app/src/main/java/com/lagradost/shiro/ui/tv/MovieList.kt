@@ -1,8 +1,7 @@
 package com.lagradost.shiro.ui.tv
 
-import com.lagradost.shiro.ShiroApi
-import com.lagradost.shiro.ShiroApi.Companion.getHome
-import kotlinx.coroutines.delay
+import com.lagradost.shiro.utils.ShiroApi
+import com.lagradost.shiro.utils.ShiroApi.Companion.getHome
 
 object MovieList {
     val MOVIE_CATEGORY = arrayOf(

@@ -31,10 +31,10 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.lagradost.shiro.DataStore.mapper
+import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ShiroApi
-import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.utils.ShiroApi
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.ui.GlideApp
 
 import java.util.Collections

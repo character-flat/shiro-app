@@ -11,10 +11,11 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.*
-import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.MainActivity.Companion.activity
-import com.lagradost.shiro.MainActivity.Companion.fixCardTitle
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.GlideApp
+import com.lagradost.shiro.utils.AppApi.Companion.fixCardTitle
+import com.lagradost.shiro.utils.ShiroApi
 import kotlinx.android.synthetic.main.home_card.view.*
 
 

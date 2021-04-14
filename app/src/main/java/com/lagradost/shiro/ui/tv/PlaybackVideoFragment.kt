@@ -8,9 +8,9 @@ import androidx.leanback.media.MediaPlayerAdapter
 import androidx.leanback.media.PlaybackTransportControlGlue
 import androidx.leanback.widget.PlaybackControlsRow
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.lagradost.shiro.DataStore.mapper
-import com.lagradost.shiro.ShiroApi
-import com.lagradost.shiro.ShiroApi.Companion.getVideoLink
+import com.lagradost.shiro.utils.DataStore.mapper
+import com.lagradost.shiro.utils.ShiroApi
+import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
 
 /** Handles video playback with media controls. */
 class PlaybackVideoFragment : VideoSupportFragment() {
@@ -33,7 +33,11 @@ class PlaybackVideoFragment : VideoSupportFragment() {
         mTransportControlGlue.subtitle = data.synopsis
         mTransportControlGlue.playWhenPrepared()
 
-        playerAdapter.setDataSource(Uri.parse(data.episodes?.get(0)?.let { getVideoLink(it._id) }))
+        val url = data.episodes?.get(0)?.videos?.get(0)?.let { getVideoLink(it.video_id) }
+        println(url)
+
+
+        playerAdapter.setDataSource(Uri.parse("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"))
     }
 
     override fun onPause() {

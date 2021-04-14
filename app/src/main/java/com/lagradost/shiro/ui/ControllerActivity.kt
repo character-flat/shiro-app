@@ -1,8 +1,9 @@
-package com.lagradost.shiro
+package com.lagradost.shiro.ui
 
 import android.view.Menu
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.media.widget.ExpandedControllerActivity
+import com.lagradost.shiro.R
 
 class ControllerActivity : ExpandedControllerActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

@@ -1,4 +1,4 @@
-package com.lagradost.shiro
+package com.lagradost.shiro.utils
 
 import java.util.*
 import java.util.concurrent.ExecutorService

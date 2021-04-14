@@ -1,7 +1,7 @@
 package com.lagradost.shiro.ui.result
 
 import android.content.Context
-import android.content.DialogInterface
+import android.content.Intent
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
@@ -23,25 +23,29 @@ import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
 import com.google.android.gms.common.images.WebImage
 import com.lagradost.shiro.*
-import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.ShiroApi.Companion.getVideoLink
-import com.lagradost.shiro.MainActivity.Companion.activity
-import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
-import com.lagradost.shiro.MainActivity.Companion.getLatestSeenEpisode
-import com.lagradost.shiro.MainActivity.Companion.getNextEpisode
-import com.lagradost.shiro.MainActivity.Companion.getViewKey
-import com.lagradost.shiro.MainActivity.Companion.isCastApiAvailable
-import com.lagradost.shiro.MainActivity.Companion.isDonor
-import com.lagradost.shiro.ShiroApi.Companion.getLastWatch
+import com.lagradost.shiro.utils.DataStore.mapper
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
+import com.lagradost.shiro.ui.MainActivity.Companion.activity
+import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.AutofitRecyclerView
-import kotlinx.android.synthetic.main.download_card.view.*
+import com.lagradost.shiro.ui.MainActivity
+import com.lagradost.shiro.ui.toPx
+import com.lagradost.shiro.ui.tv.DetailsActivityTV
+import com.lagradost.shiro.ui.tv.PlaybackActivity
+import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
+import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.AppApi.Companion.getColorFromAttr
+import com.lagradost.shiro.utils.AppApi.Companion.getLatestSeenEpisode
+import com.lagradost.shiro.utils.AppApi.Companion.getViewKey
+import com.lagradost.shiro.utils.AppApi.Companion.getViewPosDur
+import com.lagradost.shiro.utils.AppApi.Companion.isCastApiAvailable
+import com.lagradost.shiro.utils.AppApi.Companion.loadPlayer
 import kotlinx.android.synthetic.main.episode_result_compact.view.*
 import kotlinx.android.synthetic.main.episode_result_compact.view.cardBg
 import kotlinx.android.synthetic.main.episode_result_compact.view.cardTitle
-import kotlinx.android.synthetic.main.home_card.view.*
 import java.io.File
 import kotlin.concurrent.thread
-import kotlin.reflect.KFunction1
 
 class EpisodeAdapter(
     val context: Context,
@@ -141,12 +145,15 @@ class EpisodeAdapter(
                         castEpisode(data, position)
                     } else {
                         thread {
-                            MainActivity.loadPlayer(position, 0L, data)
+                            activity?.loadPlayer(position, 0L, data)
                         }
                     }
                 } else {
                     thread {
-                        MainActivity.loadPlayer(position, 0L, data)
+                        val intent = Intent(tvActivity, PlaybackActivity::class.java)
+                        intent.putExtra(DetailsActivityTV.MOVIE, mapper.writeValueAsString(data))
+                        tvActivity?.startActivity(intent)
+                        //MainActivity.loadPlayer(position, 0L, data)
                     }
                 }
             }
@@ -208,7 +215,7 @@ class EpisodeAdapter(
                 }
             }
 
-            val pro = MainActivity.getViewPosDur(data.slug, position)
+            val pro = getViewPosDur(data.slug, position)
             //println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
             if (pro.dur > 0 && pro.pos > 0) {
                 var progress: Int = (pro.pos * 100L / pro.dur).toInt()

@@ -14,20 +14,27 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.preference.PreferenceManager
 import com.lagradost.shiro.*
-import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import com.lagradost.shiro.ui.PlayerData
-import kotlinx.android.synthetic.main.episode_result_downloaded.*
 import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
 import kotlinx.android.synthetic.main.fragment_download_child.*
-import kotlinx.android.synthetic.main.home_card.view.*
-import kotlinx.android.synthetic.main.player_custom_layout.*
 import java.io.File
 
-import com.lagradost.shiro.MainActivity
+import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.PlayerFragment
+import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
+import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.fixEpTitle
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isViewState
+import com.lagradost.shiro.utils.AppApi.Companion.getColorFromAttr
+import com.lagradost.shiro.utils.AppApi.Companion.getViewKey
+import com.lagradost.shiro.utils.AppApi.Companion.getViewPosDur
+import com.lagradost.shiro.utils.AppApi.Companion.loadPlayer
+import com.lagradost.shiro.utils.AppApi.Companion.popCurrentPage
+import com.lagradost.shiro.utils.DOWNLOAD_PARENT_KEY
+import com.lagradost.shiro.utils.DataStore
+import com.lagradost.shiro.utils.DownloadManager
+import com.lagradost.shiro.utils.VIEWSTATE_KEY
 
 
 class DownloadFragmentChild : Fragment() {
@@ -45,7 +52,7 @@ class DownloadFragmentChild : Fragment() {
         top_padding_download_child.layoutParams = topParams
         PlayerFragment.onLeftPlayer += ::onPlayerLeft
         download_go_back.setOnClickListener {
-            MainActivity.popCurrentPage()
+            MainActivity.activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         }
         loadData()
     }
@@ -91,12 +98,12 @@ class DownloadFragmentChild : Fragment() {
 
 
                 */
-                val key = MainActivity.getViewKey(slug!!, child.episodeIndex)
+                val key = getViewKey(slug!!, child.episodeIndex)
                 card.cardBg.setOnClickListener {
                     if (save) {
                         DataStore.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
                     }
-                    MainActivity.loadPlayer(
+                    MainActivity.activity?.loadPlayer(
                         PlayerData(
                             child.videoTitle,
                             child.videoPath,
@@ -290,7 +297,7 @@ class DownloadFragmentChild : Fragment() {
                     )
                 }
 
-                val pro = MainActivity.getViewPosDur(slug!!,  child.episodeIndex)
+                val pro = getViewPosDur(slug!!,  child.episodeIndex)
                 if (pro.dur > 0 && pro.pos > 0) {
                     var progress: Int = (pro.pos * 100L / pro.dur).toInt()
                     if (progress < 5) {

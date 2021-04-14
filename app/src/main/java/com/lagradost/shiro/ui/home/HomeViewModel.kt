@@ -2,7 +2,7 @@ package com.lagradost.shiro.ui.home
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.lagradost.shiro.ShiroApi
+import com.lagradost.shiro.utils.ShiroApi
 
 class HomeViewModel : ViewModel() {
 

@@ -14,7 +14,6 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.*
-import androidx.core.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.mediarouter.app.MediaRouteButton
@@ -26,19 +25,23 @@ import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
 import com.lagradost.shiro.*
-import com.lagradost.shiro.DataStore.mapper
-import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
-import com.lagradost.shiro.ShiroApi.Companion.getAnimePage
-import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.ShiroApi.Companion.requestHome
-import com.lagradost.shiro.MainActivity.Companion.hideKeyboard
-import com.lagradost.shiro.MainActivity.Companion.isCastApiAvailable
-import com.lagradost.shiro.MainActivity.Companion.popCurrentPage
+import com.lagradost.shiro.utils.DataStore.mapper
+import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
+import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.GlideOptions.bitmapTransform
+import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.PlayerFragment
+import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
+import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
+import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.AppApi.Companion.getColorFromAttr
+import com.lagradost.shiro.utils.AppApi.Companion.hideKeyboard
+import com.lagradost.shiro.utils.AppApi.Companion.isCastApiAvailable
+import com.lagradost.shiro.utils.AppApi.Companion.popCurrentPage
 import jp.wasabeef.glide.transformations.BlurTransformation
-import kotlinx.android.synthetic.main.episode_result.view.*
 import kotlinx.android.synthetic.main.fragment_results_new.*
 import java.util.*
 import kotlin.concurrent.schedule
@@ -141,7 +144,7 @@ class ResultFragment : Fragment() {
             activity?.runOnUiThread {
                 if (data == null) {
                     Toast.makeText(activity, "Error loading anime page!", Toast.LENGTH_LONG).show()
-                    popCurrentPage()
+                    MainActivity.activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
                     return@runOnUiThread
                 }
                 val fadeAnimation = AlphaAnimation(1f, 0f)
@@ -450,7 +453,7 @@ class ResultFragment : Fragment() {
         //media_route_button_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
         //media_route_button.layoutParams = LinearLayout.LayoutParams(20.toPx, 20.toPx + MainActivity.statusHeight)  //setPadding(0, MainActivity.statusHeight, 0, 0)
         title_go_back.setOnClickListener {
-            popCurrentPage()
+            MainActivity.activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         }
 
         bookmark_holder.setOnClickListener {

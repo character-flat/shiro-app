@@ -1,4 +1,4 @@
-package com.lagradost.shiro
+package com.lagradost.shiro.utils
 
 import android.annotation.SuppressLint
 import android.app.*
@@ -15,12 +15,16 @@ import androidx.core.content.FileProvider
 import androidx.preference.PreferenceManager
 import com.bumptech.glide.Glide
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.ShiroApi.Companion.getVideoLink
-import com.lagradost.shiro.MainActivity.Companion.activity
-import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
-import com.lagradost.shiro.MainActivity.Companion.isDonor
-import com.lagradost.shiro.ShiroApi.Companion.USER_AGENT
+import com.lagradost.shiro.BuildConfig
+import com.lagradost.shiro.R
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
+import com.lagradost.shiro.ui.MainActivity.Companion.activity
+import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
+import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
+import com.lagradost.shiro.ui.MainActivity
+import com.lagradost.shiro.utils.AppApi.Companion.getColorFromAttr
+import com.lagradost.shiro.utils.ShiroApi
 import kotlin.concurrent.thread
 import kotlin.math.pow
 import kotlin.math.round
@@ -418,7 +422,8 @@ object DownloadManager {
                     )
                 }
                 DataStore.setKey(
-                    DOWNLOAD_CHILD_KEY, id.toString(), // MUST HAVE ID TO NOT OVERRIDE
+                    DOWNLOAD_CHILD_KEY,
+                    id.toString(), // MUST HAVE ID TO NOT OVERRIDE
                     child
                 )
 

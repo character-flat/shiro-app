@@ -1,6 +1,5 @@
 package com.lagradost.shiro.ui.tv
 
-import java.util.Collections
 import java.util.Timer
 import java.util.TimerTask
 
@@ -13,7 +12,6 @@ import androidx.leanback.app.BackgroundManager
 import androidx.leanback.app.BrowseFragment
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.HeaderItem
-import androidx.leanback.widget.ImageCardView
 import androidx.leanback.widget.ListRow
 import androidx.leanback.widget.ListRowPresenter
 import androidx.leanback.widget.OnItemViewClickedListener
@@ -21,7 +19,6 @@ import androidx.leanback.widget.OnItemViewSelectedListener
 import androidx.leanback.widget.Presenter
 import androidx.leanback.widget.Row
 import androidx.leanback.widget.RowPresenter
-import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
 import android.util.DisplayMetrics
 import android.util.Log
@@ -33,9 +30,8 @@ import androidx.leanback.app.BrowseSupportFragment
 
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
-import com.lagradost.shiro.DataStore.mapper
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ShiroApi
+import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.ui.result.ResultFragment
 
 /**

@@ -1,4 +1,4 @@
-package com.lagradost.shiro
+package com.lagradost.shiro.utils
 
 class Event<T> {
     private val observers = mutableSetOf<(T) -> Unit>()

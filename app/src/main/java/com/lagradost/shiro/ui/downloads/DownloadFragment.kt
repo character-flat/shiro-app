@@ -13,7 +13,12 @@ import android.widget.LinearLayout
 import androidx.appcompat.widget.LinearLayoutCompat
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.shiro.*
-import com.lagradost.shiro.MainActivity.Companion.isDonor
+import com.lagradost.shiro.ui.MainActivity
+import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
+import com.lagradost.shiro.utils.DOWNLOAD_CHILD_KEY
+import com.lagradost.shiro.utils.DOWNLOAD_PARENT_KEY
+import com.lagradost.shiro.utils.DataStore
+import com.lagradost.shiro.utils.DownloadManager
 import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.fragment_download.*
 import java.io.File

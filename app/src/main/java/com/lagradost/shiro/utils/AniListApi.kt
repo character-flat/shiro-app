@@ -1,13 +1,16 @@
-package com.lagradost.shiro
+package com.lagradost.shiro.utils
 
-import android.content.DialogInterface
+import android.app.Activity
 import androidx.appcompat.app.AlertDialog
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.lagradost.shiro.MainActivity.Companion.activity
+import com.lagradost.shiro.ui.MainActivity.Companion.activity
+import com.lagradost.shiro.utils.AppApi.Companion.openBrowser
+import com.lagradost.shiro.utils.AppApi.Companion.splitQuery
+import com.lagradost.shiro.utils.AppApi.Companion.unixTime
 import java.net.URL
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
@@ -47,27 +50,27 @@ class AniListApi {
             }
         }
 
-        fun authenticate() {
+        fun Activity.authenticateAniList() {
             val request = "https://anilist.co/api/v2/oauth/authorize?client_id=$ANILIST_CLIENT_ID&response_type=token"
-            MainActivity.openBrowser(request)
+            openBrowser(request)
         }
 
-        fun initGetUser() {
+        fun Activity.initGetUser() {
             if (DataStore.getKey<String>(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, null) == null) return
             thread {
                 getUser()
             }
         }
 
-        fun authenticateLogin(data: String) {
+        fun Activity.authenticateLogin(data: String) {
             try {
                 val sanitizer =
-                    MainActivity.splitQuery(URL(data.replace("fastaniapp", "https").replace("/#", "?"))) // FIX ERROR
+                    splitQuery(URL(data.replace("fastaniapp", "https").replace("/#", "?"))) // FIX ERROR
                 val token = sanitizer["access_token"]!!
                 val expiresIn = sanitizer["expires_in"]!!
                 println("DATA: $token|$expiresIn")
 
-                val endTime = MainActivity.unixTime() + expiresIn.toLong()
+                val endTime = unixTime() + expiresIn.toLong()
 
                 DataStore.setKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, endTime)
                 DataStore.setKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, token)
@@ -81,15 +84,16 @@ class AniListApi {
             }
         }
 
-        private fun checkToken(): Boolean {
-            if (MainActivity.unixTime() > DataStore.getKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, 0L)!!) {
+        private fun Activity.checkToken(): Boolean {
+            if (unixTime() > DataStore.getKey(
+                    ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, 0L)!!) {
                 activity?.runOnUiThread {
                     val alertDialog: AlertDialog? = activity?.let {
                         val builder = AlertDialog.Builder(it)
                         builder.apply {
                             setPositiveButton("Login"
                             ) { dialog, id ->
-                                authenticate()
+                                authenticateAniList()
                             }
                             setNegativeButton("Cancel"
                             ) { dialog, id ->
@@ -110,7 +114,7 @@ class AniListApi {
             }
         }
 
-        private fun postApi(url: String, q: String): String {
+        private fun Activity.postApi(url: String, q: String): String {
             return try {
                 if (!checkToken()) {
                     // println("VARS_ " + vars)
@@ -135,7 +139,7 @@ class AniListApi {
             }
         }
 
-        fun getDataAboutId(id: Int): AniListTitleHolder? {
+        fun Activity.getDataAboutId(id: Int): AniListTitleHolder? {
             val q: String =
                 """query (${'$'}id: Int = $id) { # Define which variables will be used in the query (id)
                 Media (id: ${'$'}id, type: ANIME) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
@@ -192,7 +196,7 @@ class AniListApi {
 
         }
 
-        fun toggleLike(id: Int): Boolean {
+        fun Activity.toggleLike(id: Int): Boolean {
             val q: String = """mutation (${'$'}animeId: Int = $id) {
 				ToggleFavourite (animeId: ${'$'}animeId) {
 					anime {
@@ -209,7 +213,7 @@ class AniListApi {
             return data != ""
         }
 
-        fun postDataAboutId(id: Int, type: AniListStatusType, score: Int, progress: Int): Boolean {
+        fun Activity.postDataAboutId(id: Int, type: AniListStatusType, score: Int, progress: Int): Boolean {
             val q: String =
                 """mutation (${'$'}id: Int = $id, ${'$'}status: MediaListStatus = ${aniListStatusString[type.value]}, ${'$'}scoreRaw: Int = ${score * 10}, ${'$'}progress: Int = $progress) {
                 SaveMediaListEntry (mediaId: ${'$'}id, status: ${'$'}status, scoreRaw: ${'$'}scoreRaw, progress: ${'$'}progress) {
@@ -225,7 +229,7 @@ class AniListApi {
             return data != ""
         }
 
-        private fun getUser(setSettings: Boolean = true): AniListUser? {
+        private fun Activity.getUser(setSettings: Boolean = true): AniListUser? {
             val q: String = """
 				{
   					Viewer {

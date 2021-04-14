@@ -13,12 +13,15 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.*
-import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.ShiroApi.Companion.requestHome
-import com.lagradost.shiro.MainActivity.Companion.activity
-import com.lagradost.shiro.MainActivity.Companion.loadPlayer
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
+import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.GlideApp
-import kotlinx.android.synthetic.main.home_card.view.*
+import com.lagradost.shiro.ui.LastEpisodeInfo
+import com.lagradost.shiro.ui.MainActivity
+import com.lagradost.shiro.utils.AppApi.Companion.loadPlayer
+import com.lagradost.shiro.utils.DataStore
+import com.lagradost.shiro.utils.VIEW_LST_KEY
 import kotlinx.android.synthetic.main.home_card.view.home_card_root
 import kotlinx.android.synthetic.main.home_card.view.imageText
 import kotlinx.android.synthetic.main.home_card.view.imageView
@@ -87,7 +90,7 @@ class CardContinueAdapter(
                     return@setOnLongClickListener true
                 }
                 itemView.home_card_root.setOnClickListener {
-                    cardInfo.id?.let { it1 -> loadPlayer(cardInfo.episodeIndex, cardInfo.pos, it1) }
+                    cardInfo.id?.let { it1 -> MainActivity.activity?.loadPlayer(cardInfo.episodeIndex, cardInfo.pos, it1) }
                 }
                 itemView.removeButton.setOnClickListener {
                     DataStore.removeKey(VIEW_LST_KEY, cardInfo.aniListId)

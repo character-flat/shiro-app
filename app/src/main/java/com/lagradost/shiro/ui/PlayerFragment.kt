@@ -7,7 +7,6 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.animation.AnimationUtils
 import com.lagradost.shiro.*
-import com.lagradost.shiro.MainActivity.Companion.getViewPosDur
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.upstream.*
 import com.google.android.exoplayer2.util.MimeTypes
@@ -15,7 +14,6 @@ import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.player.*
 import kotlinx.android.synthetic.main.player_custom_layout.*
 import android.view.animation.AlphaAnimation
-import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import android.app.RemoteAction
 import android.graphics.drawable.Icon
 import android.content.Intent
@@ -42,6 +40,7 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AlertDialog
+import androidx.media.AudioManagerCompat.requestAudioFocus
 import androidx.preference.PreferenceManager
 import androidx.transition.TransitionManager
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -51,12 +50,23 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.lagradost.shiro.ShiroApi.Companion.USER_AGENT
-import com.lagradost.shiro.ShiroApi.Companion.getVideoLink
-import com.lagradost.shiro.MainActivity.Companion.activity
-import com.lagradost.shiro.MainActivity.Companion.hideKeyboard
-import com.lagradost.shiro.MainActivity.Companion.hideSystemUI
+import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
+import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
+import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
+import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
+import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
+import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.AppApi.Companion.getColorFromAttr
+import com.lagradost.shiro.utils.AppApi.Companion.getViewKey
+import com.lagradost.shiro.utils.AppApi.Companion.getViewPosDur
+import com.lagradost.shiro.utils.AppApi.Companion.hideKeyboard
+import com.lagradost.shiro.utils.AppApi.Companion.hideSystemUI
+import com.lagradost.shiro.utils.AppApi.Companion.popCurrentPage
+import com.lagradost.shiro.utils.AppApi.Companion.requestAudioFocus
+import com.lagradost.shiro.utils.AppApi.Companion.setViewPosDur
+import com.lagradost.shiro.utils.AppApi.Companion.showSystemUI
 import java.io.File
 import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
@@ -283,7 +293,7 @@ class PlayerFragment : Fragment() {
                         && data?.episodeIndex != null) || data?.card != null)
                 && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0
             ) {
-                MainActivity.setViewPosDur(data!!, exoPlayer.currentPosition, exoPlayer.duration)
+                activity?.setViewPosDur(data!!, exoPlayer.currentPosition, exoPlayer.duration)
             }
         }
     }
@@ -294,7 +304,7 @@ class PlayerFragment : Fragment() {
 
         isInPlayer = false
         onLeftPlayer.invoke(true)
-        MainActivity.showSystemUI()
+        activity?.showSystemUI()
         MainActivity.onPlayerEvent -= ::handlePlayerEvent
         MainActivity.onAudioFocusEvent -= ::handleAudioFocusEvent
         MainActivity.activity?.contentResolver?.unregisterContentObserver(volumeObserver)
@@ -305,7 +315,7 @@ class PlayerFragment : Fragment() {
     private fun updateLock() {
         video_locked_img.setImageResource(if (isLocked) R.drawable.video_locked else R.drawable.video_unlocked)
         video_locked_img.setColorFilter(
-            if (isLocked) requireContext().getColorFromAttr(R.attr.colorPrimary)
+            if (isLocked) requireActivity().getColorFromAttr(R.attr.colorPrimary)
             else Color.WHITE
         )
 
@@ -362,8 +372,8 @@ class PlayerFragment : Fragment() {
             receiver?.let {
                 activity?.unregisterReceiver(it)
             }
-            hideSystemUI()
-            hideKeyboard()
+            activity?.hideSystemUI()
+            this.view?.let { activity?.hideKeyboard(it) }
         }
     }
 
@@ -656,7 +666,7 @@ class PlayerFragment : Fragment() {
 
             override fun onSingleClick() {
                 onClickChange()
-                hideSystemUI()
+                activity?.hideSystemUI()
             }
 
             override fun onMotionEvent(event: MotionEvent) {
@@ -703,11 +713,11 @@ class PlayerFragment : Fragment() {
         retainInstance = true // OTHERWISE IT WILL CAUSE A CRASH
 
         video_go_back.setOnClickListener {
-            MainActivity.popCurrentPage()
+            MainActivity.activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         }
         video_go_back_holder.setOnClickListener {
             println("video_go_back_pressed")
-            MainActivity.popCurrentPage()
+            MainActivity.activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         }
         exo_rew_text.text = fastForwardTime.toString()
         exo_ffwd_text.text = fastForwardTime.toString()
@@ -847,7 +857,7 @@ class PlayerFragment : Fragment() {
                             savePos()
                             val next =
                                 data!!.card!!.episodes!!.size > data!!.episodeIndex!! + 1
-                            val key = MainActivity.getViewKey(
+                            val key = getViewKey(
                                 data?.card!!.slug,
                                 data!!.episodeIndex!! + 1
                             )
@@ -917,7 +927,7 @@ class PlayerFragment : Fragment() {
                         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
                             updatePIPModeActions()
                             if (playWhenReady && playbackState == Player.STATE_READY) {
-                                MainActivity.requestAudioFocus()
+                                focusRequest?.let { activity?.requestAudioFocus(it) }
                             }
                         }
 
@@ -965,7 +975,7 @@ class PlayerFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        hideSystemUI()
+        activity?.hideSystemUI()
         if (data?.card != null) {
             val pro = getViewPosDur(data?.card!!.slug, data?.episodeIndex!!)
             if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME

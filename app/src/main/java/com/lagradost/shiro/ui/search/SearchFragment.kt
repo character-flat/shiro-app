@@ -17,9 +17,9 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ShiroApi
-import com.lagradost.shiro.MainActivity
-import com.lagradost.shiro.toPx
+import com.lagradost.shiro.utils.ShiroApi
+import com.lagradost.shiro.ui.MainActivity
+import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlin.concurrent.thread

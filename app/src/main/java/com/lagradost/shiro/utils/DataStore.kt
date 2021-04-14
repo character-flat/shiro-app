@@ -1,4 +1,4 @@
-package com.lagradost.shiro
+package com.lagradost.shiro.utils
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -60,11 +60,21 @@ object DataStore {
     }
 
     fun removeKey(folder: String, path: String) {
-        removeKey(getFolderName(folder, path))
+        removeKey(
+            getFolderName(
+                folder,
+                path
+            )
+        )
     }
 
     fun containsKey(folder: String, path: String): Boolean {
-        return containsKey(getFolderName(folder, path))
+        return containsKey(
+            getFolderName(
+                folder,
+                path
+            )
+        )
     }
 
     fun containsKey(path: String): Boolean {
@@ -82,7 +92,7 @@ object DataStore {
     }
 
     fun removeKeys(folder: String): Int {
-        val keys = getKeys(folder)
+        val keys = DataStore.getKeys(folder)
         keys.forEach { value ->
             removeKey(value)
         }
@@ -96,7 +106,12 @@ object DataStore {
     }
 
     fun <T> setKey(folder: String, path: String, value: T) {
-        setKey(getFolderName(folder, path), value)
+        setKey(
+            getFolderName(
+                folder,
+                path
+            ), value
+        )
     }
 
     inline fun <reified T : Any> String.toKotlinObject(): T {
@@ -106,7 +121,8 @@ object DataStore {
     // GET KEY GIVEN PATH AND DEFAULT VALUE, NULL IF ERROR
     inline fun <reified T : Any> getKey(path: String, defVal: T?): T? {
         try {
-            val json: String = getSharedPrefs().getString(path, null) ?: return defVal
+            val json: String = getSharedPrefs()
+                .getString(path, null) ?: return defVal
             return json.toKotlinObject()
         } catch (e: Exception) {
             return null
@@ -118,10 +134,20 @@ object DataStore {
     }
 
     inline fun <reified T : Any> getKey(folder: String, path: String): T? {
-        return getKey(getFolderName(folder, path), null)
+        return getKey(
+            getFolderName(
+                folder,
+                path
+            ), null
+        )
     }
 
     inline fun <reified T : Any> getKey(folder: String, path: String, defVal: T?): T? {
-        return getKey(getFolderName(folder, path), defVal)
+        return getKey(
+            getFolderName(
+                folder,
+                path
+            ), defVal
+        )
     }
 }

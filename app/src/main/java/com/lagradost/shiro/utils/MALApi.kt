@@ -1,11 +1,17 @@
-package com.lagradost.shiro
+package com.lagradost.shiro.utils
 
+import android.app.Activity
 import android.util.Base64
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.lagradost.shiro.*
+import com.lagradost.shiro.ui.MainActivity
+import com.lagradost.shiro.utils.AppApi.Companion.openBrowser
+import com.lagradost.shiro.utils.AppApi.Companion.splitQuery
+import com.lagradost.shiro.utils.AppApi.Companion.unixTime
 import java.net.URL
 import java.security.SecureRandom
 import kotlin.concurrent.thread
@@ -21,7 +27,7 @@ class MALApi {
         private var requestId = 0
         private var codeVerifier = ""
 
-        fun authenticate() {
+        fun Activity.authenticateMAL() {
             // It is recommended to use a URL-safe string as code_verifier.
             // See section 4 of RFC 7636 for more details.
 
@@ -35,13 +41,13 @@ class MALApi {
             println("codeVerifier$codeVerifier")
             val request =
                 "https://myanimelist.net/v1/oauth2/authorize?response_type=code&client_id=$MAL_CLIENT_ID&code_challenge=$codeChallenge&state=RequestID$requestId"
-            MainActivity.openBrowser(request)
+            openBrowser(request)
         }
 
         fun authenticateLogin(data: String) {
             try {
                 val sanitizer =
-                    MainActivity.splitQuery(URL(data.replace("fastaniapp", "https").replace("/#", "?"))) // FIX ERROR
+                    splitQuery(URL(data.replace("fastaniapp", "https").replace("/#", "?"))) // FIX ERROR
                 val state = sanitizer["state"]!!
                 if (state == "RequestID$requestId") {
                     val currentCode = sanitizer["code"]!!
@@ -77,7 +83,7 @@ class MALApi {
             try {
                 if (response != "") {
                     val token = mapper.readValue<ResponseToken>(response)
-                    DataStore.setKey(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID, (token.expires_in + MainActivity.unixTime()))
+                    DataStore.setKey(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID, (token.expires_in + unixTime()))
                     DataStore.setKey(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID, token.refresh_token)
                     DataStore.setKey(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, token.access_token)
                 }
@@ -93,7 +99,8 @@ class MALApi {
                     data = mapOf(
                         "client_id" to MAL_CLIENT_ID,
                         "grant_type" to "refresh_token",
-                        "refresh_token" to DataStore.getKey(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID)!!
+                        "refresh_token" to DataStore.getKey(
+                            MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID)!!
                     )
                 ).text
                 storeToken(res)
@@ -149,7 +156,8 @@ class MALApi {
         }
 
         private fun checkToken() {
-            if (MainActivity.unixTime() > DataStore.getKey<Long>(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID)!!) {
+            if (unixTime() > DataStore.getKey<Long>(
+                    MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID)!!) {
                 refreshToken()
             }
         }

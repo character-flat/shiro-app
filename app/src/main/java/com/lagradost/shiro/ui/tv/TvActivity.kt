@@ -1,22 +1,23 @@
 package com.lagradost.shiro.ui.tv
 
-import android.app.Activity
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
-import androidx.preference.PreferenceManager
-import com.lagradost.shiro.DataStore
-import com.lagradost.shiro.MainActivity.Companion.activity
+import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ShiroApi
+import com.lagradost.shiro.utils.ShiroApi
 import kotlin.concurrent.thread
 
 /**
  * Loads [MainFragmentTV].
  */
 class TvActivity : FragmentActivity() {
+    companion object {
+        var tvActivity: FragmentActivity? = null
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        tvActivity = this
         // ----- Themes ----
 
         theme.applyStyle(R.style.AppTheme, true)

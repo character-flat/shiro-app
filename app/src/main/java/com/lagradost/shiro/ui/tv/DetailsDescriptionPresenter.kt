@@ -1,7 +1,7 @@
 package com.lagradost.shiro.ui.tv
 
 import androidx.leanback.widget.AbstractDetailsDescriptionPresenter
-import com.lagradost.shiro.ShiroApi
+import com.lagradost.shiro.utils.ShiroApi
 
 class DetailsDescriptionPresenter : AbstractDetailsDescriptionPresenter() {
 

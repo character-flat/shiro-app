@@ -12,9 +12,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.lagradost.shiro.ShiroApi
-import com.lagradost.shiro.MainActivity.Companion.popCurrentPage
+import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.MainActivity
+import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
+import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
+import com.lagradost.shiro.utils.AppApi.Companion.popCurrentPage
 import kotlinx.android.synthetic.main.fragment_expanded_home.*
 
 private const val CARD_LIST = "card_list"
@@ -65,7 +68,7 @@ class ExpandedHomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         isInExpandedView = true
         title_go_back_holder.setOnClickListener {
-            popCurrentPage()
+            MainActivity.activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         }
         val orientation = resources.configuration.orientation
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {

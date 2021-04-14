@@ -14,15 +14,19 @@ import androidx.preference.*
 import androidx.preference.PreferenceFragmentCompat
 import com.bumptech.glide.Glide
 import com.lagradost.shiro.*
-import com.lagradost.shiro.DataStore.getKeys
-import com.lagradost.shiro.DataStore.removeKeys
-import com.lagradost.shiro.MainActivity.Companion.checkWrite
-import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
-import com.lagradost.shiro.MainActivity.Companion.isDonor
-import com.lagradost.shiro.MainActivity.Companion.md5
-import com.lagradost.shiro.MainActivity.Companion.requestRW
+import com.lagradost.shiro.utils.DataStore.getKeys
+import com.lagradost.shiro.utils.DataStore.removeKeys
+import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.R
-import com.lagradost.shiro.VIEW_LST_KEY
+import com.lagradost.shiro.ui.MainActivity
+import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
+import com.lagradost.shiro.utils.MALApi.Companion.authenticateMAL
+import com.lagradost.shiro.utils.AppApi.Companion.changeStatusBarState
+import com.lagradost.shiro.utils.AppApi.Companion.checkWrite
+import com.lagradost.shiro.utils.AppApi.Companion.getColorFromAttr
+import com.lagradost.shiro.utils.AppApi.Companion.md5
+import com.lagradost.shiro.utils.AppApi.Companion.requestRW
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -39,7 +43,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
         //val saveHistory = findPreference("save_history") as SwitchPreference?
         val clearHistory = findPreference("clear_history") as Preference?
         //setKey(VIEW_POS_KEY, "GGG", 2L)
-        val historyItems = getKeys(VIEW_POS_KEY).size + getKeys(VIEWSTATE_KEY).size
+        val historyItems = getKeys(VIEW_POS_KEY).size + getKeys(
+            VIEWSTATE_KEY
+        ).size
 
         findPreference<ListPreference>("theme")?.setOnPreferenceChangeListener { preference, newValue ->
             activity?.recreate()
@@ -54,7 +60,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     setPositiveButton(
                         "OK"
                     ) { dialog, id ->
-                        val amount = removeKeys(VIEW_POS_KEY) + removeKeys(VIEWSTATE_KEY)
+                        val amount = removeKeys(VIEW_POS_KEY) + removeKeys(
+                            VIEWSTATE_KEY
+                        )
                         removeKeys(VIEW_LST_KEY)
                         removeKeys(VIEW_DUR_KEY)
                         if (amount != 0) {
@@ -80,7 +88,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 // Create the AlertDialog
                 builder.create()
             }
-            if (getKeys(VIEW_POS_KEY).isNotEmpty() || getKeys(VIEWSTATE_KEY).isNotEmpty()) {
+            if (getKeys(VIEW_POS_KEY).isNotEmpty() || getKeys(
+                    VIEWSTATE_KEY
+                ).isNotEmpty()) {
                 alertDialog?.show()
             }
             return@setOnPreferenceClickListener true
@@ -92,7 +102,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             thread {
                 glide.clearDiskCache()
             }
-            val updateFile = File(activity!!.filesDir.toString() + "/Download/apk/update.apk")
+            val updateFile = File(requireActivity().filesDir.toString() + "/Download/apk/update.apk")
             if (updateFile.exists()) {
                 updateFile.delete()
             }
@@ -110,7 +120,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             val clip: ClipData = ClipData.newPlainText("ID", encodedString)
             clipboard.setPrimaryClip(clip)
             Toast.makeText(
-                context!!,
+                requireContext(),
                 "Copied donor ID, give this to the devs to enable donor mode (if you have donated)",
                 Toast.LENGTH_LONG
             ).show()
@@ -131,7 +141,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         anilistButton?.summary = if (isLoggedInAniList) "Logged in" else "Not logged in"
         anilistButton?.setOnPreferenceClickListener {
             if (!isLoggedIntoAniList()) {
-                AniListApi.authenticate()
+                activity?.authenticateAniList()
             } else {
                 val alertDialog: AlertDialog? = activity?.let {
                     val builder = AlertDialog.Builder(it)
@@ -169,7 +179,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         malButton?.summary = if (isLoggedInMAL) "Logged in" else "Not logged in"
         malButton?.setOnPreferenceClickListener {
             if (!isLoggedIntoMal()) {
-                MALApi.authenticate()
+                activity?.authenticateMAL()
             } else {
                 val alertDialog: AlertDialog? = activity?.let {
                     val builder = AlertDialog.Builder(it)
@@ -236,14 +246,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
         val statusBarHidden = findPreference("statusbar_hidden") as SwitchPreference?
         statusBarHidden?.setOnPreferenceChangeListener { _, newValue ->
-            MainActivity.changeStatusBarState(newValue == true)
+            activity?.changeStatusBarState(newValue == true)
             return@setOnPreferenceChangeListener true
         }
         val useExternalStorage = findPreference("use_external_storage") as SwitchPreference?
         useExternalStorage?.setOnPreferenceChangeListener { _, newValue ->
             if (newValue == true) {
-                if (!checkWrite()) {
-                    requestRW()
+                if (!activity?.checkWrite()!!) {
+                    activity?.requestRW()
                 }
             }
             return@setOnPreferenceChangeListener true

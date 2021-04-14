@@ -60,6 +60,10 @@
         <!--<item name="android:background">?attr/background</item>-->
     </style>
 
+    <style name="Leanback" parent="Theme.Leanback">
+
+    </style>
+
     <style name="DialogButton" parent="@style/Widget.AppCompat.Button.Borderless">
         <item name="android:textColor">?attr/textColor</item>
         <item name="android:backgroundTint">@color/transparent</item>

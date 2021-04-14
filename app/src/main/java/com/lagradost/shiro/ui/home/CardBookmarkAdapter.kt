@@ -10,9 +10,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.lagradost.shiro.*
-import com.lagradost.shiro.MainActivity.Companion.fixCardTitle
+import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.GlideApp
+import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.result.ResultFragment
+import com.lagradost.shiro.utils.AppApi.Companion.fixCardTitle
+import com.lagradost.shiro.utils.ShiroApi
 import kotlinx.android.synthetic.main.home_card.view.*
 
 /*Creates card adapters for the bookmarks list*/

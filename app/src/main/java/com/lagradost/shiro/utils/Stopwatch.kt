@@ -1,4 +1,4 @@
-package com.lagradost.shiro.ui
+package com.lagradost.shiro.utils
 
 object Stopwatch {
     inline fun elapse(callback: () -> Unit): Long {

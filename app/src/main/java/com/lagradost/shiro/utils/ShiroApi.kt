@@ -1,16 +1,17 @@
-package com.lagradost.shiro
+package com.lagradost.shiro.utils
 
 import android.annotation.SuppressLint
 import android.provider.Settings
-import android.util.Base64.*
-import androidx.preference.PreferenceManager
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.lagradost.shiro.MainActivity.Companion.activity
-import com.lagradost.shiro.MainActivity.Companion.md5
+import com.lagradost.shiro.*
+import com.lagradost.shiro.ui.BookmarkedTitle
+import com.lagradost.shiro.ui.LastEpisodeInfo
+import com.lagradost.shiro.ui.MainActivity.Companion.activity
+import com.lagradost.shiro.utils.AppApi.Companion.md5
 import khttp.structures.cookie.CookieJar
 import org.jsoup.Jsoup
 import java.lang.Exception
