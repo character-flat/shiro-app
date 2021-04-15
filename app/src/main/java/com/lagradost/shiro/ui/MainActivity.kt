@@ -36,15 +36,16 @@ import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
 import com.lagradost.shiro.utils.AniListApi.Companion.initGetUser
-import com.lagradost.shiro.utils.AppApi.Companion.changeStatusBarState
-import com.lagradost.shiro.utils.AppApi.Companion.checkWrite
-import com.lagradost.shiro.utils.AppApi.Companion.getColorFromAttr
-import com.lagradost.shiro.utils.AppApi.Companion.hasPIPPermission
-import com.lagradost.shiro.utils.AppApi.Companion.hideSystemUI
-import com.lagradost.shiro.utils.AppApi.Companion.md5
-import com.lagradost.shiro.utils.AppApi.Companion.popCurrentPage
-import com.lagradost.shiro.utils.AppApi.Companion.requestRW
-import com.lagradost.shiro.utils.AppApi.Companion.shouldShowPIPMode
+import com.lagradost.shiro.utils.AppApi.changeStatusBarState
+import com.lagradost.shiro.utils.AppApi.checkWrite
+import com.lagradost.shiro.utils.AppApi.getColorFromAttr
+import com.lagradost.shiro.utils.AppApi.hasPIPPermission
+import com.lagradost.shiro.utils.AppApi.hideSystemUI
+import com.lagradost.shiro.utils.AppApi.init
+import com.lagradost.shiro.utils.AppApi.md5
+import com.lagradost.shiro.utils.AppApi.popCurrentPage
+import com.lagradost.shiro.utils.AppApi.requestRW
+import com.lagradost.shiro.utils.AppApi.shouldShowPIPMode
 import com.lagradost.shiro.utils.ShiroApi.Companion.getAppUpdate
 import com.lagradost.shiro.utils.ShiroApi.Companion.getDonorStatus
 import kotlinx.android.synthetic.main.update_dialog.*
@@ -168,6 +169,7 @@ class MainActivity : AppCompatActivity() {
         // This is needed to avoid NPE crash due to missing context
         DataStore.init(this)
         DownloadManager.init(this)
+        init()
         if (isInPlayer) {
             hideSystemUI()
         }
@@ -225,6 +227,7 @@ class MainActivity : AppCompatActivity() {
         activity = this
         DataStore.init(this)
         DownloadManager.init(this)
+        init()
 
         @SuppressLint("HardwareIds")
         val androidId: String = Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID).md5()

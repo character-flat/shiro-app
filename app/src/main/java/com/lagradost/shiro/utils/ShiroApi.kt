@@ -11,7 +11,7 @@ import com.lagradost.shiro.*
 import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.LastEpisodeInfo
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
-import com.lagradost.shiro.utils.AppApi.Companion.md5
+import com.lagradost.shiro.utils.AppApi.md5
 import khttp.structures.cookie.CookieJar
 import org.jsoup.Jsoup
 import java.lang.Exception
@@ -527,16 +527,6 @@ class ShiroApi {
             if (currentToken == null) return null
             getHome(canBeCached)
             return null
-        }
-
-        private fun getSchedule(): List<ScheduleItem>? {
-            val url = "https://fastani.net/api/schedule"
-            val res = currentHeaders?.let {
-                khttp.get(url, headers = it.toMap())
-            }
-            return if (res != null) {
-                mapper.readValue(res.text)
-            } else null
         }
 
         fun getHome(canBeCached: Boolean): ShiroHomePage? {

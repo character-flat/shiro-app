@@ -6,7 +6,7 @@ import com.lagradost.shiro.utils.ShiroApi
 class DetailsDescriptionPresenter : AbstractDetailsDescriptionPresenter() {
 
     override fun onBindDescription(
-        viewHolder: AbstractDetailsDescriptionPresenter.ViewHolder,
+        viewHolder: ViewHolder,
         item: Any
     ) {
         val movie = item as ShiroApi.AnimePageData

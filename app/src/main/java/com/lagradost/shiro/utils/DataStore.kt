@@ -92,7 +92,7 @@ object DataStore {
     }
 
     fun removeKeys(folder: String): Int {
-        val keys = DataStore.getKeys(folder)
+        val keys = getKeys(folder)
         keys.forEach { value ->
             removeKey(value)
         }

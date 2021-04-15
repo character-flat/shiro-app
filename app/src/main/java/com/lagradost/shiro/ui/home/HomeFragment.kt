@@ -25,9 +25,10 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.getRandomAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import com.lagradost.shiro.ui.*
-import com.lagradost.shiro.utils.AppApi.Companion.getNextEpisode
-import com.lagradost.shiro.utils.AppApi.Companion.loadPage
-import com.lagradost.shiro.utils.AppApi.Companion.loadPlayer
+import com.lagradost.shiro.ui.search.settingsManager
+import com.lagradost.shiro.utils.AppApi.getNextEpisode
+import com.lagradost.shiro.utils.AppApi.loadPage
+import com.lagradost.shiro.utils.AppApi.loadPlayer
 import com.lagradost.shiro.utils.ShiroApi
 import kotlinx.android.synthetic.main.download_card.*
 import kotlinx.android.synthetic.main.fragment_home.*
@@ -89,7 +90,6 @@ class HomeFragment : Fragment() {
                         ArrayList(),
                     )
                 }
-                val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
                 val hideDubbed = settingsManager.getBoolean("hide_dubbed", false)
                 val filteredData = if (hideDubbed) data?.filter { it?.name?.endsWith("Dubbed") == false } else data
                 scrollView.adapter = adapter
@@ -97,7 +97,7 @@ class HomeFragment : Fragment() {
                 (scrollView.adapter as CardAdapter).notifyDataSetChanged()
 
                 textView.setOnClickListener {
-                    MainActivity.activity?.supportFragmentManager?.beginTransaction()
+                    activity?.supportFragmentManager?.beginTransaction()
                         ?.setCustomAnimations(
                             R.anim.enter_from_right,
                             R.anim.exit_to_right,
@@ -111,7 +111,7 @@ class HomeFragment : Fragment() {
                                 textView.text.toString()
                             )
                         )
-                        ?.commit()
+                        ?.commitAllowingStateLoss()
                 }
 
             }
@@ -133,7 +133,7 @@ class HomeFragment : Fragment() {
 
             /*Overloaded function create a scrollview of the bookmarks*/
             fun displayCardData(data: List<BookmarkedTitle?>?, scrollView: RecyclerView) {
-                val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
+                val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = activity?.let {
                     CardBookmarkAdapter(
                         it,
                         listOf(),
@@ -241,7 +241,7 @@ class HomeFragment : Fragment() {
                                 val page = getAnimePage(randomData.slug)
                                 if (page != null) {
                                     val nextEpisode = getNextEpisode(page.data)
-                                    MainActivity.activity?.loadPlayer(nextEpisode.episodeIndex, 0L, page.data)
+                                    activity?.loadPlayer(nextEpisode.episodeIndex, 0L, page.data)
                                 } else {
                                     activity?.runOnUiThread {
                                         Toast.makeText(activity, "Loading link failed", Toast.LENGTH_SHORT).show()
@@ -262,7 +262,7 @@ class HomeFragment : Fragment() {
                             return@setOnLongClickListener true
                         }
                         main_info_button.setOnClickListener {
-                            MainActivity.activity?.loadPage(randomData)
+                            activity?.loadPage(randomData)
                         }
                     } else {
                         main_poster_holder.visibility = GONE

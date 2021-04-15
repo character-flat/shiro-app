@@ -32,20 +32,20 @@ class BrowseErrorActivity : Activity() {
         fragmentManager
             .beginTransaction()
             .add(R.id.main_browse_fragment, mErrorFragment)
-            .commit()
+            .commitAllowingStateLoss()
 
         mSpinnerFragment = SpinnerFragment()
         fragmentManager
             .beginTransaction()
             .add(R.id.main_browse_fragment, mSpinnerFragment)
-            .commit()
+            .commitAllowingStateLoss()
 
         val handler = Handler()
         handler.postDelayed({
             fragmentManager
                 .beginTransaction()
                 .remove(mSpinnerFragment)
-                .commit()
+                .commitAllowingStateLoss()
             mErrorFragment.setErrorContent()
         }, TIMER_DELAY)
     }

@@ -13,7 +13,7 @@ class PlaybackActivity : FragmentActivity() {
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .replace(android.R.id.content, PlaybackVideoFragment())
-                .commit()
+                .commitAllowingStateLoss()
         }
     }
 }

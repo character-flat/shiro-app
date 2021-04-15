@@ -57,16 +57,17 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
+import com.lagradost.shiro.ui.search.settingsManager
 import com.lagradost.shiro.utils.*
-import com.lagradost.shiro.utils.AppApi.Companion.getColorFromAttr
-import com.lagradost.shiro.utils.AppApi.Companion.getViewKey
-import com.lagradost.shiro.utils.AppApi.Companion.getViewPosDur
-import com.lagradost.shiro.utils.AppApi.Companion.hideKeyboard
-import com.lagradost.shiro.utils.AppApi.Companion.hideSystemUI
-import com.lagradost.shiro.utils.AppApi.Companion.popCurrentPage
-import com.lagradost.shiro.utils.AppApi.Companion.requestAudioFocus
-import com.lagradost.shiro.utils.AppApi.Companion.setViewPosDur
-import com.lagradost.shiro.utils.AppApi.Companion.showSystemUI
+import com.lagradost.shiro.utils.AppApi.getColorFromAttr
+import com.lagradost.shiro.utils.AppApi.getViewKey
+import com.lagradost.shiro.utils.AppApi.getViewPosDur
+import com.lagradost.shiro.utils.AppApi.hideKeyboard
+import com.lagradost.shiro.utils.AppApi.hideSystemUI
+import com.lagradost.shiro.utils.AppApi.popCurrentPage
+import com.lagradost.shiro.utils.AppApi.requestAudioFocus
+import com.lagradost.shiro.utils.AppApi.setViewPosDur
+import com.lagradost.shiro.utils.AppApi.showSystemUI
 import java.io.File
 import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
@@ -164,7 +165,7 @@ class PlayerFragment : Fragment() {
     private var hasPassedVerticalSwipeThreshold = false
 
     private var playbackSpeed = DataStore.getKey(PLAYBACK_SPEED_KEY, 1f)
-    private val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
+
     private val swipeEnabled = settingsManager.getBoolean("swipe_enabled", true)
     private val swipeVerticalEnabled = settingsManager.getBoolean("swipe_vertical_enabled", true)
     private val skipOpEnabled = settingsManager.getBoolean("skip_op_enabled", false)
@@ -173,6 +174,7 @@ class PlayerFragment : Fragment() {
     private val playerResizeEnabled = settingsManager.getBoolean("player_resize_enabled", false)
     private val doubleTapTime = settingsManager.getInt("dobule_tap_time", 10)
     private val fastForwardTime = settingsManager.getInt("fast_forward_button_time", 10)
+
     private val resizeModes = listOf(
         AspectRatioFrameLayout.RESIZE_MODE_FIT,
         AspectRatioFrameLayout.RESIZE_MODE_FILL,
@@ -293,7 +295,7 @@ class PlayerFragment : Fragment() {
                         && data?.episodeIndex != null) || data?.card != null)
                 && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0
             ) {
-                activity?.setViewPosDur(data!!, exoPlayer.currentPosition, exoPlayer.duration)
+                setViewPosDur(data!!, exoPlayer.currentPosition, exoPlayer.duration)
             }
         }
     }
@@ -307,7 +309,7 @@ class PlayerFragment : Fragment() {
         activity?.showSystemUI()
         MainActivity.onPlayerEvent -= ::handlePlayerEvent
         MainActivity.onAudioFocusEvent -= ::handleAudioFocusEvent
-        MainActivity.activity?.contentResolver?.unregisterContentObserver(volumeObserver)
+        activity?.contentResolver?.unregisterContentObserver(volumeObserver)
         super.onDestroy()
         //MainActivity.showSystemUI()
     }
@@ -315,7 +317,7 @@ class PlayerFragment : Fragment() {
     private fun updateLock() {
         video_locked_img.setImageResource(if (isLocked) R.drawable.video_locked else R.drawable.video_unlocked)
         video_locked_img.setColorFilter(
-            if (isLocked) requireActivity().getColorFromAttr(R.attr.colorPrimary)
+            if (isLocked && activity != null) requireActivity().getColorFromAttr(R.attr.colorPrimary)
             else Color.WHITE
         )
 
@@ -477,7 +479,7 @@ class PlayerFragment : Fragment() {
         // No swiping on unloaded
         // https://exoplayer.dev/doc/reference/constant-values.html
         if (isLocked || exoPlayer.duration == -9223372036854775807L || (!swipeEnabled && !swipeVerticalEnabled)) return
-        val audioManager = MainActivity.activity?.getSystemService(AUDIO_SERVICE) as AudioManager
+        val audioManager = activity?.getSystemService(AUDIO_SERVICE) as AudioManager
 
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -595,7 +597,7 @@ class PlayerFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
-        MainActivity.activity?.contentResolver
+        activity?.contentResolver
             ?.registerContentObserver(
                 android.provider.Settings.System.CONTENT_URI, true, volumeObserver
             )
@@ -713,11 +715,11 @@ class PlayerFragment : Fragment() {
         retainInstance = true // OTHERWISE IT WILL CAUSE A CRASH
 
         video_go_back.setOnClickListener {
-            MainActivity.activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
+            activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         }
         video_go_back_holder.setOnClickListener {
             println("video_go_back_pressed")
-            MainActivity.activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
+            activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         }
         exo_rew_text.text = fastForwardTime.toString()
         exo_ffwd_text.text = fastForwardTime.toString()

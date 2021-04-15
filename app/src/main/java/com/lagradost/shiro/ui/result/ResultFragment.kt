@@ -36,11 +36,12 @@ import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.PlayerFragment
 import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
+import com.lagradost.shiro.ui.search.settingsManager
 import com.lagradost.shiro.utils.*
-import com.lagradost.shiro.utils.AppApi.Companion.getColorFromAttr
-import com.lagradost.shiro.utils.AppApi.Companion.hideKeyboard
-import com.lagradost.shiro.utils.AppApi.Companion.isCastApiAvailable
-import com.lagradost.shiro.utils.AppApi.Companion.popCurrentPage
+import com.lagradost.shiro.utils.AppApi.getColorFromAttr
+import com.lagradost.shiro.utils.AppApi.hideKeyboard
+import com.lagradost.shiro.utils.AppApi.isCastApiAvailable
+import com.lagradost.shiro.utils.AppApi.popCurrentPage
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.fragment_results_new.*
 import java.util.*
@@ -118,7 +119,6 @@ class ResultFragment : Fragment() {
     ): View? {
         resultViewModel =
             activity?.let { ViewModelProviders.of(it).get(ResultViewModel::class.java) }!!
-        val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
         val useNewLayout = settingsManager.getBoolean("new_results_page", false)
         val layout = if (useNewLayout) R.layout.fragment_results_new else R.layout.fragment_results
         return inflater.inflate(layout, container, false)
@@ -144,7 +144,7 @@ class ResultFragment : Fragment() {
             activity?.runOnUiThread {
                 if (data == null) {
                     Toast.makeText(activity, "Error loading anime page!", Toast.LENGTH_LONG).show()
-                    MainActivity.activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
+                    activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
                     return@runOnUiThread
                 }
                 val fadeAnimation = AlphaAnimation(1f, 0f)
@@ -385,7 +385,6 @@ class ResultFragment : Fragment() {
     }
 
     private fun loadSeason() {
-        val settingsManager = PreferenceManager.getDefaultSharedPreferences(requireActivity())
         val save = settingsManager.getBoolean("save_history", true)
         val data = if (isDefaultData) data else dataOther
         if (data?.episodes?.isNotEmpty() == true) {
@@ -418,7 +417,10 @@ class ResultFragment : Fragment() {
 
     private fun onDownloadStarted(id: String) {
         activity?.runOnUiThread {
-            (title_season_cards.adapter as EpisodeAdapter).notifyDataSetChanged()
+            // Cast failure when going out of the page, making it catch to fully stop any of those crashes
+            try {
+                (title_season_cards.adapter as EpisodeAdapter).notifyDataSetChanged()
+            } catch (e: java.lang.NullPointerException) {}
         }
     }
 
@@ -426,7 +428,6 @@ class ResultFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         isInResults = true
-
 
         hideKeyboard()
         //title_duration.text = data!!.duration.toString() + "min"
@@ -453,7 +454,7 @@ class ResultFragment : Fragment() {
         //media_route_button_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
         //media_route_button.layoutParams = LinearLayout.LayoutParams(20.toPx, 20.toPx + MainActivity.statusHeight)  //setPadding(0, MainActivity.statusHeight, 0, 0)
         title_go_back.setOnClickListener {
-            MainActivity.activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
+            activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         }
 
         bookmark_holder.setOnClickListener {

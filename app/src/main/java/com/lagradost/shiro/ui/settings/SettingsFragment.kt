@@ -22,18 +22,18 @@ import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
 import com.lagradost.shiro.utils.MALApi.Companion.authenticateMAL
-import com.lagradost.shiro.utils.AppApi.Companion.changeStatusBarState
-import com.lagradost.shiro.utils.AppApi.Companion.checkWrite
-import com.lagradost.shiro.utils.AppApi.Companion.getColorFromAttr
-import com.lagradost.shiro.utils.AppApi.Companion.md5
-import com.lagradost.shiro.utils.AppApi.Companion.requestRW
+import com.lagradost.shiro.utils.AppApi.changeStatusBarState
+import com.lagradost.shiro.utils.AppApi.checkWrite
+import com.lagradost.shiro.utils.AppApi.getColorFromAttr
+import com.lagradost.shiro.utils.AppApi.md5
+import com.lagradost.shiro.utils.AppApi.requestRW
 import java.io.File
 import kotlin.concurrent.thread
 
 class SettingsFragment : PreferenceFragmentCompat() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         super.onCreateView(inflater, container, savedInstanceState)?.apply {
-            setBackgroundColor(MainActivity.activity!!.getColorFromAttr(R.attr.background))
+            activity?.getColorFromAttr(R.attr.background)?.let { setBackgroundColor(it) }
         }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -102,7 +102,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             thread {
                 glide.clearDiskCache()
             }
-            val updateFile = File(requireActivity().filesDir.toString() + "/Download/apk/update.apk")
+            val updateFile = File(activity?.filesDir.toString() + "/Download/apk/update.apk")
             if (updateFile.exists()) {
                 updateFile.delete()
             }

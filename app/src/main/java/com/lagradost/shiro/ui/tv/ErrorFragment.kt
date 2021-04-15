@@ -22,11 +22,11 @@ class ErrorFragment : androidx.leanback.app.ErrorFragment() {
 
         buttonText = resources.getString(R.string.dismiss_error)
         buttonClickListener = View.OnClickListener {
-            fragmentManager.beginTransaction().remove(this@ErrorFragment).commit()
+            fragmentManager.beginTransaction().remove(this@ErrorFragment).commitAllowingStateLoss()
         }
     }
 
     companion object {
-        private val TRANSLUCENT = true
+        private const val TRANSLUCENT = true
     }
 }

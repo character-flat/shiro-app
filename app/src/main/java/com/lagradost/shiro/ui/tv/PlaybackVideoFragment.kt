@@ -36,7 +36,6 @@ class PlaybackVideoFragment : VideoSupportFragment() {
         val url = data.episodes?.get(0)?.videos?.get(0)?.let { getVideoLink(it.video_id) }
         println(url)
 
-
         playerAdapter.setDataSource(Uri.parse("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"))
     }
 

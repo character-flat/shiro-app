@@ -26,7 +26,6 @@ import kotlin.concurrent.thread
 
 class SearchFragment : Fragment() {
     private lateinit var searchViewModel: SearchViewModel
-    private val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
     private val compactView = settingsManager.getBoolean("compact_search_enabled", true)
     private val spanCountLandscape = if (compactView) 2 else 6
     private val spanCountPortrait = if (compactView) 1 else 3
@@ -62,7 +61,6 @@ class SearchFragment : Fragment() {
             )
         }
         cardSpace.adapter = adapter
-        val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
         val hideDubbed = settingsManager.getBoolean("hide_dubbed", false)
         main_search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {

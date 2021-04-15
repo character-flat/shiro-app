@@ -19,7 +19,7 @@ import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.LastEpisodeInfo
 import com.lagradost.shiro.ui.MainActivity
-import com.lagradost.shiro.utils.AppApi.Companion.loadPlayer
+import com.lagradost.shiro.utils.AppApi.loadPlayer
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.VIEW_LST_KEY
 import kotlinx.android.synthetic.main.home_card.view.home_card_root
@@ -79,7 +79,7 @@ class CardContinueAdapter(
                         activity?.supportFragmentManager?.beginTransaction()
                             ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                             ?.add(R.id.homeRoot, ResultFragment.newInstance(cardInfo.id))
-                            ?.commit()
+                            ?.commitAllowingStateLoss()
 
                     }
                 } else {
@@ -90,7 +90,7 @@ class CardContinueAdapter(
                     return@setOnLongClickListener true
                 }
                 itemView.home_card_root.setOnClickListener {
-                    cardInfo.id?.let { it1 -> MainActivity.activity?.loadPlayer(cardInfo.episodeIndex, cardInfo.pos, it1) }
+                    cardInfo.id?.let { it1 -> activity?.loadPlayer(cardInfo.episodeIndex, cardInfo.pos, it1) }
                 }
                 itemView.removeButton.setOnClickListener {
                     DataStore.removeKey(VIEW_LST_KEY, cardInfo.aniListId)

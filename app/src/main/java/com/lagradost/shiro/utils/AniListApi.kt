@@ -8,9 +8,9 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
-import com.lagradost.shiro.utils.AppApi.Companion.openBrowser
-import com.lagradost.shiro.utils.AppApi.Companion.splitQuery
-import com.lagradost.shiro.utils.AppApi.Companion.unixTime
+import com.lagradost.shiro.utils.AppApi.openBrowser
+import com.lagradost.shiro.utils.AppApi.splitQuery
+import com.lagradost.shiro.utils.AppApi.unixTime
 import java.net.URL
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread

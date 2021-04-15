@@ -9,7 +9,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.signature.ObjectKey
 
 @GlideModule
-class FastaniGlideModule : AppGlideModule() {
+class ShiroGlideModule : AppGlideModule() {
     override fun applyOptions(context: Context, builder: GlideBuilder) {
         super.applyOptions(context, builder)
         builder.apply {

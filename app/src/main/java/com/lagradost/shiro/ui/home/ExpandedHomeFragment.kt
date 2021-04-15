@@ -17,7 +17,8 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
-import com.lagradost.shiro.utils.AppApi.Companion.popCurrentPage
+import com.lagradost.shiro.ui.search.settingsManager
+import com.lagradost.shiro.utils.AppApi.popCurrentPage
 import kotlinx.android.synthetic.main.fragment_expanded_home.*
 
 private const val CARD_LIST = "card_list"
@@ -68,7 +69,7 @@ class ExpandedHomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         isInExpandedView = true
         title_go_back_holder.setOnClickListener {
-            MainActivity.activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
+            activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         }
         val orientation = resources.configuration.orientation
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -83,7 +84,6 @@ class ExpandedHomeFragment : Fragment() {
                 ArrayList(),
             )
         }
-        val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
         val hideDubbed = settingsManager.getBoolean("hide_dubbed", false)
         val filteredData = if (hideDubbed) cardList?.filter { it?.name?.endsWith("Dubbed") == false } else cardList
         expanded_card_list_view.adapter = adapter

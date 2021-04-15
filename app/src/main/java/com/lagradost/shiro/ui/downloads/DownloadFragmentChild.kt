@@ -26,11 +26,12 @@ import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedVi
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.fixEpTitle
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isViewState
-import com.lagradost.shiro.utils.AppApi.Companion.getColorFromAttr
-import com.lagradost.shiro.utils.AppApi.Companion.getViewKey
-import com.lagradost.shiro.utils.AppApi.Companion.getViewPosDur
-import com.lagradost.shiro.utils.AppApi.Companion.loadPlayer
-import com.lagradost.shiro.utils.AppApi.Companion.popCurrentPage
+import com.lagradost.shiro.ui.search.settingsManager
+import com.lagradost.shiro.utils.AppApi.getColorFromAttr
+import com.lagradost.shiro.utils.AppApi.getViewKey
+import com.lagradost.shiro.utils.AppApi.getViewPosDur
+import com.lagradost.shiro.utils.AppApi.loadPlayer
+import com.lagradost.shiro.utils.AppApi.popCurrentPage
 import com.lagradost.shiro.utils.DOWNLOAD_PARENT_KEY
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.DownloadManager
@@ -52,7 +53,7 @@ class DownloadFragmentChild : Fragment() {
         top_padding_download_child.layoutParams = topParams
         PlayerFragment.onLeftPlayer += ::onPlayerLeft
         download_go_back.setOnClickListener {
-            MainActivity.activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
+            activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         }
         loadData()
     }
@@ -70,7 +71,6 @@ class DownloadFragmentChild : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     private fun loadData() {
         downloadRootChild.removeAllViews()
-        val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
         val save = settingsManager.getBoolean("save_history", true)
 
         // When fastani is down it doesn't report any seasons and this is needed.
@@ -103,7 +103,7 @@ class DownloadFragmentChild : Fragment() {
                     if (save) {
                         DataStore.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
                     }
-                    MainActivity.activity?.loadPlayer(
+                    activity?.loadPlayer(
                         PlayerData(
                             child.videoTitle,
                             child.videoPath,

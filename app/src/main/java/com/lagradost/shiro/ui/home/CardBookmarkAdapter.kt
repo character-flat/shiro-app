@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -14,7 +15,7 @@ import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.result.ResultFragment
-import com.lagradost.shiro.utils.AppApi.Companion.fixCardTitle
+import com.lagradost.shiro.utils.AppApi.fixCardTitle
 import com.lagradost.shiro.utils.ShiroApi
 import kotlinx.android.synthetic.main.home_card.view.*
 
@@ -69,10 +70,10 @@ class CardBookmarkAdapter(
                     return@setOnLongClickListener true
                 }
                 itemView.home_card_root.setOnClickListener {
-                    MainActivity.activity?.supportFragmentManager?.beginTransaction()
-                        ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                        ?.add(R.id.homeRoot, ResultFragment.newInstance(cardInfo))
-                        ?.commit()
+                    (context as FragmentActivity).supportFragmentManager.beginTransaction()
+                        .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                        .add(R.id.homeRoot, ResultFragment.newInstance(cardInfo))
+                        .commitAllowingStateLoss()
 
                 }
             }

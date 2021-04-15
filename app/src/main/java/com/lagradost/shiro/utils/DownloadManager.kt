@@ -12,7 +12,6 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
-import androidx.preference.PreferenceManager
 import com.bumptech.glide.Glide
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.shiro.BuildConfig
@@ -23,8 +22,8 @@ import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 import com.lagradost.shiro.ui.MainActivity
-import com.lagradost.shiro.utils.AppApi.Companion.getColorFromAttr
-import com.lagradost.shiro.utils.ShiroApi
+import com.lagradost.shiro.ui.search.settingsManager
+import com.lagradost.shiro.utils.AppApi.getColorFromAttr
 import kotlin.concurrent.thread
 import kotlin.math.pow
 import kotlin.math.round
@@ -36,9 +35,9 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 const val UPDATE_TIME = 1000
-const val CHANNEL_ID = "fastani.general"
+const val CHANNEL_ID = "shiro.general"
 const val CHANNEL_NAME = "Downloads"
-const val CHANNEL_DESCRIPTION = "The download notification channel for the fastani app"
+const val CHANNEL_DESCRIPTION = "The download notification channel for the shiro app"
 
 // USED TO STOP, CANCEL AND RESUME FROM ACTION IN NOTIFICATION
 class DownloadService : IntentService("DownloadService") {
@@ -231,7 +230,7 @@ object DownloadManager {
                 }
 
                 val rUrl =
-                    (if (url.startsWith("https://") || url.startsWith("http://")) url else "https://fastani.net/$url").replace(
+                    (if (url.startsWith("https://") || url.startsWith("http://")) url else getFullUrlCdn(url)).replace(
                         " ",
                         "%20"
                     )
@@ -267,7 +266,6 @@ object DownloadManager {
 
     @SuppressLint("HardwareIds")
     fun downloadEpisode(info: DownloadInfo, resumeIntent: Boolean = false) {
-        val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
         val useExternalStorage = settingsManager.getBoolean("use_external_storage", false)
 
         // IsInResult == isDonor

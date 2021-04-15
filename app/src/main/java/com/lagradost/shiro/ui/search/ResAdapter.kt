@@ -20,7 +20,7 @@ import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.AutofitRecyclerView
 import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.toPx
-import com.lagradost.shiro.utils.AppApi.Companion.fixCardTitle
+import com.lagradost.shiro.utils.AppApi.fixCardTitle
 import com.lagradost.shiro.utils.BOOKMARK_KEY
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.ShiroApi
@@ -44,7 +44,6 @@ class ResAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val compactView = settingsManager.getBoolean("compact_search_enabled", true)
-        val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
         val hideDubbed = settingsManager.getBoolean("hide_dubbed", false)
         if (hideDubbed) {
             cardList = cardList.filter { !it.name.endsWith("Dubbed") } as ArrayList<ShiroApi.ShiroSearchResponseShow>
@@ -119,7 +118,7 @@ class ResAdapter(
                     activity?.supportFragmentManager?.beginTransaction()
                         ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                         ?.add(R.id.homeRoot, ResultFragment.newInstance(card))
-                        ?.commit()
+                        ?.commitAllowingStateLoss()
 
 
                 }
@@ -140,7 +139,7 @@ class ResAdapter(
                 activity?.supportFragmentManager?.beginTransaction()
                     ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                     ?.add(R.id.homeRoot, ResultFragment.newInstance(card))
-                    ?.commit()
+                    ?.commitAllowingStateLoss()
 
 
                 /*MainActivity.loadPage(card)*/

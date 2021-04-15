@@ -157,7 +157,7 @@ class MainFragmentTV : BrowseSupportFragment() {
                 activity?.supportFragmentManager?.beginTransaction()
                     ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                     ?.add(R.id.main_browse_fragment, ResultFragment.newInstance(item))
-                    ?.commit()
+                    ?.commitAllowingStateLoss()
                 /*val intent = Intent(activity, DetailsActivityTV::class.java)
                     intent.putExtra(DetailsActivityTV.MOVIE, mapper.writeValueAsString(item))
 

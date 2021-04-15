@@ -14,7 +14,7 @@ import com.lagradost.shiro.*
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.GlideApp
-import com.lagradost.shiro.utils.AppApi.Companion.fixCardTitle
+import com.lagradost.shiro.utils.AppApi.fixCardTitle
 import com.lagradost.shiro.utils.ShiroApi
 import kotlinx.android.synthetic.main.home_card.view.*
 
@@ -72,7 +72,7 @@ class CardAdapter(
                     activity?.supportFragmentManager?.beginTransaction()
                         ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                         ?.add(R.id.homeRoot, ResultFragment.newInstance(cardInfo))
-                        ?.commit()
+                        ?.commitAllowingStateLoss()
 
                 }
             }

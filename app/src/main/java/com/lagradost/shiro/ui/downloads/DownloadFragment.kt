@@ -112,7 +112,7 @@ class DownloadFragment : Fragment() {
                                         parent.slug
                                     )
                                 )
-                                ?.commit()
+                                ?.commitAllowingStateLoss()
                             /*MainActivity.activity?.supportFragmentManager?.beginTransaction()
                                 ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                                 ?.replace(
@@ -120,7 +120,7 @@ class DownloadFragment : Fragment() {
                                         parent.anilistId
                                     )
                                 )
-                                ?.commit()*/
+                                ?.commitAllowingStateLoss()*/
                         }
 
                         downloadRoot.addView(cardView)
@@ -141,7 +141,7 @@ class DownloadFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val path = MainActivity.activity?.filesDir.toString() + "/Download/"
+        val path = activity?.filesDir.toString() + "/Download/"
         File(path).walk().forEach {
             println("PATH: $it")
         }
