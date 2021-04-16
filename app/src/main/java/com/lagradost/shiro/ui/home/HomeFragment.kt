@@ -83,7 +83,7 @@ class HomeFragment : Fragment() {
 
             generateRandom(data?.random)
 
-            fun displayCardData(data: List<ShiroApi.AnimePageData?>?, scrollView: RecyclerView, textView: TextView) {
+            fun displayCardData(data: List<ShiroApi.CommonAnimePage?>?, scrollView: RecyclerView, textView: TextView) {
                 val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
                     CardAdapter(
                         it,
@@ -93,7 +93,7 @@ class HomeFragment : Fragment() {
                 val hideDubbed = settingsManager.getBoolean("hide_dubbed", false)
                 val filteredData = if (hideDubbed) data?.filter { it?.name?.endsWith("Dubbed") == false } else data
                 scrollView.adapter = adapter
-                (scrollView.adapter as CardAdapter).cardList = filteredData as ArrayList<ShiroApi.AnimePageData?>
+                (scrollView.adapter as CardAdapter).cardList = filteredData as ArrayList<ShiroApi.CommonAnimePage?>
                 (scrollView.adapter as CardAdapter).notifyDataSetChanged()
 
                 textView.setOnClickListener {
@@ -131,22 +131,6 @@ class HomeFragment : Fragment() {
                 }
             }
 
-            /*Overloaded function create a scrollview of the bookmarks*/
-            fun displayCardData(data: List<BookmarkedTitle?>?, scrollView: RecyclerView) {
-                val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = activity?.let {
-                    CardBookmarkAdapter(
-                        it,
-                        listOf(),
-                    )
-                }
-
-                scrollView.adapter = adapter
-                if (data != null) {
-                    (scrollView.adapter as CardBookmarkAdapter).cardList = data
-                    (scrollView.adapter as CardBookmarkAdapter).notifyDataSetChanged()
-                }
-            }
-
             if (data != null) {
                 displayCardData(data.data.trending_animes, trending_anime_scroll_view, trending_text)
                 displayCardData(
@@ -163,7 +147,7 @@ class HomeFragment : Fragment() {
             if (data?.favorites?.isNotEmpty() == true) {
                 favouriteRoot.visibility = VISIBLE
                 //println(data.favorites!!.map { it?.title?.english})
-                displayCardData(data.favorites, favouriteScrollView)
+                displayCardData(data.favorites, favouriteScrollView, favorites_text)
             } else {
                 favouriteRoot.visibility = GONE
             }

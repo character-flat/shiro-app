@@ -6,7 +6,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
@@ -14,7 +13,6 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.search.settingsManager
@@ -27,17 +25,17 @@ private const val spanCountLandscape = 6
 private const val spanCountPortrait = 3
 
 class ExpandedHomeFragment : Fragment() {
-    private var cardList: List<ShiroApi.AnimePageData?>? = null
+    private var cardList: List<ShiroApi.CommonAnimePageData?>? = null
     private var title: String? = null
     private val mapper = JsonMapper.builder().addModule(KotlinModule())
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            val cards = it.getString(CARD_LIST)
-            cardList = cards?.let { it1 -> mapper.readValue(it1) }
-            title = it.getString(TITLE)
+        arguments?.let { bundle ->
+            val cards = bundle.getString(CARD_LIST)
+            cardList = cards?.let { mapper.readValue<List<ShiroApi.CommonAnimePageData>>(it) }
+            title = bundle.getString(TITLE)
         }
     }
 
@@ -87,7 +85,7 @@ class ExpandedHomeFragment : Fragment() {
         val hideDubbed = settingsManager.getBoolean("hide_dubbed", false)
         val filteredData = if (hideDubbed) cardList?.filter { it?.name?.endsWith("Dubbed") == false } else cardList
         expanded_card_list_view.adapter = adapter
-        (expanded_card_list_view.adapter as CardAdapter).cardList = filteredData as ArrayList<ShiroApi.AnimePageData?>
+        (expanded_card_list_view.adapter as CardAdapter).cardList = filteredData as ArrayList<ShiroApi.CommonAnimePage?>
         (expanded_card_list_view.adapter as CardAdapter).notifyDataSetChanged()
 
     }

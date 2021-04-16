@@ -51,6 +51,8 @@ import kotlin.concurrent.thread
 
 const val DESCRIPTION_LENGTH1 = 200
 
+const val SLUG = "slug"
+
 class ResultFragment : Fragment() {
     private var data: ShiroApi.AnimePageData? = null
     private var slug: String? = null
@@ -85,28 +87,10 @@ class ResultFragment : Fragment() {
             return title
         }
 
-        fun newInstance(data: ShiroApi.ShiroSearchResponseShow) =
+        fun newInstance(data: String) =
             ResultFragment().apply {
                 arguments = Bundle().apply {
-                    //println(data)
-                    putString("ShiroSearchResponseShow", mapper.writeValueAsString(data))
-                }
-            }
-
-        fun newInstance(data: ShiroApi.AnimePageData) =
-            ResultFragment().apply {
-                arguments = Bundle().apply {
-                    //println(data)
-                    putString("AnimePageData", mapper.writeValueAsString(data))
-                }
-            }
-
-        /*Creating a new Instance of the given data*/
-        fun newInstance(data: BookmarkedTitle) =
-            ResultFragment().apply {
-                arguments = Bundle().apply {
-                    //println(data)
-                    putString("BookmarkedTitle", mapper.writeValueAsString(data))
+                    putString(SLUG, data)
                 }
             }
     }
@@ -136,7 +120,6 @@ class ResultFragment : Fragment() {
             TransitionManager.beginDelayedTransition(episodes_text_holder, transition)
         }
     }
-
 
     private fun onLoadEvent(isSucc: Boolean) {
         if (isSucc) {
@@ -299,28 +282,13 @@ class ResultFragment : Fragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         println("Attached result fragment")
-        arguments?.getString("ShiroSearchResponseShow")?.let {
+        arguments?.getString(SLUG)?.let {
             thread {
-                data = getAnimePage(mapper.readValue(it, ShiroApi.ShiroSearchResponseShow::class.java))?.data
+                data = getAnimePage(it)?.data
                 initData()
             }
         }
 
-        // Kinda hacky solution, but works
-        arguments?.getString("AnimePageData")?.let {
-            thread {
-                val pageData = mapper.readValue(it, ShiroApi.AnimePageData::class.java)
-                data = getAnimePage(pageData.slug)?.data
-                initData()
-            }
-        }
-
-        arguments?.getString("BookmarkedTitle")?.let {
-            thread {
-                data = getAnimePage(mapper.readValue(it, BookmarkedTitle::class.java))?.data
-                initData()
-            }
-        }
 
         //isMovie = data!!.episodes == 1 && data!!.status == "FINISHED"
     }
@@ -420,7 +388,8 @@ class ResultFragment : Fragment() {
             // Cast failure when going out of the page, making it catch to fully stop any of those crashes
             try {
                 (title_season_cards.adapter as EpisodeAdapter).notifyDataSetChanged()
-            } catch (e: java.lang.NullPointerException) {}
+            } catch (e: java.lang.NullPointerException) {
+            }
         }
     }
 

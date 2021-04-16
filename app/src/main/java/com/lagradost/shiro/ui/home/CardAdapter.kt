@@ -21,7 +21,7 @@ import kotlinx.android.synthetic.main.home_card.view.*
 
 class CardAdapter(
     context: Context,
-    animeList: ArrayList<ShiroApi.AnimePageData?>
+    animeList: ArrayList<ShiroApi.CommonAnimePage?>
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var cardList = animeList
@@ -39,7 +39,6 @@ class CardAdapter(
             is CardViewHolder -> {
                 holder.bind(cardList[position])
             }
-
         }
     }
 
@@ -50,7 +49,7 @@ class CardAdapter(
     class CardViewHolder(itemView: View, _context: Context) : RecyclerView.ViewHolder(itemView) {
         val context = _context
         val card: ImageView = itemView.imageView
-        fun bind(cardInfo: ShiroApi.AnimePageData?) {
+        fun bind(cardInfo: ShiroApi.CommonAnimePage?) {
             if (cardInfo != null) {
                 val glideUrl =
                     GlideUrl(getFullUrlCdn(cardInfo.image))
@@ -69,9 +68,10 @@ class CardAdapter(
                     return@setOnLongClickListener true
                 }
                 itemView.home_card_root.setOnClickListener {
+                    println("SLIG ${cardInfo.slug}")
                     activity?.supportFragmentManager?.beginTransaction()
                         ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                        ?.add(R.id.homeRoot, ResultFragment.newInstance(cardInfo))
+                        ?.add(R.id.homeRoot, ResultFragment.newInstance(cardInfo.slug))
                         ?.commitAllowingStateLoss()
 
                 }

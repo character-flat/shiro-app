@@ -38,7 +38,6 @@ import kotlin.concurrent.thread
 object AppApi {
     var settingsmanager: SharedPreferences? = null
 
-
     fun FragmentActivity.init() {
         settingsmanager = PreferenceManager.getDefaultSharedPreferences(this)
     }
@@ -410,7 +409,7 @@ object AppApi {
     fun FragmentActivity.loadPage(card: ShiroApi.AnimePageData) {
         supportFragmentManager.beginTransaction()
             .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-            .add(R.id.homeRoot, ResultFragment.newInstance(card))
+            .add(R.id.homeRoot, ResultFragment.newInstance(card.slug))
             .commitAllowingStateLoss()
         /*
         activity?.runOnUiThread {

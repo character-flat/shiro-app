@@ -117,7 +117,7 @@ class ResAdapter(
                 itemView.backgroundCard.setOnClickListener {
                     activity?.supportFragmentManager?.beginTransaction()
                         ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                        ?.add(R.id.homeRoot, ResultFragment.newInstance(card))
+                        ?.add(R.id.homeRoot, ResultFragment.newInstance(card.slug))
                         ?.commitAllowingStateLoss()
 
 
@@ -138,7 +138,7 @@ class ResAdapter(
             cardView.setOnClickListener {
                 activity?.supportFragmentManager?.beginTransaction()
                     ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                    ?.add(R.id.homeRoot, ResultFragment.newInstance(card))
+                    ?.add(R.id.homeRoot, ResultFragment.newInstance(card.slug))
                     ?.commitAllowingStateLoss()
 
 

@@ -3,7 +3,6 @@ package com.lagradost.shiro.ui
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
-import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.animation.AnimationUtils
 import com.lagradost.shiro.*
@@ -28,9 +27,7 @@ import android.content.res.Resources
 import android.database.ContentObserver
 import android.media.AudioManager
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
-import android.os.SystemClock
+import android.os.*
 import androidx.transition.Fade
 import androidx.transition.Transition
 import android.view.*
@@ -39,6 +36,7 @@ import android.view.animation.AccelerateInterpolator
 import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.media.AudioManagerCompat.requestAudioFocus
 import androidx.preference.PreferenceManager
@@ -608,6 +606,7 @@ class PlayerFragment : Fragment() {
         hideKeyboard()
 
         updateLock()
+
         video_lock.setOnClickListener {
             isLocked = !isLocked
             val fadeTo = if (isLocked) 0f else 1f

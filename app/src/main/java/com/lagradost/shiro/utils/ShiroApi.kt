@@ -182,11 +182,11 @@ class ShiroApi {
         @JsonProperty("canonicalTitle") val canonicalTitle: String?,
         @JsonProperty("episodeCount") val episodeCount: String,
         @JsonProperty("genres") val genres: List<String>?,
-        @JsonProperty("image") val image: String,
+        @JsonProperty("image") override val image: String,
         @JsonProperty("japanese") val japanese: String?,
         @JsonProperty("language") val language: String,
-        @JsonProperty("name") val name: String,
-        @JsonProperty("slug") val slug: String,
+        @JsonProperty("name") override val name: String,
+        @JsonProperty("slug") override val slug: String,
         @JsonProperty("synopsis") val synopsis: String,
         @JsonProperty("type") val type: String?,
         @JsonProperty("views") val views: Int?,
@@ -195,7 +195,7 @@ class ShiroApi {
         @JsonProperty("episodes") var episodes: List<ShiroEpisodes>?,
         @JsonProperty("status") val status: String?,
         @JsonProperty("schedule") val schedule: String?,
-    )
+    ) : CommonAnimePage
 
     data class AnimePage(
         @JsonProperty("data") val data: AnimePageData,
@@ -215,6 +215,19 @@ class ShiroApi {
         @JsonProperty("assets") val assets: List<GithubAsset>,
         @JsonProperty("target_commitish") val target_commitish: String // branch
     )
+
+    // Hack, needed to deserialize
+    data class CommonAnimePageData(
+        @JsonProperty("name") override val name: String,
+        @JsonProperty("image") override val image: String,
+        @JsonProperty("slug") override val slug: String,
+    ): CommonAnimePage
+
+    interface CommonAnimePage {
+        val name: String
+        val image: String
+        val slug: String
+    }
 
     companion object {
         const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
@@ -348,36 +361,6 @@ class ShiroApi {
             }
         }
 
-        fun getAnimePage(show: ShiroSearchResponseShow): AnimePage? {
-            val url = "https://tapi.shiro.is/anime/slug/${show.slug}?token=${currentToken?.token}"
-            return try {
-                val response = khttp.get(url, timeout = 120.0)
-                val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
-                mapped.data.episodes = mapped.data.episodes?.distinctBy { it.episode_number }
-                if (mapped.status == "Found")
-                    mapped
-                else null
-            } catch (e: Exception) {
-                null
-            }
-        }
-
-        /*Overloaded function to get animepage for the bookmarked title*/
-        fun getAnimePage(show: BookmarkedTitle): AnimePage? {
-            val url = "https://tapi.shiro.is/anime/slug/${show.slug}?token=${currentToken?.token}"
-            return try {
-                val response = khttp.get(url, timeout = 120.0)
-                val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
-                mapped.data.episodes = mapped.data.episodes?.distinctBy { it.episode_number }
-                if (mapped.status == "Found")
-                    mapped
-                else null
-            } catch (e: Exception) {
-                null
-            }
-        }
-
-        // TODO MAKE THIS ONE FUNCTION
         fun getAnimePage(slug: String): AnimePage? {
             println("Get anime $slug")
             val url = "https://tapi.shiro.is/anime/slug/${slug}?token=${currentToken?.token}"

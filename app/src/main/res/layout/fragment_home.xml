@@ -264,7 +264,8 @@
                                     android:id="@+id/recentlySeenScrollView"
                                     android:orientation="horizontal"
                                     android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content">
+                                    android:layout_height="wrap_content"
+                            >
                             </androidx.recyclerview.widget.RecyclerView>
                         </RelativeLayout>
                     </LinearLayout>
@@ -285,6 +286,8 @@
                                 android:textColor="?attr/textColor"
                                 android:textSize="16sp"
                                 android:padding="10dp"
+                                android:id="@+id/favorites_text"
+                                app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
                         >
                         </TextView>
                         <RelativeLayout
