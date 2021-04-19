@@ -46,9 +46,8 @@ import com.lagradost.shiro.utils.AppApi.md5
 import com.lagradost.shiro.utils.AppApi.popCurrentPage
 import com.lagradost.shiro.utils.AppApi.requestRW
 import com.lagradost.shiro.utils.AppApi.shouldShowPIPMode
-import com.lagradost.shiro.utils.ShiroApi.Companion.getAppUpdate
+import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import com.lagradost.shiro.utils.ShiroApi.Companion.getDonorStatus
-import kotlinx.android.synthetic.main.update_dialog.*
 import kotlin.concurrent.thread
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
@@ -249,57 +248,8 @@ class MainActivity : AppCompatActivity() {
         thread {
             isDonor = getDonorStatus() == androidId
         }
-        if (settingsManager.getBoolean("auto_update", true)) {
-            thread {
-                val update = getAppUpdate()
-                if (update.shouldUpdate && update.updateURL != null) {
-
-                    activity!!.runOnUiThread {
-                        val dialog = Dialog(activity!!)
-                        //dialog.window?.setBackgroundDrawable(ColorDrawable(ContextCompat.getColor(activity!!, R.color.colorPrimary)))
-
-                        dialog.setContentView(R.layout.update_dialog)
-                        dialog.update_dialog_header.text = "New update found!\n${update.updateVersion}\n"
-
-                        dialog.update_later.setOnClickListener {
-                            dialog.dismiss()
-                        }
-                        dialog.update_changelog.setOnClickListener {
-                            val alertDialog: AlertDialog? = activity?.let {
-
-                                val builder = AlertDialog.Builder(it)
-                                builder.apply {
-                                    setPositiveButton("OK") { _, _ -> }
-                                }
-                                // Set other dialog properties
-                                builder.setTitle(update.updateVersion)
-                                builder.setMessage(update.changelog)
-                                // Create the AlertDialog
-                                builder.create()
-                            }
-                            alertDialog?.window?.setBackgroundDrawable(
-                                ColorDrawable(
-                                    ContextCompat.getColor(
-                                        activity!!,
-                                        R.color.grayBackground
-                                    )
-                                )
-                            )
-                            alertDialog?.show()
-                        }
-                        dialog.update_never.setOnClickListener {
-                            settingsManager.edit().putBoolean("auto_update", false).apply()
-                            dialog.dismiss()
-                        }
-                        dialog.update_now.setOnClickListener {
-                            Toast.makeText(activity!!, "Download started", Toast.LENGTH_LONG).show()
-                            DownloadManager.downloadUpdate(update.updateURL)
-                            dialog.dismiss()
-                        }
-                        dialog.show()
-                    }
-                }
-            }
+        thread {
+            runAutoUpdate(this)
         }
         //https://stackoverflow.com/questions/29146757/set-windowtranslucentstatus-true-when-android-lollipop-or-higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

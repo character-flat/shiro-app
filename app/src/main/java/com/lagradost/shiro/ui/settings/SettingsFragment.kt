@@ -27,6 +27,7 @@ import com.lagradost.shiro.utils.AppApi.checkWrite
 import com.lagradost.shiro.utils.AppApi.getColorFromAttr
 import com.lagradost.shiro.utils.AppApi.md5
 import com.lagradost.shiro.utils.AppApi.requestRW
+import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -90,7 +91,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
             if (getKeys(VIEW_POS_KEY).isNotEmpty() || getKeys(
                     VIEWSTATE_KEY
-                ).isNotEmpty()) {
+                ).isNotEmpty()
+            ) {
                 alertDialog?.show()
             }
             return@setOnPreferenceClickListener true
@@ -231,14 +233,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val checkUpdates = findPreference("check_updates") as Preference?
         checkUpdates?.setOnPreferenceClickListener {
             thread {
-                val update = ShiroApi.getAppUpdate()
-                activity?.runOnUiThread {
-                    if (update.shouldUpdate && update.updateVersion != null && update.updateURL != null) {
-                        //startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(update.updateURL)))
-                        DownloadManager.downloadUpdate(update.updateURL)
-                        Toast.makeText(context, "New version (${update.updateVersion}) found", Toast.LENGTH_LONG).show()
-                    } else {
-                        Toast.makeText(context, "No updates found :(", Toast.LENGTH_LONG).show()
+                if (context != null && activity != null) {
+                    val updateSuccess = requireActivity().runAutoUpdate(requireContext(), false)
+                    if (!updateSuccess) {
+                        activity?.runOnUiThread {
+                            Toast.makeText(activity, "No updates found :(", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             }

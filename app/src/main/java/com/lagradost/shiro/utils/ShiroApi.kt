@@ -260,53 +260,6 @@ class ShiroApi {
             }
         }
 
-        fun getAppUpdate(): Update {
-            try {
-                val url = "https://api.github.com/repos/blatzar/shiro-app/releases"
-                val headers = mapOf("Accept" to "application/vnd.github.v3+json")
-                val response =
-                    mapper.readValue<List<GithubRelease>>(khttp.get(url, headers = headers).text)
-
-                val versionRegex = Regex("""(.*?((\d)\.(\d)\.(\d)).*\.apk)""")
-
-                /*
-                val releases = response.map { it.assets }.flatten()
-                    .filter { it.content_type == "application/vnd.android.package-archive" }
-                val found =
-                    releases.sortedWith(compareBy {
-                        versionRegex.find(it.name)?.groupValues?.get(2)
-                    }).toList().lastOrNull()*/
-                val found =
-                    response.sortedWith(compareBy { release ->
-                        release.assets.filter { it.content_type == "application/vnd.android.package-archive" }
-                            .getOrNull(0)?.name?.let { it1 ->
-                                versionRegex.find(
-                                    it1
-                                )?.groupValues?.get(2)
-                            }
-                    }).toList().lastOrNull()
-                val foundAsset = found?.assets?.getOrNull(0)
-                val currentVersion = activity?.packageName?.let { activity?.packageManager?.getPackageInfo(it, 0) }
-
-                //println(found.groupValues)
-                //println(currentVersion?.versionName)
-                val foundVersion = foundAsset?.name?.let { versionRegex.find(it) }
-                val shouldUpdate =
-                    if (found != null && foundAsset?.browser_download_url != "" && foundVersion != null) currentVersion?.versionName?.compareTo(
-                        foundVersion.groupValues[2]
-                    )!! < 0 else false
-                return if (foundVersion != null) {
-                    Update(shouldUpdate, foundAsset.browser_download_url, foundVersion.groupValues[2], found.body)
-                } else {
-                    Update(false, null, null, null)
-                }
-
-            } catch (e: Exception) {
-                println(e)
-                return Update(false, null, null, null)
-            }
-        }
-
         @SuppressLint("HardwareIds")
         fun getDonorStatus(): String {
             val url = "https://raw.githubusercontent.com/Blatzar/donors/master/donors.json"

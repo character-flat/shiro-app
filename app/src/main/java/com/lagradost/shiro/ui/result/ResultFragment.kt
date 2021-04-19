@@ -2,6 +2,7 @@ package com.lagradost.shiro.ui.result
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.Html
 import android.transition.ChangeBounds
@@ -14,6 +15,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.mediarouter.app.MediaRouteButton
@@ -227,6 +229,15 @@ class ResultFragment : Fragment() {
                     .replace("</i>", "")
                     .replace("\n", " ")
 
+                share_holder.setOnClickListener {
+                    val intent = Intent()
+                    intent.action = Intent.ACTION_SEND
+                    intent.putExtra(Intent.EXTRA_TEXT, "https://shiro.is/anime/${data.slug}")
+                    intent.type = "text/plain"
+                    startActivity(Intent.createChooser(intent, "Share To:"))
+                }
+
+
                 // Somehow for an unknown reason (I haven't even found online) setting a textview with large amount of text
                 // 'crashes' (hangs for a good while), so far only observed on samsung phones
                 /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -255,7 +266,13 @@ class ResultFragment : Fragment() {
                 }*/
                 title_descript.text =
                     fullDescription.substring(0, minOf(DESCRIPTION_LENGTH1 - 3, fullDescription.length)) + "..."
-
+                title_descript.setOnClickListener {
+                    if (activity != null) {
+                        val builder: AlertDialog.Builder = AlertDialog.Builder(requireActivity())
+                        builder.setMessage(fullDescription).setTitle("Synopsis")
+                            .show()
+                    }
+                }
                 /*var ratTxt = (data!!.averageScore / 10f).toString().replace(',', '.') // JUST IN CASE DUE TO LANG SETTINGS
                 if (!ratTxt.contains('.')) ratTxt += ".0"
                 title_rating.text = "Rated: $ratTxt"
@@ -292,15 +309,15 @@ class ResultFragment : Fragment() {
 
         //isMovie = data!!.episodes == 1 && data!!.status == "FINISHED"
     }
-    /*
-    private fun ToggleViewState(_isViewState: Boolean) {
-        isViewState = _isViewState
-        if (isViewState) {
-            title_viewstate.setImageResource(R.drawable.filled_viewstate)
-        } else {
-            title_viewstate.setImageResource(R.drawable.outlined_viewstate)
-        }
-    }*/
+/*
+private fun ToggleViewState(_isViewState: Boolean) {
+    isViewState = _isViewState
+    if (isViewState) {
+        title_viewstate.setImageResource(R.drawable.filled_viewstate)
+    } else {
+        title_viewstate.setImageResource(R.drawable.outlined_viewstate)
+    }
+}*/
 
     private fun toggleHeartVisual(_isBookmarked: Boolean) {
         if (_isBookmarked) {
@@ -466,7 +483,7 @@ class ResultFragment : Fragment() {
         } else {
         }
         title_trailer_btt.alpha = 0f
-*/
+    */
         // SEASON SELECTOR
         onLoadedOther += ::onLoadOtherEvent
         onLoaded += ::onLoadEvent
