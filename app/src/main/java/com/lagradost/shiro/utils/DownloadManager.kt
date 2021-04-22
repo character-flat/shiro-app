@@ -22,8 +22,8 @@ import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 import com.lagradost.shiro.ui.MainActivity
-import com.lagradost.shiro.ui.search.settingsManager
 import com.lagradost.shiro.utils.AppApi.getColorFromAttr
+import com.lagradost.shiro.utils.AppApi.settingsManager
 import kotlin.concurrent.thread
 import kotlin.math.pow
 import kotlin.math.round
@@ -266,7 +266,7 @@ object DownloadManager {
 
     @SuppressLint("HardwareIds")
     fun downloadEpisode(info: DownloadInfo, resumeIntent: Boolean = false) {
-        val useExternalStorage = settingsManager.getBoolean("use_external_storage", false)
+        val useExternalStorage = settingsManager!!.getBoolean("use_external_storage", false)
 
         // IsInResult == isDonor
         if (!isDonor) { // FINAL CHECK

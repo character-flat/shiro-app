@@ -38,12 +38,12 @@ import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.PlayerFragment
 import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
-import com.lagradost.shiro.ui.search.settingsManager
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppApi.getColorFromAttr
 import com.lagradost.shiro.utils.AppApi.hideKeyboard
 import com.lagradost.shiro.utils.AppApi.isCastApiAvailable
 import com.lagradost.shiro.utils.AppApi.popCurrentPage
+import com.lagradost.shiro.utils.AppApi.settingsManager
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.fragment_results_new.*
 import java.util.*
@@ -105,7 +105,7 @@ class ResultFragment : Fragment() {
     ): View? {
         resultViewModel =
             activity?.let { ViewModelProviders.of(it).get(ResultViewModel::class.java) }!!
-        val useNewLayout = settingsManager.getBoolean("new_results_page", false)
+        val useNewLayout = settingsManager!!.getBoolean("new_results_page", false)
         val layout = if (useNewLayout) R.layout.fragment_results_new else R.layout.fragment_results
         return inflater.inflate(layout, container, false)
     }
@@ -370,7 +370,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
     }
 
     private fun loadSeason() {
-        val save = settingsManager.getBoolean("save_history", true)
+        val save = settingsManager!!.getBoolean("save_history", true)
         val data = if (isDefaultData) data else dataOther
         if (data?.episodes?.isNotEmpty() == true) {
             val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {

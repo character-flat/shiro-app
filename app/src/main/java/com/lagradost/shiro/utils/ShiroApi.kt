@@ -116,11 +116,11 @@ class ShiroApi {
     data class Donor(@JsonProperty("id") val id: String)
 
     data class ShiroSearchResponseShow(
-        @JsonProperty("image") val image: String,
+        @JsonProperty("image") override val image: String,
         @JsonProperty("_id") val _id: String,
-        @JsonProperty("slug") val slug: String,
-        @JsonProperty("name") val name: String,
-    )
+        @JsonProperty("slug") override val slug: String,
+        @JsonProperty("name") override val name: String,
+    ) : CommonAnimePage
 
     data class ShiroHomePageData(
         @JsonProperty("trending_animes") val trending_animes: List<AnimePageData>,
@@ -221,7 +221,7 @@ class ShiroApi {
         @JsonProperty("name") override val name: String,
         @JsonProperty("image") override val image: String,
         @JsonProperty("slug") override val slug: String,
-    ): CommonAnimePage
+    ) : CommonAnimePage
 
     interface CommonAnimePage {
         val name: String
@@ -458,11 +458,12 @@ class ShiroApi {
             }).sortedBy { if (it == null) 0 else -(it.seenAt) }
         }
 
-        fun requestHome(canBeCached: Boolean = true): HomePageResponse? {
+        fun requestHome(canBeCached: Boolean = true) {
+
             println("LOAD HOME $currentToken")
-            if (currentToken == null) return null
+            if (currentToken == null) return
             getHome(canBeCached)
-            return null
+            return
         }
 
         fun getHome(canBeCached: Boolean): ShiroHomePage? {

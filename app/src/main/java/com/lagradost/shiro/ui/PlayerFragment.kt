@@ -5,7 +5,6 @@ import android.content.Context
 import android.graphics.Color
 import androidx.fragment.app.Fragment
 import android.view.animation.AnimationUtils
-import com.lagradost.shiro.*
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.upstream.*
 import com.google.android.exoplayer2.util.MimeTypes
@@ -55,7 +54,6 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
-import com.lagradost.shiro.ui.search.settingsManager
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppApi.getColorFromAttr
 import com.lagradost.shiro.utils.AppApi.getViewKey
@@ -65,6 +63,7 @@ import com.lagradost.shiro.utils.AppApi.hideSystemUI
 import com.lagradost.shiro.utils.AppApi.popCurrentPage
 import com.lagradost.shiro.utils.AppApi.requestAudioFocus
 import com.lagradost.shiro.utils.AppApi.setViewPosDur
+import com.lagradost.shiro.utils.AppApi.settingsManager
 import com.lagradost.shiro.utils.AppApi.showSystemUI
 import java.io.File
 import kotlin.collections.ArrayList
@@ -164,14 +163,14 @@ class PlayerFragment : Fragment() {
 
     private var playbackSpeed = DataStore.getKey(PLAYBACK_SPEED_KEY, 1f)
 
-    private val swipeEnabled = settingsManager.getBoolean("swipe_enabled", true)
-    private val swipeVerticalEnabled = settingsManager.getBoolean("swipe_vertical_enabled", true)
-    private val skipOpEnabled = settingsManager.getBoolean("skip_op_enabled", false)
-    private val doubleTapEnabled = settingsManager.getBoolean("double_tap_enabled", false)
-    private val playBackSpeedEnabled = settingsManager.getBoolean("playback_speed_enabled", false)
-    private val playerResizeEnabled = settingsManager.getBoolean("player_resize_enabled", false)
-    private val doubleTapTime = settingsManager.getInt("dobule_tap_time", 10)
-    private val fastForwardTime = settingsManager.getInt("fast_forward_button_time", 10)
+    private val swipeEnabled = settingsManager!!.getBoolean("swipe_enabled", true)
+    private val swipeVerticalEnabled = settingsManager!!.getBoolean("swipe_vertical_enabled", true)
+    private val skipOpEnabled = settingsManager!!.getBoolean("skip_op_enabled", false)
+    private val doubleTapEnabled = settingsManager!!.getBoolean("double_tap_enabled", false)
+    private val playBackSpeedEnabled = settingsManager!!.getBoolean("playback_speed_enabled", false)
+    private val playerResizeEnabled = settingsManager!!.getBoolean("player_resize_enabled", false)
+    private val doubleTapTime = settingsManager!!.getInt("dobule_tap_time", 10)
+    private val fastForwardTime = settingsManager!!.getInt("fast_forward_button_time", 10)
 
     private val resizeModes = listOf(
         AspectRatioFrameLayout.RESIZE_MODE_FIT,

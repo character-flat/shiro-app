@@ -12,12 +12,4 @@ object MovieList {
         "Ongoing",
         "Latest anime"
     )
-
-    val home: ShiroApi.ShiroHomePage? = setupMovies()
-
-    private fun setupMovies():  ShiroApi.ShiroHomePage? {
-        Thread.sleep(5000L)
-        return getHome(true)
-    }
-
 }

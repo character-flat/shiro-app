@@ -15,7 +15,18 @@ import kotlin.concurrent.thread
 class TvActivity : FragmentActivity() {
     companion object {
         var tvActivity: FragmentActivity? = null
+        var isInSearch = false
+    }
 
+    override fun onBackPressed() {
+        if (isInSearch) {
+            this.supportFragmentManager.beginTransaction()
+                .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                .replace(R.id.main_browse_fragment, MainFragmentTV())
+                .commitAllowingStateLoss()
+        } else {
+            super.onBackPressed()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

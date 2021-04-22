@@ -21,6 +21,7 @@ import com.lagradost.shiro.ui.AutofitRecyclerView
 import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppApi.fixCardTitle
+import com.lagradost.shiro.utils.AppApi.settingsManager
 import com.lagradost.shiro.utils.BOOKMARK_KEY
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.ShiroApi
@@ -29,8 +30,6 @@ import kotlinx.android.synthetic.main.search_result.view.imageView
 import kotlinx.android.synthetic.main.search_result_compact.view.*
 import kotlin.concurrent.thread
 import kotlin.math.roundToInt
-
-val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)!!
 
 class ResAdapter(
     context: Context,
@@ -43,8 +42,8 @@ class ResAdapter(
     private var resView: AutofitRecyclerView? = resView
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val compactView = settingsManager.getBoolean("compact_search_enabled", true)
-        val hideDubbed = settingsManager.getBoolean("hide_dubbed", false)
+        val compactView = settingsManager?.getBoolean("compact_search_enabled", true) == true
+        val hideDubbed = settingsManager?.getBoolean("hide_dubbed", false) == true
         if (hideDubbed) {
             cardList = cardList.filter { !it.name.endsWith("Dubbed") } as ArrayList<ShiroApi.ShiroSearchResponseShow>
         }
@@ -72,7 +71,7 @@ class ResAdapter(
 
     class CardViewHolder
     constructor(itemView: View, _context: Context, resView: AutofitRecyclerView) : RecyclerView.ViewHolder(itemView) {
-        private val compactView = settingsManager.getBoolean("compact_search_enabled", true)
+        private val compactView = settingsManager?.getBoolean("compact_search_enabled", true) == true
         val context = _context
         val cardView: ImageView = itemView.imageView
         private val coverHeight: Int = if (compactView) 80.toPx else (resView.itemWidth / 0.68).roundToInt()

@@ -44,12 +44,12 @@ class CardPresenter : Presenter() {
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, item: Any) {
-        val movie = item as ShiroApi.AnimePageData
+        val movie = item as ShiroApi.CommonAnimePage
         val cardView = viewHolder.view as ImageCardView
 
         Log.d(TAG, "onBindViewHolder")
         cardView.titleText = movie.name
-        cardView.contentText = movie.japanese
+        //cardView.contentText = movie.japanese
         cardView.setMainImageDimensions(CARD_WIDTH, CARD_HEIGHT)
 
         GlideApp.with(viewHolder.view.context)

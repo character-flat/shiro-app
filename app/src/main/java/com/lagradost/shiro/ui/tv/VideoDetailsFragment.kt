@@ -182,13 +182,13 @@ class VideoDetailsFragment : DetailsSupportFragment() {
 
     private fun setupRelatedMovieListRow() {
         val subcategories = arrayOf(getString(R.string.related_movies))
-        val list = MovieList.home
+        val listRowAdapter = ArrayObjectAdapter(CardPresenter())
+        /*val list = MovieList.home
 
         Collections.shuffle(list!!.data.trending_animes)
-        val listRowAdapter = ArrayObjectAdapter(CardPresenter())
         for (j in 0 until NUM_COLS) {
             listRowAdapter.add(list.data.trending_animes[j % 5])
-        }
+        }*/
 
         val header = HeaderItem(0, subcategories[0])
         mAdapter.add(ListRow(header, listRowAdapter))

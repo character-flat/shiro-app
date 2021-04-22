@@ -15,8 +15,8 @@ import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
-import com.lagradost.shiro.ui.search.settingsManager
 import com.lagradost.shiro.utils.AppApi.popCurrentPage
+import com.lagradost.shiro.utils.AppApi.settingsManager
 import kotlinx.android.synthetic.main.fragment_expanded_home.*
 
 private const val CARD_LIST = "card_list"
@@ -82,7 +82,7 @@ class ExpandedHomeFragment : Fragment() {
                 ArrayList(),
             )
         }
-        val hideDubbed = settingsManager.getBoolean("hide_dubbed", false)
+        val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)
         val filteredData = if (hideDubbed) cardList?.filter { it?.name?.endsWith("Dubbed") == false } else cardList
         expanded_card_list_view.adapter = adapter
         (expanded_card_list_view.adapter as CardAdapter).cardList = filteredData as ArrayList<ShiroApi.CommonAnimePage?>

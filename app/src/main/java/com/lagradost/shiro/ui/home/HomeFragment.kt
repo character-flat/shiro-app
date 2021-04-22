@@ -25,10 +25,10 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.getRandomAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import com.lagradost.shiro.ui.*
-import com.lagradost.shiro.ui.search.settingsManager
 import com.lagradost.shiro.utils.AppApi.getNextEpisode
 import com.lagradost.shiro.utils.AppApi.loadPage
 import com.lagradost.shiro.utils.AppApi.loadPlayer
+import com.lagradost.shiro.utils.AppApi.settingsManager
 import com.lagradost.shiro.utils.ShiroApi
 import kotlinx.android.synthetic.main.download_card.*
 import kotlinx.android.synthetic.main.fragment_home.*
@@ -90,7 +90,7 @@ class HomeFragment : Fragment() {
                         ArrayList(),
                     )
                 }
-                val hideDubbed = settingsManager.getBoolean("hide_dubbed", false)
+                val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)
                 val filteredData = if (hideDubbed) data?.filter { it?.name?.endsWith("Dubbed") == false } else data
                 scrollView.adapter = adapter
                 (scrollView.adapter as CardAdapter).cardList = filteredData as ArrayList<ShiroApi.CommonAnimePage?>

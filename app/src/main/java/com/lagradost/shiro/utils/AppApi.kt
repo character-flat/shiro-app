@@ -29,17 +29,17 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.*
 import com.lagradost.shiro.ui.result.ResultFragment
-import com.lagradost.shiro.ui.search.settingsManager
 import java.net.URL
 import java.net.URLDecoder
 import java.security.MessageDigest
 import kotlin.concurrent.thread
 
+
 object AppApi {
-    var settingsmanager: SharedPreferences? = null
+    var settingsManager: SharedPreferences? = null
 
     fun FragmentActivity.init() {
-        settingsmanager = PreferenceManager.getDefaultSharedPreferences(this)
+        settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
     }
 
     fun unixTime(): Long {
@@ -84,10 +84,10 @@ object AppApi {
         }
     }
 
-    fun Activity.requestAudioFocus(focusRequest: AudioFocusRequest) {
+    fun Activity.requestAudioFocus(focusRequest: AudioFocusRequest?) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && focusRequest != null) {
             val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            audioManager.requestAudioFocus(focusRequest!!)
+            audioManager.requestAudioFocus(focusRequest)
         } else {
             val audioManager: AudioManager =
                 getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -191,7 +191,7 @@ object AppApi {
     fun setViewPosDur(data: PlayerData, pos: Long, dur: Long) {
         val key = getViewKey(data)
 
-        if (settingsManager.getBoolean("save_history", true)) {
+        if (settingsManager?.getBoolean("save_history", true) == true) {
             DataStore.setKey(VIEW_POS_KEY, key, pos)
             DataStore.setKey(VIEW_DUR_KEY, key, dur)
         }
@@ -228,7 +228,7 @@ object AppApi {
 
         if (!isFound) return
 
-        if (settingsManager.getBoolean("save_history", true)) {
+        if (settingsManager?.getBoolean("save_history", true) == true) {
             DataStore.setKey(
                 VIEW_LST_KEY,
                 data.card.slug,
@@ -300,7 +300,7 @@ object AppApi {
             it.isVisible
         }
 
-        if (settingsManager.getBoolean("force_landscape", false)) {
+        if (settingsManager?.getBoolean("force_landscape", false) == true) {
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
         } else {
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -432,7 +432,7 @@ object AppApi {
     }
 
     fun shouldShowPIPMode(isInPlayer: Boolean): Boolean {
-        return settingsManager.getBoolean("pip_enabled", true) && isInPlayer
+        return settingsManager?.getBoolean("pip_enabled", true) ?: true && isInPlayer
     }
 
     fun Context.hasPIPPermission(): Boolean {

@@ -1,5 +1,6 @@
 package com.lagradost.shiro.ui.tv
 
+import android.annotation.SuppressLint
 import java.util.Timer
 import java.util.TimerTask
 
@@ -54,7 +55,7 @@ class MainFragmentTV : BrowseSupportFragment() {
 
         setupUIElements()
 
-        loadRows()
+        ShiroApi.onHomeFetched += ::loadRows
 
         setupEventListeners()
     }
@@ -65,10 +66,10 @@ class MainFragmentTV : BrowseSupportFragment() {
         mBackgroundTimer?.cancel()
     }
 
+    @SuppressLint("UseRequireInsteadOfGet")
     private fun prepareBackgroundManager() {
-
         mBackgroundManager = BackgroundManager.getInstance(activity)
-        mBackgroundManager.attach(requireActivity().window)
+        mBackgroundManager.attach(activity!!.window)
         mDefaultBackground = ContextCompat.getDrawable(requireActivity(), R.drawable.default_background)
         mMetrics = DisplayMetrics()
         requireActivity().windowManager.defaultDisplay.getMetrics(mMetrics)
@@ -86,8 +87,7 @@ class MainFragmentTV : BrowseSupportFragment() {
         searchAffordanceColor = ContextCompat.getColor(requireActivity(), R.color.search_opaque)
     }
 
-    private fun loadRows() {
-        val list = MovieList.home
+    private fun loadRows(list: ShiroApi.ShiroHomePage?) {
 
         val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
         val cardPresenter = CardPresenter()
@@ -131,13 +131,17 @@ class MainFragmentTV : BrowseSupportFragment() {
         gridRowAdapter.add(resources.getString(R.string.personal_settings))
         rowsAdapter.add(ListRow(gridHeader, gridRowAdapter))
 
-        adapter = rowsAdapter
+        activity?.runOnUiThread {
+            adapter = rowsAdapter
+        }
     }
 
     private fun setupEventListeners() {
         setOnSearchClickedListener {
-            Toast.makeText(activity, "Implement your own in-app search", Toast.LENGTH_LONG)
-                .show()
+            activity?.supportFragmentManager?.beginTransaction()
+                ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                ?.replace(R.id.main_browse_fragment, MySearchFragment())
+                ?.commitAllowingStateLoss()
         }
 
         onItemViewClickedListener = ItemViewClickedListener()
@@ -157,6 +161,7 @@ class MainFragmentTV : BrowseSupportFragment() {
                 activity?.supportFragmentManager?.beginTransaction()
                     ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                     ?.add(R.id.main_browse_fragment, ResultFragment.newInstance(item.slug))
+                    ?.addToBackStack("ResultFragment")
                     ?.commitAllowingStateLoss()
                 /*val intent = Intent(activity, DetailsActivityTV::class.java)
                     intent.putExtra(DetailsActivityTV.MOVIE, mapper.writeValueAsString(item))

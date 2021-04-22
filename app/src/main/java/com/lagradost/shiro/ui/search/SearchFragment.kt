@@ -21,12 +21,13 @@ import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
+import com.lagradost.shiro.utils.AppApi.settingsManager
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlin.concurrent.thread
 
 class SearchFragment : Fragment() {
     private lateinit var searchViewModel: SearchViewModel
-    private val compactView = settingsManager.getBoolean("compact_search_enabled", true)
+    private val compactView = settingsManager!!.getBoolean("compact_search_enabled", true)
     private val spanCountLandscape = if (compactView) 2 else 6
     private val spanCountPortrait = if (compactView) 1 else 3
 
@@ -61,7 +62,7 @@ class SearchFragment : Fragment() {
             )
         }
         cardSpace.adapter = adapter
-        val hideDubbed = settingsManager.getBoolean("hide_dubbed", false)
+        val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)
         main_search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
                 progress_bar.visibility = View.VISIBLE
