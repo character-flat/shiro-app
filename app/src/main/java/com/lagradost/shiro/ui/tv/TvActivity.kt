@@ -23,7 +23,7 @@ class TvActivity : FragmentActivity() {
             this.supportFragmentManager.beginTransaction()
                 .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 .replace(R.id.main_browse_fragment, MainFragmentTV())
-                .commitAllowingStateLoss()
+                .commit()
         } else {
             super.onBackPressed()
         }

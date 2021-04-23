@@ -30,7 +30,6 @@ class GrdLayoutManager(val context: Context, val spanCoun: Int) : GridLayoutMana
         child: View,
         focused: View?
     ): Boolean {
-        println("REQUEST CHILD")
         val pos = maxOf(0, getPosition(focused!!) - 2)
         parent.scrollToPosition(pos)
         return super.onRequestChildFocus(parent, state, child, focused)
@@ -39,7 +38,6 @@ class GrdLayoutManager(val context: Context, val spanCoun: Int) : GridLayoutMana
     // Allows moving right and left with focus https://gist.github.com/vganin/8930b41f55820ec49e4d
     override fun onInterceptFocusSearch(focused: View, direction: Int): View? {
         return try {
-            println("Intercept")
             val fromPos = getPosition(focused)
             val nextPos = getNextViewPos(fromPos, direction)
             findViewByPosition(nextPos)
@@ -49,7 +47,6 @@ class GrdLayoutManager(val context: Context, val spanCoun: Int) : GridLayoutMana
     }
 
     private fun getNextViewPos(fromPos: Int, direction: Int): Int {
-        println("nextViewPos")
         val offset = calcOffsetToNextView(direction)
 
         if (hitBorder(fromPos, offset)) {

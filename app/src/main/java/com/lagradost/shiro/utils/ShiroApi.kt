@@ -295,7 +295,7 @@ class ShiroApi {
                 val url = document.select("source").firstOrNull()?.attr("src")?.replace("&amp;", "?")
                 url
             } catch (e: Exception) {
-                println("Failed to load video URL")
+                println("Failed to load video URL}")
                 null
             }
         }
@@ -458,12 +458,10 @@ class ShiroApi {
             }).sortedBy { if (it == null) 0 else -(it.seenAt) }
         }
 
-        fun requestHome(canBeCached: Boolean = true) {
-
+        fun requestHome(canBeCached: Boolean = true): ShiroHomePage? {
             println("LOAD HOME $currentToken")
-            if (currentToken == null) return
-            getHome(canBeCached)
-            return
+            if (currentToken == null) return null
+            return getHome(canBeCached)
         }
 
         fun getHome(canBeCached: Boolean): ShiroHomePage? {

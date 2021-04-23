@@ -34,6 +34,7 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.lagradost.shiro.R
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.ui.result.ResultFragment
+import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 
 /**
  * Loads a grid of cards with movies to browse.
@@ -57,6 +58,8 @@ class MainFragmentTV : BrowseSupportFragment() {
 
         ShiroApi.onHomeFetched += ::loadRows
 
+        requestHome(true)
+
         setupEventListeners()
     }
 
@@ -69,7 +72,7 @@ class MainFragmentTV : BrowseSupportFragment() {
     @SuppressLint("UseRequireInsteadOfGet")
     private fun prepareBackgroundManager() {
         mBackgroundManager = BackgroundManager.getInstance(activity)
-        mBackgroundManager.attach(activity!!.window)
+        //mBackgroundManager.attach(activity!!.window)
         mDefaultBackground = ContextCompat.getDrawable(requireActivity(), R.drawable.default_background)
         mMetrics = DisplayMetrics()
         requireActivity().windowManager.defaultDisplay.getMetrics(mMetrics)
@@ -122,14 +125,14 @@ class MainFragmentTV : BrowseSupportFragment() {
             rowsAdapter.add(ListRow(header, listRowAdapter))
         }
 
-        val gridHeader = HeaderItem(NUM_ROWS.toLong(), "PREFERENCES")
+        /*val gridHeader = HeaderItem(NUM_ROWS.toLong(), "PREFERENCES")
 
         val mGridPresenter = GridItemPresenter()
         val gridRowAdapter = ArrayObjectAdapter(mGridPresenter)
-        gridRowAdapter.add(resources.getString(R.string.grid_view))
-        gridRowAdapter.add(getString(R.string.error_fragment))
-        gridRowAdapter.add(resources.getString(R.string.personal_settings))
-        rowsAdapter.add(ListRow(gridHeader, gridRowAdapter))
+        gridRowAdapter.add(activity?.resources?.getString(R.string.grid_view) ?: "STRING1")
+        gridRowAdapter.add(activity?.getString(R.string.error_fragment))
+        gridRowAdapter.add(activity?.resources?.getString(R.string.personal_settings) ?: "SQTring2")
+        rowsAdapter.add(ListRow(gridHeader, gridRowAdapter))*/
 
         activity?.runOnUiThread {
             adapter = rowsAdapter
@@ -141,9 +144,8 @@ class MainFragmentTV : BrowseSupportFragment() {
             activity?.supportFragmentManager?.beginTransaction()
                 ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 ?.replace(R.id.main_browse_fragment, MySearchFragment())
-                ?.commitAllowingStateLoss()
+                ?.commit()
         }
-
         onItemViewClickedListener = ItemViewClickedListener()
         onItemViewSelectedListener = ItemViewSelectedListener()
     }
@@ -190,10 +192,10 @@ class MainFragmentTV : BrowseSupportFragment() {
             itemViewHolder: Presenter.ViewHolder?, item: Any?,
             rowViewHolder: RowPresenter.ViewHolder, row: Row
         ) {
-            if (item is Movie) {
+            /*if (item is Movie) {
                 mBackgroundUri = item.backgroundImageUrl
                 startBackgroundTimer()
-            }
+            }*/
         }
     }
 

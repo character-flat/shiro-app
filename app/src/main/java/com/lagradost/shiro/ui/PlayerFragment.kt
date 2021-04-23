@@ -266,6 +266,12 @@ class PlayerFragment : Fragment() {
         return data?.card?.episodes?.get(data?.episodeIndex!!)//data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.episodeIndex!!)
     }
 
+    private fun getCurrentUrl(): String? {
+        println("MAN::: " + data?.url)
+        if (data?.url != null) return data?.url!!
+        return getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { getVideoLink(it) }
+    }
+
     private fun getCurrentTitle(): String {
         if (data?.title != null) return data?.title!!
 
@@ -279,11 +285,6 @@ class PlayerFragment : Fragment() {
         return preTitle + data?.card?.name
     }
 
-    private fun getCurrentUrl(): String? {
-        println("MAN::: " + data?.url)
-        if (data?.url != null) return data?.url!!
-        return getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { getVideoLink(it) }
-    }
 
     private fun savePos() {
         if (this::exoPlayer.isInitialized) {

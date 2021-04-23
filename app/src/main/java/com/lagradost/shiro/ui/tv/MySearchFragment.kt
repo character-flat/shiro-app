@@ -32,24 +32,23 @@ class MySearchFragment : SearchSupportFragment(), SearchSupportFragment.SearchRe
         /*for (j in 0 until NUM_COLS) {
             listRowAdapter.add(data[j % 5])
         }*/
-        thread {
-            //val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
-            val cardPresenter = CardPresenter()
-
-            val data = ShiroApi.quickSearch(newQuery)
-            val listRowAdapter = ArrayObjectAdapter(cardPresenter)
-            /*for (j in 0 until NUM_COLS) {
-                listRowAdapter.add(data[j % 5])
-            }*/
-            data?.forEach {
-                listRowAdapter.add(it)
-            }
-            val header = HeaderItem(0L, "TEST")
-            rowsAdapter.add(ListRow(header, listRowAdapter))
-        }
         //val header = HeaderItem(i.toLong(), MovieList.MOVIE_CATEGORY[i])
         if (!TextUtils.isEmpty(newQuery)) {
-            rowsAdapter
+            thread {
+                //val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
+                val cardPresenter = CardPresenter()
+
+                val data = ShiroApi.quickSearch(newQuery)
+                val listRowAdapter = ArrayObjectAdapter(cardPresenter)
+                /*for (j in 0 until NUM_COLS) {
+                    listRowAdapter.add(data[j % 5])
+                }*/
+                data?.forEach {
+                    listRowAdapter.add(it)
+                }
+                val header = HeaderItem(0L, "Search results for \"$newQuery\"")
+                rowsAdapter.add(ListRow(header, listRowAdapter))
+            }
         }
         return true
     }
@@ -57,12 +56,22 @@ class MySearchFragment : SearchSupportFragment(), SearchSupportFragment.SearchRe
     override fun onQueryTextSubmit(query: String): Boolean {
         rowsAdapter.clear()
         if (!TextUtils.isEmpty(query)) {
+            thread {
+                //val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
+                val cardPresenter = CardPresenter()
 
+                val data = ShiroApi.search(query)
+                val listRowAdapter = ArrayObjectAdapter(cardPresenter)
+                /*for (j in 0 until NUM_COLS) {
+                    listRowAdapter.add(data[j % 5])
+                }*/
+                data?.forEach {
+                    listRowAdapter.add(it)
+                }
+                val header = HeaderItem(0L, "Search results for \"$query\"")
+                rowsAdapter.add(ListRow(header, listRowAdapter))
+            }
         }
         return true
-    }
-
-    companion object {
-        private val SEARCH_DELAY_MS = 300
     }
 }

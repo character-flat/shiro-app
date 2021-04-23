@@ -12,7 +12,7 @@ class PlaybackActivity : FragmentActivity() {
         theme.applyStyle(R.style.Leanback, true)
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(android.R.id.content, PlaybackVideoFragment())
+                .replace(android.R.id.content, NowPlayingFragment())
                 .commitAllowingStateLoss()
         }
     }

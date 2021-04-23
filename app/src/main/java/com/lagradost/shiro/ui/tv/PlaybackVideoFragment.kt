@@ -11,6 +11,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
+import kotlin.concurrent.thread
 
 /** Handles video playback with media controls. */
 class PlaybackVideoFragment : VideoSupportFragment() {
@@ -20,9 +21,11 @@ class PlaybackVideoFragment : VideoSupportFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val str =
+        val dataString =
             activity?.intent?.getSerializableExtra(DetailsActivityTV.MOVIE) as String
-        val data = mapper.readValue<ShiroApi.AnimePageData>(str)
+        val data = mapper.readValue<ShiroApi.AnimePageData>(dataString)
+        val episode = activity?.intent?.getSerializableExtra("position") as Int
+
         val glueHost = VideoSupportFragmentGlueHost(this@PlaybackVideoFragment)
         val playerAdapter = MediaPlayerAdapter(activity)
         playerAdapter.setRepeatAction(PlaybackControlsRow.RepeatAction.INDEX_NONE)
@@ -33,14 +36,23 @@ class PlaybackVideoFragment : VideoSupportFragment() {
         mTransportControlGlue.subtitle = data.synopsis
         mTransportControlGlue.playWhenPrepared()
 
-        val url = data.episodes?.get(0)?.videos?.get(0)?.let { getVideoLink(it.video_id) }
-        println(url)
+        //mTransportControlGlue.seekProvider =
 
-        playerAdapter.setDataSource(Uri.parse("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"))
+        thread {
+            val url = data.episodes?.get(episode)?.videos?.getOrNull(0)?.let { getVideoLink(it.video_id) }
+            println("$url $episode")
+            if (url != null) {
+                playerAdapter.setDataSource(Uri.parse(url))
+            }
+        }
     }
 
     override fun onPause() {
         super.onPause()
         mTransportControlGlue.pause()
     }
+
+
+
+
 }

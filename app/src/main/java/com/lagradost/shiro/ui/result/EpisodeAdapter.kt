@@ -150,10 +150,15 @@ class EpisodeAdapter(
                     }
                 } else {
                     thread {
-                        val intent = Intent(tvActivity, PlaybackActivity::class.java)
-                        intent.putExtra(DetailsActivityTV.MOVIE, mapper.writeValueAsString(data))
-                        tvActivity?.startActivity(intent)
-                        //MainActivity.loadPlayer(position, 0L, data)
+                        if (tvActivity != null) {
+                            val intent = Intent(tvActivity, PlaybackActivity::class.java)
+                            intent.putExtra(DetailsActivityTV.MOVIE, mapper.writeValueAsString(data))
+                            intent.putExtra("position", position)
+                            tvActivity?.startActivity(intent)
+                        }
+                        else {
+                            activity?.loadPlayer(position, 0L, data)
+                        }
                     }
                 }
             }
