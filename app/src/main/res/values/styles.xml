@@ -61,6 +61,10 @@
     </style>
 
     <style name="Theme.LeanbackCustom" parent="Theme.Leanback">
+        <item name="playbackProgressPrimaryColor">?attr/colorPrimary</item>
+        <item name="playbackControlsIconHighlightColor">?attr/colorPrimary</item>
+        <item name="defaultBrandColor">?attr/colorPrimary</item>
+        <item name="defaultBrandColorDark">?attr/colorPrimaryDark</item>
     </style>
 
     <style name="DialogButton" parent="@style/Widget.AppCompat.Button.Borderless">

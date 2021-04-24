@@ -9,7 +9,7 @@ class PlaybackActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ///theme.applyStyle(R.style.Theme_LeanbackCustom, true)
+        theme.applyStyle(R.style.Theme_LeanbackCustom, true)
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .replace(android.R.id.content, NowPlayingFragment())

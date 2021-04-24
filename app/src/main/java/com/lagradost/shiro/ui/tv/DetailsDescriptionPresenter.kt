@@ -9,9 +9,7 @@ class DetailsDescriptionPresenter : AbstractDetailsDescriptionPresenter() {
         viewHolder: ViewHolder,
         item: Any
     ) {
-        val movie = item as ShiroApi.AnimePageData
+        val movie = item as ShiroApi.CommonAnimePage
         viewHolder.title.text = movie.name
-        viewHolder.subtitle.text = movie.japanese
-        viewHolder.body.text = movie.synopsis
     }
 }

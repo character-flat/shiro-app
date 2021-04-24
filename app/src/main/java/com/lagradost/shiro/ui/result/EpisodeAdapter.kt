@@ -133,7 +133,7 @@ class EpisodeAdapter(
                 card.cardTitle.layoutParams = param
             }
 
-            itemView.cardBg.setOnClickListener {
+            itemView.episode_result_root.setOnClickListener {
                 if (save) {
                     DataStore.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
                 }

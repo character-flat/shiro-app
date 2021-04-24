@@ -27,6 +27,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.leanback.app.PlaybackSupportFragment
 import androidx.leanback.app.VideoSupportFragment
@@ -46,6 +47,10 @@ import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.MimeTypes
+import com.lagradost.shiro.ui.PlayerData
+import com.lagradost.shiro.ui.PlayerFragment.Companion.onLeftPlayer
+import com.lagradost.shiro.ui.result.ResultFragment
+import com.lagradost.shiro.utils.AppApi.setViewPosDur
 import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
@@ -77,6 +82,8 @@ class NowPlayingFragment : VideoSupportFragment() {
     var data: ShiroApi.AnimePageData? = null
     var episodeIndex: Int? = null
 
+    // Prevent clicking next episode button multiple times
+    private var isLoadingNextEpisode = false
 
     /**
      * Connects a [MediaSessionCompat] to a [Player] so transport controls are handled automatically
@@ -91,6 +98,7 @@ class NowPlayingFragment : VideoSupportFragment() {
         private val actionFastForward = PlaybackControlsRow.FastForwardAction(context)
         private val actionSkipOp = PlaybackControlsRow.FastForwardAction(context)
         private val actionNextEpisode = PlaybackControlsRow.SkipNextAction(context)
+
         //private val actionClosedCaptions = PlaybackControlsRow.ClosedCaptioningAction(context)
 
         fun skipForward(millis: Long = SKIP_PLAYBACK_MILLIS) =
@@ -119,7 +127,9 @@ class NowPlayingFragment : VideoSupportFragment() {
             adapter.add(actionRewind)
             adapter.add(actionFastForward)
             adapter.add(actionSkipOp)
-            adapter.add(actionNextEpisode)
+            if (episodeIndex!! + 1 < data?.episodes?.size!!) {
+                adapter.add(actionNextEpisode)
+            }
             //adapter.add(actionClosedCaptions)
         }
 
@@ -128,8 +138,11 @@ class NowPlayingFragment : VideoSupportFragment() {
             actionFastForward -> skipForward()
             actionSkipOp -> skipForward(SKIP_OP_MILLIS)
             actionNextEpisode -> {
-                if (episodeIndex != null) {
-                    episodeIndex = episodeIndex!! + 1
+                if (episodeIndex != null && !isLoadingNextEpisode) {
+                    playerGlue.host.hideControlsOverlay(false)
+                    isLoadingNextEpisode = true
+                    episodeIndex = minOf(episodeIndex!! + 1, data?.episodes?.size!! - 1)
+
                     releasePlayer()
                     initPlayer()
                 } else {
@@ -158,19 +171,19 @@ class NowPlayingFragment : VideoSupportFragment() {
 
             // Make sure that the view has not been destroyed
             view ?: return
-
+            /*
             // The player duration is more reliable, since metadata.playbackDurationMillis has the
             //  "official" duration as per Google / IMDb which may not match the actual media
             val contentDuration = exoPlayer.duration
             val contentPosition = exoPlayer.currentPosition
 
             // Updates metadata state
-            /*val metadata = args.metadata.apply {
+            val metadata = args.metadata.apply {
                 playbackPositionMillis = contentPosition
             }*/
 
             // Marks as complete if 95% or more of video is complete
-            if (exoPlayer.playbackState == SimpleExoPlayer.STATE_ENDED ||
+            /*if (exoPlayer.playbackState == SimpleExoPlayer.STATE_ENDED ||
                 (contentDuration > 0 && contentPosition > contentDuration * 0.95)
             ) {
                 /*val programUri = TvLauncherUtils.removeFromWatchNext(requireContext(), metadata)
@@ -185,7 +198,7 @@ class NowPlayingFragment : VideoSupportFragment() {
                     database.metadata().update(
                             metadata.apply { if (programUri != null) watchNext = true })
                 }*/
-            }
+            }*/
 
             // Schedules the next metadata update in METADATA_UPDATE_INTERVAL_MILLIS milliseconds
             Log.d(TAG, "Media metadata updated successfully")
@@ -199,10 +212,35 @@ class NowPlayingFragment : VideoSupportFragment() {
         }
     }
 
+    private fun savePos() {
+        println("Savepos")
+        if (this::exoPlayer.isInitialized) {
+            if (((data?.slug != null
+
+                        && episodeIndex != null) || data != null)
+                && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0
+            ) {
+                val playerData = PlayerData(
+                    data!!.name, currentUrl, episodeIndex, 0, data, 0L, data!!.slug
+                )
+                setViewPosDur(playerData, exoPlayer.currentPosition, exoPlayer.duration)
+            }
+        }
+    }
+
     private fun initPlayer() {
         backgroundType = PlaybackSupportFragment.BG_NONE
         thread {
             currentUrl = getCurrentUrl()
+            if (currentUrl == null) {
+                activity?.let {
+                    it.runOnUiThread {
+                        Toast.makeText(it, "Error getting link", Toast.LENGTH_LONG).show()
+                        it.onBackPressed()
+                    }
+                }
+                return@thread
+            }
             val isOnline =
                 currentUrl?.startsWith("https://") == true || currentUrl?.startsWith("http://") == true
             //database = TvMediaDatabase.getInstance(requireContext())
@@ -213,7 +251,6 @@ class NowPlayingFragment : VideoSupportFragment() {
             if (programUri != null) lifecycleScope.launch(Dispatchers.IO) {
                 database.metadata().update(metadata.apply { watchNext = true })
             }*/
-
 
             val _mediaItem = MediaItem.Builder()
                 //Replace needed for android 6.0.0  https://github.com/google/ExoPlayer/issues/5983
@@ -237,7 +274,9 @@ class NowPlayingFragment : VideoSupportFragment() {
             if (isOnline) {
                 _mediaItem.setUri(currentUrl)
             } else {
-                _mediaItem.setUri(Uri.fromFile(File(currentUrl)))
+                currentUrl?.let {
+                    _mediaItem.setUri(Uri.fromFile(File(it)))
+                }
             }
 
             val mediaItem = _mediaItem.build()
@@ -267,8 +306,7 @@ class NowPlayingFragment : VideoSupportFragment() {
 
                 // Initializes the video player
                 //player = ExoPlayerFactory.newSimpleInstance(requireContext())
-                mediaSession = MediaSessionCompat(requireContext(), getString(R.string.app_name))
-                mediaSessionConnector = MediaSessionConnector(mediaSession)
+
 
                 // Listen to media session events. This is necessary for things like closed captions which
                 // can be triggered by things outside of our app, for example via Google Assistant
@@ -281,6 +319,8 @@ class NowPlayingFragment : VideoSupportFragment() {
                 // Enables pass-through of transport controls to our player instance
                 playerGlue = MediaPlayerGlue(requireContext(), playerAdapter).apply {
                     host = VideoSupportFragmentGlueHost(this@NowPlayingFragment)
+                    title = "${data?.name} - Episode ${episodeIndex!! + 1}"
+
 
                     // Adds playback state listeners
                     addPlayerCallback(object : PlaybackGlue.PlayerCallback() {
@@ -303,10 +343,9 @@ class NowPlayingFragment : VideoSupportFragment() {
 
                         }
                     })
-
                     // Begins playback automatically
                     playWhenPrepared()
-                    //initPlayer()
+                    savePos()
 
                     // Displays the current item's metadata
                     //setMetadata(metadata)
@@ -352,8 +391,7 @@ class NowPlayingFragment : VideoSupportFragment() {
                 }
             }
         }
-
-
+        isLoadingNextEpisode = false
     }
 
     private fun getCurrentEpisode(): ShiroApi.ShiroEpisodes? {
@@ -372,6 +410,8 @@ class NowPlayingFragment : VideoSupportFragment() {
             activity?.intent?.getSerializableExtra(DetailsActivityTV.MOVIE) as String
         data = mapper.readValue<ShiroApi.AnimePageData>(dataString!!)
         episodeIndex = activity?.intent?.getSerializableExtra("position") as Int
+        mediaSession = MediaSessionCompat(requireContext(), getString(R.string.app_name))
+        mediaSessionConnector = MediaSessionConnector(mediaSession)
         initPlayer()
     }
 
@@ -389,11 +429,13 @@ class NowPlayingFragment : VideoSupportFragment() {
     override fun onResume() {
         super.onResume()
 
-        mediaSessionConnector.setPlayer(exoPlayer)
+        if (this::exoPlayer.isInitialized) {
+            mediaSessionConnector.setPlayer(exoPlayer)
+        }
         mediaSession.isActive = true
 
         // Kick off metadata update task which runs periodically in the main thread
-        view?.postDelayed(updateMetadataTask, METADATA_UPDATE_INTERVAL_MILLIS)
+        //view?.postDelayed(updateMetadataTask, METADATA_UPDATE_INTERVAL_MILLIS)
     }
 
     /**
@@ -403,24 +445,33 @@ class NowPlayingFragment : VideoSupportFragment() {
     override fun onPause() {
         super.onPause()
 
-        playerGlue.pause()
+        if (this::playerGlue.isInitialized) {
+            playerGlue.pause()
+        }
         mediaSession.isActive = false
         mediaSessionConnector.setPlayer(null)
 
-        view?.post {
+        /*view?.post {
             // Launch metadata update task one more time as the fragment becomes paused to ensure
             //  that we have the most up-to-date information
             updateMetadataTask.run()
 
             // Cancel all future metadata update tasks
             view?.removeCallbacks(updateMetadataTask)
-        }
+        }*/
     }
 
     /** Do all final cleanup in onDestroy */
     override fun onDestroy() {
         super.onDestroy()
+        savePos()
         mediaSession.release()
+        onLeftPlayer.invoke(true)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        savePos()
     }
 
     companion object {

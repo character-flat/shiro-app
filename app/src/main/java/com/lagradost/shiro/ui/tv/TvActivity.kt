@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.utils.AppApi.init
 import com.lagradost.shiro.utils.DownloadManager
 import com.lagradost.shiro.utils.ShiroApi
@@ -19,7 +20,7 @@ class TvActivity : FragmentActivity() {
     }
 
     override fun onBackPressed() {
-        if (isInSearch) {
+        if (isInSearch && !isInResults) {
             this.supportFragmentManager.beginTransaction()
                 .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 .replace(R.id.main_browse_fragment, MainFragmentTV())

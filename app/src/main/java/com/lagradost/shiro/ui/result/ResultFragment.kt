@@ -38,6 +38,8 @@ import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.PlayerFragment
 import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
+import com.lagradost.shiro.ui.tv.TvActivity
+import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppApi.getColorFromAttr
 import com.lagradost.shiro.utils.AppApi.hideKeyboard
@@ -229,6 +231,7 @@ class ResultFragment : Fragment() {
                     .replace("</i>", "")
                     .replace("\n", " ")
 
+
                 share_holder.setOnClickListener {
                     val intent = Intent()
                     intent.action = Intent.ACTION_SEND
@@ -267,7 +270,7 @@ class ResultFragment : Fragment() {
                 title_descript.text =
                     fullDescription.substring(0, minOf(DESCRIPTION_LENGTH1 - 3, fullDescription.length)) + "..."
                 title_descript.setOnClickListener {
-                    if (activity != null) {
+                    if (activity != null && tvActivity == null) {
                         val builder: AlertDialog.Builder = AlertDialog.Builder(requireActivity())
                         builder.setMessage(fullDescription).setTitle("Synopsis")
                             .show()
@@ -398,6 +401,9 @@ private fun ToggleViewState(_isViewState: Boolean) {
 
     private fun onLeftVideoPlayer(event: Boolean) {
         loadSeason()
+        if (tvActivity != null) {
+            title_season_cards.requestFocus()
+        }
     }
 
     private fun onDownloadStarted(id: String) {

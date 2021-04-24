@@ -31,11 +31,11 @@
     >
         <activity
                 android:name=".ui.tv.TvActivity"
-                android:banner="@drawable/app_icon_your_company"
-                android:icon="@drawable/app_icon_your_company"
-                android:label="@string/title_activity_tv"
+                android:banner="@drawable/favicon"
+                android:icon="@drawable/favicon"
+                android:label="@string/app_name"
                 android:theme="@style/Theme.LeanbackCustom"
-                android:logo="@drawable/app_icon_your_company"
+                android:logo="@drawable/favicon"
                 android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

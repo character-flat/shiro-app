@@ -48,6 +48,13 @@ class MainFragmentTV : BrowseSupportFragment() {
     private lateinit var mMetrics: DisplayMetrics
     private var mBackgroundTimer: Timer? = null
     private var mBackgroundUri: String? = null
+    private val MOVIE_CATEGORY = arrayOf(
+        "Favorites",
+        "Trending",
+        "Recently Updated",
+        "Ongoing",
+        "Latest anime"
+    )
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         Log.i(TAG, "onCreate")
@@ -101,16 +108,22 @@ class MainFragmentTV : BrowseSupportFragment() {
                 Collections.shuffle(list)
             }*/
             val data = when (i) {
-                2 -> {
+                /*0 -> {
+                    list?.recentlySeen?.map { it?.id }
+                }*/
+                0 -> {
+                    list?.favorites
+                }
+                1 -> {
                     list?.data?.trending_animes
                 }
-                /*3 -> {
-                    list?.data?.latest_episodes
-                }*/
-                4 -> {
+                2 -> {
+                    list?.data?.latest_episodes?.map { it.anime }
+                }
+                3 -> {
                     list?.data?.ongoing_animes
                 }
-                5 -> {
+                4 -> {
                     list?.data?.latest_animes
                 }
                 else -> listOf()
@@ -120,9 +133,9 @@ class MainFragmentTV : BrowseSupportFragment() {
                 listRowAdapter.add(data[j % 5])
             }*/
             data?.forEach {
-                listRowAdapter.add(it)
+                listRowAdapter.add(it as ShiroApi.CommonAnimePage)
             }
-            val header = HeaderItem(i.toLong(), MovieList.MOVIE_CATEGORY[i])
+            val header = HeaderItem(i.toLong(), MOVIE_CATEGORY[i])
             rowsAdapter.add(ListRow(header, listRowAdapter))
         }
 
@@ -158,7 +171,7 @@ class MainFragmentTV : BrowseSupportFragment() {
             rowViewHolder: RowPresenter.ViewHolder,
             row: Row
         ) {
-            if (item is ShiroApi.AnimePageData) {
+            if (item is ShiroApi.CommonAnimePage) {
                 Log.d(TAG, "Item: $item")
                 activity?.supportFragmentManager?.beginTransaction()
                     ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
@@ -237,7 +250,7 @@ class MainFragmentTV : BrowseSupportFragment() {
     }
 
     private inner class GridItemPresenter : Presenter() {
-        override fun onCreateViewHolder(parent: ViewGroup): Presenter.ViewHolder {
+        override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
             val view = TextView(parent.context)
             view.layoutParams = ViewGroup.LayoutParams(GRID_ITEM_WIDTH, GRID_ITEM_HEIGHT)
             view.isFocusable = true
@@ -245,23 +258,22 @@ class MainFragmentTV : BrowseSupportFragment() {
             view.setBackgroundColor(requireActivity().getColorFromAttr(R.attr.background))
             view.setTextColor(Color.WHITE)
             view.gravity = Gravity.CENTER
-            return Presenter.ViewHolder(view)
+            return ViewHolder(view)
         }
 
-        override fun onBindViewHolder(viewHolder: Presenter.ViewHolder, item: Any) {
+        override fun onBindViewHolder(viewHolder: ViewHolder, item: Any) {
             (viewHolder.view as TextView).text = item as String
         }
 
-        override fun onUnbindViewHolder(viewHolder: Presenter.ViewHolder) {}
+        override fun onUnbindViewHolder(viewHolder: ViewHolder) {}
     }
 
     companion object {
-        private val TAG = "MainFragmentTV"
+        private const val TAG = "MainFragmentTV"
 
-        private val BACKGROUND_UPDATE_DELAY = 300
-        private val GRID_ITEM_WIDTH = 200
-        private val GRID_ITEM_HEIGHT = 200
-        private val NUM_ROWS = 6
-        private val NUM_COLS = 15
+        private const val BACKGROUND_UPDATE_DELAY = 300
+        private const val GRID_ITEM_WIDTH = 200
+        private const val GRID_ITEM_HEIGHT = 200
+        private const val NUM_ROWS = 5
     }
 }
