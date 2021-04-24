@@ -48,7 +48,7 @@
         <!-- prefrencescreen switch color -->
         <item name="android:colorForeground">?attr/white</item>
         <item name="android:colorControlHighlight">?attr/white</item>
-
+        <item name="android:alertDialogTheme">@style/AlertDialogCustom</item>
     </style>
 
     <style name="Widget.App.BottomNavigationView" parent="Widget.Design.BottomNavigationView">
@@ -58,6 +58,12 @@
     <style name="NavigationView" parent="Theme.MaterialComponents.Light">
         <item name="colorPrimary">?attr/textColor</item>
         <!--<item name="android:background">?attr/background</item>-->
+    </style>
+
+    <style name="AlertDialogCustom" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:textColor">?attr/textColor</item>
+        <item name="android:textColorPrimary">?attr/textColor</item>
+        <item name="android:background">?attr/background</item>
     </style>
 
     <style name="Theme.LeanbackCustom" parent="Theme.Leanback">

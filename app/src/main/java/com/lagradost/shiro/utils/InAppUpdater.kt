@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.shiro.BuildConfig
+import com.lagradost.shiro.R
 import java.io.*
 import java.net.URL
 import java.net.URLConnection
@@ -241,7 +242,7 @@ object InAppUpdater {
                         )
                     }
 
-                    val builder: AlertDialog.Builder = AlertDialog.Builder(localContext)
+                    val builder: AlertDialog.Builder = AlertDialog.Builder(localContext, R.style.AlertDialogCustom)
                     builder.setTitle("New update found!\n${currentVersion?.versionName} -> ${update.updateVersion}")
                     builder.setMessage("${update.changelog}")
 

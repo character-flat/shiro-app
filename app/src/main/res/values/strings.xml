@@ -1,11 +1,11 @@
 <resources>
-    <string name="version_code">1.5.0 Public Release</string>
+    <string name="version_code">2.0.0 Public Release</string>
     <string name="changelog">\n
-        - Added themes\n
-        - Added an alternative anime info page\n
-        - Made anime info page much nicer with gradient background (credits to Ryu)\n
-        - Fixed some crashes\n
-        - Temporarily removed description expansion since it causes crashes on some phones\n
+        - Added proper android TV support!\n
+        - Added share button\n
+        - Tapping on synopsis will now show the whole synopsis\n
+        - Improved the in app updater\n
+        - Fixed crash when opening anime page\n
     </string>
     <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>

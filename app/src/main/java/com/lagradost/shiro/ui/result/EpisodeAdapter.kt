@@ -155,8 +155,7 @@ class EpisodeAdapter(
                             intent.putExtra(DetailsActivityTV.MOVIE, mapper.writeValueAsString(data))
                             intent.putExtra("position", position)
                             tvActivity?.startActivity(intent)
-                        }
-                        else {
+                        } else {
                             activity?.loadPlayer(position, 0L, data)
                         }
                     }
@@ -293,7 +292,7 @@ class EpisodeAdapter(
 
                         card.cardRemoveIcon.setOnClickListener {
                             val alertDialog: AlertDialog? = activity?.let {
-                                val builder = AlertDialog.Builder(it)
+                                val builder = AlertDialog.Builder(it, R.style.AlertDialogCustom)
                                 builder.apply {
                                     setPositiveButton(
                                         "Delete"

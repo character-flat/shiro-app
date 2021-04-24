@@ -126,7 +126,7 @@ class DownloadFragmentChild : Fragment() {
                     if (file.exists()) {
                         file.delete()
                         val dir = File(file.absoluteFile.parent)
-                        if (dir.listFiles().isEmpty()){
+                        if (dir.listFiles().isEmpty()) {
                             dir.delete()
                         }
                     }
@@ -143,13 +143,15 @@ class DownloadFragmentChild : Fragment() {
 
                 card.cardRemoveIcon.setOnClickListener {
                     val alertDialog: AlertDialog? = activity?.let {
-                        val builder = AlertDialog.Builder(it)
+                        val builder = AlertDialog.Builder(it, R.style.AlertDialogCustom)
                         builder.apply {
-                            setPositiveButton("Delete"
+                            setPositiveButton(
+                                "Delete"
                             ) { dialog, id ->
                                 deleteFile()
                             }
-                            setNegativeButton("Cancel"
+                            setNegativeButton(
+                                "Cancel"
                             ) { dialog, id ->
                                 // User cancelled the dialog
                             }
@@ -297,7 +299,7 @@ class DownloadFragmentChild : Fragment() {
                     )
                 }
 
-                val pro = getViewPosDur(slug!!,  child.episodeIndex)
+                val pro = getViewPosDur(slug!!, child.episodeIndex)
                 if (pro.dur > 0 && pro.pos > 0) {
                     var progress: Int = (pro.pos * 100L / pro.dur).toInt()
                     if (progress < 5) {

@@ -109,7 +109,9 @@ class ResultFragment : Fragment() {
             activity?.let { ViewModelProviders.of(it).get(ResultViewModel::class.java) }!!
         val useNewLayout = settingsManager!!.getBoolean("new_results_page", false)
         val layout = if (useNewLayout) R.layout.fragment_results_new else R.layout.fragment_results
+
         return inflater.inflate(layout, container, false)
+
     }
 
     private var onLoaded = Event<Boolean>()
@@ -270,8 +272,8 @@ class ResultFragment : Fragment() {
                 title_descript.text =
                     fullDescription.substring(0, minOf(DESCRIPTION_LENGTH1 - 3, fullDescription.length)) + "..."
                 title_descript.setOnClickListener {
-                    if (activity != null && tvActivity == null) {
-                        val builder: AlertDialog.Builder = AlertDialog.Builder(requireActivity())
+                    if (activity != null) {
+                        val builder: AlertDialog.Builder = AlertDialog.Builder(requireActivity(), R.style.AlertDialogCustom)
                         builder.setMessage(fullDescription).setTitle("Synopsis")
                             .show()
                     }
@@ -362,7 +364,9 @@ private fun ToggleViewState(_isViewState: Boolean) {
             }
         }
         super.onCreate(savedInstanceState)
-
+        if (tvActivity != null){
+            activity?.theme?.applyStyle(R.style.AppTheme, true)
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

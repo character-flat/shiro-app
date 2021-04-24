@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.utils.AppApi.openBrowser
 import com.lagradost.shiro.utils.AppApi.splitQuery
@@ -89,7 +90,7 @@ class AniListApi {
                     ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, 0L)!!) {
                 activity?.runOnUiThread {
                     val alertDialog: AlertDialog? = activity?.let {
-                        val builder = AlertDialog.Builder(it)
+                        val builder = AlertDialog.Builder(it, R.style.AlertDialogCustom)
                         builder.apply {
                             setPositiveButton("Login"
                             ) { dialog, id ->

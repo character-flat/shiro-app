@@ -56,7 +56,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         clearHistory?.summary = "$historyItems item${if (historyItems == 1) "" else "s"}"
         clearHistory?.setOnPreferenceClickListener {
             val alertDialog: AlertDialog? = activity?.let {
-                val builder = AlertDialog.Builder(it)
+                val builder = AlertDialog.Builder(it, R.style.AlertDialogCustom)
                 builder.apply {
                     setPositiveButton(
                         "OK"
@@ -146,7 +146,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 activity?.authenticateAniList()
             } else {
                 val alertDialog: AlertDialog? = activity?.let {
-                    val builder = AlertDialog.Builder(it)
+                    val builder = AlertDialog.Builder(it, R.style.AlertDialogCustom)
                     builder.apply {
                         setPositiveButton(
                             "Logout"
@@ -184,7 +184,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 activity?.authenticateMAL()
             } else {
                 val alertDialog: AlertDialog? = activity?.let {
-                    val builder = AlertDialog.Builder(it)
+                    val builder = AlertDialog.Builder(it, R.style.AlertDialogCustom)
                     builder.apply {
                         setPositiveButton(
                             "Logout"
@@ -217,7 +217,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val changeLog = findPreference("changelog") as Preference?
         changeLog?.setOnPreferenceClickListener {
             val alertDialog: AlertDialog? = activity?.let {
-                val builder = AlertDialog.Builder(it)
+                val builder = AlertDialog.Builder(it, R.style.AlertDialogCustom)
                 builder.apply {
                     setPositiveButton("OK") { _, _ -> }
                 }
