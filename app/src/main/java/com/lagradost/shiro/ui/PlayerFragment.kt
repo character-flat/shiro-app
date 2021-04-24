@@ -35,10 +35,7 @@ import android.view.animation.AccelerateInterpolator
 import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
-import androidx.media.AudioManagerCompat.requestAudioFocus
-import androidx.preference.PreferenceManager
 import androidx.transition.TransitionManager
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -183,6 +180,9 @@ class PlayerFragment : Fragment() {
     private var width = Resources.getSystem().displayMetrics.heightPixels
     private var height = Resources.getSystem().displayMetrics.widthPixels
     private var prevDiffX = 0.0
+
+    // Prevent clicking next episode button multiple times
+    private var isLoadingNextEpisode = false
 
     abstract class DoubleClickListener(private val ctx: PlayerFragment) : OnTouchListener {
         // The time in which the second tap should be done in order to qualify as
@@ -855,9 +855,11 @@ class PlayerFragment : Fragment() {
                     if (canPlayNextEpisode()) {
                         next_episode_btt.visibility = VISIBLE
                         next_episode_btt.setOnClickListener {
+                            if (isLoadingNextEpisode) return@setOnClickListener
+                            isLoadingNextEpisode = true
                             savePos()
-                            val next =
-                                data!!.card!!.episodes!!.size > data!!.episodeIndex!! + 1
+                            /*val next =
+                                data!!.card!!.episodes!!.size > data!!.episodeIndex!! + 1*/
                             val key = getViewKey(
                                 data?.card!!.slug,
                                 data!!.episodeIndex!! + 1
@@ -972,6 +974,7 @@ class PlayerFragment : Fragment() {
                 println("Warning: Illegal state exception in PlayerFragment")
             }
         }
+        isLoadingNextEpisode = false
     }
 
     override fun onStart() {

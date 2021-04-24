@@ -36,6 +36,7 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.ui.GlideApp
+import com.lagradost.shiro.utils.AppApi.getColorFromAttr
 
 import java.util.Collections
 import kotlin.math.roundToInt
@@ -158,7 +159,7 @@ class VideoDetailsFragment : DetailsSupportFragment() {
         // Set detail background.
         val detailsPresenter = FullWidthDetailsOverviewRowPresenter(DetailsDescriptionPresenter())
         detailsPresenter.backgroundColor =
-            activity?.let { ContextCompat.getColor(it, R.color.selected_background) }!!
+            activity?.let { requireActivity().getColorFromAttr(R.attr.colorPrimary) }!!
 
         // Hook up transition element.
         val sharedElementHelper = FullWidthDetailsOverviewSharedElementHelper()

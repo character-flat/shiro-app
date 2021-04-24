@@ -23,15 +23,11 @@ import android.content.Context
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
-import android.os.ResultReceiver
-import android.support.v4.media.RatingCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
-import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 import androidx.leanback.app.PlaybackSupportFragment
 import androidx.leanback.app.VideoSupportFragment
 import androidx.leanback.app.VideoSupportFragmentGlueHost
@@ -40,24 +36,21 @@ import androidx.leanback.media.PlaybackTransportControlGlue
 import androidx.leanback.widget.Action
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.PlaybackControlsRow
-import androidx.lifecycle.lifecycleScope
-import androidx.navigation.Navigation
-import androidx.navigation.fragment.navArgs
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.google.android.exoplayer2.ControlDispatcher
-import com.google.android.exoplayer2.ExoPlayerFactory
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.ext.leanback.LeanbackPlayerAdapter
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
-import com.google.android.exoplayer2.source.ProgressiveMediaSource
+import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import com.lagradost.shiro.ui.NextEpisode
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
+import com.google.android.exoplayer2.util.MimeTypes
 import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.ShiroApi
+import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 import kotlin.math.max
@@ -69,7 +62,7 @@ class NowPlayingFragment : VideoSupportFragment() {
 
     /** AndroidX navigation arguments */
 
-    private lateinit var player: SimpleExoPlayer
+    //private lateinit var player: SimpleExoPlayer
     //private lateinit var database: TvMediaDatabase
 
     /** Allows interaction with transport controls, volume keys, media buttons  */
@@ -77,7 +70,12 @@ class NowPlayingFragment : VideoSupportFragment() {
 
     /** Glue layer between the player and our UI */
     private lateinit var playerGlue: MediaPlayerGlue
-    private var episode: Int? = null
+    private var currentUrl: String? = null
+    private lateinit var exoPlayer: SimpleExoPlayer
+
+    var dataString: String? = null
+    var data: ShiroApi.AnimePageData? = null
+    var episodeIndex: Int? = null
 
 
     /**
@@ -97,17 +95,17 @@ class NowPlayingFragment : VideoSupportFragment() {
 
         fun skipForward(millis: Long = SKIP_PLAYBACK_MILLIS) =
             // Ensures we don't advance past the content duration (if set)
-            player.seekTo(
-                if (player.contentDuration > 0) {
-                    min(player.contentDuration, player.currentPosition + millis)
+            exoPlayer.seekTo(
+                if (exoPlayer.contentDuration > 0) {
+                    min(exoPlayer.contentDuration, exoPlayer.currentPosition + millis)
                 } else {
-                    player.currentPosition + millis
+                    exoPlayer.currentPosition + millis
                 }
             )
 
         fun skipBackward(millis: Long = SKIP_PLAYBACK_MILLIS) =
             // Ensures we don't go below zero position
-            player.seekTo(max(0, player.currentPosition - millis))
+            exoPlayer.seekTo(max(0, exoPlayer.currentPosition - millis))
 
         override fun onCreatePrimaryActions(adapter: ArrayObjectAdapter) {
             super.onCreatePrimaryActions(adapter)
@@ -130,10 +128,10 @@ class NowPlayingFragment : VideoSupportFragment() {
             actionFastForward -> skipForward()
             actionSkipOp -> skipForward(SKIP_OP_MILLIS)
             actionNextEpisode -> {
-                if (episode != null) {
-                    episode = episode!! + 1
-                    mediaSession.release()
-                    startEpisode()
+                if (episodeIndex != null) {
+                    episodeIndex = episodeIndex!! + 1
+                    releasePlayer()
+                    initPlayer()
                 } else {
                 }
             }
@@ -163,8 +161,8 @@ class NowPlayingFragment : VideoSupportFragment() {
 
             // The player duration is more reliable, since metadata.playbackDurationMillis has the
             //  "official" duration as per Google / IMDb which may not match the actual media
-            val contentDuration = player.duration
-            val contentPosition = player.currentPosition
+            val contentDuration = exoPlayer.duration
+            val contentPosition = exoPlayer.currentPosition
 
             // Updates metadata state
             /*val metadata = args.metadata.apply {
@@ -172,7 +170,7 @@ class NowPlayingFragment : VideoSupportFragment() {
             }*/
 
             // Marks as complete if 95% or more of video is complete
-            if (player.playbackState == SimpleExoPlayer.STATE_ENDED ||
+            if (exoPlayer.playbackState == SimpleExoPlayer.STATE_ENDED ||
                 (contentDuration > 0 && contentPosition > contentDuration * 0.95)
             ) {
                 /*val programUri = TvLauncherUtils.removeFromWatchNext(requireContext(), metadata)
@@ -195,135 +193,186 @@ class NowPlayingFragment : VideoSupportFragment() {
         }
     }
 
-    private fun startEpisode() {
-        val dataString =
-            activity?.intent?.getSerializableExtra(DetailsActivityTV.MOVIE) as String
-        val data = mapper.readValue<ShiroApi.AnimePageData>(dataString)
-        episode = activity?.intent?.getSerializableExtra("position") as Int
-        val dataSourceFactory = DefaultDataSourceFactory(
-            requireContext(), getString(R.string.app_name)
-        )
+    private fun releasePlayer() {
+        if (this::exoPlayer.isInitialized) {
+            exoPlayer.release()
+        }
+    }
+
+    private fun initPlayer() {
+        backgroundType = PlaybackSupportFragment.BG_NONE
         thread {
-            if (episode == null) {
-                return@thread
+            currentUrl = getCurrentUrl()
+            val isOnline =
+                currentUrl?.startsWith("https://") == true || currentUrl?.startsWith("http://") == true
+            //database = TvMediaDatabase.getInstance(requireContext())
+            //val metadata = args.metadata
+
+            // Adds this program to the continue watching row, in case the user leaves before finishing
+            /*val programUri = TvLauncherUtils.upsertWatchNext(requireContext(), metadata)
+            if (programUri != null) lifecycleScope.launch(Dispatchers.IO) {
+                database.metadata().update(metadata.apply { watchNext = true })
+            }*/
+
+
+            val _mediaItem = MediaItem.Builder()
+                //Replace needed for android 6.0.0  https://github.com/google/ExoPlayer/issues/5983
+                .setMimeType(MimeTypes.APPLICATION_MP4)
+
+            class CustomFactory : DataSource.Factory {
+                override fun createDataSource(): DataSource {
+                    return if (isOnline) {
+                        val dataSource = DefaultHttpDataSourceFactory(USER_AGENT).createDataSource()
+                        /*FastAniApi.currentHeaders?.forEach {
+                            dataSource.setRequestProperty(it.key, it.value)
+                        }*/
+                        dataSource.setRequestProperty("Referer", "https://cherry.subsplea.se/")
+                        dataSource
+                    } else {
+                        DefaultDataSourceFactory(requireContext(), USER_AGENT).createDataSource()
+                    }
+                }
             }
 
-            activity?.runOnUiThread {
-                mediaSessionConnector.setPlayer(player)
-                mediaSession.isActive = true
-
+            if (isOnline) {
+                _mediaItem.setUri(currentUrl)
+            } else {
+                _mediaItem.setUri(Uri.fromFile(File(currentUrl)))
             }
 
-            val url = data.episodes?.get(episode!!)?.videos?.getOrNull(0)?.let { getVideoLink(it.video_id) }
-            val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
-                .createMediaSource(Uri.parse(url))
+            val mediaItem = _mediaItem.build()
+            val trackSelector = DefaultTrackSelector(requireContext())
+            // Disable subtitles
+            trackSelector.parameters = DefaultTrackSelector.ParametersBuilder(requireContext())
+                .setRendererDisabled(C.TRACK_TYPE_VIDEO, true)
+                .setRendererDisabled(C.TRACK_TYPE_TEXT, true)
+                .setDisabledTextTrackSelectionFlags(C.TRACK_TYPE_TEXT)
+                .clearSelectionOverrides()
+                .build()
+
+            val _exoPlayer =
+                SimpleExoPlayer.Builder(this.requireContext())
+                    .setTrackSelector(trackSelector)
+
+            _exoPlayer.setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
 
             activity?.runOnUiThread {
-                player.prepare(mediaSource, false, true)
+
+                exoPlayer = _exoPlayer.build().apply {
+                    //playWhenReady = isPlayerPlaying
+                    //seekTo(currentWindow, playbackPosition)
+                    setMediaItem(mediaItem, false)
+                    prepare()
+                }
+
+                // Initializes the video player
+                //player = ExoPlayerFactory.newSimpleInstance(requireContext())
+                mediaSession = MediaSessionCompat(requireContext(), getString(R.string.app_name))
+                mediaSessionConnector = MediaSessionConnector(mediaSession)
+
+                // Listen to media session events. This is necessary for things like closed captions which
+                // can be triggered by things outside of our app, for example via Google Assistant
+
+                // Links our video player with this Leanback video playback fragment
+                val playerAdapter = LeanbackPlayerAdapter(
+                    requireContext(), exoPlayer, PLAYER_UPDATE_INTERVAL_MILLIS
+                )
+
+                // Enables pass-through of transport controls to our player instance
+                playerGlue = MediaPlayerGlue(requireContext(), playerAdapter).apply {
+                    host = VideoSupportFragmentGlueHost(this@NowPlayingFragment)
+
+                    // Adds playback state listeners
+                    addPlayerCallback(object : PlaybackGlue.PlayerCallback() {
+
+                        override fun onPreparedStateChanged(glue: PlaybackGlue?) {
+                            super.onPreparedStateChanged(glue)
+                            if (glue?.isPrepared == true) {
+                                // When playback is ready, skip to last known position
+                                val startingPosition = 0L//metadata.playbackPositionMillis ?: 0
+                                Log.d(TAG, "Setting starting playback position to $startingPosition")
+                                seekTo(startingPosition)
+                            }
+                        }
+
+                        override fun onPlayCompleted(glue: PlaybackGlue?) {
+                            super.onPlayCompleted(glue)
+
+                            // Don't forget to remove irrelevant content from the continue watching row
+                            //TvLauncherUtils.removeFromWatchNext(requireContext(), args.metadata)
+
+                        }
+                    })
+
+                    // Begins playback automatically
+                    playWhenPrepared()
+                    //initPlayer()
+
+                    // Displays the current item's metadata
+                    //setMetadata(metadata)
+                }
+                // Setup the fragment adapter with our player glue presenter
+                adapter = ArrayObjectAdapter(playerGlue.playbackRowPresenter).apply {
+                    add(playerGlue.controlsRow)
+                }
+
+                // Adds key listeners
+                playerGlue.host.setOnKeyInterceptListener { view, keyCode, event ->
+
+                    // Early exit: if the controls overlay is visible, don't intercept any keys
+                    if (playerGlue.host.isControlsOverlayVisible) return@setOnKeyInterceptListener false
+
+                    // TODO(owahltinez): This workaround is necessary for navigation library to work with
+                    //  Leanback's [PlaybackSupportFragment]
+                    if (!playerGlue.host.isControlsOverlayVisible &&
+                        keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_DOWN
+                    ) {
+                        /*val navController = Navigation.findNavController(
+                                requireActivity(), R.id.fragment_container)
+                        navController.currentDestination?.id?.let { navController.popBackStack(it, true) }*/
+                        activity?.onBackPressed()
+                        return@setOnKeyInterceptListener true
+                    }
+
+                    // Skips ahead when user presses DPAD_RIGHT
+                    if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && event.action == KeyEvent.ACTION_DOWN) {
+                        playerGlue.skipForward()
+                        preventControlsOverlay(playerGlue)
+                        return@setOnKeyInterceptListener true
+                    }
+
+                    // Rewinds when user presses DPAD_LEFT
+                    if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && event.action == KeyEvent.ACTION_DOWN) {
+                        playerGlue.skipBackward()
+                        preventControlsOverlay(playerGlue)
+                        return@setOnKeyInterceptListener true
+                    }
+
+                    false
+                }
             }
         }
 
+
+    }
+
+    private fun getCurrentEpisode(): ShiroApi.ShiroEpisodes? {
+        return data?.episodes?.get(episodeIndex!!)//data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.episodeIndex!!)
+    }
+
+    private fun getCurrentUrl(): String? {
+        //println("MAN::: " + data?.url)
+        //if (data?.url != null) return data?.url!!
+        return getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { getVideoLink(it) }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        backgroundType = PlaybackSupportFragment.BG_NONE
-        //database = TvMediaDatabase.getInstance(requireContext())
-        //val metadata = args.metadata
-
-        // Adds this program to the continue watching row, in case the user leaves before finishing
-        /*val programUri = TvLauncherUtils.upsertWatchNext(requireContext(), metadata)
-        if (programUri != null) lifecycleScope.launch(Dispatchers.IO) {
-            database.metadata().update(metadata.apply { watchNext = true })
-        }*/
-
-        // Initializes the video player
-        player = ExoPlayerFactory.newSimpleInstance(requireContext())
-        mediaSession = MediaSessionCompat(requireContext(), getString(R.string.app_name))
-        mediaSessionConnector = MediaSessionConnector(mediaSession)
-
-        // Listen to media session events. This is necessary for things like closed captions which
-        // can be triggered by things outside of our app, for example via Google Assistant
-
-        // Links our video player with this Leanback video playback fragment
-        val playerAdapter = LeanbackPlayerAdapter(
-            requireContext(), player, PLAYER_UPDATE_INTERVAL_MILLIS
-        )
-
-        // Enables pass-through of transport controls to our player instance
-        playerGlue = MediaPlayerGlue(requireContext(), playerAdapter).apply {
-            host = VideoSupportFragmentGlueHost(this@NowPlayingFragment)
-
-            // Adds playback state listeners
-            addPlayerCallback(object : PlaybackGlue.PlayerCallback() {
-
-                override fun onPreparedStateChanged(glue: PlaybackGlue?) {
-                    super.onPreparedStateChanged(glue)
-                    if (glue?.isPrepared == true) {
-                        // When playback is ready, skip to last known position
-                        val startingPosition = 0L//metadata.playbackPositionMillis ?: 0
-                        Log.d(TAG, "Setting starting playback position to $startingPosition")
-                        seekTo(startingPosition)
-                    }
-                }
-
-                override fun onPlayCompleted(glue: PlaybackGlue?) {
-                    super.onPlayCompleted(glue)
-
-                    // Don't forget to remove irrelevant content from the continue watching row
-                    //TvLauncherUtils.removeFromWatchNext(requireContext(), args.metadata)
-
-                }
-            })
-
-            // Begins playback automatically
-            playWhenPrepared()
-            startEpisode()
-
-            // Displays the current item's metadata
-            //setMetadata(metadata)
-        }
-
-
-        // Setup the fragment adapter with our player glue presenter
-        adapter = ArrayObjectAdapter(playerGlue.playbackRowPresenter).apply {
-            add(playerGlue.controlsRow)
-        }
-
-        // Adds key listeners
-        playerGlue.host.setOnKeyInterceptListener { view, keyCode, event ->
-
-            // Early exit: if the controls overlay is visible, don't intercept any keys
-            if (playerGlue.host.isControlsOverlayVisible) return@setOnKeyInterceptListener false
-
-            // TODO(owahltinez): This workaround is necessary for navigation library to work with
-            //  Leanback's [PlaybackSupportFragment]
-            if (!playerGlue.host.isControlsOverlayVisible &&
-                keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_DOWN
-            ) {
-                /*val navController = Navigation.findNavController(
-                        requireActivity(), R.id.fragment_container)
-                navController.currentDestination?.id?.let { navController.popBackStack(it, true) }*/
-                activity?.onBackPressed()
-                return@setOnKeyInterceptListener true
-            }
-
-            // Skips ahead when user presses DPAD_RIGHT
-            if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && event.action == KeyEvent.ACTION_DOWN) {
-                playerGlue.skipForward()
-                preventControlsOverlay(playerGlue)
-                return@setOnKeyInterceptListener true
-            }
-
-            // Rewinds when user presses DPAD_LEFT
-            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && event.action == KeyEvent.ACTION_DOWN) {
-                playerGlue.skipBackward()
-                preventControlsOverlay(playerGlue)
-                return@setOnKeyInterceptListener true
-            }
-
-            false
-        }
+        dataString =
+            activity?.intent?.getSerializableExtra(DetailsActivityTV.MOVIE) as String
+        data = mapper.readValue<ShiroApi.AnimePageData>(dataString!!)
+        episodeIndex = activity?.intent?.getSerializableExtra("position") as Int
+        initPlayer()
     }
 
     /** Workaround used to prevent controls overlay from showing and taking focus */
@@ -340,7 +389,7 @@ class NowPlayingFragment : VideoSupportFragment() {
     override fun onResume() {
         super.onResume()
 
-        mediaSessionConnector.setPlayer(player)
+        mediaSessionConnector.setPlayer(exoPlayer)
         mediaSession.isActive = true
 
         // Kick off metadata update task which runs periodically in the main thread

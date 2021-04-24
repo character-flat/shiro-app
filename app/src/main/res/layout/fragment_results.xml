@@ -7,6 +7,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:background="?attr/background"
         android:id="@+id/results_root"
+        android:theme="@style/AppTheme"
 >
     <ImageView
             android:layout_width="match_parent"

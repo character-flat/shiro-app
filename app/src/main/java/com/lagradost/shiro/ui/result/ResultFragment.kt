@@ -440,7 +440,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
         //media_route_button_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
         //media_route_button.layoutParams = LinearLayout.LayoutParams(20.toPx, 20.toPx + MainActivity.statusHeight)  //setPadding(0, MainActivity.statusHeight, 0, 0)
         title_go_back.setOnClickListener {
-            activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
+            activity?.onBackPressed()
         }
 
         bookmark_holder.setOnClickListener {

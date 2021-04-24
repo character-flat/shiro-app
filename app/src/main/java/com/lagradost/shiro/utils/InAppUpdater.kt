@@ -133,7 +133,7 @@ object InAppUpdater {
             } catch (e: Exception) {
                 println(e)
                 this.runOnUiThread {
-                    Toast.makeText(localContext, "Permission error", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(localContext, "Permission error when downloading update", Toast.LENGTH_SHORT).show()
                 }
                 return false
             }

@@ -34,6 +34,7 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.lagradost.shiro.R
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.ui.result.ResultFragment
+import com.lagradost.shiro.utils.AppApi.getColorFromAttr
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 
 /**
@@ -85,9 +86,9 @@ class MainFragmentTV : BrowseSupportFragment() {
         isHeadersTransitionOnBackEnabled = true
 
         // set fastLane (or headers) background color
-        brandColor = ContextCompat.getColor(requireActivity(), R.color.fastlane_background)
+        brandColor = requireActivity().getColorFromAttr(R.attr.colorPrimaryDarker)
         // set search icon color
-        searchAffordanceColor = ContextCompat.getColor(requireActivity(), R.color.search_opaque)
+        searchAffordanceColor = requireActivity().getColorFromAttr(R.attr.colorPrimaryDark)
     }
 
     private fun loadRows(list: ShiroApi.ShiroHomePage?) {
@@ -150,14 +151,13 @@ class MainFragmentTV : BrowseSupportFragment() {
         onItemViewSelectedListener = ItemViewSelectedListener()
     }
 
-    private inner class ItemViewClickedListener : OnItemViewClickedListener {
+    inner class ItemViewClickedListener : OnItemViewClickedListener {
         override fun onItemClicked(
             itemViewHolder: Presenter.ViewHolder,
             item: Any,
             rowViewHolder: RowPresenter.ViewHolder,
             row: Row
         ) {
-
             if (item is ShiroApi.AnimePageData) {
                 Log.d(TAG, "Item: $item")
                 activity?.supportFragmentManager?.beginTransaction()
@@ -242,7 +242,7 @@ class MainFragmentTV : BrowseSupportFragment() {
             view.layoutParams = ViewGroup.LayoutParams(GRID_ITEM_WIDTH, GRID_ITEM_HEIGHT)
             view.isFocusable = true
             view.isFocusableInTouchMode = true
-            view.setBackgroundColor(ContextCompat.getColor(requireActivity(), R.color.default_background))
+            view.setBackgroundColor(requireActivity().getColorFromAttr(R.attr.background))
             view.setTextColor(Color.WHITE)
             view.gravity = Gravity.CENTER
             return Presenter.ViewHolder(view)

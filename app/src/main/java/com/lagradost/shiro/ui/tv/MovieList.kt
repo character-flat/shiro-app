@@ -2,7 +2,7 @@ package com.lagradost.shiro.ui.tv
 
 object MovieList {
     val MOVIE_CATEGORY = arrayOf(
-        "Continue watching",
+        "Continue",
         "Favorites",
         "Trending",
         "Recently Updated",

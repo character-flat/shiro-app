@@ -50,7 +50,7 @@
         <item name="android:colorControlHighlight">?attr/white</item>
 
     </style>
-    
+
     <style name="Widget.App.BottomNavigationView" parent="Widget.Design.BottomNavigationView">
         <item name="materialThemeOverlay">@style/NavigationView</item>
     </style>
@@ -60,8 +60,7 @@
         <!--<item name="android:background">?attr/background</item>-->
     </style>
 
-    <style name="Leanback" parent="Theme.Leanback">
-
+    <style name="Theme.LeanbackCustom" parent="Theme.Leanback">
     </style>
 
     <style name="DialogButton" parent="@style/Widget.AppCompat.Button.Borderless">

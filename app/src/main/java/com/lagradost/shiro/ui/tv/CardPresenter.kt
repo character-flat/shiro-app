@@ -5,6 +5,7 @@ import androidx.leanback.widget.ImageCardView
 import androidx.leanback.widget.Presenter
 import androidx.core.content.ContextCompat
 import android.util.Log
+import android.view.View
 import android.view.ViewGroup
 
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -12,6 +13,7 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.ui.GlideApp
+import com.lagradost.shiro.utils.AppApi.getColorFromAttr
 import kotlin.properties.Delegates
 
 /**
@@ -26,8 +28,8 @@ class CardPresenter : Presenter() {
     override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
         Log.d(TAG, "onCreateViewHolder")
 
-        sDefaultBackgroundColor = ContextCompat.getColor(parent.context, R.color.default_background)
-        sSelectedBackgroundColor = ContextCompat.getColor(parent.context, R.color.selected_background)
+        sDefaultBackgroundColor = parent.context.getColorFromAttr(R.attr.background)
+        sSelectedBackgroundColor = parent.context.getColorFromAttr(R.attr.colorPrimaryDarker)
         mDefaultCardImage = ContextCompat.getDrawable(parent.context, R.drawable.movie)
 
         val cardView = object : ImageCardView(parent.context) {
@@ -75,6 +77,7 @@ class CardPresenter : Presenter() {
         view.setBackgroundColor(color)
         view.setInfoAreaBackgroundColor(color)
     }
+
 
     companion object {
         private const val TAG = "CardPresenter"

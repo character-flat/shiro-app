@@ -41,6 +41,7 @@ class TvActivity : FragmentActivity() {
         }
         // ----- Theme -----
         theme.applyStyle(R.style.AppTheme, true)
+        theme.applyStyle(R.style.Theme_LeanbackCustom, true)
         // -----------------
 
         setContentView(R.layout.activity_tv)

@@ -78,7 +78,7 @@
     <string name="next_episode">Next episode</string>
     <string name="pause_download">Pause Download</string>
     <string name="title_activity_tv">Leanback Title</string>
-    <string name="browse_title">ANDROID TV IS STILL IN DEVELOPMENT</string>
+    <string name="browse_title"></string>
     <string name="related_movies">Related Videos</string>
     <string name="grid_view">Grid View</string>
     <string name="error_fragment">Error Fragment</string>

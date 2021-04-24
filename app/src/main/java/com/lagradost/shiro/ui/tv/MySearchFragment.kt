@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.text.TextUtils
 import androidx.leanback.app.SearchSupportFragment
 import androidx.leanback.widget.*
+import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.isInSearch
 import com.lagradost.shiro.utils.ShiroApi
 import kotlin.concurrent.thread
@@ -16,6 +18,16 @@ class MySearchFragment : SearchSupportFragment(), SearchSupportFragment.SearchRe
         super.onCreate(savedInstanceState)
         setSearchResultProvider(this)
         isInSearch = true
+        setOnItemViewClickedListener { _, item, _, _ ->
+            println("Clicked ${item.javaClass.simpleName}")
+            if (item is ShiroApi.ShiroSearchResponseShow) {
+                activity?.supportFragmentManager?.beginTransaction()
+                    ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                    ?.add(R.id.main_browse_fragment, ResultFragment.newInstance(item.slug))
+                    ?.addToBackStack("ResultFragment")
+                    ?.commitAllowingStateLoss()
+            }
+        }
     }
 
     override fun onDestroy() {

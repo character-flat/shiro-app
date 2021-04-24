@@ -26,13 +26,15 @@
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
-            android:theme="@style/AppTheme">
+            android:theme="@style/AppTheme"
+            android:requestLegacyExternalStorage="true"
+    >
         <activity
                 android:name=".ui.tv.TvActivity"
                 android:banner="@drawable/app_icon_your_company"
                 android:icon="@drawable/app_icon_your_company"
                 android:label="@string/title_activity_tv"
-                android:theme="@style/Theme.Leanback"
+                android:theme="@style/Theme.LeanbackCustom"
                 android:logo="@drawable/app_icon_your_company"
                 android:screenOrientation="landscape">
             <intent-filter>
