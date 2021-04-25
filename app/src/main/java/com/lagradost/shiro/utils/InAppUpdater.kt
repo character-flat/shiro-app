@@ -17,6 +17,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.shiro.BuildConfig
 import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import java.io.*
 import java.net.URL
 import java.net.URLConnection
@@ -37,6 +38,8 @@ object InAppUpdater {
         @JsonProperty("body") val body: String, // Desc
         @JsonProperty("assets") val assets: List<GithubAsset>,
         @JsonProperty("target_commitish") val target_commitish: String, // branch
+        @JsonProperty("draft") val draft: Boolean,
+        @JsonProperty("prerelease") val prerelease: Boolean,
     )
 
     data class Update(
@@ -52,12 +55,23 @@ object InAppUpdater {
 
     fun FragmentActivity.getAppUpdate(): Update {
         try {
+            val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
+
+            val isBetaMode = settingsManager.getBoolean("beta_mode", false)
+            val isTv = tvActivity != null
+
             val url = "https://api.github.com/repos/Blatzar/shiro-app/releases"
             val headers = mapOf("Accept" to "application/vnd.github.v3+json")
             val response =
                 mapper.readValue<List<GithubRelease>>(khttp.get(url, headers = headers).text)
 
-            val versionRegex = Regex("""(.*?((\d)\.(\d)\.(\d)).*\.apk)""")
+            val cleanedResponse = response.filter { (!it.prerelease || isBetaMode) && !it.draft}
+
+            val versionRegex = if (isTv) {
+                Regex("""(.*?((\d)\.(\d)\.(\d))\.apk)""")
+            } else {
+                Regex("""(.*?((\d)\.(\d)\.(\d))-TV\.apk)""")
+            }
 
             /*
             val releases = response.map { it.assets }.flatten()
@@ -67,7 +81,7 @@ object InAppUpdater {
                     versionRegex.find(it.name)?.groupValues?.get(2)
                 }).toList().lastOrNull()*/
             val found =
-                response.sortedWith(compareBy { release ->
+                cleanedResponse.sortedWith(compareBy { release ->
                     release.assets.filter { it.content_type == "application/vnd.android.package-archive" }
                         .getOrNull(0)?.name?.let { it1 ->
                             versionRegex.find(

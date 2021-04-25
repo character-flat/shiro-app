@@ -30,6 +30,53 @@
             android:theme="@style/AppTheme"
             android:requestLegacyExternalStorage="true"
     >
+        <activity
+                tools:node="merge"
+                android:name=".ui.MainActivity"
+                android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation"
+                android:label="@string/app_name"
+                android:resizeableActivity="true"
+                android:supportsPictureInPicture="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <!--
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https"
+                      android:host="fastani.net"
+                />
+            </intent-filter>
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="fastaniapp"/>
+            </intent-filter>
+        </activity>
+
+        <!--<activity
+                android:name=".ui.tv.TvActivity"
+                android:banner="@drawable/favicon"
+                android:icon="@drawable/favicon"
+                android:label="@string/app_name"
+                android:theme="@style/Theme.LeanbackCustom"
+                android:logo="@drawable/favicon"
+                android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".ui.tv.DetailsActivityTV"/>
+        <activity android:name=".ui.tv.PlaybackActivity"/>
+        <activity android:name=".ui.tv.BrowseErrorActivity"/>-->
+
         <provider
                 android:name="androidx.core.content.FileProvider"
                 android:authorities="${applicationId}.provider"

@@ -246,7 +246,8 @@ class MainActivity : AppCompatActivity() {
             ShiroApi.init()
         }
         thread {
-            isDonor = getDonorStatus() == androidId
+            // Hardcoded for now since it fails for some people :|
+            isDonor = true//getDonorStatus() == androidId
         }
         thread {
             runAutoUpdate(this)

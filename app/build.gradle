@@ -15,8 +15,7 @@ android {
         // Don't forget to update versionCode too :)
         versionCode 14
         versionName "2.0.0"
-
-        testInstrumentationRunner "androidx.mal_logo.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -35,6 +34,24 @@ android {
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        beta {
+            applicationIdSuffix ".beta"
+            versionNameSuffix '-Beta'
+            debuggable false
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    flavorDimensions "version"
+    productFlavors {
+        phone {
+            dimension "version"
+        }
+        tv {
+            dimension "version"
+            applicationIdSuffix ".tv"
         }
     }
     compileOptions {

@@ -36,10 +36,12 @@ class TvActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!isTv()) {
+        /*if (!isTv()) {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
-        }
+            finish()
+            return
+        }*/
         // ------ Init -----
         tvActivity = this
         DataStore.init(this)

@@ -184,11 +184,11 @@
                 android:icon="@drawable/ic_baseline_perm_identity_24"
         />
     </PreferenceCategory>
-    <PreferenceCategory
-            android:key="info"
-            android:title="Info"
-    >
 
+    <PreferenceCategory
+            android:key="update_info"
+            android:title="Version"
+    >
         <Preference
                 android:icon="@drawable/ic_baseline_build_24"
                 app:key="version"
@@ -201,18 +201,30 @@
                 app:isPreferenceVisible="false"
                 android:icon="@drawable/ic_baseline_warning_24"
         />
-
         <SwitchPreference
                 app:key="auto_update"
                 android:title="Automatically check for updates"
                 app:defaultValue="true"
                 android:icon="@drawable/ic_baseline_system_update_24"
         />
+        <SwitchPreference
+                app:isPreferenceVisible="false"
+                app:key="beta_mode"
+                android:title="Beta mode"
+                android:summary="Check for more unstable testing updates"
+                app:defaultValue="false"
+                android:icon="@drawable/ic_baseline_warning_24"
+        />
         <Preference
                 android:title="Check for updates"
                 android:icon="@drawable/rdload"
                 app:key="check_updates"
         />
+    </PreferenceCategory>
+    <PreferenceCategory
+            android:key="info"
+            android:title="Info"
+    >
         <Preference
                 android:title="Changelog"
                 app:key="changelog"
