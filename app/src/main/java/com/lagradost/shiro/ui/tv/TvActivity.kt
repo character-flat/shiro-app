@@ -7,6 +7,7 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.utils.AppApi.init
 import com.lagradost.shiro.utils.DownloadManager
+import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import com.lagradost.shiro.utils.ShiroApi
 import kotlin.concurrent.thread
 
@@ -39,6 +40,9 @@ class TvActivity : FragmentActivity() {
         init()
         thread {
             ShiroApi.init()
+        }
+        thread {
+            runAutoUpdate(this)
         }
         // ----- Theme -----
         theme.applyStyle(R.style.AppTheme, true)

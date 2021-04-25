@@ -135,8 +135,10 @@ class MainFragmentTV : BrowseSupportFragment() {
             data?.forEach {
                 listRowAdapter.add(it as ShiroApi.CommonAnimePage)
             }
-            val header = HeaderItem(i.toLong(), MOVIE_CATEGORY[i])
-            rowsAdapter.add(ListRow(header, listRowAdapter))
+            if (listRowAdapter.size() != 0) {
+                val header = HeaderItem(i.toLong(), MOVIE_CATEGORY[i])
+                rowsAdapter.add(ListRow(header, listRowAdapter))
+            }
         }
 
         /*val gridHeader = HeaderItem(NUM_ROWS.toLong(), "PREFERENCES")
