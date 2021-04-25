@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Shiro DEBUG</string>
+    <string name="app_name">Shiro Debug</string>
+    <string name="app_type">Debug</string>
 </resources>

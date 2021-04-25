@@ -141,7 +141,7 @@ class ResultFragment : Fragment() {
                 fadeAnimation.duration = 300
                 fadeAnimation.isFillEnabled = true
                 fadeAnimation.fillAfter = true
-                loading_overlay.startAnimation(fadeAnimation)
+                loading_overlay?.startAnimation(fadeAnimation)
                 loadSeason()
 
                 // Somehow the above animation doesn't trigger sometimes on lower android versions

@@ -59,7 +59,11 @@ class MySearchFragment : SearchSupportFragment(), SearchSupportFragment.SearchRe
                     listRowAdapter.add(it)
                 }
                 val header = HeaderItem(0L, "Search results for \"$newQuery\"")
-                rowsAdapter.add(ListRow(header, listRowAdapter))
+                try {
+                    rowsAdapter.add(ListRow(header, listRowAdapter))
+                } catch (e: Exception){
+                    // Cannot call this method while RecyclerView is computing a layout or scrolling androidx.leanback.widget.VerticalGridView
+                }
             }
         }
         return true

@@ -187,13 +187,13 @@
 
     <PreferenceCategory
             android:key="update_info"
-            android:title="Version"
+            android:title="Version info"
     >
         <Preference
                 android:icon="@drawable/ic_baseline_build_24"
                 app:key="version"
                 app:title="Version"
-                app:summary="@string/version_code"/>
+                />
         <SwitchPreference
                 app:key="cool_mode"
                 android:title="Cool mode"
@@ -220,16 +220,17 @@
                 android:icon="@drawable/rdload"
                 app:key="check_updates"
         />
-    </PreferenceCategory>
-    <PreferenceCategory
-            android:key="info"
-            android:title="Info"
-    >
         <Preference
                 android:title="Changelog"
                 app:key="changelog"
                 android:icon="@drawable/ic_baseline_notes_24"
         />
+    </PreferenceCategory>
+    <PreferenceCategory
+            android:key="info"
+            android:title="Info"
+    >
+
         <Preference
                 android:icon="@drawable/ic_baseline_payment_24"
                 android:title="Donate to Shiro.is"

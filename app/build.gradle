@@ -14,10 +14,27 @@ android {
         targetSdkVersion 30
         // Don't forget to update versionCode too :)
         versionCode 14
-        versionName "2.0.0"
+        versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-
+    signingConfigs {
+        release {
+            storeFile file("/home/bl/keep/fastani.jks")
+            keyAlias "LagradOst"
+            storePassword System.getenv("KSTOREPWD")
+            keyPassword System.getenv("KEYPWD")
+        }
+    }
+    flavorDimensions "version"
+    productFlavors {
+        phone {
+            dimension "version"
+        }
+        tv {
+            dimension "version"
+            applicationIdSuffix ".tv"
+        }
+    }
     buildTypes {
         release {
             packagingOptions {
@@ -36,22 +53,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         beta {
-            applicationIdSuffix ".beta"
+            productFlavors.tv.signingConfig signingConfigs.release
+            productFlavors.phone.signingConfig signingConfigs.release
             versionNameSuffix '-Beta'
             debuggable false
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-    flavorDimensions "version"
-    productFlavors {
-        phone {
-            dimension "version"
-        }
-        tv {
-            dimension "version"
-            applicationIdSuffix ".tv"
         }
     }
     compileOptions {

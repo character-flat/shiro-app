@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Shiro Beta</string>
+    <string name="app_type">Beta</string>
 </resources>

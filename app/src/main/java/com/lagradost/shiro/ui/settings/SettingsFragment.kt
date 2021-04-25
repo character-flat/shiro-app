@@ -264,6 +264,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         if (coolMode?.isChecked == true) {
             coolMode.isVisible = true
         }
+        versionButton?.summary = getString(R.string.version_code) + " " + getString(R.string.app_type)
         versionButton?.setOnPreferenceClickListener {
             if (easterEggClicks == 7 && coolMode?.isChecked == false) {
                 Toast.makeText(context, "Unlocked cool mode", Toast.LENGTH_LONG).show()
