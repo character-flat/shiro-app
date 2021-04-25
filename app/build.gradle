@@ -14,7 +14,7 @@ android {
         targetSdkVersion 30
         // Don't forget to update versionCode too :)
         versionCode 14
-        versionName "1.0.0"
+        versionName "2.0.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
