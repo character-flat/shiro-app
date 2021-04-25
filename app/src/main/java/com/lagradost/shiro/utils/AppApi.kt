@@ -3,11 +3,14 @@ package com.lagradost.shiro.utils
 import android.Manifest
 import android.app.Activity
 import android.app.AppOpsManager
+import android.app.UiModeManager
 import android.content.Context
+import android.content.Context.UI_MODE_SERVICE
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.net.Uri
@@ -20,6 +23,7 @@ import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.preference.PreferenceManager
@@ -45,6 +49,12 @@ object AppApi {
     fun unixTime(): Long {
         return System.currentTimeMillis() / 1000L
     }
+
+    fun FragmentActivity.isTv(): Boolean {
+        val uiModeManager: UiModeManager = getSystemService(UI_MODE_SERVICE) as UiModeManager
+        return uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
+    }
+
 
     fun Context.isCastApiAvailable(): Boolean {
         val isCastApiAvailable =

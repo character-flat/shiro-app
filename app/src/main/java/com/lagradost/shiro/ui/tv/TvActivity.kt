@@ -1,11 +1,14 @@
 package com.lagradost.shiro.ui.tv
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.utils.AppApi.init
+import com.lagradost.shiro.utils.AppApi.isTv
 import com.lagradost.shiro.utils.DownloadManager
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import com.lagradost.shiro.utils.ShiroApi
@@ -33,6 +36,10 @@ class TvActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!isTv()) {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
         // ------ Init -----
         tvActivity = this
         DataStore.init(this)
