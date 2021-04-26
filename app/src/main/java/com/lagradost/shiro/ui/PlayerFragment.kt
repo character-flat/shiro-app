@@ -502,7 +502,7 @@ class PlayerFragment : Fragment() {
                     }
                     if (hasPassedVerticalSwipeThreshold && abs(diffY) >= 0.1) {
                         if (currentX > width * 0.5) {
-                            progressBarLeftHolder.alpha = 1f
+                            progressBarLeftHolder?.alpha = 1f
                             val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
                             val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
                             val newVolume =
@@ -517,13 +517,13 @@ class PlayerFragment : Fragment() {
                                 //audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
                                 audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, newVolumeAdjusted, 0)
                             }
-                            progressBarLeft.progress = newVolume * 100 / maxVolume
+                            progressBarLeft?.progress = newVolume * 100 / maxVolume
                             currentY = motionEvent.rawY
                         } else {
-                            progressBarRightHolder.alpha = 1f
+                            progressBarRightHolder?.alpha = 1f
                             val alpha = minOf(0.95f, brightness_overlay.alpha + 0.05f * if (diffY > 0) 1 else -1)
-                            brightness_overlay.alpha = alpha
-                            progressBarRight.progress = ((1f - alpha) * 100).toInt()
+                            brightness_overlay?.alpha = alpha
+                            progressBarRight?.progress = ((1f - alpha) * 100).toInt()
 
                             currentY = motionEvent.rawY
                         }
@@ -647,9 +647,9 @@ class PlayerFragment : Fragment() {
                     seekAnimation.duration = 1200
                     seekAnimation.fillAfter = true
                     seekTime(doubleTapTime * 1000L)
-                    timeTextRight.text = "+ ${convertTimeToString((clicks * doubleTapTime).toDouble())}"
-                    timeTextRight.alpha = 1f
-                    timeTextRight.startAnimation(seekAnimation)
+                    timeTextRight?.text = "+ ${convertTimeToString((clicks * doubleTapTime).toDouble())}"
+                    timeTextRight?.alpha = 1f
+                    timeTextRight?.startAnimation(seekAnimation)
                 }
             }
 
@@ -659,9 +659,9 @@ class PlayerFragment : Fragment() {
                     seekAnimation.duration = 1200
                     seekAnimation.fillAfter = true
                     seekTime(doubleTapTime * -1000L)
-                    timeTextLeft.text = "- ${convertTimeToString((clicks * doubleTapTime).toDouble())}"
-                    timeTextLeft.alpha = 1f
-                    timeTextLeft.startAnimation(seekAnimation)
+                    timeTextLeft?.text = "- ${convertTimeToString((clicks * doubleTapTime).toDouble())}"
+                    timeTextLeft?.alpha = 1f
+                    timeTextLeft?.startAnimation(seekAnimation)
                 }
             }
 

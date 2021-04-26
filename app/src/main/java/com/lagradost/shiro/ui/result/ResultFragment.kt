@@ -121,9 +121,10 @@ class ResultFragment : Fragment() {
         activity?.runOnUiThread {
             val transition: Transition = ChangeBounds()
             transition.duration = 100
-
-            language_button.visibility = VISIBLE
-            TransitionManager.beginDelayedTransition(episodes_text_holder, transition)
+            language_button?.visibility = VISIBLE
+            episodes_text_holder?.let {
+                TransitionManager.beginDelayedTransition(it, transition)
+            }
         }
     }
 
@@ -273,7 +274,8 @@ class ResultFragment : Fragment() {
                     fullDescription.substring(0, minOf(DESCRIPTION_LENGTH1 - 3, fullDescription.length)) + "..."
                 title_descript.setOnClickListener {
                     if (activity != null) {
-                        val builder: AlertDialog.Builder = AlertDialog.Builder(requireActivity(), R.style.AlertDialogCustom)
+                        val builder: AlertDialog.Builder =
+                            AlertDialog.Builder(requireActivity(), R.style.AlertDialogCustom)
                         builder.setMessage(fullDescription).setTitle("Synopsis")
                             .show()
                     }
@@ -364,7 +366,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
             }
         }
         super.onCreate(savedInstanceState)
-        if (tvActivity != null){
+        if (tvActivity != null) {
             activity?.theme?.applyStyle(R.style.AppTheme, true)
         }
     }

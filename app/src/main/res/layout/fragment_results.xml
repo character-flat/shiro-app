@@ -166,7 +166,7 @@
                                     android:clickable="true"
                                     android:focusable="true"
                                     android:nextFocusUp="@id/title_go_back"
-                                    android:nextFocusDown="@id/title_season_cards"
+                                    android:nextFocusDown="@id/title_descript"
                             />
 
                         </androidx.cardview.widget.CardView>
@@ -247,6 +247,7 @@
                             android:layout_height="wrap_content">
 
                         <com.google.android.material.textview.MaterialTextView
+                                android:background="@drawable/outline_background"
                                 android:layout_margin="10dp"
                                 android:id="@+id/title_descript"
                                 android:layout_width="match_parent"

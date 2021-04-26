@@ -1,11 +1,8 @@
 <resources>
-    <string name="version_code">2.0.1</string>
-    <string name="app_type"/>
     <string name="changelog">\n
-        - Separated android TV and normal apk\n
-        - Changed some animations\n
-        - Backend work to add beta releases to the future\n
-        - Fixed an android tv crash\n
+        - New logo by pear#4215\n
+        - Changed android TV poster color\n
+        - Fixed some more crashes :)\n
     </string>
     <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>

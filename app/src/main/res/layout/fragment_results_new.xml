@@ -133,6 +133,7 @@
                                 android:layout_height="wrap_content">
 
                             <com.google.android.material.textview.MaterialTextView
+                                    android:background="@drawable/outline_background"
                                     android:layout_margin="15dp"
                                     android:id="@+id/title_descript"
                                     android:layout_width="match_parent"

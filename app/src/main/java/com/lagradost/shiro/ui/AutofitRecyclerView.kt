@@ -30,9 +30,14 @@ class GrdLayoutManager(val context: Context, val spanCoun: Int) : GridLayoutMana
         child: View,
         focused: View?
     ): Boolean {
-        val pos = maxOf(0, getPosition(focused!!) - 2)
-        parent.scrollToPosition(pos)
-        return super.onRequestChildFocus(parent, state, child, focused)
+        // android.widget.FrameLayout$LayoutParams cannot be cast to androidx.recyclerview.widget.RecyclerView$LayoutParams
+        return try {
+            val pos = maxOf(0, getPosition(focused!!) - 2)
+            parent.scrollToPosition(pos)
+            super.onRequestChildFocus(parent, state, child, focused)
+        } catch (e: Exception){
+            false
+        }
     }
 
     // Allows moving right and left with focus https://gist.github.com/vganin/8930b41f55820ec49e4d

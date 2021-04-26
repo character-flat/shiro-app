@@ -1,7 +1,6 @@
 package com.lagradost.shiro.ui
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.app.PictureInPictureParams
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -14,15 +13,12 @@ import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.KeyEvent
 import android.view.WindowManager
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
@@ -125,14 +121,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         println("BACK PRESSED!!!! $isInResults $isInPlayer $isInExpandedView")
-
         if (isInResults || isInPlayer || isInExpandedView) {
             popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         } else {
             super.onBackPressed()
         }
     }
-
 
 
     fun enterPIPMode() {
@@ -173,7 +167,6 @@ class MainActivity : AppCompatActivity() {
             hideSystemUI()
         }
     }
-
 
 
     private val callbacks = object : MediaSessionCompat.Callback() {
@@ -228,8 +221,8 @@ class MainActivity : AppCompatActivity() {
         DownloadManager.init(this)
         init()
 
-        @SuppressLint("HardwareIds")
-        val androidId: String = Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID).md5()
+        //@SuppressLint("HardwareIds")
+        //val androidId: String = Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID).md5()
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
         if (settingsManager.getBoolean("force_landscape", false)) {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
@@ -242,12 +235,13 @@ class MainActivity : AppCompatActivity() {
                 requestRW()
             }
         }
+
         thread {
             ShiroApi.init()
         }
         thread {
             // Hardcoded for now since it fails for some people :|
-            isDonor = true//getDonorStatus() == androidId
+            isDonor = true //getDonorStatus() == androidId
         }
         thread {
             runAutoUpdate(this)
@@ -276,7 +270,9 @@ class MainActivity : AppCompatActivity() {
         }
         // -----------------
 
-        changeStatusBarState(settingsManager.getBoolean("statusbar_hidden", true))
+        val statusBarHidden = settingsManager.getBoolean("statusbar_hidden", true)
+        statusHeight = changeStatusBarState(statusBarHidden)
+
 
         //https://stackoverflow.com/questions/52594181/how-to-know-if-user-has-disabled-picture-in-picture-feature-permission
         //https://developer.android.com/guide/topics/ui/picture-in-picture

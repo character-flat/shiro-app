@@ -55,6 +55,13 @@ object AppApi {
         return uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
     }
 
+    fun Activity.getStatusBarHeight(): Int {
+        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android");
+        return if (resourceId > 0) {
+            resources.getDimensionPixelSize(resourceId);
+        } else
+            0
+    }
 
     fun Context.isCastApiAvailable(): Boolean {
         val isCastApiAvailable =
@@ -109,15 +116,6 @@ object AppApi {
         }
     }
 
-    fun Activity.getStatusBarHeight(): Int {
-        var result = 0
-        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
-        if (resourceId > 0) {
-            result = resources.getDimensionPixelSize(resourceId)
-        }
-        return result
-    }
-
     fun Activity.changeStatusBarState(hide: Boolean): Int {
         return if (hide) {
             window?.setFlags(
@@ -127,7 +125,7 @@ object AppApi {
             0
         } else {
             window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-            getStatusBarHeight()
+            this.getStatusBarHeight()
         }
     }
 

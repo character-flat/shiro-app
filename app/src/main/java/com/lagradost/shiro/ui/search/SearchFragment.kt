@@ -67,20 +67,19 @@ class SearchFragment : Fragment() {
             override fun onQueryTextSubmit(query: String): Boolean {
                 progress_bar.visibility = View.VISIBLE
                 (cardSpace.adapter as ResAdapter).cardList.clear()
-
                 thread {
                     val data = ShiroApi.search(query)
                     activity?.runOnUiThread {
                         if (data == null) {
                             Toast.makeText(activity, "Server error", Toast.LENGTH_LONG).show()
-                            progress_bar.visibility = View.GONE
+                            progress_bar?.visibility = View.GONE
                         } else {
                             val filteredData =
                                 if (hideDubbed) data.filter { !it.name.endsWith("Dubbed") } else data
-                            progress_bar.visibility = View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
-                            (cardSpace.adapter as ResAdapter).cardList =
+                            progress_bar?.visibility = View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
+                            (cardSpace?.adapter as ResAdapter?)?.cardList =
                                 filteredData as ArrayList<ShiroApi.ShiroSearchResponseShow>
-                            (cardSpace.adapter as ResAdapter).notifyDataSetChanged()
+                            (cardSpace?.adapter as ResAdapter?)?.notifyDataSetChanged()
                         }
                     }
                 }
@@ -88,24 +87,24 @@ class SearchFragment : Fragment() {
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-
                 (cardSpace.adapter as ResAdapter).cardList.clear()
                 if (newText != "") {
                     progress_bar.visibility = View.VISIBLE
                     thread {
                         val data = ShiroApi.quickSearch(newText)
                         activity?.runOnUiThread {
+                            // Nullable since takes time to get data
                             if (data == null) {
                                 Toast.makeText(activity, "Server error", Toast.LENGTH_LONG).show()
-                                progress_bar.visibility = View.GONE
+                                progress_bar?.visibility = View.GONE
                             } else {
-                                progress_bar.visibility =
+                                progress_bar?.visibility =
                                     View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
                                 val filteredData =
                                     if (hideDubbed) data.filter { !it.name.endsWith("Dubbed") } else data
-                                (cardSpace.adapter as ResAdapter).cardList =
+                                (cardSpace?.adapter as ResAdapter?)?.cardList =
                                     filteredData as ArrayList<ShiroApi.ShiroSearchResponseShow>
-                                (cardSpace.adapter as ResAdapter).notifyDataSetChanged()
+                                (cardSpace?.adapter as ResAdapter?)?.notifyDataSetChanged()
                             }
                         }
                     }

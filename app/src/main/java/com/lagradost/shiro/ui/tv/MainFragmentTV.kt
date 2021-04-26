@@ -257,7 +257,7 @@ class MainFragmentTV : BrowseSupportFragment() {
             view.layoutParams = ViewGroup.LayoutParams(GRID_ITEM_WIDTH, GRID_ITEM_HEIGHT)
             view.isFocusable = true
             view.isFocusableInTouchMode = true
-            view.setBackgroundColor(requireActivity().getColorFromAttr(R.attr.background))
+            view.setBackgroundColor(requireActivity().getColorFromAttr(R.attr.darkBarLight))
             view.setTextColor(Color.WHITE)
             view.gravity = Gravity.CENTER
             return ViewHolder(view)

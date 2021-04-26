@@ -19,6 +19,7 @@ import com.lagradost.shiro.utils.DataStore.removeKeys
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
+import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
 import com.lagradost.shiro.utils.MALApi.Companion.authenticateMAL
@@ -222,7 +223,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     setPositiveButton("OK") { _, _ -> }
                 }
                 // Set other dialog properties
-                builder.setTitle(getString(R.string.version_code))
+                builder.setTitle(BuildConfig.VERSION_NAME)
                 builder.setMessage(getString(R.string.changelog))
                 // Create the AlertDialog
                 builder.create()
@@ -246,7 +247,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
         val statusBarHidden = findPreference("statusbar_hidden") as SwitchPreference?
         statusBarHidden?.setOnPreferenceChangeListener { _, newValue ->
-            activity?.changeStatusBarState(newValue == true)
+            activity?.changeStatusBarState(newValue == true)?.let {
+                statusHeight = it
+            }
             return@setOnPreferenceChangeListener true
         }
         val useExternalStorage = findPreference("use_external_storage") as SwitchPreference?
@@ -264,7 +267,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         if (coolMode?.isChecked == true) {
             coolMode.isVisible = true
         }
-        versionButton?.summary = getString(R.string.version_code) + " " + getString(R.string.app_type)
+        versionButton?.summary = BuildConfig.VERSION_NAME
         versionButton?.setOnPreferenceClickListener {
             if (easterEggClicks == 7 && coolMode?.isChecked == false) {
                 Toast.makeText(context, "Unlocked cool mode", Toast.LENGTH_LONG).show()
