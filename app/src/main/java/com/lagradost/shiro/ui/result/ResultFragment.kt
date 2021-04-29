@@ -19,7 +19,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.mediarouter.app.MediaRouteButton
-import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -27,7 +26,6 @@ import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
 import com.lagradost.shiro.*
-import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
@@ -38,7 +36,6 @@ import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.PlayerFragment
 import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
-import com.lagradost.shiro.ui.tv.TvActivity
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppApi.getColorFromAttr
@@ -69,6 +66,7 @@ class ResultFragment : Fragment() {
 
 
     companion object {
+        //var lastSelectedEpisode = 0
         var isInResults: Boolean = false
         var isViewState: Boolean = true
         fun fixEpTitle(
@@ -409,6 +407,9 @@ private fun ToggleViewState(_isViewState: Boolean) {
         loadSeason()
         if (tvActivity != null) {
             title_season_cards.requestFocus()
+            //title_season_cards.layoutManager?.scrollToPosition(lastSelectedEpisode)
+            //title_season_cards.adapter?.notifyItemChanged(lastSelectedEpisode)
+            //title_season_cards.layoutManager?.findViewByPosition(lastSelectedEpisode)?.requestFocus()
         }
     }
 

@@ -36,6 +36,7 @@ import com.lagradost.shiro.utils.DOWNLOAD_PARENT_KEY
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.DownloadManager
 import com.lagradost.shiro.utils.VIEWSTATE_KEY
+import kotlinx.android.synthetic.main.episode_result_downloaded.*
 
 
 class DownloadFragmentChild : Fragment() {

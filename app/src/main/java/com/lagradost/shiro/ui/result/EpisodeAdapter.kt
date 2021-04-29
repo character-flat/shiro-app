@@ -29,7 +29,6 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.AutofitRecyclerView
-import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.DetailsActivityTV
 import com.lagradost.shiro.ui.tv.PlaybackActivity
@@ -69,7 +68,9 @@ class EpisodeAdapter(
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        //lastSelectedEpisode = 0
         holder.itemView.setOnFocusChangeListener { focusedView, hasFocus ->
+            //lastSelectedEpisode = position
             if (prevFocus != null) {
                 if (kotlin.math.abs(position - prevFocus!!) > 3 * 2) {
                     this.resView.layoutManager?.scrollToPosition(0)
@@ -100,10 +101,12 @@ class EpisodeAdapter(
         val last = getLatestSeenEpisode(data)
         val context = _context
         val card: LinearLayout = itemView.episode_result_root
+        val resView = resView
 
         // Downloads is only updated when re-bound!
         fun bind(position: Int) {
             val key = getViewKey(data.slug, position)
+
 
             // Because the view is recycled
             card.cdi.visibility = View.VISIBLE
@@ -402,30 +405,10 @@ class EpisodeAdapter(
                                 deleteFile()
                             }
                         }
-
-                        // This is commented out as it'd be fucked with recyclerview
-                        // recyclerview re-uses the views which means I cannot figure out how to bind events to them
-                        // which doesn't fuck up when scrolling around
-
-                        /*DownloadManager.downloadEvent += {
-                            activity?.runOnUiThread {
-                                if (it.downloadEvent.id == it.child.internalId) {
-                                    val megaBytes =
-                                        DownloadManager.convertBytesToAny(
-                                            it.downloadEvent.bytes,
-                                            0,
-                                            2.0
-                                        ).toInt()
-                                    //card.cardTitleExtra.text = "${megaBytes} / $megaBytesTotal MB"
-                                    val progress = maxOf(
-                                        minOf(megaBytes * 100 / megaBytesTotal, 100),
-                                        0
-                                    )
-                                    card.progressBar.progress = progress
-                                    updateIcon(megaBytes, it.child)
-                                }
-                            }
-                        }*/
+                        // TODO Doesn't work when resuming
+                        DownloadManager.downloadEvent += {
+                            resView.adapter?.notifyItemChanged(position)
+                        }
                     }
                 }
             }
