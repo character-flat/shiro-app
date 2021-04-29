@@ -33,6 +33,7 @@
                 android:foreground="?android:attr/selectableItemBackgroundBorderless"
                 tools:ignore="RtlHardcoded"/>
         <TextView
+                android:gravity="left"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -42,7 +43,7 @@
                 android:id="@+id/imageText"
                 android:textStyle="bold"
                 android:maxLines="3"
-        />
+                tools:ignore="RtlHardcoded"/>
 
         <ImageView
                 android:id="@+id/title_bookmark"
