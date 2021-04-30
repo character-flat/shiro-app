@@ -25,6 +25,7 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.getRandomAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import com.lagradost.shiro.ui.*
+import com.lagradost.shiro.utils.AppApi.displayCardData
 import com.lagradost.shiro.utils.AppApi.getNextEpisode
 import com.lagradost.shiro.utils.AppApi.loadPage
 import com.lagradost.shiro.utils.AppApi.loadPlayer
@@ -83,63 +84,17 @@ class HomeFragment : Fragment() {
 
             generateRandom(data?.random)
 
-            fun displayCardData(data: List<ShiroApi.CommonAnimePage?>?, scrollView: RecyclerView, textView: TextView) {
-                val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
-                    CardAdapter(
-                        it,
-                        ArrayList(),
-                    )
-                }
-                val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)
-                val filteredData = if (hideDubbed) data?.filter { it?.name?.endsWith("Dubbed") == false } else data
-                scrollView.adapter = adapter
-                (scrollView.adapter as CardAdapter).cardList = filteredData as ArrayList<ShiroApi.CommonAnimePage?>
-                (scrollView.adapter as CardAdapter).notifyDataSetChanged()
 
-                textView.setOnClickListener {
-                    activity?.supportFragmentManager?.beginTransaction()
-                        ?.setCustomAnimations(
-                            R.anim.enter_from_right,
-                            R.anim.exit_to_right,
-                            R.anim.enter_from_right,
-                            R.anim.exit_to_right
-                        )
-                        ?.add(
-                            R.id.homeRoot,
-                            ExpandedHomeFragment.newInstance(
-                                mapper.writeValueAsString(data),
-                                textView.text.toString()
-                            )
-                        )
-                        ?.commitAllowingStateLoss()
-                }
-
-            }
-
-            fun displayCardData(data: List<LastEpisodeInfo?>?, scrollView: RecyclerView) {
-                val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
-                    CardContinueAdapter(
-                        it,
-                        listOf(),
-                    )
-                }
-
-                scrollView.adapter = adapter
-                if (data != null) {
-                    (scrollView.adapter as CardContinueAdapter).cardList = data
-                    (scrollView.adapter as CardContinueAdapter).notifyDataSetChanged()
-                }
-            }
 
             if (data != null) {
-                displayCardData(data.data.trending_animes, trending_anime_scroll_view, trending_text)
-                displayCardData(
+                activity?.displayCardData(data.data.trending_animes, trending_anime_scroll_view, trending_text)
+                activity?.displayCardData(
                     data.data.latest_episodes.map { it.anime },
                     recently_updated_scroll_view,
                     recently_updated_text
                 )
-                displayCardData(data.data.ongoing_animes, ongoing_anime_scroll_view, ongoing_anime_text)
-                displayCardData(data.data.latest_animes, latest_anime_scroll_view, latest_anime_text)
+                activity?.displayCardData(data.data.ongoing_animes, ongoing_anime_scroll_view, ongoing_anime_text)
+                activity?.displayCardData(data.data.latest_animes, latest_anime_scroll_view, latest_anime_text)
             }
             //displayCardData(data?.recentlyAddedData, recentScrollView)
 
@@ -147,7 +102,7 @@ class HomeFragment : Fragment() {
             if (data?.favorites?.isNotEmpty() == true) {
                 favouriteRoot.visibility = VISIBLE
                 //println(data.favorites!!.map { it?.title?.english})
-                displayCardData(data.favorites, favouriteScrollView, favorites_text)
+                activity?.displayCardData(data.favorites, favouriteScrollView, favorites_text)
             } else {
                 favouriteRoot.visibility = GONE
             }
@@ -167,7 +122,7 @@ class HomeFragment : Fragment() {
             if (data?.recentlySeen?.isNotEmpty() == true) {
                 recentlySeenRoot.visibility = VISIBLE
                 //println(data.recentlySeen)
-                displayCardData(data.recentlySeen, recentlySeenScrollView)
+                activity?.displayCardData(data.recentlySeen, recentlySeenScrollView)
             } else {
                 recentlySeenRoot.visibility = GONE
             }

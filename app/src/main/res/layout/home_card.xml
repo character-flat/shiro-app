@@ -11,6 +11,7 @@
         android:orientation="vertical"
         android:scaleX="0.9"
         android:scaleY="0.9"
+
 >
     <!-- card get scaled to 1.0 during runtime in CardAdapter -->
 

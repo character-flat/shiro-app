@@ -139,4 +139,8 @@ dependencies {
 
     implementation "androidx.recyclerview:recyclerview:1.2.0"
 
+    // Glowing buttons for leanback
+    // https://github.com/SanojPunchihewa/GlowButton
+    implementation 'com.github.SanojPunchihewa:GlowButton:1.0.1'
+
 }

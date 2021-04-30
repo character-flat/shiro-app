@@ -8,7 +8,7 @@
         android:keepScreenOn="true"
         app:backgroundTint="@android:color/black"
         android:background="@android:color/black"
-        android:screenOrientation="sensorLandscape"
+        android:screenOrientation="userLandscape"
         app:surface_type="texture_view"
 >
 

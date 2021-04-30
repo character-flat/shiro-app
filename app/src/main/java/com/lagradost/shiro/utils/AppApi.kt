@@ -19,6 +19,7 @@ import android.util.TypedValue
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.core.app.ActivityCompat
@@ -27,12 +28,19 @@ import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.LinearSnapHelper
+import androidx.recyclerview.widget.PagerSnapHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.*
+import com.lagradost.shiro.ui.home.CardAdapter
+import com.lagradost.shiro.ui.home.CardContinueAdapter
+import com.lagradost.shiro.ui.home.ExpandedHomeFragment
 import com.lagradost.shiro.ui.result.ResultFragment
+import com.lagradost.shiro.utils.DataStore.mapper
 import java.net.URL
 import java.net.URLDecoder
 import java.security.MessageDigest
@@ -164,6 +172,62 @@ object AppApi {
             }
         }
         return NextEpisode(false, 0, 0)
+    }
+
+
+    fun FragmentActivity.displayCardData(
+        data: List<ShiroApi.CommonAnimePage?>?,
+        scrollView: RecyclerView,
+        textView: TextView
+    ) {
+        val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder> = CardAdapter(
+            this,
+            ArrayList(),
+        )
+
+        //val snapHelper = PagerSnapHelper()
+        //snapHelper.attachToRecyclerView(scrollView)
+
+        val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)
+        val filteredData = if (hideDubbed) data?.filter { it?.name?.endsWith("Dubbed") == false } else data
+        scrollView.adapter = adapter
+        (scrollView.adapter as CardAdapter).cardList = filteredData as ArrayList<ShiroApi.CommonAnimePage?>
+        (scrollView.adapter as CardAdapter).notifyDataSetChanged()
+
+        textView.setOnClickListener {
+            this.supportFragmentManager.beginTransaction()
+                .setCustomAnimations(
+                    R.anim.enter_from_right,
+                    R.anim.exit_to_right,
+                    R.anim.enter_from_right,
+                    R.anim.exit_to_right
+                )
+                .add(
+                    R.id.homeRoot,
+                    ExpandedHomeFragment.newInstance(
+                        mapper.writeValueAsString(data),
+                        textView.text.toString()
+                    )
+                )
+                .commitAllowingStateLoss()
+        }
+
+    }
+
+    fun Context.displayCardData(data: List<LastEpisodeInfo?>?, scrollView: RecyclerView) {
+        val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder> = CardContinueAdapter(
+            this,
+            listOf(),
+        )
+
+        //val snapHelper = LinearSnapHelper()
+        //snapHelper.attachToRecyclerView(scrollView)
+
+        scrollView.adapter = adapter
+        if (data != null) {
+            (scrollView.adapter as CardContinueAdapter).cardList = data
+            (scrollView.adapter as CardContinueAdapter).notifyDataSetChanged()
+        }
     }
 
 
