@@ -17,6 +17,7 @@ import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.home.CardAdapter
 import com.lagradost.shiro.ui.home.CardContinueAdapter
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment
+import com.lagradost.shiro.ui.home.MasterCardAdapter
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.utils.AppApi.displayCardData
 import com.lagradost.shiro.utils.AppApi.init
@@ -25,6 +26,7 @@ import com.lagradost.shiro.utils.DownloadManager
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import com.lagradost.shiro.utils.ShiroApi
 import kotlinx.android.synthetic.main.activity_tv_custom.*
+import kotlinx.android.synthetic.main.fragment_home.*
 import kotlin.concurrent.thread
 
 /**
@@ -72,16 +74,29 @@ class TvActivity : FragmentActivity() {
                 // MainActivity.loadPlayer(0, 0, cardInfo!!)
             }*/
 
+            println("DATA")
+            val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder> = MasterCardAdapter(
+                this,
+                data,
+            )
+            vertical_grid_view.adapter = adapter
+            (vertical_grid_view.adapter as MasterCardAdapter).data = data
+            (vertical_grid_view.adapter as MasterCardAdapter).notifyDataSetChanged()
 
-            if (data != null) {
-                displayCardData(data.data.trending_animes, trending_anime_scroll_view, trending_text)
+            /*if (data != null) {
+                displayCardData(data.data.trending_animes, trending_anime_scroll_view, trending_text, main_scroll_view)
                 displayCardData(
                     data.data.latest_episodes.map { it.anime },
                     recently_updated_scroll_view,
                     recently_updated_text
                 )
-                displayCardData(data.data.ongoing_animes, ongoing_anime_scroll_view, ongoing_anime_text)
-                displayCardData(data.data.latest_animes, latest_anime_scroll_view, latest_anime_text)
+                displayCardData(
+                    data.data.ongoing_animes,
+                    ongoing_anime_scroll_view,
+                    ongoing_anime_text,
+                    main_scroll_view
+                )
+                displayCardData(data.data.latest_animes, latest_anime_scroll_view, latest_anime_text, main_scroll_view)
             }
             //displayCardData(data?.recentlyAddedData, recentScrollView)
 
@@ -89,7 +104,7 @@ class TvActivity : FragmentActivity() {
             if (data?.favorites?.isNotEmpty() == true) {
                 favouriteRoot.visibility = VISIBLE
                 //println(data.favorites!!.map { it?.title?.english})
-                displayCardData(data.favorites, favouriteScrollView, favorites_text)
+                displayCardData(data.favorites, favouriteScrollView, favorites_text, main_scroll_view)
             } else {
                 favouriteRoot.visibility = GONE
             }
@@ -109,7 +124,7 @@ class TvActivity : FragmentActivity() {
             if (data?.recentlySeen?.isNotEmpty() == true) {
                 recentlySeenRoot.visibility = VISIBLE
                 //println(data.recentlySeen)
-                displayCardData(data.recentlySeen, recentlySeenScrollView)
+                displayCardData(data.recentlySeen, recentlySeenScrollView, main_scroll_view)
             } else {
                 recentlySeenRoot.visibility = GONE
             }
@@ -117,7 +132,7 @@ class TvActivity : FragmentActivity() {
             main_load.alpha = 0f
             main_scroll.alpha = 1f*/
 
-            // This somehow crashes, hope this null check helps ¯\_(ツ)_/¯
+            // This somehow crashes, hope this null check helps ¯\_(ツ)_/¯*/
         }
     }
 

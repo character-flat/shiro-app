@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.ScaleAnimation
+import android.widget.ScrollView
 import android.widget.Toast
 import androidx.core.view.updateMargins
 import androidx.core.view.updateMarginsRelative
@@ -25,7 +26,7 @@ import kotlinx.android.synthetic.main.home_card.view.*
 
 class CardAdapter(
     context: Context,
-    animeList: ArrayList<ShiroApi.CommonAnimePage?>
+    animeList: ArrayList<ShiroApi.CommonAnimePage?>,
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var cardList = animeList
@@ -61,7 +62,6 @@ class CardAdapter(
             animation.isFillEnabled = true
             animation.fillAfter = true
             v.startAnimation(animation)
-
         }
     }
 
@@ -106,7 +106,6 @@ class CardAdapter(
                         ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                         ?.add(R.id.homeRoot, ResultFragment.newInstance(cardInfo.slug))
                         ?.commitAllowingStateLoss()
-
                 }
             }
         }

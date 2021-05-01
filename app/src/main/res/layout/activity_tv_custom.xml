@@ -2,12 +2,12 @@
 
 
 <FrameLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:background="?attr/background"
         xmlns:tools="http://schemas.android.com/tools"
+        android:background="?attr/background"
 >
     <!--<ImageView
             android:layout_width="match_parent"
@@ -17,311 +17,65 @@
             app:tint="?attr/darkBar"
     >
     </ImageView>-->
-    <ScrollView android:layout_width="match_parent" android:layout_height="wrap_content">
-        <LinearLayout
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+    >
+
+        <RelativeLayout
+                android:layout_margin="15dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:clipChildren="false"
+        >
+            <ImageView
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/shiro_logo_rounded"
+                    android:layout_centerVertical="true"
+            >
+            </ImageView>
+            <!--<com.google.android.material.button.MaterialButton
+                    android:layout_alignParentStart="true"
+                    android:clipChildren="false"
+                    android:layout_width="120dp"
+                    android:text="@string/title_home"
+                    android:layout_height="wrap_content"
+                    android:textSize="20sp"
+                    app:cornerRadius="4dp"
+                    android:textAllCaps="false"
+                    android:layout_centerVertical="true"
+                    android:textColor="?attr/background"
+                    android:backgroundTint="?attr/textColorGray"
+
+            >
+
+            </com.google.android.material.button.MaterialButton>-->
+            <ImageView
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:scaleX="0.5"
+                    android:scaleY="0.5"
+                    android:src="@drawable/search_icon"
+            >
+            </ImageView>
+        </RelativeLayout>
+        <androidx.leanback.widget.VerticalGridView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:orientation="vertical"
+                android:id="@+id/vertical_grid_view"
+                tools:listitem="@layout/vertical_grid_view_child"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         >
 
-            <RelativeLayout
-                    android:layout_margin="15dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:clipChildren="false"
-            >
-                <ImageView
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
-                        android:src="@drawable/shiro_logo_rounded"
-                        android:layout_centerVertical="true"
-                >
-
-
-                </ImageView>
-                <!--<com.google.android.material.button.MaterialButton
-                        android:layout_alignParentStart="true"
-                        android:clipChildren="false"
-                        android:layout_width="120dp"
-                        android:text="@string/title_home"
-                        android:layout_height="wrap_content"
-                        android:textSize="20sp"
-                        app:cornerRadius="4dp"
-                        android:textAllCaps="false"
-                        android:layout_centerVertical="true"
-                        android:textColor="?attr/background"
-                        android:backgroundTint="?attr/textColorGray"
-
-                >
-
-                </com.google.android.material.button.MaterialButton>-->
-                <ImageView
-                        android:layout_centerVertical="true"
-                        android:layout_alignParentEnd="true"
-                        android:layout_width="70dp"
-                        android:layout_height="70dp"
-                        android:scaleX="0.5"
-                        android:scaleY="0.5"
-                        android:src="@drawable/search_icon"
-                >
-                </ImageView>
-            </RelativeLayout>
-            <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-            >
-                <LinearLayout
-                        android:background="@color/transparent"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:id="@+id/recentlySeenRoot"
-                >
-
-                    <TextView
-
-                            android:background="@color/transparent"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/continue_watching"
-                            android:textStyle="bold"
-                            android:textColor="?attr/textColor"
-                            android:textSize="16sp"
-                            android:padding="10dp"
-                            android:layout_marginEnd="10dp"
-                            android:layout_marginStart="10dp"
-                    >
-                    </TextView>
-
-                    <RelativeLayout
-                            android:background="@color/transparent"
-                            android:layout_width="wrap_content"
-                            android:layout_height="230dp"
-                            android:layout_marginBottom="20dp"
-                    >
-                        <androidx.leanback.widget.HorizontalGridView
-                                android:background="@color/transparent"
-                                tools:listitem="@layout/home_card_recently_seen"
-                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                                android:id="@+id/recentlySeenScrollView"
-                                android:orientation="horizontal"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                        >
-                        </androidx.leanback.widget.HorizontalGridView>
-                    </RelativeLayout>
-                </LinearLayout>
-                <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:id="@+id/favouriteRoot"
-                        android:visibility="gone"
-                        tools:visibility="visible"
-                >
-                    <TextView
-                            android:focusable="false"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/favorites"
-                            android:textStyle="bold"
-                            android:textColor="?attr/textColor"
-                            android:textSize="16sp"
-                            android:padding="10dp"
-                            android:id="@+id/favorites_text"
-                            app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
-                            android:layout_marginEnd="10dp"
-                            android:layout_marginStart="10dp"
-                    >
-                    </TextView>
-                    <RelativeLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="230dp"
-                            android:layout_marginBottom="20dp"
-                    >
-                        <androidx.leanback.widget.HorizontalGridView
-                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                                android:id="@+id/favouriteScrollView"
-                                tools:listitem="@layout/home_card"
-                                android:orientation="horizontal"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content">
-                        </androidx.leanback.widget.HorizontalGridView>
-                    </RelativeLayout>
-                </LinearLayout>
-                <!--
-                            <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="FASTANI HOME"
-                                    android:gravity="center_horizontal"
-                                    android:textFontWeight="200"
-                                    android:textSize="20dp"
-                                    android:textColor="@color/colorAccent"
-                                    android:padding="10dp"
-                            >-->
-                <TextView android:focusable="false"
-                          android:layout_width="match_parent"
-                          android:layout_height="wrap_content"
-                          android:text="@string/trending_anime"
-                          android:textStyle="bold"
-                          android:textColor="?attr/textColor"
-                          android:textSize="16sp"
-                          android:padding="10dp"
-                          android:id="@+id/trending_text"
-                          app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
-                          android:layout_marginEnd="10dp"
-                          android:layout_marginStart="10dp"
-                >
-
-                </TextView>
-                <RelativeLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="230dp"
-                        android:layout_marginBottom="20dp"
-                >
-                    <androidx.leanback.widget.HorizontalGridView
-                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                            android:id="@+id/trending_anime_scroll_view"
-                            tools:listitem="@layout/home_card"
-                            android:orientation="horizontal"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent">
-                    </androidx.leanback.widget.HorizontalGridView>
-                </RelativeLayout>
-                <TextView
-                        android:focusable="false"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/textColor"
-                        android:text="@string/home_recently_updated"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:padding="10dp"
-                        android:id="@+id/recently_updated_text"
-                        app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
-                        android:layout_marginEnd="10dp"
-                        android:layout_marginStart="10dp"
-                >
-                </TextView>
-                <RelativeLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="230dp"
-                        android:paddingBottom="20dp"
-                >
-
-                    <androidx.leanback.widget.HorizontalGridView
-                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                            android:id="@+id/recently_updated_scroll_view"
-                            tools:listitem="@layout/home_card"
-                            android:orientation="horizontal"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content">
-                    </androidx.leanback.widget.HorizontalGridView>
-                </RelativeLayout>
-
-
-                <TextView
-                        android:focusable="false"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/textColor"
-                        android:text="@string/home_ongoing"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:padding="10dp"
-                        android:id="@+id/ongoing_anime_text"
-                        app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
-                        android:layout_marginEnd="10dp"
-                        android:layout_marginStart="10dp"
-                >
-                </TextView>
-                <RelativeLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="230dp"
-                        android:paddingBottom="20dp"
-                >
-
-                    <androidx.leanback.widget.HorizontalGridView
-                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                            android:id="@+id/ongoing_anime_scroll_view"
-                            tools:listitem="@layout/home_card"
-                            android:orientation="horizontal"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content">
-                    </androidx.leanback.widget.HorizontalGridView>
-                </RelativeLayout>
-
-                <TextView
-                        android:focusable="false"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/textColor"
-                        android:text="@string/latest_anime"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:padding="10dp"
-                        android:id="@+id/latest_anime_text"
-                        app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
-                        android:layout_marginEnd="10dp"
-                        android:layout_marginStart="10dp"
-                >
-                </TextView>
-                <RelativeLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="230dp"
-                        android:paddingBottom="20dp"
-                >
-
-                    <androidx.leanback.widget.HorizontalGridView
-                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                            android:id="@+id/latest_anime_scroll_view"
-                            tools:listitem="@layout/home_card"
-                            android:orientation="horizontal"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content">
-                    </androidx.leanback.widget.HorizontalGridView>
-                </RelativeLayout>
-
-
-                <LinearLayout
-                        android:orientation="vertical"
-                        android:id="@+id/scheduleRoot"
-                        android:visibility="gone"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                    <TextView
-                            android:focusable="false"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="?attr/textColor"
-                            android:text="@string/schedule"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:padding="10dp"
-                    >
-                    </TextView>
-                    <RelativeLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="250dp"
-                            android:layout_marginBottom="20dp"
-                    >
-
-                        <androidx.leanback.widget.HorizontalGridView
-                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                                android:id="@+id/scheduleScrollView"
-                                android:orientation="horizontal"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content">
-                        </androidx.leanback.widget.HorizontalGridView>
-                    </RelativeLayout>
-                </LinearLayout>
-            </LinearLayout>
-        </LinearLayout>
-    </ScrollView>
+        </androidx.leanback.widget.VerticalGridView>
+    </LinearLayout>
 
 
 </FrameLayout>

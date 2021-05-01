@@ -19,17 +19,16 @@ import android.util.TypedValue
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.preference.PreferenceManager
-import androidx.recyclerview.widget.LinearSnapHelper
-import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.common.ConnectionResult
@@ -177,8 +176,8 @@ object AppApi {
 
     fun FragmentActivity.displayCardData(
         data: List<ShiroApi.CommonAnimePage?>?,
-        scrollView: RecyclerView,
-        textView: TextView
+        resView: RecyclerView,
+        textView: TextView,
     ) {
         val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder> = CardAdapter(
             this,
@@ -190,9 +189,9 @@ object AppApi {
 
         val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)
         val filteredData = if (hideDubbed) data?.filter { it?.name?.endsWith("Dubbed") == false } else data
-        scrollView.adapter = adapter
-        (scrollView.adapter as CardAdapter).cardList = filteredData as ArrayList<ShiroApi.CommonAnimePage?>
-        (scrollView.adapter as CardAdapter).notifyDataSetChanged()
+        resView.adapter = adapter
+        (resView.adapter as CardAdapter).cardList = filteredData as ArrayList<ShiroApi.CommonAnimePage?>
+        (resView.adapter as CardAdapter).notifyDataSetChanged()
 
         textView.setOnClickListener {
             this.supportFragmentManager.beginTransaction()
@@ -214,7 +213,7 @@ object AppApi {
 
     }
 
-    fun Context.displayCardData(data: List<LastEpisodeInfo?>?, scrollView: RecyclerView) {
+    fun Context.displayCardData(data: List<LastEpisodeInfo?>?, resView: RecyclerView) {
         val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder> = CardContinueAdapter(
             this,
             listOf(),
@@ -223,10 +222,10 @@ object AppApi {
         //val snapHelper = LinearSnapHelper()
         //snapHelper.attachToRecyclerView(scrollView)
 
-        scrollView.adapter = adapter
+        resView.adapter = adapter
         if (data != null) {
-            (scrollView.adapter as CardContinueAdapter).cardList = data
-            (scrollView.adapter as CardContinueAdapter).notifyDataSetChanged()
+            (resView.adapter as CardContinueAdapter).cardList = data
+            (resView.adapter as CardContinueAdapter).notifyDataSetChanged()
         }
     }
 
