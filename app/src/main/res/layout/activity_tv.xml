@@ -2,9 +2,10 @@
 <androidx.fragment.app.FragmentContainerView xmlns:android="http://schemas.android.com/apk/res/android"
                                              xmlns:tools="http://schemas.android.com/tools"
                                              android:id="@+id/main_browse_fragment"
-                                             android:name="com.lagradost.shiro.ui.tv.MainFragmentTV"
+                                             android:name="com.lagradost.shiro.ui.tv.MainFragment"
                                              android:layout_width="match_parent"
                                              android:layout_height="match_parent"
                                              tools:context=".ui.tv.TvActivity"
                                              tools:deviceIds="tv"
+                                             android:theme="@style/AppTheme"
                                              tools:ignore="MergeRootFrame"/>

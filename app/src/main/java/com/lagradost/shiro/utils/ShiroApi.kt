@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.lagradost.shiro.*
 import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.LastEpisodeInfo
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
@@ -19,15 +18,6 @@ import java.net.URLEncoder
 import kotlin.concurrent.thread
 
 class ShiroApi {
-    data class HomePageResponse(
-        @JsonProperty("animeData") val animeData: AnimeData,
-        @JsonProperty("homeSlidesData") val homeSlidesData: List<Card>,
-        @JsonProperty("recentlyAddedData") val recentlyAddedData: List<Card>,
-        @JsonProperty("trendingData") val trendingData: List<Card>,
-        @JsonProperty("favorites") var favorites: List<BookmarkedTitle?>?,
-        @JsonProperty("recentlySeen") var recentlySeen: List<LastEpisodeInfo?>?,
-        @JsonProperty("schedule") var schedule: List<ScheduleItem?>?,
-    )
 
     data class Token(
         @JsonProperty("headers") val headers: Map<String, String>,
@@ -35,83 +25,7 @@ class ShiroApi {
         @JsonProperty("token") val token: String,
     )
 
-    data class Title(
-        @JsonProperty("romaji") val romaji: String,
-        @JsonProperty("english") val english: String,
-        @JsonProperty("native") val native: String
-    )
-
-    data class ScheduleTitle(
-        @JsonProperty("romaji") val romaji: String?,
-        @JsonProperty("english") val english: String?,
-        @JsonProperty("native") val native: String?
-    )
-
-    data class EndDate(
-        @JsonProperty("year") val year: Int,
-        @JsonProperty("month") val month: Int,
-        @JsonProperty("day") val day: Int
-    )
-
-    data class FullEpisode(
-        @JsonProperty("file") val file: String,
-        @JsonProperty("title") val title: String?,
-        @JsonProperty("thumb") val thumb: String?
-    )
-
     data class Episode(@JsonProperty("file") val file: String)
-    data class CoverImage(@JsonProperty("large") val large: String)
-    data class Seasons(@JsonProperty("episodes") val episodes: List<FullEpisode>)
-    data class CdnData(@JsonProperty("seasons") val seasons: List<Seasons>)
-    data class Card(
-        @JsonProperty("title") val title: Title,
-        @JsonProperty("endDate") val endDate: EndDate,
-        @JsonProperty("episodes") val episodes: Int,
-        @JsonProperty("duration") val duration: Int,
-        @JsonProperty("trailer") val trailer: String?,
-        @JsonProperty("averageScore") val averageScore: Int,
-        @JsonProperty("isAdult") val isAdult: Boolean,
-        @JsonProperty("status") val status: String,
-        @JsonProperty("coverImage") val coverImage: CoverImage,
-        @JsonProperty("bannerImage") val bannerImage: String,
-        @JsonProperty("anilistId") val anilistId: String,
-        @JsonProperty("id") val id: String,
-        @JsonProperty("description") val description: String,
-        @JsonProperty("cdnData") val cdnData: CdnData,
-        @JsonProperty("genres") val genres: List<String>,
-    )
-
-    data class ScheduleItem(
-        @JsonProperty("episode") val episode: Int,
-        @JsonProperty("timeUntilAiring") val timeUntilAiring: String,
-        @JsonProperty("media") val media: ScheduleMediaItem
-    )
-
-
-    data class ScheduleMediaItem(
-        @JsonProperty("averageScore") val averageScore: Int?,
-        @JsonProperty("id") val id: Int,
-        @JsonProperty("coverImage") val coverImage: CoverImage,
-        @JsonProperty("title") val title: ScheduleTitle,
-    )
-
-    data class AnimeData(@JsonProperty("cards") val cards: List<Card>)
-    data class SearchResponse(
-        @JsonProperty("animeData") val animeData: AnimeData?,
-        @JsonProperty("success") val success: Boolean
-    )
-
-    data class EpisodeResponse(
-        @JsonProperty("anime") val anime: Card,
-        @JsonProperty("nextEpisode") val nextEpisode: Int
-    )
-
-    data class Update(
-        @JsonProperty("shouldUpdate") val shouldUpdate: Boolean,
-        @JsonProperty("updateURL") val updateURL: String?,
-        @JsonProperty("updateVersion") val updateVersion: String?,
-        @JsonProperty("changelog") val changelog: String?
-    )
 
     data class Donor(@JsonProperty("id") val id: String)
 
@@ -134,7 +48,9 @@ class ShiroApi {
         @JsonProperty("data") val data: ShiroHomePageData,
         @JsonProperty("random") var random: AnimePage?,
         @JsonProperty("favorites") var favorites: List<BookmarkedTitle?>?,
-        @JsonProperty("recentlySeen") var recentlySeen: List<LastEpisodeInfo?>?
+        @JsonProperty("recentlySeen") var recentlySeen: List<LastEpisodeInfo?>?,
+        // A hack for android TV MasterCardAdapter
+        // @JsonProperty("searchResults") var searchResults: List<ShiroSearchResponseShow?>?
     )
 
 
@@ -202,20 +118,6 @@ class ShiroApi {
         @JsonProperty("status") val status: String
     )
 
-    data class GithubAsset(
-        @JsonProperty("name") val name: String,
-        @JsonProperty("size") val size: Int, // Size bytes
-        @JsonProperty("browser_download_url") val browser_download_url: String, // download link
-        @JsonProperty("content_type") val content_type: String // application/vnd.android.package-archive
-    )
-
-    data class GithubRelease(
-        @JsonProperty("tag_name") val tag_name: String, // Version code
-        @JsonProperty("body") val body: String, // Desc
-        @JsonProperty("assets") val assets: List<GithubAsset>,
-        @JsonProperty("target_commitish") val target_commitish: String // branch
-    )
-
     // Hack, needed to deserialize
     data class CommonAnimePageData(
         @JsonProperty("name") override val name: String,
@@ -235,7 +137,7 @@ class ShiroApi {
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
 
         // NULL IF ERROR
-        private fun getToken(): Token? {
+        fun getToken(): Token? {
             try {
                 val headers = mapOf("User-Agent" to USER_AGENT)
                 val shiro = khttp.get("https://shiro.is", headers = headers, timeout = 120.0)
@@ -300,10 +202,10 @@ class ShiroApi {
             }
         }
 
-        fun getRandomAnimePage(): AnimePage? {
+        fun getRandomAnimePage(usedToken: Token? = currentToken): AnimePage? {
             println("Called random")
             return try {
-                val url = "https://tapi.shiro.is/anime/random/TV?token=${currentToken?.token}"
+                val url = "https://tapi.shiro.is/anime/random/TV?token=${usedToken?.token}"
                 val response = khttp.get(url, timeout = 120.0)
                 val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
                 if (mapped.status == "Found")
@@ -314,9 +216,9 @@ class ShiroApi {
             }
         }
 
-        fun getAnimePage(slug: String): AnimePage? {
+        fun getAnimePage(slug: String, usedToken: Token? = currentToken): AnimePage? {
             println("Get anime $slug")
-            val url = "https://tapi.shiro.is/anime/slug/${slug}?token=${currentToken?.token}"
+            val url = "https://tapi.shiro.is/anime/slug/${slug}?token=${usedToken?.token}"
             return try {
                 val response = khttp.get(url, timeout = 120.0)
                 val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
@@ -332,7 +234,7 @@ class ShiroApi {
 
         //search via http get request, NOT INSTANT
         // ONLY PAGE 1
-        fun quickSearch(query: String): List<ShiroSearchResponseShow>? {
+        fun quickSearch(query: String, usedToken: Token? = currentToken): List<ShiroSearchResponseShow>? {
             try {
                 // Tags and years can be added
                 val url = "https://tapi.shiro.is/anime/auto-complete/${
@@ -340,9 +242,9 @@ class ShiroApi {
                         query,
                         "UTF-8"
                     )
-                }?token=${currentToken?.token}".replace("+", "%20")
+                }?token=${usedToken?.token}".replace("+", "%20")
                 // Security headers
-                val headers = currentToken?.headers
+                val headers = usedToken?.headers
                 val response = headers?.let { khttp.get(url, timeout = 120.0) }
                 val mapped = response?.let { mapper.readValue<ShiroSearchResponse>(it.text) }
 
@@ -355,17 +257,16 @@ class ShiroApi {
             //return response?.text?.let { mapper.readValue(it) }
         }
 
-        fun search(query: String): List<ShiroSearchResponseShow>? {
+        fun search(query: String, usedToken: Token? = currentToken): List<ShiroSearchResponseShow>? {
             try {
                 val url = "https://tapi.shiro.is/advanced?search=${
                     URLEncoder.encode(
                         query,
                         "UTF-8"
                     )
-                }&token=${currentToken?.token}".replace("+", "%20")
-                val headers = currentToken?.headers
+                }&token=${usedToken?.token}".replace("+", "%20")
+                val headers = usedToken?.headers
                 val response = headers?.let { khttp.get(url, timeout = 120.0) }
-                println(response?.text)
                 val mapped = response?.let { mapper.readValue<ShiroFullSearchResponse>(it.text) }
                 return if (mapped?.status == "Found")
                     mapped.data.nav.currentPage.items
@@ -445,7 +346,7 @@ class ShiroApi {
             }
         }
 
-        fun getLastWatch(): List<LastEpisodeInfo?> {
+        private fun getLastWatch(): List<LastEpisodeInfo?> {
             val keys = DataStore.getKeys(VIEW_LST_KEY)
             println("KEYS: $keys")
             thread {
@@ -464,23 +365,32 @@ class ShiroApi {
             return getHome(canBeCached)
         }
 
-        fun getHome(canBeCached: Boolean): ShiroHomePage? {
+        fun getHomeOnly(usedToken: Token? = currentToken): ShiroHomePage? {
+            return try {
+                val url = "https://tapi.shiro.is/latest?token=${usedToken!!.token}"
+                val response = khttp.get(url, timeout = 120.0)
+                response.text.let { mapper.readValue(it) }
+            } catch (e: Exception) {
+                println(e.message)
+                null
+            }
+        }
+
+        fun getHome(canBeCached: Boolean, usedToken: Token? = currentToken): ShiroHomePage? {
             var res: ShiroHomePage? = null
             if (canBeCached && cachedHome != null) {
                 res = cachedHome
             } else {
-                val url = "https://tapi.shiro.is/latest?token=${currentToken!!.token}"
+                val url = "https://tapi.shiro.is/latest?token=${usedToken!!.token}"
                 try {
                     val response = khttp.get(url, timeout = 120.0)
                     res = response.text.let { mapper.readValue(it) }
                 } catch (e: Exception) {
                     println(e.message)
                 }
-
                 if (res != null) {
                     res.random = getRandomAnimePage()
                 }
-
                 //res?.schedule = getSchedule()
             }
             // Anything below here shouldn't do network requests (network on main thread)

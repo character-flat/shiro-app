@@ -23,6 +23,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
@@ -35,10 +36,12 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.*
+import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.home.CardAdapter
 import com.lagradost.shiro.ui.home.CardContinueAdapter
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment
 import com.lagradost.shiro.ui.result.ResultFragment
+import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.DataStore.mapper
 import java.net.URL
 import java.net.URLDecoder
@@ -106,6 +109,10 @@ object AppApi {
                 activity?.hideKeyboard(it)
             }
         }
+    }
+
+    fun getCurrentActivity(): AppCompatActivity? {
+        return if (activity != null) activity else tvActivity
     }
 
     fun Activity.requestAudioFocus(focusRequest: AudioFocusRequest?) {
@@ -178,10 +185,13 @@ object AppApi {
         data: List<ShiroApi.CommonAnimePage?>?,
         resView: RecyclerView,
         textView: TextView,
+        isOnTop: Boolean = false,
+        adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = null
     ) {
-        val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder> = CardAdapter(
+        val newAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder> = adapter ?: CardAdapter(
             this,
             ArrayList(),
+            isOnTop
         )
 
         //val snapHelper = PagerSnapHelper()
@@ -189,7 +199,7 @@ object AppApi {
 
         val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)
         val filteredData = if (hideDubbed) data?.filter { it?.name?.endsWith("Dubbed") == false } else data
-        resView.adapter = adapter
+        resView.adapter = newAdapter
         (resView.adapter as CardAdapter).cardList = filteredData as ArrayList<ShiroApi.CommonAnimePage?>
         (resView.adapter as CardAdapter).notifyDataSetChanged()
 
@@ -202,7 +212,7 @@ object AppApi {
                     R.anim.exit_to_right
                 )
                 .add(
-                    R.id.homeRoot,
+                    android.R.id.content,
                     ExpandedHomeFragment.newInstance(
                         mapper.writeValueAsString(data),
                         textView.text.toString()
@@ -210,7 +220,6 @@ object AppApi {
                 )
                 .commitAllowingStateLoss()
         }
-
     }
 
     fun Context.displayCardData(data: List<LastEpisodeInfo?>?, resView: RecyclerView) {
@@ -371,10 +380,12 @@ object AppApi {
             it.isVisible
         }
 
-        if (settingsManager?.getBoolean("force_landscape", false) == true) {
-            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
-        } else {
-            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        if (tvActivity == null) {
+            if (settingsManager?.getBoolean("force_landscape", false) == true) {
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+            } else {
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
         }
 
         // No fucked animations leaving the player :)

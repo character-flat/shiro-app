@@ -140,7 +140,6 @@ class HomeFragment : Fragment() {
     }
 
     private fun generateRandom(randomPage: ShiroApi.AnimePage? = null) {
-
         thread {
             val random: ShiroApi.AnimePage? = randomPage ?: getRandomAnimePage()
             cachedHome?.random = random

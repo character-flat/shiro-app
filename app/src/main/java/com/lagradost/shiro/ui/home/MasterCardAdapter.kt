@@ -2,9 +2,9 @@ package com.lagradost.shiro.ui.home
 
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
+import android.view.View.*
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.lagradost.shiro.*
@@ -23,15 +23,20 @@ class MasterCardAdapter(
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var data = animeList
     var activity: FragmentActivity? = context
-    private val filtered = arrayOf(
-        Pair(data?.recentlySeen, activity?.getString(R.string.continue_watching)),
-        Pair(data?.favorites, activity?.getString(R.string.favorites)),
-        Pair(data?.data?.trending_animes, activity?.getString(R.string.trending_anime)),
-        Pair(data?.data?.latest_episodes?.map { it.anime }, activity?.getString(R.string.home_recently_updated)),
-        Pair(data?.data?.ongoing_animes, activity?.getString(R.string.home_ongoing)),
-        Pair(data?.data?.latest_animes, activity?.getString(R.string.latest_anime))
-    ).filter {
-        it.first != null && it.first?.isNotEmpty() == true
+    private var filtered: List<Pair<List<Any?>?, String?>> = generateFiltered()
+
+    private fun generateFiltered(): List<Pair<List<Any?>?, String?>> {
+        return arrayOf(
+            //Pair(data?.searchResults, "Search results"),
+            Pair(data?.recentlySeen, activity?.getString(R.string.continue_watching)),
+            Pair(data?.favorites, activity?.getString(R.string.favorites)),
+            Pair(data?.data?.trending_animes, activity?.getString(R.string.trending_anime)),
+            Pair(data?.data?.latest_episodes?.map { it.anime }, activity?.getString(R.string.home_recently_updated)),
+            Pair(data?.data?.ongoing_animes, activity?.getString(R.string.home_ongoing)),
+            Pair(data?.data?.latest_animes, activity?.getString(R.string.latest_anime))
+        ).filter {
+            it.first != null && it.first?.isNotEmpty() == true
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -42,9 +47,19 @@ class MasterCardAdapter(
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        filtered = generateFiltered()
         when (holder) {
             is MasterCardViewHolder -> {
-                holder.bind(filtered[position])
+                holder.bind(filtered[position], position)
+            }
+        }
+        holder.itemView.setOnFocusChangeListener { v, hasFocus ->
+            val menu = activity?.findViewById<LinearLayout>(R.id.tv_menu_bar)
+            println("menu $menu")
+            if (position == 0) {
+                menu?.visibility = VISIBLE
+            } else {
+                menu?.visibility = INVISIBLE
             }
         }
     }
@@ -63,20 +78,28 @@ class MasterCardAdapter(
         val activity = _context
         val card: View = itemView
 
-        fun bind(pair: Pair<List<Any?>?, String?>) {
+        fun bind(pair: Pair<List<Any?>?, String?>, position: Int) {
             card.expand_text.text = pair.second
             card.visibility = VISIBLE
-            if (pair.first as? List<ShiroApi.CommonAnimePage?> != null) {
-                activity.displayCardData(
-                    pair.first as List<ShiroApi.CommonAnimePage?>?,
-                    card.horizontalGridView,
-                    card.expand_text
-                )
-            } else if (pair.first as? List<LastEpisodeInfo?> != null) {
-                activity.displayCardData(
-                    pair.first as? List<LastEpisodeInfo>,
-                    card.horizontalGridView,
-                )
+            val isFirst = position == 0
+            when {
+                pair.first as? List<ShiroApi.CommonAnimePage?> != null -> {
+                    activity.displayCardData(
+                        pair.first as List<ShiroApi.CommonAnimePage?>?,
+                        card.horizontalGridView,
+                        card.expand_text,
+                        isFirst
+                    )
+                }
+                pair.first as? List<LastEpisodeInfo?> != null -> {
+                    activity.displayCardData(
+                        pair.first as? List<LastEpisodeInfo>,
+                        card.horizontalGridView,
+                    )
+                }
+                else -> {
+                    println("Error on ${pair.second}")
+                }
             }
         }
     }

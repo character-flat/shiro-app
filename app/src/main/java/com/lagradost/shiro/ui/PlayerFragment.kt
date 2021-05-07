@@ -419,7 +419,7 @@ class PlayerFragment : Fragment() {
     private fun onClickChange() {
         isShowing = !isShowing
 
-        click_overlay.visibility = if (isShowing) GONE else VISIBLE
+        click_overlay?.visibility = if (isShowing) GONE else VISIBLE
 
         val fadeTo = if (isShowing) 1f else 0f
         val fadeAnimation = AlphaAnimation(1f - fadeTo, fadeTo)
@@ -428,10 +428,10 @@ class PlayerFragment : Fragment() {
         fadeAnimation.fillAfter = true
 
         if (!isLocked) {
-            video_holder.startAnimation(fadeAnimation)
-            shadow_overlay.startAnimation(fadeAnimation)
+            video_holder?.startAnimation(fadeAnimation)
+            shadow_overlay?.startAnimation(fadeAnimation)
         }
-        video_lock_holder.startAnimation(fadeAnimation)
+        video_lock_holder?.startAnimation(fadeAnimation)
     }
 
     private fun handleAudioFocusEvent(event: Boolean) {
@@ -676,7 +676,7 @@ class PlayerFragment : Fragment() {
 
         }
 
-        click_overlay.setOnTouchListener(
+        click_overlay?.setOnTouchListener(
             Listener()
         )
 
@@ -853,8 +853,8 @@ class PlayerFragment : Fragment() {
                     }
                     video_title?.text = getCurrentTitle()
                     if (canPlayNextEpisode()) {
-                        next_episode_btt.visibility = VISIBLE
-                        next_episode_btt.setOnClickListener {
+                        next_episode_btt?.visibility = VISIBLE
+                        next_episode_btt?.setOnClickListener {
                             if (isLoadingNextEpisode) return@setOnClickListener
                             isLoadingNextEpisode = true
                             savePos()
@@ -875,7 +875,7 @@ class PlayerFragment : Fragment() {
                     }
                     // this to make the button visible in the editor
                     else {
-                        next_episode_btt.visibility = GONE
+                        next_episode_btt?.visibility = GONE
                     }
 
                     if (isOnline) {

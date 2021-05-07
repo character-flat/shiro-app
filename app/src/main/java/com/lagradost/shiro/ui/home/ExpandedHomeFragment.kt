@@ -76,10 +76,11 @@ class ExpandedHomeFragment : Fragment() {
             expanded_card_list_view.spanCount = spanCountPortrait
         }
         title_text.text = title
-        val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
+        val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = activity?.let {
             CardAdapter(
                 it,
                 ArrayList(),
+                false,
             )
         }
         val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)

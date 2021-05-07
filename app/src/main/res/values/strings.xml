@@ -1,8 +1,8 @@
 <resources>
     <string name="changelog">\n
         - New logo by pear#4215\n
-        - Changed android TV poster color\n
         - Fixed some more crashes :)\n
+        - Reworked android TV UI!\n
     </string>
     <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>

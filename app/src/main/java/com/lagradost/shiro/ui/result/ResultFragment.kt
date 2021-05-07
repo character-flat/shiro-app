@@ -60,7 +60,6 @@ class ResultFragment : Fragment() {
     private var dataOther: ShiroApi.AnimePageData? = null
     private var isDefaultData = true
 
-    private lateinit var resultViewModel: ResultViewModel
     private var isBookmarked = false
     private var isSubbed: Boolean? = null
 
@@ -103,8 +102,6 @@ class ResultFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
-        resultViewModel =
-            activity?.let { ViewModelProviders.of(it).get(ResultViewModel::class.java) }!!
         val useNewLayout = settingsManager!!.getBoolean("new_results_page", false)
         val layout = if (useNewLayout) R.layout.fragment_results_new else R.layout.fragment_results
 
@@ -405,12 +402,12 @@ private fun ToggleViewState(_isViewState: Boolean) {
 
     private fun onLeftVideoPlayer(event: Boolean) {
         loadSeason()
-        if (tvActivity != null) {
+        /*if (tvActivity != null) {
             title_season_cards.requestFocus()
             //title_season_cards.layoutManager?.scrollToPosition(lastSelectedEpisode)
             //title_season_cards.adapter?.notifyItemChanged(lastSelectedEpisode)
             //title_season_cards.layoutManager?.findViewByPosition(lastSelectedEpisode)?.requestFocus()
-        }
+        }*/
     }
 
     private fun onDownloadStarted(id: String) {

@@ -32,4 +32,10 @@
             android:name="com.lagradost.shiro.ui.settings.SettingsFragment"
             android:label="@string/title_settings"
     />
+    <fragment
+            android:id="@+id/navigation_results"
+            android:layout_height="match_parent"
+            android:name="com.lagradost.shiro.ui.result.ResultFragment"
+            android:label="Results"
+    />
 </navigation>

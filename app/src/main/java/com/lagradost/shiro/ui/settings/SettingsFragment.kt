@@ -33,6 +33,10 @@ import java.io.File
 import kotlin.concurrent.thread
 
 class SettingsFragment : PreferenceFragmentCompat() {
+    companion object {
+        var isInSettings: Boolean = false
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         super.onCreateView(inflater, container, savedInstanceState)?.apply {
             activity?.getColorFromAttr(R.attr.background)?.let { setBackgroundColor(it) }
@@ -324,4 +328,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
          */
     }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        isInSettings = true
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        isInSettings = false
+    }
+
 }
