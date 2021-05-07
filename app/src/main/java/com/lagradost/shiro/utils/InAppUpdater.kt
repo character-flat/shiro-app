@@ -68,9 +68,9 @@ object InAppUpdater {
             val cleanedResponse = response.filter { (!it.prerelease || isBetaMode) && !it.draft}
 
             val versionRegex = if (isTv) {
-                Regex("""(.*?((\d)\.(\d)\.(\d))\.apk)""")
-            } else {
                 Regex("""(.*?((\d)\.(\d)\.(\d))-TV\.apk)""")
+            } else {
+                Regex("""(.*?((\d)\.(\d)\.(\d))\.apk)""")
             }
 
             /*
