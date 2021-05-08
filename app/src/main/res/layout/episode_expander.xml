@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="@drawable/outline_background"
+        android:nextFocusRight="@+id/cdi"
+        android:nextFocusLeft="@+id/cdi"
+        android:id="@+id/episode_result_root"
+>
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+    >
+        <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:elevation="10dp"
+                app:cardCornerRadius="4dp"
+                android:id="@+id/cardBg"
+                app:cardBackgroundColor="?attr/darkBarLight">
+            <TextView
+                    android:id="@+id/cardTitle"
+                    android:layout_margin="10dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="15sp"
+                    android:layout_marginStart="160dp"
+                    android:layout_marginEnd="50dp"
+                    android:textColor="?attr/textColor"
+                    tools:text="Episodes 1-50"
+                    android:gravity="center"
+            >
+            </TextView>
+        </androidx.cardview.widget.CardView>
+        <com.lagradost.shiro.ui.AutofitRecyclerView
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:clipToPadding="false"
+                android:descendantFocusability="afterDescendants"
+                android:layout_marginEnd="15dp"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/title_season_cards"
+                android:orientation="vertical"
+                app:spanCount="2"
+                tools:listitem="@layout/episode_result_compact"
+        >
+
+        </com.lagradost.shiro.ui.AutofitRecyclerView>
+    </LinearLayout>
+
+
+</LinearLayout>

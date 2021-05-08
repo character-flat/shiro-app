@@ -50,10 +50,14 @@ class EpisodeAdapter(
     val context: Context,
     val data: ShiroApi.AnimePageData,
     private val resView: AutofitRecyclerView,
-    private val save: Boolean
+    private val save: Boolean,
+    private val rangeStart: Int? = null,
+    private val rangeStop: Int? = null,
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    var episodes = data.episodes
+    val stop = rangeStop ?: data.episodes!!.size
+    val start = rangeStart ?: 0
+    var episodes = data.episodes!!.subList(start, stop)
     private var prevFocus: Int? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -63,7 +67,8 @@ class EpisodeAdapter(
             context,
             resView,
             save,
-            data
+            data,
+            start
         )
     }
 
@@ -88,13 +93,13 @@ class EpisodeAdapter(
     }
 
     override fun getItemCount(): Int {
-        return episodes!!.size
+        return episodes.size
     }
 
     class CardViewHolder
     constructor(
         itemView: View, _context: Context, resView: RecyclerView, private val save: Boolean,
-        val data: ShiroApi.AnimePageData
+        val data: ShiroApi.AnimePageData, val start: Int
     ) :
         RecyclerView.ViewHolder(itemView) {
         // To prevent having to redo this operation on every bind
@@ -105,7 +110,9 @@ class EpisodeAdapter(
 
         // Downloads is only updated when re-bound!
         fun bind(position: Int) {
-            val key = getViewKey(data.slug, position)
+            println("Bind ep $position")
+            val episodePos = start + position
+            val key = getViewKey(data.slug, episodePos)
 
 
             // Because the view is recycled
@@ -119,7 +126,7 @@ class EpisodeAdapter(
                 card.cdi.setOnClickListener {
                     DownloadManager.downloadEpisode(
                         DownloadManager.DownloadInfo(
-                            position,
+                            episodePos,
                             data
                         )
                     )
@@ -145,10 +152,10 @@ class EpisodeAdapter(
                     val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
                     println("SSTATE: " + castContext.castState + "<<")
                     if (castContext.castState == CastState.CONNECTED) {
-                        castEpisode(data, position)
+                        castEpisode(data, episodePos)
                     } else {
                         thread {
-                            activity?.loadPlayer(position, 0L, data)
+                            activity?.loadPlayer(episodePos, 0L, data)
                         }
                     }
                 } else {
@@ -156,10 +163,10 @@ class EpisodeAdapter(
                         if (tvActivity != null) {
                             val intent = Intent(tvActivity, PlaybackActivity::class.java)
                             intent.putExtra(DetailsActivityTV.MOVIE, mapper.writeValueAsString(data))
-                            intent.putExtra("position", position)
+                            intent.putExtra("position", episodePos)
                             tvActivity?.startActivity(intent)
                         } else {
-                            activity?.loadPlayer(position, 0L, data)
+                            activity?.loadPlayer(start + episodePos, 0L, data)
                         }
                     }
                 }
@@ -177,10 +184,10 @@ class EpisodeAdapter(
                 return@setOnLongClickListener true
             }*/
 
-            val title = "Episode ${position + 1}"
+            val title = "Episode ${episodePos + 1}"
             card.cardTitle.text = title
             if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
-                if (last.isFound && last.episodeIndex == position) {
+                if (last.isFound && last.episodeIndex == episodePos) {
                     activity?.let {
                         card.cardBg.setCardBackgroundColor(
                             it.getColorFromAttr(R.attr.colorPrimaryDark)
@@ -222,7 +229,7 @@ class EpisodeAdapter(
                 }
             }
 
-            val pro = getViewPosDur(data.slug, position)
+            val pro = getViewPosDur(data.slug, episodePos)
             //println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
             if (pro.dur > 0 && pro.pos > 0) {
                 var progress: Int = (pro.pos * 100L / pro.dur).toInt()
@@ -260,7 +267,7 @@ class EpisodeAdapter(
             }
 
             if (isDonor) {
-                val internalId = (data.slug + "E${position}").hashCode()
+                val internalId = (data.slug + "E${episodePos}").hashCode()
                 val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(
                     DOWNLOAD_CHILD_KEY,
                     internalId.toString()
@@ -273,7 +280,7 @@ class EpisodeAdapter(
                         val localBytesTotal =
                             maxOf(DownloadManager.convertBytesToAny(file.length(), 0, 2.0).toInt(), 1)
 
-                        println("FILE EXISTS:$position")
+                        println("FILE EXISTS:$episodePos")
                         fun deleteFile() {
                             if (file.exists()) {
                                 file.delete()

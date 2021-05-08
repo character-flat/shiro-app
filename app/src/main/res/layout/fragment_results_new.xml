@@ -22,7 +22,7 @@
                  android:layout_height="match_parent"
     >
 
-        <ScrollView
+        <androidx.core.widget.NestedScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:fillViewport="true"
@@ -214,22 +214,22 @@
                             </ImageView>
 
                         </androidx.constraintlayout.widget.ConstraintLayout>
-                        <com.lagradost.shiro.ui.AutofitRecyclerView
+                        <androidx.recyclerview.widget.RecyclerView
+                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                                 android:clipToPadding="false"
+                                app:layout_behavior="@string/appbar_scrolling_view_behavior"
                                 android:descendantFocusability="afterDescendants"
                                 android:paddingBottom="100dp"
                                 android:layout_marginEnd="15dp"
                                 android:layout_marginStart="15dp"
                                 android:layout_marginTop="10dp"
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent"
+                                android:layout_height="wrap_content"
                                 android:id="@+id/title_season_cards"
                                 android:orientation="vertical"
-                                app:spanCount="2"
-                                tools:listitem="@layout/episode_result_compact"
+                                tools:listitem="@layout/episode_expander"
                         >
-
-                        </com.lagradost.shiro.ui.AutofitRecyclerView>
+                        </androidx.recyclerview.widget.RecyclerView>
                     </LinearLayout>
 
 
@@ -258,7 +258,7 @@
                 </androidx.cardview.widget.CardView>
             </FrameLayout>
 
-        </ScrollView>
+        </androidx.core.widget.NestedScrollView>
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

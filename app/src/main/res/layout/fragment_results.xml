@@ -129,7 +129,7 @@
                     </ImageView>
                 </FrameLayout>
             </RelativeLayout>
-            <ScrollView
+            <androidx.core.widget.NestedScrollView
                     android:layout_marginTop="50dp"
                     android:background="?attr/background"
                     android:layout_width="match_parent"
@@ -328,7 +328,8 @@
                         </ImageView>
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
-                    <com.lagradost.shiro.ui.AutofitRecyclerView
+                    <androidx.recyclerview.widget.RecyclerView
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                             android:clipToPadding="false"
                             android:descendantFocusability="afterDescendants"
                             android:paddingBottom="100dp"
@@ -336,16 +337,16 @@
                             android:layout_marginStart="10dp"
                             android:layout_marginTop="10dp"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
+                            android:layout_height="wrap_content"
                             android:id="@+id/title_season_cards"
                             android:orientation="vertical"
                             android:minHeight="250dp"
-                            app:spanCount="3"
+                            tools:listitem="@layout/episode_expander"
                     >
                         <requestFocus/>
-                    </com.lagradost.shiro.ui.AutofitRecyclerView>
+                    </androidx.recyclerview.widget.RecyclerView>
                 </LinearLayout>
-            </ScrollView>
+            </androidx.core.widget.NestedScrollView>
         </androidx.cardview.widget.CardView>
     </LinearLayout>
     <LinearLayout

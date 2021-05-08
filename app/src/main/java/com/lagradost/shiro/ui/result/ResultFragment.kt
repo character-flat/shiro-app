@@ -376,20 +376,17 @@ private fun ToggleViewState(_isViewState: Boolean) {
     private fun loadSeason() {
         val save = settingsManager!!.getBoolean("save_history", true)
         val data = if (isDefaultData) data else dataOther
-        if (data?.episodes?.isNotEmpty() == true) {
+        if (data?.episodes?.isNotEmpty() == true && title_season_cards.adapter == null) {
             val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
-                EpisodeAdapter(
+                MasterEpisodeAdapter(
                     it,
                     data,
-                    title_season_cards,
                     save,
                 )
             }
             title_season_cards.adapter = adapter
-            (title_season_cards.adapter as EpisodeAdapter).episodes =
-                data.episodes
             println("SIZE: ${data.episodes?.size}")
-            (title_season_cards.adapter as EpisodeAdapter).notifyDataSetChanged()
+            (title_season_cards.adapter as MasterEpisodeAdapter).notifyDataSetChanged()
         }
     }
 
@@ -414,7 +411,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
         activity?.runOnUiThread {
             // Cast failure when going out of the page, making it catch to fully stop any of those crashes
             try {
-                (title_season_cards.adapter as EpisodeAdapter).notifyDataSetChanged()
+                (title_season_cards.adapter as MasterEpisodeAdapter).notifyDataSetChanged()
             } catch (e: java.lang.NullPointerException) {
             }
         }

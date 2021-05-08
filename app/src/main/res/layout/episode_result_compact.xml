@@ -31,8 +31,9 @@
                 app:indicatorColor="@color/white"
                 android:layout_height="wrap_content">
         </com.google.android.material.progressindicator.LinearProgressIndicator>
-        <androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent"
-                                                           android:layout_height="match_parent">
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
             <TextView
                     android:id="@+id/cardTitle"

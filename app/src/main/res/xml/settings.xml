@@ -68,6 +68,16 @@
                 android:title="Use new anime info page"
                 app:defaultValue="false"
         />
+        <!--<SeekBarPreference
+                android:icon="@drawable/ic_baseline_format_line_spacing_24"
+                android:title="Episode group size"
+                android:defaultValue="50"
+                android:max="200"
+                android:key="episode_group_size"
+                app:showSeekBarValue="true"
+                app:seekBarIncrement="2"
+        >
+        </SeekBarPreference>-->
     </PreferenceCategory>
     <PreferenceCategory
             android:key="player"
@@ -193,7 +203,7 @@
                 android:icon="@drawable/ic_baseline_build_24"
                 app:key="version"
                 app:title="Version"
-                />
+        />
         <SwitchPreference
                 app:key="cool_mode"
                 android:title="Cool mode"
