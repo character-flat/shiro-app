@@ -2,12 +2,14 @@ package com.lagradost.shiro.utils
 
 import android.annotation.SuppressLint
 import android.app.*
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -71,6 +73,7 @@ object DownloadManager {
     val downloadPauseEvent = Event<Int>()
     val downloadDeleteEvent = Event<Int>()
     val downloadStartEvent = Event<String>()
+    val usingScopedStorage = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
     private const val txt = "Not authorized."
     fun init(_context: Context) {
         localContext = _context
@@ -317,6 +320,10 @@ object DownloadManager {
                         else
                             "/" + censorFilename("E${info.episodeIndex + 1} $title") + ".mp4"
 
+
+                val name =
+                    if (isMovie) censorFilename(mainTitle) + ".mp4" else censorFilename("E${info.episodeIndex + 1} $title") + ".mp4"
+
                 val posterPath = path/*.replace("/Anime/", "/Posters/")*/.replace(".mp4", ".jpg")
                 //downloadPoster(posterPath, getFullUrlCdn(info.animeData.image))
                 val mainPosterPath =
@@ -330,10 +337,12 @@ object DownloadManager {
 
                 // =================== MAKE DIRS ===================
                 val rFile = File(path)
-                try {
-                    rFile.parentFile.mkdirs()
-                } catch (_ex: Exception) {
-                    println("FAILED:::$_ex")
+                if (!usingScopedStorage) {
+                    try {
+                        rFile.parentFile.mkdirs()
+                    } catch (_ex: Exception) {
+                        println("FAILED:::$_ex")
+                    }
                 }
                 val url = ep?.videos?.get(0)?.let { getVideoLink(it.video_id) }
 
@@ -346,25 +355,47 @@ object DownloadManager {
                 val referer = "https://shiro.is/"
 
                 // =================== STORAGE ===================
-                try {
-                    if (!rFile.exists()) {
-                        println("FILE DOESN'T EXITS")
-                        rFile.createNewFile()
+                var fos: FileOutputStream? = null
+                if (usingScopedStorage) {
+                    val resolver = localContext?.contentResolver
+                    val values = ContentValues()
+                    values.put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+                    values.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
+                    if (isMovie) {
+                        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + "/Shiro/")
                     } else {
-                        if (resumeIntent) {
-                            bytesRead = rFile.length()
-                            connection.setRequestProperty("Range", "bytes=" + rFile.length() + "-")
-                        } else {
-                            rFile.delete()
+                        values.put(
+                            MediaStore.MediaColumns.RELATIVE_PATH,
+                            Environment.DIRECTORY_MOVIES + "/Shiro/" + censorFilename(mainTitle)
+                        )
+                    }
+                    val uri = resolver?.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)!!
+                    if (resumeIntent) {
+                        bytesRead = resolver.openFileDescriptor(uri, "r").use { it?.statSize ?: 0 }
+                        connection.setRequestProperty("Range", "bytes=" + rFile.length() + "-")
+                    }
+                    fos = resolver.openOutputStream(uri) as FileOutputStream?
+                } else {
+                    try {
+                        if (!rFile.exists()) {
+                            println("FILE DOESN'T EXITS")
                             rFile.createNewFile()
+                        } else {
+                            if (resumeIntent) {
+                                bytesRead = rFile.length()
+                                connection.setRequestProperty("Range", "bytes=" + rFile.length() + "-")
+                            } else {
+                                rFile.delete()
+                                rFile.createNewFile()
+                            }
                         }
+                    } catch (e: Exception) {
+                        println(e)
+                        activity?.runOnUiThread {
+                            Toast.makeText(localContext!!, "Permission error", Toast.LENGTH_SHORT).show()
+                        }
+                        return@thread
                     }
-                } catch (e: Exception) {
-                    println(e)
-                    activity?.runOnUiThread {
-                        Toast.makeText(localContext!!, "Permission error", Toast.LENGTH_SHORT).show()
-                    }
-                    return@thread
                 }
 
                 // =================== CONNECTION ===================
@@ -398,7 +429,7 @@ object DownloadManager {
                 downloadStatus[id] = DownloadStatusType.IsDownloading
                 val bytesTotal: Long = (clen + bytesRead.toInt()).toLong()
                 val input: InputStream = BufferedInputStream(connection.inputStream)
-                val output: OutputStream = FileOutputStream(rFile, true)
+                val output: OutputStream = fos ?: FileOutputStream(rFile, true)
                 var bytesPerSec = 0L
                 val buffer = ByteArray(1024)
                 var count: Int
@@ -540,7 +571,13 @@ object DownloadManager {
         }
     }
 
-    private fun showNot(progress: Long, total: Long, progressPerSec: Long, type: DownloadType, info: DownloadInfo) {
+    private fun showNot(
+        progress: Long,
+        total: Long,
+        progressPerSec: Long,
+        type: DownloadManager.DownloadType,
+        info: DownloadInfo
+    ) {
         val isMovie: Boolean = info.animeData.episodes?.size ?: 0 == 1 && info.animeData.status == "finished"
 
         // Create an explicit intent for an Activity in your app

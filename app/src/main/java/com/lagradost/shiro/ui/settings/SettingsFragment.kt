@@ -28,6 +28,7 @@ import com.lagradost.shiro.utils.AppApi.checkWrite
 import com.lagradost.shiro.utils.AppApi.getColorFromAttr
 import com.lagradost.shiro.utils.AppApi.md5
 import com.lagradost.shiro.utils.AppApi.requestRW
+import com.lagradost.shiro.utils.DownloadManager.usingScopedStorage
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import java.io.File
 import kotlin.concurrent.thread
@@ -257,6 +258,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
             return@setOnPreferenceChangeListener true
         }
         val useExternalStorage = findPreference("use_external_storage") as SwitchPreference?
+        //useExternalStorage.summaryOff = ""
+        useExternalStorage?.summaryOn =
+            if (usingScopedStorage)
+                "Files downloaded to Movies/Shiro"
+            else "Files downloaded to Download/Shiro"
+
         useExternalStorage?.setOnPreferenceChangeListener { _, newValue ->
             if (newValue == true) {
                 if (!activity?.checkWrite()!!) {
