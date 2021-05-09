@@ -38,13 +38,14 @@ import com.lagradost.shiro.utils.DownloadManager
 import com.lagradost.shiro.utils.VIEWSTATE_KEY
 import kotlinx.android.synthetic.main.episode_result_downloaded.*
 
+const val SLUG = "slug"
 
 class DownloadFragmentChild : Fragment() {
     var slug: String? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         isInResults = true
-        arguments?.getString("slug")?.let {
+        arguments?.getString(SLUG)?.let {
             slug = it
         }
         val topParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
@@ -331,7 +332,7 @@ class DownloadFragmentChild : Fragment() {
         fun newInstance(slug: String) =
             DownloadFragmentChild().apply {
                 arguments = Bundle().apply {
-                    putString("slug", slug)
+                    putString(SLUG, slug)
                 }
             }
     }

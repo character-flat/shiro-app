@@ -17,7 +17,6 @@ import android.view.animation.AlphaAnimation
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProviders
 import androidx.mediarouter.app.MediaRouteButton
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
@@ -38,9 +37,13 @@ import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.AppApi.canPlayNextEpisode
 import com.lagradost.shiro.utils.AppApi.getColorFromAttr
+import com.lagradost.shiro.utils.AppApi.getLatestSeenEpisode
+import com.lagradost.shiro.utils.AppApi.getViewPosDur
 import com.lagradost.shiro.utils.AppApi.hideKeyboard
 import com.lagradost.shiro.utils.AppApi.isCastApiAvailable
+import com.lagradost.shiro.utils.AppApi.loadPlayer
 import com.lagradost.shiro.utils.AppApi.popCurrentPage
 import com.lagradost.shiro.utils.AppApi.settingsManager
 import jp.wasabeef.glide.transformations.BlurTransformation
@@ -51,7 +54,6 @@ import kotlin.concurrent.thread
 
 
 const val DESCRIPTION_LENGTH1 = 200
-
 const val SLUG = "slug"
 
 class ResultFragment : Fragment() {
@@ -164,6 +166,23 @@ class ResultFragment : Fragment() {
                         .transition(DrawableTransitionOptions.withCrossFade(200))
                         .apply(bitmapTransform(BlurTransformation(100, 3)))
                         .into(result_poster_blur)
+                }
+
+                next_episode_btt.setOnClickListener {
+                    val episode = getLatestSeenEpisode(data)
+                    val episodePos = getViewPosDur(data.slug, episode.episodeIndex)
+                    val next = canPlayNextEpisode(data, episode.episodeIndex)
+                    if (next.isFound && episodePos.viewstate) {
+                        val pos = getViewPosDur(data.slug, episode.episodeIndex)
+                        Toast.makeText(activity, "Playing episode ${next.episodeIndex + 1}", Toast.LENGTH_SHORT)
+                            .show()
+                        activity?.loadPlayer(next.episodeIndex, pos.pos, data)
+                    } else {
+                        Toast.makeText(activity, "Playing episode ${episode.episodeIndex + 1}", Toast.LENGTH_SHORT)
+                            .show()
+                        activity?.loadPlayer(episode.episodeIndex, episodePos.pos, data)
+                    }
+
                 }
 
                 val textColor = Integer.toHexString(requireActivity().getColorFromAttr(R.attr.textColor))
@@ -354,7 +373,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (savedInstanceState != null) {
-            slug = savedInstanceState.getString("slug")
+            slug = savedInstanceState.getString(SLUG)
             thread {
                 data = slug?.let { getAnimePage(it)?.data }
                 initData()
@@ -368,7 +387,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
 
     override fun onSaveInstanceState(outState: Bundle) {
         if (data != null) {
-            outState.putString("slug", data!!.slug)
+            outState.putString(SLUG, data!!.slug)
         }
         super.onSaveInstanceState(outState)
     }
@@ -376,17 +395,22 @@ private fun ToggleViewState(_isViewState: Boolean) {
     private fun loadSeason() {
         val save = settingsManager!!.getBoolean("save_history", true)
         val data = if (isDefaultData) data else dataOther
-        if (data?.episodes?.isNotEmpty() == true && title_season_cards.adapter == null) {
-            val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
-                MasterEpisodeAdapter(
-                    it,
-                    data,
-                    save,
-                )
+        if (data?.episodes?.isNotEmpty() == true) {
+            if (title_season_cards.adapter == null) {
+                val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = activity?.let {
+                    MasterEpisodeAdapter(
+                        it,
+                        data,
+                        save,
+                    )
+                }
+                title_season_cards.adapter = adapter
+                (title_season_cards.adapter as MasterEpisodeAdapter).notifyDataSetChanged()
+            } else {
+                (title_season_cards.adapter as MasterEpisodeAdapter).data = data
+                (title_season_cards.adapter as MasterEpisodeAdapter).items = generateItems(data.episodes!!, data.slug)
+                (title_season_cards.adapter as MasterEpisodeAdapter).notifyDataSetChanged()
             }
-            title_season_cards.adapter = adapter
-            println("SIZE: ${data.episodes?.size}")
-            (title_season_cards.adapter as MasterEpisodeAdapter).notifyDataSetChanged()
         }
     }
 
@@ -398,7 +422,8 @@ private fun ToggleViewState(_isViewState: Boolean) {
     }
 
     private fun onLeftVideoPlayer(event: Boolean) {
-        loadSeason()
+        (title_season_cards?.adapter as? MasterEpisodeAdapter)?.notifyDataSetChanged()
+        //loadSeason()
         /*if (tvActivity != null) {
             title_season_cards.requestFocus()
             //title_season_cards.layoutManager?.scrollToPosition(lastSelectedEpisode)

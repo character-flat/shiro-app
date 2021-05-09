@@ -65,7 +65,7 @@ object AppApi {
         return uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
     }
 
-    fun Activity.getStatusBarHeight(): Int {
+    private fun Activity.getStatusBarHeight(): Int {
         val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android");
         return if (resourceId > 0) {
             resources.getDimensionPixelSize(resourceId);
@@ -159,7 +159,7 @@ object AppApi {
         )
     }
 
-    private fun canPlayNextEpisode(card: ShiroApi.AnimePageData?, episodeIndex: Int): NextEpisode {
+    fun canPlayNextEpisode(card: ShiroApi.AnimePageData?, episodeIndex: Int): NextEpisode {
         val canNext = card!!.episodes!!.size > episodeIndex + 1
 
         return if (canNext) {
@@ -274,6 +274,7 @@ object AppApi {
         if (settingsManager?.getBoolean("save_history", true) == true) {
             DataStore.setKey(VIEW_POS_KEY, key, pos)
             DataStore.setKey(VIEW_DUR_KEY, key, dur)
+            DataStore.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
         }
 
         if (data.card == null) return
@@ -477,14 +478,15 @@ object AppApi {
     }*/
 
     fun FragmentActivity.loadPlayer(data: PlayerData) {
-        this.supportFragmentManager?.beginTransaction()
+        println("LAODED PLAYER")
+        this.supportFragmentManager.beginTransaction()
             .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
             .add(
                 R.id.videoRoot, PlayerFragment.newInstance(
                     data
                 )
             )
-            .commitAllowingStateLoss()
+            .commit()
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
     }
 

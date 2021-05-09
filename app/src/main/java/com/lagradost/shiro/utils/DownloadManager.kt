@@ -73,7 +73,8 @@ object DownloadManager {
     val downloadPauseEvent = Event<Int>()
     val downloadDeleteEvent = Event<Int>()
     val downloadStartEvent = Event<String>()
-    val usingScopedStorage = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+
+    //val usingScopedStorage = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
     private const val txt = "Not authorized."
     fun init(_context: Context) {
         localContext = _context
@@ -337,12 +338,12 @@ object DownloadManager {
 
                 // =================== MAKE DIRS ===================
                 val rFile = File(path)
-                if (!usingScopedStorage) {
-                    try {
-                        rFile.parentFile.mkdirs()
-                    } catch (_ex: Exception) {
-                        println("FAILED:::$_ex")
-                    }
+                /*if (!usingScopedStorage) {
+                }*/
+                try {
+                    rFile.parentFile.mkdirs()
+                } catch (_ex: Exception) {
+                    println("FAILED:::$_ex")
                 }
                 val url = ep?.videos?.get(0)?.let { getVideoLink(it.video_id) }
 
@@ -356,7 +357,7 @@ object DownloadManager {
 
                 // =================== STORAGE ===================
                 var fos: FileOutputStream? = null
-                if (usingScopedStorage) {
+                /*if (usingScopedStorage) {
                     val resolver = localContext?.contentResolver
                     val values = ContentValues()
                     values.put(MediaStore.MediaColumns.DISPLAY_NAME, name)
@@ -375,28 +376,28 @@ object DownloadManager {
                         connection.setRequestProperty("Range", "bytes=" + rFile.length() + "-")
                     }
                     fos = resolver.openOutputStream(uri) as FileOutputStream?
-                } else {
-                    try {
-                        if (!rFile.exists()) {
-                            println("FILE DOESN'T EXITS")
-                            rFile.createNewFile()
+                } else {*/
+                try {
+                    if (!rFile.exists()) {
+                        println("FILE DOESN'T EXITS")
+                        rFile.createNewFile()
+                    } else {
+                        if (resumeIntent) {
+                            bytesRead = rFile.length()
+                            connection.setRequestProperty("Range", "bytes=" + rFile.length() + "-")
                         } else {
-                            if (resumeIntent) {
-                                bytesRead = rFile.length()
-                                connection.setRequestProperty("Range", "bytes=" + rFile.length() + "-")
-                            } else {
-                                rFile.delete()
-                                rFile.createNewFile()
-                            }
+                            rFile.delete()
+                            rFile.createNewFile()
                         }
-                    } catch (e: Exception) {
-                        println(e)
-                        activity?.runOnUiThread {
-                            Toast.makeText(localContext!!, "Permission error", Toast.LENGTH_SHORT).show()
-                        }
-                        return@thread
                     }
+                } catch (e: Exception) {
+                    println(e)
+                    activity?.runOnUiThread {
+                        Toast.makeText(localContext!!, "Permission error", Toast.LENGTH_SHORT).show()
+                    }
+                    return@thread
                 }
+                //}
 
                 // =================== CONNECTION ===================
                 connection.setRequestProperty("Accept-Encoding", "identity")
@@ -576,7 +577,7 @@ object DownloadManager {
         total: Long,
         progressPerSec: Long,
         type: DownloadManager.DownloadType,
-        info: DownloadInfo
+        info: DownloadManager.DownloadInfo
     ) {
         val isMovie: Boolean = info.animeData.episodes?.size ?: 0 == 1 && info.animeData.status == "finished"
 

@@ -123,7 +123,7 @@ class CardAdapter(
                     navController.navigate(R.id.navigation_results, Bundle().apply { putString("slug", cardInfo.slug) })*/
                     getCurrentActivity()?.supportFragmentManager?.beginTransaction()
                         ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                        ?.add(android.R.id.content, ResultFragment.newInstance(cardInfo.slug))
+                        ?.add(R.id.homeRoot, ResultFragment.newInstance(cardInfo.slug))
                         ?.commitAllowingStateLoss()
                 }
             }

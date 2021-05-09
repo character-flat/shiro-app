@@ -1,21 +1,25 @@
 package com.lagradost.shiro.ui.result
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.google.common.math.IntMath.mod
 import com.lagradost.shiro.R
-import com.lagradost.shiro.utils.AppApi.settingsManager
+import com.lagradost.shiro.utils.AppApi.getColorFromAttr
+import com.lagradost.shiro.utils.AppApi.getViewKey
+import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.ShiroApi
+import com.lagradost.shiro.utils.VIEWSTATE_KEY
 import kotlinx.android.synthetic.main.episode_expander.view.*
 
 class MasterEpisodeAdapter(
-    val context: Context,
-    val data: ShiroApi.AnimePageData,
+    val activity: FragmentActivity,
+    var data: ShiroApi.AnimePageData,
     private val save: Boolean
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     val episodes = data.episodes!!
@@ -26,52 +30,18 @@ class MasterEpisodeAdapter(
         var visible: Boolean = false,
     )
 
-    private val stepSize = 20 //settingsManager!!.getInt("episode_group_size", 50)
-    private val items = generateItems()
-
-    private fun generateItems(): MutableList<MasterEpisode> {
-        val items = mutableListOf<MasterEpisode>()
-
-        // No groups
-        if (stepSize == 0) {
-            return items.apply {
-                this.add(MasterEpisode(0, episodes.size, true))
-            }
-        }
-
-        for (i in episodes.indices step stepSize) {
-            if (i + stepSize < episodes.size) {
-                items.add(
-                    MasterEpisode(i, i + stepSize)
-                )
-            }
-        }
-        // To account for the loop skipping stuff
-        // Double mod to turn 0 -> stepSize
-        val overflow = mod(mod(episodes.size, stepSize) - 1, stepSize) + 1
-        // Dunno if != 0 is possible, but might as well keep for security
-        if (overflow != 0) {
-            items.add(
-                MasterEpisode(episodes.size - overflow, episodes.size)
-            )
-        }
-        if (items.size == 1) {
-            items[0].visible = true
-        }
-        return items
-    }
+    var items = generateItems(episodes, data.slug)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return MasterEpisodeViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.episode_expander, parent, false),
-            data
+            LayoutInflater.from(parent.context).inflate(R.layout.episode_expander, parent, false)
         )
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
             is MasterEpisodeViewHolder -> {
-                holder.bind(items[position], context, save)
+                holder.bind(items[position], activity, data, position)
             }
         }
         holder.itemView.setOnClickListener {
@@ -87,27 +57,108 @@ class MasterEpisodeAdapter(
     class MasterEpisodeViewHolder
     constructor(
         itemView: View,
-        val data: ShiroApi.AnimePageData
     ) :
         RecyclerView.ViewHolder(itemView) {
-        fun bind(item: MasterEpisode, context: Context, save: Boolean) {
-            println("Bind ${item.start}")
+        fun bind(item: MasterEpisode, activity: FragmentActivity, data: ShiroApi.AnimePageData, position: Int) {
+            //println("BIND $position")
             itemView.cardTitle.text =
                 if (item.start + 1 == item.end) "Episode ${item.end}"
                 else "Episodes ${item.start + 1} - ${item.end}"
 
             val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder> = EpisodeAdapter(
-                context,
+                activity,
                 data,
                 itemView.title_season_cards,
-                save,
+                position,
                 item.start,
                 item.end,
             )
             itemView.title_season_cards.adapter = adapter
             (itemView.title_season_cards.adapter as EpisodeAdapter).notifyDataSetChanged()
+
+            //val transition: Transition = ChangeTransform()
+            //transition.duration = 3000
+            //TransitionManager.beginDelayedTransition(itemView.cardBg, transition)
+            itemView.expand_icon.rotation = if (item.visible) 90f else 0f
             itemView.title_season_cards.visibility = if (item.visible) VISIBLE else GONE
+
+            var isSeen = false
+            for (episode in item.start..item.end) {
+                val key = getViewKey(data.slug, episode)
+                if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
+                    isSeen = true
+                }
+            }
+
+            if (isSeen) {
+                activity.let {
+                    itemView.cardBg.setCardBackgroundColor(
+                        it.getColorFromAttr(R.attr.colorPrimaryDark)
+                    )
+                    itemView.expand_icon.setColorFilter(
+                        ContextCompat.getColor(it, R.color.textColor)
+                    )
+                    itemView.cardTitle.setTextColor(
+                        ContextCompat.getColor(it, R.color.textColor)
+                    )
+                }
+            } else {
+                activity.let {
+                    itemView.cardBg.setCardBackgroundColor(
+                        it.getColorFromAttr(R.attr.backgroundLight)
+                    )
+                    itemView.expand_icon.setColorFilter(
+                        it.getColorFromAttr(R.attr.textColor)
+                    )
+                    itemView.cardTitle.setTextColor(
+                        it.getColorFromAttr(R.attr.textColor)
+                    )
+                }
+            }
         }
     }
 
+}
+
+fun generateItems(
+    episodes: List<ShiroApi.ShiroEpisodes>,
+    slug: String
+): MutableList<MasterEpisodeAdapter.MasterEpisode> {
+    val stepSize = 20 //settingsManager!!.getInt("episode_group_size", 50)
+    val items = mutableListOf<MasterEpisodeAdapter.MasterEpisode>()
+
+    /*
+    if (stepSize == 0) {
+        return items.apply {
+            this.add(MasterEpisodeAdapter.MasterEpisode(0, episodes.size, isSeen = false, visible = true))
+        }
+    }*/
+
+    for (i in episodes.indices step stepSize) {
+        if (i + stepSize < episodes.size) {
+            items.add(
+                MasterEpisodeAdapter.MasterEpisode(i, i + stepSize)
+            )
+        }
+    }
+    // To account for the loop skipping stuff
+    // Double mod to turn 0 -> stepSize
+    val overflow = mod(mod(episodes.size, stepSize) - 1, stepSize) + 1
+    // Dunno if != 0 is possible, but might as well keep for security
+    if (overflow != 0) {
+        var isSeen = false
+        for (episode in episodes.size - overflow..episodes.size) {
+            val key = getViewKey(slug, episode)
+            if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
+                isSeen = true
+            }
+        }
+        items.add(
+            MasterEpisodeAdapter.MasterEpisode(episodes.size - overflow, episodes.size, isSeen)
+        )
+    }
+    if (items.size == 1) {
+        items[0].visible = true
+    }
+    return items
 }

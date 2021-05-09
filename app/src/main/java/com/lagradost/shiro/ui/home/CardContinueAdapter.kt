@@ -18,7 +18,6 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.LastEpisodeInfo
-import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.utils.AppApi.loadPlayer
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.VIEW_LST_KEY

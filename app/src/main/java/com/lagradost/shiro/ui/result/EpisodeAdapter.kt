@@ -1,6 +1,5 @@
 package com.lagradost.shiro.ui.result
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.view.LayoutInflater
@@ -12,6 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.view.*
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.cast.CastPlayer
@@ -26,9 +26,9 @@ import com.lagradost.shiro.*
 import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
-import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.AutofitRecyclerView
+import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.DetailsActivityTV
 import com.lagradost.shiro.ui.tv.PlaybackActivity
@@ -47,12 +47,12 @@ import java.io.File
 import kotlin.concurrent.thread
 
 class EpisodeAdapter(
-    val context: Context,
+    val activity: FragmentActivity,
     val data: ShiroApi.AnimePageData,
     private val resView: AutofitRecyclerView,
-    private val save: Boolean,
-    private val rangeStart: Int? = null,
-    private val rangeStop: Int? = null,
+    val parentPosition: Int,
+    rangeStart: Int? = null,
+    rangeStop: Int? = null,
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     val stop = rangeStop ?: data.episodes!!.size
@@ -64,11 +64,11 @@ class EpisodeAdapter(
         //resView.spanCount = if (isDonor) 2 else 3
         return CardViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.episode_result_compact, parent, false),
-            context,
+            activity,
             resView,
-            save,
             data,
-            start
+            start,
+            parentPosition
         )
     }
 
@@ -98,22 +98,18 @@ class EpisodeAdapter(
 
     class CardViewHolder
     constructor(
-        itemView: View, _context: Context, resView: RecyclerView, private val save: Boolean,
-        val data: ShiroApi.AnimePageData, val start: Int
+        itemView: View, val activity: FragmentActivity, private val resView: RecyclerView,
+        val data: ShiroApi.AnimePageData, val start: Int, val parentPosition: Int
     ) :
         RecyclerView.ViewHolder(itemView) {
         // To prevent having to redo this operation on every bind
-        val last = getLatestSeenEpisode(data)
-        val context = _context
+
         val card: LinearLayout = itemView.episode_result_root
-        val resView = resView
 
         // Downloads is only updated when re-bound!
         fun bind(position: Int) {
-            println("Bind ep $position")
             val episodePos = start + position
             val key = getViewKey(data.slug, episodePos)
-
 
             // Because the view is recycled
             card.cdi.visibility = View.VISIBLE
@@ -144,18 +140,14 @@ class EpisodeAdapter(
             }
 
             itemView.episode_result_root.setOnClickListener {
-                if (save) {
-                    DataStore.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
-                }
-
-                if (activity?.isCastApiAvailable() == true) {
-                    val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+                if (activity.isCastApiAvailable()) {
+                    val castContext = CastContext.getSharedInstance(activity.applicationContext)
                     println("SSTATE: " + castContext.castState + "<<")
                     if (castContext.castState == CastState.CONNECTED) {
                         castEpisode(data, episodePos)
                     } else {
                         thread {
-                            activity?.loadPlayer(episodePos, 0L, data)
+                            activity.loadPlayer(episodePos, 0L, data)
                         }
                     }
                 } else {
@@ -166,68 +158,28 @@ class EpisodeAdapter(
                             intent.putExtra("position", episodePos)
                             tvActivity?.startActivity(intent)
                         } else {
-                            activity?.loadPlayer(start + episodePos, 0L, data)
+                            activity.loadPlayer(start + episodePos, 0L, data)
                         }
                     }
                 }
             }
 
-            // Long tap to toggle viewstate, uncommenting this will probably fuck up latest viewstate
-            /*card.cardBg.setOnLongClickListener {
-                if (isViewState) {
-                    if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
-                        DataStore.removeKey(VIEWSTATE_KEY, key)
-                    } else {
-                        DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
-                    }
+            card.episode_result_root.setOnLongClickListener {
+                if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
+                    DataStore.removeKey(VIEWSTATE_KEY, key)
+                } else {
+                    DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
                 }
+                // Hack, but works
+                (activity.findViewById<RecyclerView>(R.id.title_season_cards).adapter as MasterEpisodeAdapter).notifyItemChanged(parentPosition)
+                //resView.adapter?.notifyDataSetChanged()
+                //setCardViewState(key, episodePos)
                 return@setOnLongClickListener true
-            }*/
+            }
 
             val title = "Episode ${episodePos + 1}"
             card.cardTitle.text = title
-            if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
-                if (last.isFound && last.episodeIndex == episodePos) {
-                    activity?.let {
-                        card.cardBg.setCardBackgroundColor(
-                            it.getColorFromAttr(R.attr.colorPrimaryDark)
-                        )
-                    }
-                } else {
-                    activity?.let {
-                        card.cardBg.setCardBackgroundColor(
-                            it.getColorFromAttr(R.attr.colorPrimaryDarker)
-                        )
-                    }
-                }
-                activity?.let {
-                    card.cardTitle.setTextColor(
-                        ContextCompat.getColor(it, R.color.textColor)
-                    )
-                    card.cdi.setColorFilter(
-                        ContextCompat.getColor(it, R.color.white)
-                    )
-                    card.cardRemoveIcon.setColorFilter(
-                        ContextCompat.getColor(it, R.color.white)
-                    )
-                }
-            } else {
-                // Otherwise color is recycled
-                activity?.let {
-                    card.cardTitle.setTextColor(
-                        it.getColorFromAttr(R.attr.textColor)
-                    )
-                    card.cardBg.setCardBackgroundColor(
-                        it.getColorFromAttr(R.attr.darkBar)
-                    )
-                    card.cdi.setColorFilter(
-                        it.getColorFromAttr(R.attr.white)
-                    )
-                    card.cardRemoveIcon.setColorFilter(
-                        it.getColorFromAttr(R.attr.white)
-                    )
-                }
-            }
+            setCardViewState(key, episodePos)
 
             val pro = getViewPosDur(data.slug, episodePos)
             //println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
@@ -289,10 +241,10 @@ class EpisodeAdapter(
                                     dir.delete()
                                 }
                             }
-                            activity?.runOnUiThread {
+                            activity.runOnUiThread {
                                 DataStore.removeKey(DOWNLOAD_CHILD_KEY, key)
                                 Toast.makeText(
-                                    context,
+                                    activity,
                                     "${child.videoTitle} E${child.episodeIndex + 1} deleted",
                                     Toast.LENGTH_LONG
                                 ).show()
@@ -301,7 +253,7 @@ class EpisodeAdapter(
                         }
 
                         card.cardRemoveIcon.setOnClickListener {
-                            val alertDialog: AlertDialog? = activity?.let {
+                            val alertDialog: AlertDialog = activity.let {
                                 val builder = AlertDialog.Builder(it, R.style.AlertDialogCustom)
                                 builder.apply {
                                     setPositiveButton(
@@ -321,7 +273,7 @@ class EpisodeAdapter(
                                 // Create the AlertDialog
                                 builder.create()
                             }
-                            alertDialog?.show()
+                            alertDialog.show()
                         }
 
                         card.cardTitle.text = title
@@ -344,7 +296,7 @@ class EpisodeAdapter(
                         }
 
                         fun setStatus() {
-                            activity?.runOnUiThread {
+                            activity.runOnUiThread {
                                 if (getStatus()) {
                                     card.cardPauseIcon.setImageResource(R.drawable.netflix_play)
                                 } else {
@@ -357,7 +309,7 @@ class EpisodeAdapter(
                         updateIcon(localBytesTotal, child)
 
                         card.cardPauseIcon.setOnClickListener { v ->
-                            val popup = PopupMenu(context, v)
+                            val popup = PopupMenu(activity, v)
                             if (getStatus()) {
                                 popup.setOnMenuItemClickListener {
                                     when (it.itemId) {
@@ -422,8 +374,55 @@ class EpisodeAdapter(
 
         }
 
+
+        private fun setCardViewState(key: String, episodePos: Int) {
+            if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
+                val last = getLatestSeenEpisode(data)
+                if (last.isFound && last.episodeIndex == episodePos) {
+                    activity.let {
+                        card.cardBg.setCardBackgroundColor(
+                            it.getColorFromAttr(R.attr.colorPrimaryDark)
+                        )
+                    }
+                } else {
+                    activity.let {
+                        card.cardBg.setCardBackgroundColor(
+                            it.getColorFromAttr(R.attr.colorPrimaryDarker)
+                        )
+                    }
+                }
+                activity.let {
+                    card.cardTitle.setTextColor(
+                        ContextCompat.getColor(it, R.color.textColor)
+                    )
+                    card.cdi.setColorFilter(
+                        ContextCompat.getColor(it, R.color.white)
+                    )
+                    card.cardRemoveIcon.setColorFilter(
+                        ContextCompat.getColor(it, R.color.white)
+                    )
+                }
+            } else {
+                // Otherwise color is recycled
+                activity.let {
+                    card.cardTitle.setTextColor(
+                        it.getColorFromAttr(R.attr.textColor)
+                    )
+                    card.cardBg.setCardBackgroundColor(
+                        it.getColorFromAttr(R.attr.darkBar)
+                    )
+                    card.cdi.setColorFilter(
+                        it.getColorFromAttr(R.attr.white)
+                    )
+                    card.cardRemoveIcon.setColorFilter(
+                        it.getColorFromAttr(R.attr.white)
+                    )
+                }
+            }
+        }
+
         private fun castEpisode(data: ShiroApi.AnimePageData, episodeIndex: Int) {
-            val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+            val castContext = CastContext.getSharedInstance(activity.applicationContext)
             castContext.castOptions
             val key = getViewKey(data.slug, episodeIndex)
             thread {
@@ -434,7 +433,7 @@ class EpisodeAdapter(
                 }
                 println("LINK $videoLink")
                 if (videoLink != null) {
-                    activity!!.runOnUiThread {
+                    activity.runOnUiThread {
 
                         val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE)
                         movieMetadata.putString(

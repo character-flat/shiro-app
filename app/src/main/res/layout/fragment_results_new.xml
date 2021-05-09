@@ -147,14 +147,31 @@
 
                         <androidx.constraintlayout.widget.ConstraintLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
+                                android:layout_height="24dp"
                                 android:layout_marginTop="5dp"
                                 android:layout_marginBottom="5dp"
                                 android:id="@+id/episodes_text_holder"
                         >
+
+                            <ImageView
+                                    android:id="@+id/next_episode_btt"
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintHorizontal_bias="0"
+                                    app:layout_constraintEnd_toStartOf="@id/episodes_text"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    android:layout_marginStart="20dp"
+                                    android:src="@drawable/netflix_play"
+                                    android:background="@drawable/video_tap_button"
+                                    app:tint="?attr/white"
+                            >
+                            </ImageView>
+
                             <androidx.cardview.widget.CardView
                                     android:backgroundTint="?attr/textColorGray"
-                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintStart_toEndOf="@+id/next_episode_btt"
                                     app:layout_constraintEnd_toStartOf="@+id/episodes_text"
                                     app:layout_constraintTop_toTopOf="parent"
                                     app:layout_constraintBottom_toBottomOf="parent"

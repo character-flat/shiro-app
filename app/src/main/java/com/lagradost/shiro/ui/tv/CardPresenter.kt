@@ -75,7 +75,7 @@ class CardPresenter : Presenter() {
         view.setBackgroundColor(color)
         view.setInfoAreaBackgroundColor(color)
         val textView = view.findViewById<TextView?>(R.id.title_text)
-        textView.isSingleLine = true
+        //textView.isSingleLine = true
         if (selected) {
             // https://developer.android.com/reference/android/widget/TextView#attr_android:ellipsize
             textView?.ellipsize = TextUtils.TruncateAt.MARQUEE
