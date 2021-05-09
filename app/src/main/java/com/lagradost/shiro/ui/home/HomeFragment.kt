@@ -102,7 +102,11 @@ class HomeFragment : Fragment() {
             if (data?.favorites?.isNotEmpty() == true) {
                 favouriteRoot.visibility = VISIBLE
                 //println(data.favorites!!.map { it?.title?.english})
-                activity?.displayCardData(data.favorites, favouriteScrollView, favorites_text)
+                activity?.displayCardData(
+                    data.favorites?.sortedWith(compareBy { it?.name })?.toList(),
+                    favouriteScrollView,
+                    favorites_text
+                )
             } else {
                 favouriteRoot.visibility = GONE
             }

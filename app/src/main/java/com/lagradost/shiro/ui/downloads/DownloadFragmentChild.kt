@@ -12,6 +12,7 @@ import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import com.lagradost.shiro.*
 import com.lagradost.shiro.ui.PlayerData
@@ -298,6 +299,19 @@ class DownloadFragmentChild : Fragment() {
                         requireContext().getColorFromAttr(
                             R.attr.colorPrimaryMegaDark
                         )
+                    )
+                    card.cardTitle.setTextColor(
+                        ContextCompat.getColor(requireContext(), R.color.textColor)
+                    )
+                    card.cardTitleExtra.setTextColor(
+                        ContextCompat.getColor(requireContext(), R.color.textColor)
+                    )
+                } else {
+                    card.cardTitle.setTextColor(
+                        requireContext().getColorFromAttr(R.attr.textColor)
+                    )
+                    card.cardTitleExtra.setTextColor(
+                        requireContext().getColorFromAttr(R.attr.textColor)
                     )
                 }
 

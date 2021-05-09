@@ -65,6 +65,9 @@
         <item name="android:textColorPrimary">?attr/textColor</item>
         <item name="android:background">?attr/background</item>
         <item name="android:textAllCaps">false</item>
+        <item name="android:colorBackground">?attr/background</item>
+        <item name="textColorAlertDialogListItem">?attr/textColor</item>
+
     </style>
 
     <style name="Theme.LeanbackCustom" parent="Theme.Leanback">

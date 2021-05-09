@@ -31,7 +31,7 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
                     android:focusable="true"
-                    android:background="@drawable/navbar_color"
+                    android:background="?attr/darkBar"
                     app:menu="@menu/bottom_nav_menu"
             />
             <fragment

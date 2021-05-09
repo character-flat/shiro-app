@@ -28,15 +28,15 @@
             <ImageView
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    android:layout_margin="15dp"
+                    android:layout_margin="20dp"
                     android:id="@+id/video_locked_img"
                     android:layout_gravity="end|center_vertical"
                     android:src="@drawable/video_locked">
             </ImageView>
             <ImageView
                     android:id="@+id/video_lock"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
                     android:layout_gravity="end|center_vertical"
                     android:focusable="true"
                     android:clickable="true"
@@ -110,7 +110,7 @@
                 app:layout_constraintLeft_toLeftOf="parent"
                 android:gravity="center"
                 android:textFontWeight="900"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="15dp"
                 android:textColor="@color/white"
                 android:id="@+id/video_title"
                 tools:text="Hello world"
@@ -133,7 +133,7 @@
                     xmlns:card_view="http://schemas.android.com/apk/res-auto"
                     android:layout_width="150dp"
                     android:layout_height="40dp"
-                    android:layout_margin="10dp"
+                    android:layout_margin="15dp"
                     card_view:cardCornerRadius="2dp"
                     android:foreground="@drawable/outline_card"
                     card_view:cardBackgroundColor="@color/black_overlay"
@@ -179,8 +179,8 @@
             </ImageView>
             <ImageView
                     android:id="@+id/video_go_back"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
                     android:layout_gravity="center"
                     android:focusable="true"
                     android:clickable="true"
@@ -377,6 +377,7 @@
                     android:layout_margin="5dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:paddingRight="10dp"
             >
                 <ImageView
                         android:layout_width="30dp"
@@ -388,8 +389,8 @@
                 </ImageView>
                 <ImageView
                         android:id="@+id/resize_player"
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
                         android:layout_gravity="center"
                         android:focusable="true"
                         android:clickable="true"
@@ -406,6 +407,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/bottomMenu"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintVertical_bias="0.3"
         >
             <RelativeLayout
                     tools:visibility="visible"
@@ -417,16 +419,16 @@
             >
 
                 <ImageView
-                        android:layout_marginStart="15dp"
-                        android:layout_marginTop="15dp"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="20dp"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:src="@drawable/exo_controls_fastforward">
                 </ImageView>
                 <ImageView
                         android:id="@+id/skip_op"
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
                         android:focusable="true"
                         android:clickable="true"
                         android:background="@drawable/video_tap_button_always_white"
@@ -443,8 +445,8 @@
             >
 
                 <ImageView
-                        android:layout_marginStart="15dp"
-                        android:layout_marginTop="15dp"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="20dp"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:src="@drawable/ic_baseline_speed_24"
@@ -453,8 +455,8 @@
                 </ImageView>
                 <ImageView
                         android:id="@+id/playback_speed_btt"
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
                         android:focusable="true"
                         android:clickable="true"
                         android:background="@drawable/video_tap_button_always_white"
@@ -477,24 +479,26 @@
           android:clickable="true"
           android:focusable="true"
     />
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
         <RelativeLayout
+                android:layout_gravity="center_vertical"
+                android:gravity="left"
                 tools:alpha="1"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toLeftOf="@+id/centerMenuView"
                 android:id="@+id/progressBarLeftHolder"
-                android:layout_marginEnd="20dp"
-                android:layout_width="wrap_content"
+                android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:alpha="0"
         >
-
+            <!--VERY hacky layout -->
             <ImageView
-                    android:layout_marginBottom="250dp"
+                    android:layout_marginBottom="220dp"
                     android:layout_centerHorizontal="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -508,12 +512,12 @@
                     android:layout_centerVertical="true"
                     android:layout_centerHorizontal="true"
                     android:layout_width="4dp"
-                    android:layout_height="200dp"
+                    android:layout_height="180dp"
                     android:id="@+id/progressBarLeft"
                     android:indeterminate="false"
                     style="@android:style/Widget.Material.ProgressBar.Horizontal"
                     android:max="100"
-                    android:layout_marginEnd="50dp"
+                    android:layout_marginStart="40dp"
                     android:layout_gravity="end|center_vertical"
                     android:progress="100"
                     android:progressDrawable="@drawable/progress_drawable_vertical"
@@ -523,20 +527,21 @@
             </ProgressBar>
         </RelativeLayout>
         <RelativeLayout
+                android:layout_gravity="center_vertical"
+                android:gravity="right"
                 tools:alpha="1"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintLeft_toRightOf="@+id/centerMenuView"
                 android:id="@+id/progressBarRightHolder"
-                android:layout_marginStart="20dp"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:alpha="0"
-        >
+                tools:ignore="RtlHardcoded">
 
             <ImageView
-                    android:layout_marginBottom="250dp"
+                    android:layout_marginBottom="220dp"
                     android:layout_centerHorizontal="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -547,16 +552,15 @@
             </ImageView>
 
             <ProgressBar
-
                     android:layout_centerVertical="true"
                     android:layout_centerHorizontal="true"
                     android:layout_width="4dp"
-                    android:layout_height="200dp"
+                    android:layout_height="180dp"
                     android:id="@+id/progressBarRight"
                     android:indeterminate="false"
                     style="@android:style/Widget.Material.ProgressBar.Horizontal"
                     android:max="100"
-                    android:layout_marginEnd="50dp"
+                    android:layout_marginEnd="40dp"
                     android:layout_gravity="end|center_vertical"
                     android:progress="100"
                     android:progressDrawable="@drawable/progress_drawable_vertical"
@@ -565,17 +569,5 @@
 
             </ProgressBar>
         </RelativeLayout>
-        <View
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                android:id="@+id/centerMenuView"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_marginEnd="110dp"
-                android:layout_marginStart="110dp"
-        >
-        </View>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 </FrameLayout>
