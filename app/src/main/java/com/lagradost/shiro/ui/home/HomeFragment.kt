@@ -259,6 +259,12 @@ class HomeFragment : Fragment() {
         if (ShiroApi.hasThrownError != -1) {
             onHomeErrorCatch(ShiroApi.hasThrownError == 1)
         }
+
+        // This gets overwritten when data is loaded
+        home_swipe_refresh.setOnRefreshListener {
+            home_swipe_refresh.isRefreshing = false
+        }
+
         // CAUSES CRASH ON 6.0.0
         /*main_scroll.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
                val fade = (FADE_SCROLL_DISTANCE - scrollY) / FADE_SCROLL_DISTANCE
