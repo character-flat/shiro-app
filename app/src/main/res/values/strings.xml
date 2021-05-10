@@ -1,10 +1,13 @@
 <resources>
     <string name="changelog">\n
         - New logo by pear#4215\n
+        - New Android TV logo by Yutaa
         - Added episode groups\n
         - Added play latest unseen episode button\n
         - Favorites are now sorted by name\n
-        - Fixed unreadable text in light mode in downloads\n
+        - Made some player buttons hitbox larger\n
+        - Fixed bug which made player buttons un-clickable when opening the player\n
+        - Fixed unreadable text in light mode in downloads and speed selector\n
         - Fixed some more crashes :)\n
     </string>
     <string name="app_name">Shiro Unofficial</string>

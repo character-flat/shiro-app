@@ -320,6 +320,7 @@ class PlayerFragment : Fragment() {
         )
 
         val isClick = !isLocked
+        println("UPDATED LOCK $isClick")
         exo_play.isClickable = isClick
         exo_pause.isClickable = isClick
         exo_ffwd.isClickable = isClick

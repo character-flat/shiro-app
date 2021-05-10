@@ -27,6 +27,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.leanback.app.PlaybackSupportFragment
@@ -50,6 +51,7 @@ import com.google.android.exoplayer2.util.MimeTypes
 import com.lagradost.shiro.ui.PlayerData
 import com.lagradost.shiro.ui.PlayerFragment.Companion.onLeftPlayer
 import com.lagradost.shiro.ui.result.ResultFragment
+import com.lagradost.shiro.utils.AppApi.getViewPosDur
 import com.lagradost.shiro.utils.AppApi.setViewPosDur
 import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.ShiroApi
@@ -72,6 +74,7 @@ class NowPlayingFragment : VideoSupportFragment() {
 
     /** Allows interaction with transport controls, volume keys, media buttons  */
     private lateinit var mediaSession: MediaSessionCompat
+    private var playbackPosition: Long = 0
 
     /** Glue layer between the player and our UI */
     private lateinit var playerGlue: MediaPlayerGlue
@@ -279,6 +282,7 @@ class NowPlayingFragment : VideoSupportFragment() {
                 }
             }
 
+
             val mediaItem = _mediaItem.build()
             val trackSelector = DefaultTrackSelector(requireContext())
             // Disable subtitles
@@ -297,9 +301,22 @@ class NowPlayingFragment : VideoSupportFragment() {
 
             activity?.runOnUiThread {
 
+                if (data != null || (data?.slug != null && episodeIndex != null)) {
+                    val pro = getViewPosDur(
+                        if (data != null) data!!.slug else data?.slug!!,
+                        episodeIndex!!
+                    )
+                    playbackPosition =
+                        if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
+                            pro.pos
+                        } else {
+                            0L
+                        }
+                }
                 exoPlayer = _exoPlayer.build().apply {
                     //playWhenReady = isPlayerPlaying
                     //seekTo(currentWindow, playbackPosition)
+                    seekTo(0, playbackPosition)
                     setMediaItem(mediaItem, false)
                     prepare()
                 }
@@ -424,6 +441,18 @@ class NowPlayingFragment : VideoSupportFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view.setBackgroundColor(Color.BLACK)
+        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
+
+    override fun onStart() {
+        super.onStart()
+        if (data != null && episodeIndex != null) {
+            val pro = getViewPosDur(data!!.slug, episodeIndex!!)
+            if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
+                playbackPosition = pro.pos
+            }
+        }
     }
 
     override fun onResume() {
