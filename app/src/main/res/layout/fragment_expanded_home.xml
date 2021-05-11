@@ -74,6 +74,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/expanded_card_list_view"
+                tools:listitem="@layout/home_card"
         >
 
         </com.lagradost.shiro.ui.AutofitRecyclerView>

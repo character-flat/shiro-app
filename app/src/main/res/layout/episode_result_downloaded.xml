@@ -12,7 +12,7 @@
             android:layout_height="70dp"
             android:layout_marginBottom="5dp"
             android:elevation="10dp"
-            app:cardCornerRadius="4dp"
+            app:cardCornerRadius="@dimen/card_corner_radius"
             android:id="@+id/cardBg"
             app:cardBackgroundColor="?attr/darkBar">
         <!-- USING CROP RATIO (182/268), centerCrop for fill -->

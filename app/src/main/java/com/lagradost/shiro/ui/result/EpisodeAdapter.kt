@@ -171,7 +171,9 @@ class EpisodeAdapter(
                     DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
                 }
                 // Hack, but works
-                (activity.findViewById<RecyclerView>(R.id.title_season_cards).adapter as MasterEpisodeAdapter).notifyItemChanged(parentPosition)
+                (activity.findViewById<RecyclerView>(R.id.title_season_cards).adapter as MasterEpisodeAdapter).notifyItemChanged(
+                    parentPosition
+                )
                 //resView.adapter?.notifyDataSetChanged()
                 //setCardViewState(key, episodePos)
                 return@setOnLongClickListener true
@@ -365,9 +367,12 @@ class EpisodeAdapter(
                             }
                         }
                         // TODO Doesn't work when resuming
-                        DownloadManager.downloadEvent += {
-                            resView.adapter?.notifyItemChanged(position)
-                        }
+                        // Warning: this somehow causes huge issues in other places in the app for no good reason
+                        /*DownloadManager.downloadEvent += {
+                            try {
+                                //resView.adapter?.notifyItemChanged(position)
+                            } catch (e: Exception){}
+                        }*/
                     }
                 }
             }

@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.*
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
@@ -18,6 +19,7 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.AutofitRecyclerView
 import com.lagradost.shiro.ui.BookmarkedTitle
+import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppApi.fixCardTitle
 import com.lagradost.shiro.utils.AppApi.settingsManager
@@ -32,26 +34,28 @@ import kotlin.math.roundToInt
 
 class ResAdapter(
     context: Context,
-    animeList: ArrayList<ShiroApi.ShiroSearchResponseShow>,
-    resView: AutofitRecyclerView
+    animeList: ArrayList<ShiroApi.CommonAnimePage>,
+    resView: AutofitRecyclerView,
+    forceDisableCompact: Boolean = false
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var cardList = animeList
     var context: Context? = context
     private var resView: AutofitRecyclerView? = resView
+    private val compactView = settingsManager?.getBoolean("compact_search_enabled", true) == true && !forceDisableCompact
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val compactView = settingsManager?.getBoolean("compact_search_enabled", true) == true
         val hideDubbed = settingsManager?.getBoolean("hide_dubbed", false) == true
         if (hideDubbed) {
-            cardList = cardList.filter { !it.name.endsWith("Dubbed") } as ArrayList<ShiroApi.ShiroSearchResponseShow>
+            cardList = cardList.filter { !it.name.endsWith("Dubbed") } as ArrayList<ShiroApi.CommonAnimePage>
         }
 
         val layout = if (compactView) R.layout.search_result_compact else R.layout.search_result
         return CardViewHolder(
             LayoutInflater.from(parent.context).inflate(layout, parent, false),
             context!!,
-            resView!!
+            resView!!,
+            compactView
         )
     }
 
@@ -69,12 +73,12 @@ class ResAdapter(
     }
 
     class CardViewHolder
-    constructor(itemView: View, _context: Context, resView: AutofitRecyclerView) : RecyclerView.ViewHolder(itemView) {
-        private val compactView = settingsManager?.getBoolean("compact_search_enabled", true) == true
+    constructor(itemView: View, _context: Context, resView: AutofitRecyclerView, private val compactView: Boolean) :
+        RecyclerView.ViewHolder(itemView) {
         val context = _context
         val cardView: ImageView = itemView.imageView
         private val coverHeight: Int = if (compactView) 80.toPx else (resView.itemWidth / 0.68).roundToInt()
-        fun bind(card: ShiroApi.ShiroSearchResponseShow) {
+        fun bind(card: ShiroApi.CommonAnimePage) {
             if (compactView) {
                 // COPIED -----------------------------------------
                 var isBookmarked = DataStore.containsKey(BOOKMARK_KEY, card.slug)
@@ -117,8 +121,6 @@ class ResAdapter(
                         ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                         ?.add(R.id.homeRoot, ResultFragment.newInstance(card.slug))
                         ?.commitAllowingStateLoss()
-
-
                 }
             }
 
@@ -146,8 +148,9 @@ class ResAdapter(
             val glideUrl =
                 GlideUrl(getFullUrlCdn(card.image)) { ShiroApi.currentHeaders }
             context.let {
-                Glide.with(it)
+                GlideApp.with(it)
                     .load(glideUrl)
+                    .transition(DrawableTransitionOptions.withCrossFade(100))
                     .into(cardView)
             }
 

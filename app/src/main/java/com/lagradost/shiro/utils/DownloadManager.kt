@@ -322,8 +322,8 @@ object DownloadManager {
                             "/" + censorFilename("E${info.episodeIndex + 1} $title") + ".mp4"
 
 
-                val name =
-                    if (isMovie) censorFilename(mainTitle) + ".mp4" else censorFilename("E${info.episodeIndex + 1} $title") + ".mp4"
+                //val name =
+                //    if (isMovie) censorFilename(mainTitle) + ".mp4" else censorFilename("E${info.episodeIndex + 1} $title") + ".mp4"
 
                 val posterPath = path/*.replace("/Anime/", "/Posters/")*/.replace(".mp4", ".jpg")
                 //downloadPoster(posterPath, getFullUrlCdn(info.animeData.image))
@@ -576,8 +576,8 @@ object DownloadManager {
         progress: Long,
         total: Long,
         progressPerSec: Long,
-        type: DownloadManager.DownloadType,
-        info: DownloadManager.DownloadInfo
+        type: DownloadType,
+        info: DownloadInfo
     ) {
         val isMovie: Boolean = info.animeData.episodes?.size ?: 0 == 1 && info.animeData.status == "finished"
 

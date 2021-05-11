@@ -78,7 +78,7 @@ class SearchFragment : Fragment() {
                                 if (hideDubbed) data.filter { !it.name.endsWith("Dubbed") } else data
                             progress_bar?.visibility = View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
                             (cardSpace?.adapter as ResAdapter?)?.cardList =
-                                filteredData as ArrayList<ShiroApi.ShiroSearchResponseShow>
+                                filteredData as ArrayList<ShiroApi.CommonAnimePage>
                             (cardSpace?.adapter as ResAdapter?)?.notifyDataSetChanged()
                         }
                     }
@@ -103,7 +103,7 @@ class SearchFragment : Fragment() {
                                 val filteredData =
                                     if (hideDubbed) data.filter { !it.name.endsWith("Dubbed") } else data
                                 (cardSpace?.adapter as ResAdapter?)?.cardList =
-                                    filteredData as ArrayList<ShiroApi.ShiroSearchResponseShow>
+                                    filteredData as ArrayList<ShiroApi.CommonAnimePage>
                                 (cardSpace?.adapter as ResAdapter?)?.notifyDataSetChanged()
                             }
                         }

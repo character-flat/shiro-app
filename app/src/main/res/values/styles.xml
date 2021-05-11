@@ -19,9 +19,12 @@
         <item name="colorSurface">?attr/darkBar</item>
         <item name="bottomNavigationStyle">@style/Widget.App.BottomNavigationView</item>
         <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimarySecond">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorOnPrimary">@color/colorAccent</item>
+        <item name="textColorAlertDialogListItem">?attr/textColor</item>
+        <item name="actionMenuTextColor">?attr/textColor</item>
 
         <item name="android:windowBackground">@drawable/splash_background</item>
         <item name="colorPrimaryMegaDark">@color/colorPrimaryMegaDark</item>
@@ -48,7 +51,7 @@
         <!-- prefrencescreen switch color -->
         <item name="android:colorForeground">?attr/white</item>
         <item name="android:colorControlHighlight">?attr/white</item>
-        <item name="android:alertDialogTheme">@style/AlertDialogCustom</item>
+        <item name="alertDialogTheme">@style/AlertDialogCustom</item>
     </style>
 
     <style name="Widget.App.BottomNavigationView" parent="Widget.Design.BottomNavigationView">
@@ -68,7 +71,8 @@
         <item name="android:colorBackground">?attr/background</item>
         <item name="textColorAlertDialogListItem">?attr/textColor</item>
         <item name="colorControlNormal">?attr/textColor</item>
-        <item name="colorControlActivated">?attr/colorPrimary</item>
+        <!-- colorPrimarySecond used because colorPrimary fails for no reason -->
+        <item name="colorControlActivated">?attr/colorPrimarySecond</item>
     </style>
 
     <style name="Theme.LeanbackCustom" parent="Theme.Leanback">
@@ -96,6 +100,7 @@
         <item name="colorPrimaryDarker">#212C70</item>
         <item name="colorAccent">#007dfe</item>
         <item name="colorOnPrimary">#007dfe</item>
+        <item name="colorPrimarySecond">#3F51B5</item>
     </style>
 
     <style name="LightMode">

@@ -232,8 +232,6 @@ class ShiroApi {
             }
         }
 
-        //search via http get request, NOT INSTANT
-        // ONLY PAGE 1
         fun quickSearch(query: String, usedToken: Token? = currentToken): List<ShiroSearchResponseShow>? {
             try {
                 // Tags and years can be added

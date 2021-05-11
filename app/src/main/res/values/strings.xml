@@ -1,7 +1,7 @@
 <resources>
     <string name="changelog">\n
         - New logo by pear#4215\n
-        - New Android TV logo by Yutaa
+        - New Android TV logo by Yutaa\n
         - Added episode groups\n
         - Added play latest unseen episode button\n
         - Favorites are now sorted by name\n

@@ -6,7 +6,6 @@
             android:id="@+id/navigation_home"
             android:icon="@drawable/home_white"
             android:title="@string/title_home"/>
-
     <item
             android:id="@+id/navigation_search"
             android:icon="@drawable/search_white"

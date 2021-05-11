@@ -6,9 +6,6 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
         android:background="@drawable/outline_background"
-        android:focusable="true"
-        android:clickable="true"
-        android:id="@+id/search_result_root"
 
 >
     <androidx.cardview.widget.CardView
@@ -17,17 +14,18 @@
             android:layout_height="match_parent"
             android:layout_marginBottom="2dp"
             android:elevation="10dp"
-            app:cardCornerRadius="2dp"
+            app:cardCornerRadius="@dimen/card_corner_radius"
             app:cardBackgroundColor="?attr/darkBar"
     >
         <!-- USING CROP RATIO (182/268), centerCrop for fill -->
         <ImageView
-                android:duplicateParentState="true"
                 android:id="@+id/imageView"
+                android:focusable="true"
+                android:clickable="true"
+                android:foreground="?android:attr/selectableItemBackgroundBorderless"
                 android:scaleType="centerCrop"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:foreground="?android:attr/selectableItemBackgroundBorderless"
         />
         <TextView
                 android:layout_width="match_parent"

@@ -212,7 +212,7 @@ object AppApi {
                     R.anim.exit_to_right
                 )
                 .add(
-                    android.R.id.content,
+                    R.id.homeRoot,
                     ExpandedHomeFragment.newInstance(
                         mapper.writeValueAsString(data),
                         textView.text.toString()

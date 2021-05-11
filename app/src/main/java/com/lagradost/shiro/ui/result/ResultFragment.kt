@@ -396,7 +396,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
         val save = settingsManager!!.getBoolean("save_history", true)
         val data = if (isDefaultData) data else dataOther
         if (data?.episodes?.isNotEmpty() == true) {
-            if (title_season_cards.adapter == null) {
+            if (title_season_cards?.adapter == null) {
                 val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = activity?.let {
                     MasterEpisodeAdapter(
                         it,

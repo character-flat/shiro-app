@@ -348,7 +348,7 @@ class MainActivity : AppCompatActivity() {
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
         navController = findNavController(R.id.nav_host_fragment)
         navView.setupWithNavController(navController!!)
-        navView.itemBackground = ColorDrawable(getColorFromAttr(R.attr.darkBar))
+        //navView.itemBackground = ColorDrawable(getColorFromAttr(R.attr.darkBar))
 
         /*navView.setOnKeyListener { v, keyCode, event ->
             println("$keyCode $event")
