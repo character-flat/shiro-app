@@ -191,8 +191,8 @@ class ShiroApi {
         fun getVideoLink(id: String): List<ExtractorLink>? {
             println("GETTING URL FOR $id")
             return try {
-                val url = Vidstream().getExtractorUrl(id)
-                val urls = Vidstream().getUrl(url).sortedBy { it.quality }
+                //val url = Vidstream().getExtractorUrl(id)
+                val urls = Vidstream().getUrl(id).sortedBy { -it.quality }
                 println("Extracted URLS: $urls")
                 return urls
             } catch (e: Exception) {

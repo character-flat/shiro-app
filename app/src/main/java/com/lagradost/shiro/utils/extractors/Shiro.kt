@@ -19,6 +19,7 @@ class Shiro : ExtractorApi() {
         Jsoup.parse(res).select("source").firstOrNull()?.attr("src")?.replace("&amp;", "?")?.let {
             return listOf(
                 ExtractorLink(
+                    name,
                     it.replace(" ", "%20"),
                     "https://cherry.subsplea.se/",
                     // UHD to give top priority

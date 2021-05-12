@@ -1,10 +1,12 @@
 package com.lagradost.shiro.utils
 
+import com.lagradost.shiro.utils.extractors.MixDrop
 import com.lagradost.shiro.utils.extractors.Mp4Upload
 import com.lagradost.shiro.utils.extractors.Shiro
 import com.lagradost.shiro.utils.extractors.StreamTape
 
 data class ExtractorLink(
+    val name: String,
     val url: String,
     val referer: String,
     val quality: Int
@@ -18,7 +20,7 @@ enum class Qualities(var value: Int) {
     UHD(3) // 4k
 }
 
-private val packedRegex = Regex("""eval\(function\(p,a,c,k,e,.*\)\)\)""")
+private val packedRegex = Regex("""eval\(function\(p,a,c,k,e,.*\)\)""")
 fun getPacked(string: String): String? {
     return packedRegex.find(string)?.value
 }
@@ -32,9 +34,14 @@ val APIS: Array<ExtractorApi> = arrayOf(
     //AllProvider(),
     Shiro(),
     Mp4Upload(),
-    StreamTape()
+    StreamTape(),
+    MixDrop()
 )
 
+
+fun httpsify(url: String): String {
+    return if (url.startsWith("//")) "https:$url" else url
+}
 
 abstract class ExtractorApi {
     open val name: String = "NONE"

@@ -171,6 +171,9 @@ class PlayerFragment : Fragment() {
     private val doubleTapTime = settingsManager!!.getInt("dobule_tap_time", 10)
     private val fastForwardTime = settingsManager!!.getInt("fast_forward_button_time", 10)
 
+    private var selectedSource: Int = 0
+    private var sources: List<ExtractorLink>? = null
+
     private val resizeModes = listOf(
         AspectRatioFrameLayout.RESIZE_MODE_FIT,
         AspectRatioFrameLayout.RESIZE_MODE_FILL,
@@ -268,10 +271,15 @@ class PlayerFragment : Fragment() {
         return data?.card?.episodes?.get(data?.episodeIndex!!)//data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.episodeIndex!!)
     }
 
+    private fun getCurrentUrls(): List<ExtractorLink>? {
+        sources = getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { getVideoLink(it) }
+        return sources
+    }
+
     private fun getCurrentUrl(): ExtractorLink? {
         println("MAN::: " + data?.url)
-        if (data?.url != null) return ExtractorLink(data?.url!!, "", Qualities.Unknown.value)
-        return getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { getVideoLink(it) }?.getOrNull(0)
+        if (data?.url != null) return ExtractorLink("Local", data?.url!!, "", Qualities.Unknown.value)
+        return getCurrentUrls()?.getOrNull(selectedSource)
     }
 
     private fun getCurrentTitle(): String {
@@ -761,8 +769,30 @@ class PlayerFragment : Fragment() {
             }
             dialog = builder.create()
             dialog.show()
-
         }
+
+        sources_btt.setOnClickListener {
+            lateinit var dialog: AlertDialog
+            sources?.let {
+                val speedsText = sources!!.map { it.name }
+
+                val builder = AlertDialog.Builder(requireContext(), R.style.AlertDialogCustom)
+                builder.setTitle("Pick source")
+                builder.setSingleChoiceItems(speedsText.toTypedArray(), selectedSource) { _, which ->
+                    //val speed = speedsText[which]
+                    //Toast.makeText(requireContext(), "$speed selected.", Toast.LENGTH_SHORT).show()
+                    selectedSource = which
+                    savePos()
+                    exoPlayer.release()
+                    initPlayer()
+
+                    dialog.dismiss()
+                }
+                dialog = builder.create()
+                dialog.show()
+            }
+        }
+
 
         if (skipOpEnabled) {
             skip_op_holder.visibility = VISIBLE
@@ -817,6 +847,7 @@ class PlayerFragment : Fragment() {
         view?.setOnTouchListener { _, _ -> return@setOnTouchListener true } // VERY IMPORTANT https://stackoverflow.com/questions/28818926/prevent-clicking-on-a-button-in-an-activity-while-showing-a-fragment
         thread {
             val currentUrl = getCurrentUrl()
+            println(currentUrl?.name)
             if (currentUrl == null) {
                 activity?.runOnUiThread {
                     Toast.makeText(activity, "Error getting link", LENGTH_LONG).show()
@@ -825,7 +856,6 @@ class PlayerFragment : Fragment() {
             } else {
                 try {
                     activity?.runOnUiThread {
-
                         val isOnline =
                             currentUrl.url.startsWith("https://") || currentUrl.url.startsWith("http://")
 
@@ -845,6 +875,7 @@ class PlayerFragment : Fragment() {
                                     /*FastAniApi.currentHeaders?.forEach {
                                         dataSource.setRequestProperty(it.key, it.value)
                                     }*/
+                                    println("REFERER ${currentUrl.referer}")
                                     dataSource.setRequestProperty("Referer", currentUrl.referer)
                                     dataSource
                                 } else {
@@ -852,7 +883,6 @@ class PlayerFragment : Fragment() {
                                 }
                             }
                         }
-
 
                         if (data?.card != null || (data?.slug != null && data?.episodeIndex != null && data?.seasonIndex != null)) {
                             val pro = getViewPosDur(
@@ -872,6 +902,7 @@ class PlayerFragment : Fragment() {
                         if (canPlayNextEpisode()) {
                             next_episode_btt?.visibility = VISIBLE
                             next_episode_btt?.setOnClickListener {
+                                selectedSource = 0
                                 if (isLoadingNextEpisode) return@setOnClickListener
                                 isLoadingNextEpisode = true
                                 savePos()

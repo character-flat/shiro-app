@@ -2,10 +2,14 @@ package com.lagradost.shiro.utils.extractors
 
 import com.lagradost.shiro.utils.*
 
-class Mp4Upload : ExtractorApi() {
-    override val name: String = "Mp4Upload"
-    override val mainUrl: String = "https://www.mp4upload.com"
-    private val srcRegex = Regex("""player\.src\("(.*?)"""")
+class MixDrop : ExtractorApi() {
+    override val name: String = "MixDrop"
+    override val mainUrl: String = "https://mixdrop.co"
+    private val srcRegex = Regex("""wurl.*?=.*?"(.*?)";""")
+
+    override fun getExtractorUrl(id: String): String {
+        return "$mainUrl/e/$id"
+    }
 
     override fun getUrl(url: String, referer: String?): List<ExtractorLink>? {
         try {
@@ -15,7 +19,7 @@ class Mp4Upload : ExtractorApi() {
                         return listOf(
                             ExtractorLink(
                                 name,
-                                link,
+                                httpsify(link),
                                 url,
                                 Qualities.Unknown.value
                             )
