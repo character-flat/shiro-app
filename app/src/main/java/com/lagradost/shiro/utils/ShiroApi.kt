@@ -11,8 +11,8 @@ import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.LastEpisodeInfo
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.utils.AppApi.md5
+import com.lagradost.shiro.utils.extractors.Vidstream
 import khttp.structures.cookie.CookieJar
-import org.jsoup.Jsoup
 import java.lang.Exception
 import java.net.URLEncoder
 import kotlin.concurrent.thread
@@ -188,14 +188,13 @@ class ShiroApi {
         }
 
 
-        fun getVideoLink(id: String): String? {
+        fun getVideoLink(id: String): List<ExtractorLink>? {
+            println("GETTING URL FOR $id")
             return try {
-                println("Getting video link for $id")
-                val headers = mapOf("Referer" to "https://shiro.is/")
-                val res = khttp.get("https://cherry.subsplea.se/$id", timeout = 120.0, headers = headers).text
-                val document = Jsoup.parse(res)
-                val url = document.select("source").firstOrNull()?.attr("src")?.replace("&amp;", "?")
-                url
+                val url = Vidstream().getExtractorUrl(id)
+                val urls = Vidstream().getUrl(url).sortedBy { it.quality }
+                println("Extracted URLS: $urls")
+                return urls
             } catch (e: Exception) {
                 println("Failed to load video URL}")
                 null

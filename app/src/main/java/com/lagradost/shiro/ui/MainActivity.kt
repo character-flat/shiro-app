@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Resources
-import android.graphics.drawable.ColorDrawable
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -26,24 +25,23 @@ import androidx.preference.PreferenceManager
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
+import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
+import com.lagradost.shiro.ui.player.PlayerEventType
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
 import com.lagradost.shiro.utils.AniListApi.Companion.initGetUser
 import com.lagradost.shiro.utils.AppApi.changeStatusBarState
 import com.lagradost.shiro.utils.AppApi.checkWrite
-import com.lagradost.shiro.utils.AppApi.getColorFromAttr
 import com.lagradost.shiro.utils.AppApi.hasPIPPermission
 import com.lagradost.shiro.utils.AppApi.hideSystemUI
 import com.lagradost.shiro.utils.AppApi.init
-import com.lagradost.shiro.utils.AppApi.md5
 import com.lagradost.shiro.utils.AppApi.popCurrentPage
 import com.lagradost.shiro.utils.AppApi.requestRW
 import com.lagradost.shiro.utils.AppApi.shouldShowPIPMode
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
-import com.lagradost.shiro.utils.ShiroApi.Companion.getDonorStatus
+import com.lagradost.shiro.utils.extractors.Vidstream
 import kotlin.concurrent.thread
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
@@ -348,6 +346,7 @@ class MainActivity : AppCompatActivity() {
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
         navController = findNavController(R.id.nav_host_fragment)
         navView.setupWithNavController(navController!!)
+
         //navView.itemBackground = ColorDrawable(getColorFromAttr(R.attr.darkBar))
 
         /*navView.setOnKeyListener { v, keyCode, event ->

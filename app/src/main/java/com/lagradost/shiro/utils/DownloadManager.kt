@@ -345,7 +345,7 @@ object DownloadManager {
                 } catch (_ex: Exception) {
                     println("FAILED:::$_ex")
                 }
-                val url = ep?.videos?.get(0)?.let { getVideoLink(it.video_id) }
+                val url = ep?.videos?.get(0)?.let { getVideoLink(it.video_id)?.get(0) }?.url
 
                 val _url = URL(url)
 

@@ -448,7 +448,7 @@ class EpisodeAdapter(
                         movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data.name)
                         movieMetadata.addImage(WebImage(Uri.parse(getFullUrlCdn(data.image))))
 
-                        val mediaInfo = MediaInfo.Builder(videoLink)
+                        val mediaInfo = MediaInfo.Builder(videoLink.getOrNull(0)?.url)
                             .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
                             .setContentType(MimeTypes.VIDEO_UNKNOWN)
                             .setMetadata(movieMetadata).build()

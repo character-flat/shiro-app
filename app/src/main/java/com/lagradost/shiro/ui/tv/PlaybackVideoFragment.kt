@@ -39,7 +39,7 @@ class PlaybackVideoFragment : VideoSupportFragment() {
         //mTransportControlGlue.seekProvider =
 
         thread {
-            val url = data.episodes?.get(episode)?.videos?.getOrNull(0)?.let { getVideoLink(it.video_id) }
+            val url = data.episodes?.get(episode)?.videos?.getOrNull(0)?.let { getVideoLink(it.video_id) }?.get(0)?.url
             println("$url $episode")
             if (url != null) {
                 playerAdapter.setDataSource(Uri.parse(url))

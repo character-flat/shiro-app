@@ -13,16 +13,15 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.content.ContextCompat
-import androidx.preference.PreferenceManager
 import com.lagradost.shiro.*
-import com.lagradost.shiro.ui.PlayerData
+import com.lagradost.shiro.ui.player.PlayerData
 import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
 import kotlinx.android.synthetic.main.fragment_download_child.*
 import java.io.File
 
 import com.lagradost.shiro.ui.MainActivity
-import com.lagradost.shiro.ui.PlayerFragment
-import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
+import com.lagradost.shiro.ui.player.PlayerFragment
+import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.fixEpTitle
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
@@ -37,7 +36,6 @@ import com.lagradost.shiro.utils.DOWNLOAD_PARENT_KEY
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.DownloadManager
 import com.lagradost.shiro.utils.VIEWSTATE_KEY
-import kotlinx.android.synthetic.main.episode_result_downloaded.*
 
 const val SLUG = "slug"
 

@@ -48,9 +48,8 @@ import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.MimeTypes
-import com.lagradost.shiro.ui.PlayerData
-import com.lagradost.shiro.ui.PlayerFragment.Companion.onLeftPlayer
-import com.lagradost.shiro.ui.result.ResultFragment
+import com.lagradost.shiro.ui.player.PlayerData
+import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onLeftPlayer
 import com.lagradost.shiro.utils.AppApi.getViewPosDur
 import com.lagradost.shiro.utils.AppApi.setViewPosDur
 import com.lagradost.shiro.utils.DataStore.mapper
@@ -418,7 +417,7 @@ class NowPlayingFragment : VideoSupportFragment() {
     private fun getCurrentUrl(): String? {
         //println("MAN::: " + data?.url)
         //if (data?.url != null) return data?.url!!
-        return getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { getVideoLink(it) }
+        return getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { getVideoLink(it) }?.get(0)?.url
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
