@@ -108,6 +108,7 @@ class EpisodeAdapter(
 
         // Downloads is only updated when re-bound!
         fun bind(position: Int) {
+            println("START $start pos $position")
             val episodePos = start + position
             val key = getViewKey(data.slug, episodePos)
 
@@ -158,7 +159,7 @@ class EpisodeAdapter(
                             intent.putExtra("position", episodePos)
                             tvActivity?.startActivity(intent)
                         } else {
-                            activity.loadPlayer(start + episodePos, 0L, data)
+                            activity.loadPlayer(episodePos, 0L, data)
                         }
                     }
                 }

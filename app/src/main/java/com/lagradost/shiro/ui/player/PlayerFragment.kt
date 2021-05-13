@@ -1,5 +1,6 @@
 package com.lagradost.shiro.ui.player
 
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
@@ -27,8 +28,6 @@ import android.database.ContentObserver
 import android.media.AudioManager
 import android.net.Uri
 import android.os.*
-import androidx.transition.Fade
-import androidx.transition.Transition
 import android.view.*
 import android.view.View.*
 import android.view.animation.AccelerateInterpolator
@@ -36,7 +35,7 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AlertDialog
-import androidx.transition.TransitionManager
+import androidx.transition.*
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
@@ -52,6 +51,7 @@ import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
+import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppApi.getColorFromAttr
 import com.lagradost.shiro.utils.AppApi.getViewKey
@@ -268,6 +268,7 @@ class PlayerFragment : Fragment() {
     }
 
     private fun getCurrentEpisode(): ShiroApi.ShiroEpisodes? {
+        println(data!!.episodeIndex)
         return data?.card?.episodes?.get(data?.episodeIndex!!)//data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.episodeIndex!!)
     }
 
@@ -433,6 +434,15 @@ class PlayerFragment : Fragment() {
         isShowing = !isShowing
 
         click_overlay?.visibility = if (isShowing) GONE else VISIBLE
+
+        // bottom_player_bar
+        //bottom_player_bar.y += if (isShowing) (-200).toPx else 0
+        val playerBarMove = if (isShowing) 0f else 200.toPx.toFloat()
+        ObjectAnimator.ofFloat(bottom_player_bar, "translationY", playerBarMove).apply {
+            duration = 200
+            start()
+        }
+
 
         val fadeTo = if (isShowing) 1f else 0f
         val fadeAnimation = AlphaAnimation(1f - fadeTo, fadeTo)

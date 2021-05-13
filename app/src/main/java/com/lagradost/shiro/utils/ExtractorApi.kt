@@ -1,9 +1,6 @@
 package com.lagradost.shiro.utils
 
-import com.lagradost.shiro.utils.extractors.MixDrop
-import com.lagradost.shiro.utils.extractors.Mp4Upload
-import com.lagradost.shiro.utils.extractors.Shiro
-import com.lagradost.shiro.utils.extractors.StreamTape
+import com.lagradost.shiro.utils.extractors.*
 
 data class ExtractorLink(
     val name: String,
@@ -13,8 +10,8 @@ data class ExtractorLink(
 )
 
 enum class Qualities(var value: Int) {
-    Unknown(-1),
-    SD(0), // 360p - 480p
+    Unknown(0),
+    SD(-1), // 360p - 480p
     HD(1), // 720p
     FullHd(2), // 1080p
     UHD(3) // 4k
@@ -35,7 +32,8 @@ val APIS: Array<ExtractorApi> = arrayOf(
     Shiro(),
     Mp4Upload(),
     StreamTape(),
-    MixDrop()
+    MixDrop(),
+    XStreamCdn()
 )
 
 
