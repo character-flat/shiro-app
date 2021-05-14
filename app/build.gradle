@@ -122,10 +122,10 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.11.3"
 
     // Exoplayer
-    implementation 'com.google.android.exoplayer:exoplayer:2.13.0'
-    implementation 'com.google.android.exoplayer:extension-cast:2.13.0'
-    implementation "com.google.android.exoplayer:extension-mediasession:2.13.0"
-    implementation "com.google.android.exoplayer:extension-leanback:2.13.0"
+    implementation 'com.google.android.exoplayer:exoplayer:2.14.0'
+    implementation 'com.google.android.exoplayer:extension-cast:2.14.0'
+    implementation "com.google.android.exoplayer:extension-mediasession:2.14.0"
+    implementation "com.google.android.exoplayer:extension-leanback:2.14.0"
 
     // Bug reports
     implementation "ch.acra:acra-core:5.7.0"

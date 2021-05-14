@@ -983,7 +983,7 @@ class PlayerFragment : Fragment() {
                         player_speed_text?.text = "Speed (${playbackSpeed}x)".replace(".0x","x")
 
                         //https://stackoverflow.com/questions/47731779/detect-pause-resume-in-exoplayer
-                        exoPlayer.addListener(object : Player.DefaultEventListener() {
+                        exoPlayer.addListener(object : Player.Listener {
                             @SuppressLint("NewApi")
                             override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
                                 updatePIPModeActions()

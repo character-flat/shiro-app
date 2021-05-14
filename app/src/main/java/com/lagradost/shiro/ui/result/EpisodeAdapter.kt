@@ -17,8 +17,10 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.cast.CastPlayer
 import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.gms.cast.MediaInfo
+import com.google.android.gms.cast.MediaLoadOptions
 import com.google.android.gms.cast.MediaMetadata
 import com.google.android.gms.cast.MediaQueueItem
+import com.google.android.gms.cast.MediaStatus.REPEAT_MODE_REPEAT_ALL
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
 import com.google.android.gms.common.images.WebImage
@@ -43,6 +45,7 @@ import com.lagradost.shiro.utils.AppApi.settingsManager
 import kotlinx.android.synthetic.main.episode_result_compact.view.*
 import kotlinx.android.synthetic.main.episode_result_compact.view.cardBg
 import kotlinx.android.synthetic.main.episode_result_compact.view.cardTitle
+import org.json.JSONObject
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -357,7 +360,11 @@ class EpisodeAdapter(
                                                 null
                                             )
                                             if (child != null) {
-                                                DownloadManager.downloadEpisode(getDownload(), child.downloadFileLink, true)
+                                                DownloadManager.downloadEpisode(
+                                                    getDownload(),
+                                                    child.downloadFileLink,
+                                                    true
+                                                )
                                             }
                                         }
                                         R.id.res_stopdload -> {
@@ -473,13 +480,13 @@ class EpisodeAdapter(
             castContext.castOptions
             val key = getViewKey(data.slug, episodeIndex)
             thread {
-                val videoLink = data.episodes?.get(episodeIndex)?.videos?.getOrNull(0)?.video_id.let { it1 ->
+                val videoLinks = data.episodes?.get(episodeIndex)?.videos?.getOrNull(0)?.video_id.let { it1 ->
                     getVideoLink(
                         it1!!
                     )
                 }
-                println("LINK $videoLink")
-                if (videoLink != null) {
+                println("LINK $videoLinks")
+                if (videoLinks != null) {
                     activity.runOnUiThread {
 
                         val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE)
@@ -490,19 +497,23 @@ class EpisodeAdapter(
                         movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data.name)
                         movieMetadata.addImage(WebImage(Uri.parse(getFullUrlCdn(data.image))))
 
-                        val mediaInfo = MediaInfo.Builder(videoLink.getOrNull(0)?.url)
-                            .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
-                            .setContentType(MimeTypes.VIDEO_UNKNOWN)
-                            .setMetadata(movieMetadata).build()
+                        val mediaItems = videoLinks.map {
+                            MediaQueueItem.Builder(
+                                MediaInfo.Builder(it.url)
+                                    .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
+                                    .setContentType(MimeTypes.VIDEO_UNKNOWN)
+                                    .setCustomData(JSONObject().put("data", it.name))
+                                    .setMetadata(movieMetadata)
+                                    .build()
+                            ).build()
+                        }.toTypedArray()
 
-                        val mediaItems = arrayOf(MediaQueueItem.Builder(mediaInfo).build())
                         val castPlayer = CastPlayer(castContext)
-
                         castPlayer.loadItems(
                             mediaItems,
                             0,
                             DataStore.getKey(VIEW_POS_KEY, key, 0L)!!,
-                            Player.REPEAT_MODE_OFF
+                            REPEAT_MODE_REPEAT_ALL
                         )
                     }
 

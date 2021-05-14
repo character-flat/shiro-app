@@ -6,10 +6,12 @@
         <item>@id/cast_button_type_forward_30_seconds</item>
     </array>
     <array name="cast_expanded_controller_control_buttons">
-        <item>@id/cast_button_type_custom</item>
+        <!-- Fake sources button -->
+        <item>@id/cast_button_type_rewind_30_seconds</item>
         <item>@id/cast_button_type_rewind_30_seconds</item>
         <item>@id/cast_button_type_forward_30_seconds</item>
-        <item>@id/cast_button_type_mute_toggle</item>
+        <!-- Actually fake to make the skip op button the same style -->
+        <item>@id/cast_button_type_forward_30_seconds</item>
     </array>
     <string-array name="Themes">
         <item>Black</item>
