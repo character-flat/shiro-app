@@ -122,11 +122,11 @@ class EpisodeAdapter(
                 card.cdi.visibility = View.VISIBLE
                 card.cdi.setOnClickListener {
                     thread {
-                        val sources = data.episodes?.get(episodePos)?.videos?.getOrNull(0)?.video_id.let { it1 ->
+                        val sources = data.episodes?.get(episodePos)?.videos?.getOrNull(0)?.video_id.let { video_id ->
                             getVideoLink(
-                                it1!!
+                                video_id!!
                             )
-                        }
+                        }?.filter { !it.isM3u8 }
                         activity.runOnUiThread {
                             if (!sources.isNullOrEmpty()) {
                                 if (settingsManager?.getBoolean("pick_downloads", false) == true) {

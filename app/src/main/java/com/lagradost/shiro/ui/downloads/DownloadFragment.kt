@@ -15,10 +15,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.shiro.*
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
-import com.lagradost.shiro.utils.DOWNLOAD_CHILD_KEY
-import com.lagradost.shiro.utils.DOWNLOAD_PARENT_KEY
-import com.lagradost.shiro.utils.DataStore
-import com.lagradost.shiro.utils.DownloadManager
+import com.lagradost.shiro.ui.result.ResultFragment
+import com.lagradost.shiro.utils.*
 import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.fragment_download.*
 import java.io.File
@@ -51,8 +49,29 @@ class DownloadFragment : Fragment() {
                 if (isDonor) getString(R.string.resultpage1) else getString(R.string.resultpage2)
             downloadCenterRoot.visibility = if (childKeys.isEmpty()) VISIBLE else GONE
 
+            // TODO remove legacy
             for (k in childKeys) {
-                val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(k)
+                val child = DataStore.getKey(k)
+                    ?: DataStore.getKey<DownloadManager.DownloadFileMetadataLegacy>(k)?.let {
+                        DownloadManager.DownloadFileMetadata(
+                            it.internalId,
+                            it.slug,
+                            it.animeData,
+                            it.thumbPath,
+                            it.videoPath,
+                            it.videoTitle,
+                            it.episodeIndex,
+                            it.downloadAt,
+                            it.maxFileSize,
+                            ExtractorLink(
+                                "Shiro",
+                                it.downloadFileUrl,
+                                "https://shiro.is/",
+                                Qualities.UHD.value
+                            )
+                        )
+                    }
+
                 if (child != null) {
                     if (!File(child.videoPath).exists()) { // FILE DOESN'T EXIT
                         val thumbFile = File(child.thumbPath)
@@ -94,6 +113,13 @@ class DownloadFragment : Fragment() {
                     println("KEY::: $k")
                     if (epData.containsKey(parent.slug)) {
                         val cardView = inflator.inflate(R.layout.download_card, null)
+
+                        cardView.imageView.setOnClickListener {
+                            activity?.supportFragmentManager?.beginTransaction()
+                                ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                                ?.add(R.id.homeRoot, ResultFragment.newInstance(parent.slug))
+                                ?.commitAllowingStateLoss()
+                        }
 
                         cardView.cardTitle.text = parent.title
                         cardView.imageView.setImageURI(Uri.parse(parent.coverImagePath))

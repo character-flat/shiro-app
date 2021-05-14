@@ -26,16 +26,13 @@ import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedVi
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.fixEpTitle
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isViewState
+import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppApi.getColorFromAttr
 import com.lagradost.shiro.utils.AppApi.getViewKey
 import com.lagradost.shiro.utils.AppApi.getViewPosDur
 import com.lagradost.shiro.utils.AppApi.loadPlayer
 import com.lagradost.shiro.utils.AppApi.popCurrentPage
 import com.lagradost.shiro.utils.AppApi.settingsManager
-import com.lagradost.shiro.utils.DOWNLOAD_PARENT_KEY
-import com.lagradost.shiro.utils.DataStore
-import com.lagradost.shiro.utils.DownloadManager
-import com.lagradost.shiro.utils.VIEWSTATE_KEY
 
 const val SLUG = "slug"
 
@@ -79,8 +76,31 @@ class DownloadFragmentChild : Fragment() {
         val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(DOWNLOAD_PARENT_KEY, slug!!)
         download_header_text.text = parent?.title
         // Sorts by Seasons and Episode Index
+
+        //TODO remove legacy
         val sortedEpisodeKeys =
-            episodeKeys!!.associateBy({ DataStore.getKey<DownloadManager.DownloadFileMetadata>(it) }, { it }).toList()
+            episodeKeys!!.associateBy({ key ->
+                DataStore.getKey(key)
+                    ?: DataStore.getKey<DownloadManager.DownloadFileMetadataLegacy>(key)?.let {
+                        DownloadManager.DownloadFileMetadata(
+                            it.internalId,
+                            it.slug,
+                            it.animeData,
+                            it.thumbPath,
+                            it.videoPath,
+                            it.videoTitle,
+                            it.episodeIndex,
+                            it.downloadAt,
+                            it.maxFileSize,
+                            ExtractorLink(
+                                "Shiro",
+                                it.downloadFileUrl,
+                                "https://shiro.is/",
+                                Qualities.UHD.value
+                            )
+                        )
+                    }
+            }, { it }).toList()
                 .sortedBy { (key, _) -> key?.episodeIndex }.toMap()
 
         sortedEpisodeKeys.forEach { it ->

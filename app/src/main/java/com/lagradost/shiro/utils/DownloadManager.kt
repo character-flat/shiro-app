@@ -160,6 +160,22 @@ object DownloadManager {
         @JsonProperty("downloadFileLink") val downloadFileLink: ExtractorLink, // IF RESUME, DO IT FROM THIS URL
     )
 
+    data class DownloadFileMetadataLegacy(
+        @JsonProperty("internalId") val internalId: Int, // UNIQUE ID BASED ON aniListId season and index
+        @JsonProperty("slug") val slug: String,
+        @JsonProperty("animeData") val animeData: ShiroApi.AnimePageData,
+
+        @JsonProperty("thumbPath") val thumbPath: String?,
+        @JsonProperty("videoPath") val videoPath: String,
+
+        @JsonProperty("videoTitle") val videoTitle: String?,
+        @JsonProperty("episodeIndex") val episodeIndex: Int,
+
+        @JsonProperty("downloadAt") val downloadAt: Long,
+        @JsonProperty("maxFileSize") val maxFileSize: Long, // IF MUST RESUME
+        @JsonProperty("downloadFileUrl") val downloadFileUrl: String, // IF RESUME, DO IT FROM THIS URL
+    )
+
     fun invokeDownloadAction(id: Int, type: DownloadStatusType) {
         if (downloadStatus.containsKey(id)) {
             downloadStatus[id] = type
@@ -563,7 +579,7 @@ object DownloadManager {
                     downloadStatus.remove(id)
                 }
                 if (fullResume) {
-                    downloadEpisode(info, link,true)
+                    downloadEpisode(info, link, true)
                 }
             }
         }
