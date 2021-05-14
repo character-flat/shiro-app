@@ -10,7 +10,9 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import android.view.inputmethod.ExtractedText
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
@@ -155,7 +157,7 @@ object DownloadManager {
 
         @JsonProperty("downloadAt") val downloadAt: Long,
         @JsonProperty("maxFileSize") val maxFileSize: Long, // IF MUST RESUME
-        @JsonProperty("downloadFileUrl") val downloadFileUrl: String, // IF RESUME, DO IT FROM THIS URL
+        @JsonProperty("downloadFileLink") val downloadFileLink: ExtractorLink, // IF RESUME, DO IT FROM THIS URL
     )
 
     fun invokeDownloadAction(id: Int, type: DownloadStatusType) {
@@ -269,7 +271,7 @@ object DownloadManager {
     }
 
     @SuppressLint("HardwareIds")
-    fun downloadEpisode(info: DownloadInfo, resumeIntent: Boolean = false) {
+    fun downloadEpisode(info: DownloadInfo, link: ExtractorLink, resumeIntent: Boolean = false) {
         val useExternalStorage = settingsManager!!.getBoolean("use_external_storage", false)
 
         // IsInResult == isDonor
@@ -300,13 +302,12 @@ object DownloadManager {
             try {
                 val isMovie: Boolean = info.animeData.episodes?.size ?: 0 == 1 && info.animeData.status == "finished"
                 val mainTitle = info.animeData.name
-                val ep =
-                    info.animeData.episodes?.get(info.episodeIndex) //info.card.cdnData.seasons[info.seasonIndex].episodes[info.episodeIndex]
+                //val ep =
+                //    info.animeData.episodes?.get(info.episodeIndex) //info.card.cdnData.seasons[info.seasonIndex].episodes[info.episodeIndex]
                 var title = mainTitle
                 if (title.replace(" ", "") == "") {
                     title = "Episode " + info.episodeIndex + 1
                 }
-
 
                 val basePath =
                     if (useExternalStorage) Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
@@ -335,7 +336,6 @@ object DownloadManager {
 
                 downloadPoster(mainPosterPath, getFullUrlCdn(info.animeData.image))
 
-
                 // =================== MAKE DIRS ===================
                 val rFile = File(path)
                 /*if (!usingScopedStorage) {
@@ -345,15 +345,14 @@ object DownloadManager {
                 } catch (_ex: Exception) {
                     println("FAILED:::$_ex")
                 }
-                val url = ep?.videos?.get(0)?.let { getVideoLink(it.video_id)?.get(0) }?.url
 
-                val _url = URL(url)
+                val _url = URL(link.url)
 
                 val connection: URLConnection = _url.openConnection()
 
                 var bytesRead = 0L
                 //val androidId: String = Settings.Secure.getString(localContext?.contentResolver, Settings.Secure.ANDROID_ID)
-                val referer = "https://shiro.is/"
+                val referer = link.referer
 
                 // =================== STORAGE ===================
                 var fos: FileOutputStream? = null
@@ -437,20 +436,18 @@ object DownloadManager {
                 var lastUpdate = System.currentTimeMillis()
 
                 // =================== SET KEYS ===================
-                val child = url?.let {
-                    DownloadFileMetadata(
-                        id,
-                        info.animeData.slug,
-                        info.animeData,
-                        posterPath,
-                        path,
-                        title,
-                        info.episodeIndex,
-                        System.currentTimeMillis(),
-                        bytesTotal,
-                        it
-                    )
-                }
+                val child = DownloadFileMetadata(
+                    id,
+                    info.animeData.slug,
+                    info.animeData,
+                    posterPath,
+                    path,
+                    title,
+                    info.episodeIndex,
+                    System.currentTimeMillis(),
+                    bytesTotal,
+                    link
+                )
                 DataStore.setKey(
                     DOWNLOAD_CHILD_KEY,
                     id.toString(), // MUST HAVE ID TO NOT OVERRIDE
@@ -566,7 +563,7 @@ object DownloadManager {
                     downloadStatus.remove(id)
                 }
                 if (fullResume) {
-                    downloadEpisode(info, true)
+                    downloadEpisode(info, link,true)
                 }
             }
         }

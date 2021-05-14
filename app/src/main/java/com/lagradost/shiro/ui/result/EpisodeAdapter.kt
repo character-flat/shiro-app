@@ -28,7 +28,6 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.AutofitRecyclerView
-import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.DetailsActivityTV
 import com.lagradost.shiro.ui.tv.PlaybackActivity
@@ -40,6 +39,7 @@ import com.lagradost.shiro.utils.AppApi.getViewKey
 import com.lagradost.shiro.utils.AppApi.getViewPosDur
 import com.lagradost.shiro.utils.AppApi.isCastApiAvailable
 import com.lagradost.shiro.utils.AppApi.loadPlayer
+import com.lagradost.shiro.utils.AppApi.settingsManager
 import kotlinx.android.synthetic.main.episode_result_compact.view.*
 import kotlinx.android.synthetic.main.episode_result_compact.view.cardBg
 import kotlinx.android.synthetic.main.episode_result_compact.view.cardTitle
@@ -108,7 +108,7 @@ class EpisodeAdapter(
 
         // Downloads is only updated when re-bound!
         fun bind(position: Int) {
-            println("START $start pos $position")
+            //println("START $start pos $position")
             val episodePos = start + position
             val key = getViewKey(data.slug, episodePos)
 
@@ -121,12 +121,44 @@ class EpisodeAdapter(
             if (isDonor) {
                 card.cdi.visibility = View.VISIBLE
                 card.cdi.setOnClickListener {
-                    DownloadManager.downloadEpisode(
-                        DownloadManager.DownloadInfo(
-                            episodePos,
-                            data
-                        )
-                    )
+                    thread {
+                        val sources = data.episodes?.get(episodePos)?.videos?.getOrNull(0)?.video_id.let { it1 ->
+                            getVideoLink(
+                                it1!!
+                            )
+                        }
+                        activity.runOnUiThread {
+                            if (!sources.isNullOrEmpty()) {
+                                if (settingsManager?.getBoolean("pick_downloads", false) == true) {
+                                    lateinit var dialog: AlertDialog
+                                    val sourcesTexts = sources.map { it.name }
+                                    val builder = AlertDialog.Builder(activity, R.style.AlertDialogCustom)
+                                    builder.setTitle("Pick source")
+                                    builder.setSingleChoiceItems(sourcesTexts.toTypedArray(), 0) { _, which ->
+                                        DownloadManager.downloadEpisode(
+                                            DownloadManager.DownloadInfo(
+                                                episodePos,
+                                                data,
+                                            ),
+                                            sources[which]
+                                        )
+
+                                        dialog.dismiss()
+                                    }
+                                    dialog = builder.create()
+                                    dialog.show()
+                                } else {
+                                    DownloadManager.downloadEpisode(
+                                        DownloadManager.DownloadInfo(
+                                            episodePos,
+                                            data,
+                                        ),
+                                        sources[0]
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             } else {
                 card.cdi.visibility = View.GONE
@@ -317,7 +349,16 @@ class EpisodeAdapter(
                                 popup.setOnMenuItemClickListener {
                                     when (it.itemId) {
                                         R.id.res_resumedload -> {
-                                            DownloadManager.downloadEpisode(getDownload(), true)
+                                            val id = (data.slug + "E${episodePos}").hashCode()
+                                            // Very much a hack
+                                            val child: DownloadManager.DownloadFileMetadata? = DataStore.getKey(
+                                                DOWNLOAD_CHILD_KEY,
+                                                id.toString(),
+                                                null
+                                            )
+                                            if (child != null) {
+                                                DownloadManager.downloadEpisode(getDownload(), child.downloadFileLink, true)
+                                            }
                                         }
                                         R.id.res_stopdload -> {
                                             DownloadManager.invokeDownloadAction(

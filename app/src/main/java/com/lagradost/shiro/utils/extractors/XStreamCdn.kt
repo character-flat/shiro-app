@@ -1,5 +1,6 @@
 package com.lagradost.shiro.utils.extractors
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.shiro.utils.AniListApi
 import com.lagradost.shiro.utils.DataStore.mapper
@@ -13,14 +14,14 @@ class XStreamCdn : ExtractorApi() {
     override val mainUrl: String = "https://fcdn.stream"
 
     private data class ResponseData(
-        val file: String,
-        val label: String,
+        @JsonProperty("file") val file: String,
+        @JsonProperty("label") val label: String,
         //val type: String // Mp4
     )
 
     private data class ResponseJson(
-        val success: Boolean,
-        val data: List<ResponseData>?
+        @JsonProperty("success") val success: Boolean,
+        @JsonProperty("data") val data: List<ResponseData>?
     )
 
     override fun getExtractorUrl(id: String): String {

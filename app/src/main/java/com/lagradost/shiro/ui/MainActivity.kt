@@ -24,6 +24,7 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.lagradost.shiro.BuildConfig
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
@@ -265,6 +266,8 @@ class MainActivity : AppCompatActivity() {
         theme.applyStyle(currentTheme, true)
         if (settingsManager.getBoolean("cool_mode", false)) {
             theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
+        } else if (BuildConfig.BETA && settingsManager.getBoolean("beta_theme", false)) {
+            theme.applyStyle(R.style.OverlayPrimaryColorGreen, true)
         }
         // -----------------
 

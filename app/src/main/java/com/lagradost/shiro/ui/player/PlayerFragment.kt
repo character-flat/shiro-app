@@ -164,10 +164,10 @@ class PlayerFragment : Fragment() {
 
     private val swipeEnabled = settingsManager!!.getBoolean("swipe_enabled", true)
     private val swipeVerticalEnabled = settingsManager!!.getBoolean("swipe_vertical_enabled", true)
-    private val skipOpEnabled = settingsManager!!.getBoolean("skip_op_enabled", false)
+    private val skipOpEnabled = true//settingsManager!!.getBoolean("skip_op_enabled", false)
     private val doubleTapEnabled = settingsManager!!.getBoolean("double_tap_enabled", false)
-    private val playBackSpeedEnabled = settingsManager!!.getBoolean("playback_speed_enabled", false)
-    private val playerResizeEnabled = settingsManager!!.getBoolean("player_resize_enabled", false)
+    private val playBackSpeedEnabled = true//settingsManager!!.getBoolean("playback_speed_enabled", false)
+    private val playerResizeEnabled = true//settingsManager!!.getBoolean("player_resize_enabled", false)
     private val doubleTapTime = settingsManager!!.getInt("dobule_tap_time", 10)
     private val fastForwardTime = settingsManager!!.getInt("fast_forward_button_time", 10)
 
@@ -269,7 +269,7 @@ class PlayerFragment : Fragment() {
 
     private fun getCurrentEpisode(): ShiroApi.ShiroEpisodes? {
         println(data!!.episodeIndex)
-        return data?.card?.episodes?.get(data?.episodeIndex!!)//data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.episodeIndex!!)
+        return data?.card?.episodes?.getOrNull(data?.episodeIndex!!)//data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.episodeIndex!!)
     }
 
     private fun getCurrentUrls(): List<ExtractorLink>? {
@@ -342,6 +342,7 @@ class PlayerFragment : Fragment() {
         next_episode_btt.isClickable = isClick
         playback_speed_btt.isClickable = isClick
         skip_op.isClickable = isClick
+        resize_player.isClickable = isClick
 
         // Clickable doesn't seem to work on com.google.android.exoplayer2.ui.DefaultTimeBar
         exo_progress.visibility = if (isLocked) INVISIBLE else VISIBLE
@@ -649,7 +650,7 @@ class PlayerFragment : Fragment() {
         //println("RESIZE $resizeMode")
         player_view.resizeMode = resizeModes[resizeMode!!]
         if (playerResizeEnabled) {
-            resize_player_holder.visibility = VISIBLE
+            resize_player.visibility = VISIBLE
             resize_player.setOnClickListener {
                 resizeMode = Math.floorMod(resizeMode!! + 1, resizeModes.size)
                 //println("RESIZE $resizeMode")
@@ -658,7 +659,7 @@ class PlayerFragment : Fragment() {
                 //exoPlayer.videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
             }
         } else {
-            resize_player_holder.visibility = GONE
+            resize_player.visibility = GONE
         }
 
         class Listener : DoubleClickListener(this) {
@@ -756,7 +757,7 @@ class PlayerFragment : Fragment() {
             seekTime(fastForwardTime * 1000L)
         }
 
-        playback_speed_holder.visibility = if (playBackSpeedEnabled) VISIBLE else GONE
+        playback_speed_btt.visibility = if (playBackSpeedEnabled) VISIBLE else GONE
         playback_speed_btt.setOnClickListener {
             lateinit var dialog: AlertDialog
             // Lmao kind bad
@@ -774,6 +775,7 @@ class PlayerFragment : Fragment() {
                 DataStore.setKey(PLAYBACK_SPEED_KEY, playbackSpeed)
                 val param = PlaybackParameters(playbackSpeed!!)
                 exoPlayer.setPlaybackParameters(param)
+                player_speed_text.text = "Speed (${playbackSpeed}x)".replace(".0x","x")
 
                 dialog.dismiss()
             }
@@ -805,7 +807,7 @@ class PlayerFragment : Fragment() {
 
 
         if (skipOpEnabled) {
-            skip_op_holder.visibility = VISIBLE
+            skip_op.visibility = VISIBLE
             skip_op.setOnClickListener {
                 seekTime(85000L)
             }
@@ -936,9 +938,10 @@ class PlayerFragment : Fragment() {
                             next_episode_btt?.visibility = GONE
                         }
 
+                        val mimeType = if (currentUrl.isM3u8) MimeTypes.APPLICATION_M3U8 else MimeTypes.APPLICATION_MP4
                         val _mediaItem = MediaItem.Builder()
                             //Replace needed for android 6.0.0  https://github.com/google/ExoPlayer/issues/5983
-                            .setMimeType(MimeTypes.APPLICATION_MP4)
+                            .setMimeType(mimeType)
 
                         if (isOnline) {
                             _mediaItem.setUri(currentUrl.url)
@@ -978,6 +981,7 @@ class PlayerFragment : Fragment() {
                         player_view.player = exoPlayer
                         // Sets the speed
                         exoPlayer.setPlaybackParameters(PlaybackParameters(playbackSpeed!!))
+                        player_speed_text?.text = "Speed (${playbackSpeed}x)".replace(".0x","x")
 
                         //https://stackoverflow.com/questions/47731779/detect-pause-resume-in-exoplayer
                         exoPlayer.addListener(object : DefaultEventListener() {

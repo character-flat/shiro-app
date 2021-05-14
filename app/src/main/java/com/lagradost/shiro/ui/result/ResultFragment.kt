@@ -168,22 +168,27 @@ class ResultFragment : Fragment() {
                         .into(result_poster_blur)
                 }
 
-                next_episode_btt.setOnClickListener {
-                    val episode = getLatestSeenEpisode(data)
-                    val episodePos = getViewPosDur(data.slug, episode.episodeIndex)
-                    val next = canPlayNextEpisode(data, episode.episodeIndex)
-                    if (next.isFound && episodePos.viewstate) {
-                        val pos = getViewPosDur(data.slug, episode.episodeIndex)
-                        Toast.makeText(activity, "Playing episode ${next.episodeIndex + 1}", Toast.LENGTH_SHORT)
-                            .show()
-                        activity?.loadPlayer(next.episodeIndex, pos.pos, data)
-                    } else {
-                        Toast.makeText(activity, "Playing episode ${episode.episodeIndex + 1}", Toast.LENGTH_SHORT)
-                            .show()
-                        activity?.loadPlayer(episode.episodeIndex, episodePos.pos, data)
+                if (data.episodes?.isNotEmpty() == true) {
+                    next_episode_btt.visibility = VISIBLE
+                    next_episode_btt.setOnClickListener {
+                        val episode = getLatestSeenEpisode(data)
+                        val episodePos = getViewPosDur(data.slug, episode.episodeIndex)
+                        val next = canPlayNextEpisode(data, episode.episodeIndex)
+                        if (next.isFound && episodePos.viewstate) {
+                            val pos = getViewPosDur(data.slug, episode.episodeIndex)
+                            Toast.makeText(activity, "Playing episode ${next.episodeIndex + 1}", Toast.LENGTH_SHORT)
+                                .show()
+                            activity?.loadPlayer(next.episodeIndex, pos.pos, data)
+                        } else {
+                            Toast.makeText(activity, "Playing episode ${episode.episodeIndex + 1}", Toast.LENGTH_SHORT)
+                                .show()
+                            activity?.loadPlayer(episode.episodeIndex, episodePos.pos, data)
+                        }
                     }
-
+                } else {
+                    next_episode_btt.visibility = GONE
                 }
+
 
                 val textColor = Integer.toHexString(requireActivity().getColorFromAttr(R.attr.textColor))
                 val textColorGrey = Integer.toHexString(requireActivity().getColorFromAttr(R.attr.textColorGray))

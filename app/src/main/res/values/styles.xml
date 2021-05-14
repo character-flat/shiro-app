@@ -103,6 +103,16 @@
         <item name="colorPrimarySecond">#3F51B5</item>
     </style>
 
+    <style name="OverlayPrimaryColorGreen">
+        <item name="colorPrimaryMegaDark">#0F3007</item>
+        <item name="colorPrimary">#37722F</item>
+        <item name="colorPrimaryDark">#194E14</item>
+        <item name="colorPrimaryDarker">#0E3D11</item>
+        <item name="colorAccent">#307E2B</item>
+        <item name="colorOnPrimary">#307E2B</item>
+        <item name="colorPrimarySecond">#43B53F</item>
+    </style>
+
     <style name="LightMode">
         <item name="darkBar">@color/lightDarkBar</item>
         <item name="darkBarLight">@color/lightDarkBarLight</item>

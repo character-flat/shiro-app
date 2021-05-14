@@ -9,6 +9,7 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
+        buildConfigField("boolean", "BETA", "false")
         vectorDrawables.useSupportLibrary = true
         applicationId "com.lagradost.shiro"
         minSdkVersion 21
@@ -47,6 +48,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
+            buildConfigField("boolean", "BETA", "true")
             applicationIdSuffix ".debug"
             versionNameSuffix '-DEBUG'
             debuggable true
@@ -55,6 +57,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         beta {
+            buildConfigField("boolean", "BETA", "true")
             productFlavors.tv.signingConfig signingConfigs.release
             productFlavors.phone.signingConfig signingConfigs.release
             versionNameSuffix '-Beta'

@@ -142,6 +142,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
             return DataStore.getKey<String>(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, null) != null
         }
 
+        val betaThemeButton = findPreference("beta_theme") as SwitchPreference?
+        betaThemeButton?.isVisible = BuildConfig.BETA
+        betaThemeButton?.setOnPreferenceChangeListener { _, _ ->
+            activity?.recreate()
+            return@setOnPreferenceChangeListener true
+        }
 
         val anilistButton = findPreference("anilist_setting_btt") as Preference?
         val isLoggedInAniList = isLoggedIntoAniList()
@@ -276,6 +282,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val coolMode = findPreference("cool_mode") as SwitchPreference?
         if (coolMode?.isChecked == true) {
             coolMode.isVisible = true
+        }
+        if (BuildConfig.BETA) {
+            coolMode?.summary = "Overrides the Beta theme"
         }
         versionButton?.summary = BuildConfig.VERSION_NAME
         versionButton?.setOnPreferenceClickListener {

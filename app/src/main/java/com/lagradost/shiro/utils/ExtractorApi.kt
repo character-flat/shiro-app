@@ -6,7 +6,8 @@ data class ExtractorLink(
     val name: String,
     val url: String,
     val referer: String,
-    val quality: Int
+    val quality: Int,
+    val isM3u8: Boolean = false
 )
 
 enum class Qualities(var value: Int) {

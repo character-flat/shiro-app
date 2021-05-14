@@ -26,7 +26,11 @@ class Vidstream : ExtractorApi() {
                 val shiroUrl = Shiro().getExtractorUrl(id)
                 val shiroSource = Shiro().getUrl(shiroUrl)
                 shiroSource?.forEach { extractedLinksList.add(it) }
-                // -------------
+                // --- MultiQuality ---
+                val multiQualityUrl = MultiQuality().getExtractorUrl(id)
+                val multiQualitySource = MultiQuality().getUrl(multiQualityUrl)
+                multiQualitySource?.forEach { extractedLinksList.add(it) }
+                // --------------------
 
                 // All vidstream links passed to extractors
                 primaryLinks.forEach { element ->
@@ -47,7 +51,7 @@ class Vidstream : ExtractorApi() {
                 }
                 return extractedLinksList
             }
-        } catch (e: Exception){
+        } catch (e: Exception) {
             return listOf()
         }
     }

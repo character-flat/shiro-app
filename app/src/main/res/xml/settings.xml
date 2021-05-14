@@ -30,6 +30,12 @@
                 android:summaryOn="Files downloaded to Download/Shiro"
                 app:defaultValue="false"
         />
+        <SwitchPreference
+                android:icon="@drawable/netflix_download"
+                app:key="pick_downloads"
+                android:title="Pick download source manually"
+                app:defaultValue="false"
+        />
         <SwitchPreference android:key="acra.disable"
                           android:icon="@drawable/ic_baseline_bug_report_24"
                           android:title="@string/pref_disable_acra"
@@ -50,6 +56,13 @@
                 app:useSimpleSummaryProvider="true"
                 android:entries="@array/Themes"
                 android:entryValues="@array/Themes"
+        />
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_format_paint_24"
+                app:key="beta_theme"
+                android:title="Beta theme"
+                app:defaultValue="false"
+                app:isPreferenceVisible="false"
         />
         <SwitchPreference
                 android:icon="@drawable/ic_baseline_fullscreen_24"
@@ -113,7 +126,7 @@
                 android:summary="Tap twice on the right or left side to seek forwards or backwards"
                 app:defaultValue="false"
         />
-        <SwitchPreference
+        <!--<SwitchPreference
                 android:icon="@drawable/ic_baseline_fast_forward_24"
                 app:key="skip_op_enabled"
                 android:title="Skip OP button"
@@ -132,7 +145,7 @@
                 android:title="Player resize button"
                 android:summary="Cursed"
                 app:defaultValue="false"
-        />
+        />-->
         <SeekBarPreference
                 android:icon="@drawable/ic_baseline_access_time_24"
                 android:title="Fast forward skip time"
@@ -214,20 +227,19 @@
         />
         <SwitchPreference
                 app:key="auto_update"
-                android:title="Automatically check for updates"
+                android:title="Show app updates"
                 app:defaultValue="true"
-                android:icon="@drawable/ic_baseline_system_update_24"
+                android:icon="@drawable/ic_baseline_notifications_active_24"
         />
         <SwitchPreference
-                app:isPreferenceVisible="false"
                 app:key="beta_mode"
-                android:title="Beta mode"
-                android:summary="Check for more unstable testing updates"
+                android:title="Beta channel"
+                android:summary="Try new and unstable updates first"
                 app:defaultValue="false"
                 android:icon="@drawable/ic_baseline_warning_24"
         />
         <Preference
-                android:title="Check for updates"
+                android:title="Check for update"
                 android:icon="@drawable/rdload"
                 app:key="check_updates"
         />

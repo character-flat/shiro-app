@@ -229,7 +229,7 @@ class DownloadFragmentChild : Fragment() {
                         popup.setOnMenuItemClickListener {
                             when (it.itemId) {
                                 R.id.res_resumedload -> {
-                                    DownloadManager.downloadEpisode(getDownload(), true)
+                                    DownloadManager.downloadEpisode(getDownload(), child.downloadFileLink, true)
                                 }
                                 R.id.res_stopdload -> {
                                     DownloadManager.invokeDownloadAction(
