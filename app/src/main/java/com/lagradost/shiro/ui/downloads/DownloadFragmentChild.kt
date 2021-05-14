@@ -77,29 +77,9 @@ class DownloadFragmentChild : Fragment() {
         download_header_text.text = parent?.title
         // Sorts by Seasons and Episode Index
 
-        //TODO remove legacy
         val sortedEpisodeKeys =
             episodeKeys!!.associateBy({ key ->
-                DataStore.getKey(key)
-                    ?: DataStore.getKey<DownloadManager.DownloadFileMetadataLegacy>(key)?.let {
-                        DownloadManager.DownloadFileMetadata(
-                            it.internalId,
-                            it.slug,
-                            it.animeData,
-                            it.thumbPath,
-                            it.videoPath,
-                            it.videoTitle,
-                            it.episodeIndex,
-                            it.downloadAt,
-                            it.maxFileSize,
-                            ExtractorLink(
-                                "Shiro",
-                                it.downloadFileUrl,
-                                "https://shiro.is/",
-                                Qualities.UHD.value
-                            )
-                        )
-                    }
+                DataStore.getKey<DownloadManager.DownloadFileMetadata>(key)
             }, { it }).toList()
                 .sortedBy { (key, _) -> key?.episodeIndex }.toMap()
 

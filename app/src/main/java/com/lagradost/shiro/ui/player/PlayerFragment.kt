@@ -22,7 +22,6 @@ import android.content.BroadcastReceiver
 import android.content.Context.AUDIO_SERVICE
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
-import com.google.android.exoplayer2.Player.DefaultEventListener
 import android.content.res.Resources
 import android.database.ContentObserver
 import android.media.AudioManager
@@ -984,7 +983,7 @@ class PlayerFragment : Fragment() {
                         player_speed_text?.text = "Speed (${playbackSpeed}x)".replace(".0x","x")
 
                         //https://stackoverflow.com/questions/47731779/detect-pause-resume-in-exoplayer
-                        exoPlayer.addListener(object : DefaultEventListener() {
+                        exoPlayer.addListener(object : Player.DefaultEventListener() {
                             @SuppressLint("NewApi")
                             override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
                                 updatePIPModeActions()

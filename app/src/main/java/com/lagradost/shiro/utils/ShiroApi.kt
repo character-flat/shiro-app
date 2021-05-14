@@ -338,7 +338,6 @@ class ShiroApi {
             }
 
             return keys.map {
-                println(it)
                 DataStore.getKey(it)
             }
         }
