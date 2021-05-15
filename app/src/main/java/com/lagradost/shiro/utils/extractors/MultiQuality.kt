@@ -10,6 +10,7 @@ class MultiQuality : ExtractorApi() {
     private val sourceRegex = Regex("""file:\s*'(.*?)',label:\s*'(.*?)'""")
     private val m3u8Regex = Regex(""".*?(\d*).m3u8""")
     private val urlRegex = Regex("""(.*?)([^/]+$)""")
+    override val requiresReferer = false
 
     override fun getExtractorUrl(id: String): String {
         return "$mainUrl/loadserver.php?id=$id"
@@ -41,7 +42,7 @@ class MultiQuality : ExtractorApi() {
                                         urlRegex.find(this.url)!!.groupValues[1] + match.groupValues[0],
                                         url,
                                         getQuality(match.groupValues[1]),
-                                        true
+                                        isM3u8 = true
                                     )
                                 )
                             }
@@ -52,9 +53,8 @@ class MultiQuality : ExtractorApi() {
                             ExtractorLink(
                                 "$name ${sourceMatch.groupValues[2]}",
                                 extractedUrl,
-                                url,
+                                url.replace(" ", "%20"),
                                 Qualities.Unknown.value,
-                                false
                             )
                         )
                     }

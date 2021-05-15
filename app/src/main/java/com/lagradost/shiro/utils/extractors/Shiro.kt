@@ -8,6 +8,7 @@ import org.jsoup.Jsoup
 class Shiro : ExtractorApi() {
     override val name: String = "Shiro"
     override val mainUrl: String = "https://cherry.subsplea.se"
+    override val requiresReferer = false
 
     override fun getExtractorUrl(id: String): String {
         return "$mainUrl/$id"

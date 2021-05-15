@@ -6,6 +6,7 @@ class Mp4Upload : ExtractorApi() {
     override val name: String = "Mp4Upload"
     override val mainUrl: String = "https://www.mp4upload.com"
     private val srcRegex = Regex("""player\.src\("(.*?)"""")
+    override val requiresReferer = true
 
     override fun getUrl(url: String, referer: String?): List<ExtractorLink>? {
         try {
@@ -17,7 +18,7 @@ class Mp4Upload : ExtractorApi() {
                                 name,
                                 link,
                                 url,
-                                Qualities.Unknown.value
+                                Qualities.Unknown.value,
                             )
                         )
                     }

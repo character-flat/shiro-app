@@ -2,18 +2,21 @@ package com.lagradost.shiro.ui
 
 import android.os.Bundle
 import android.view.Menu
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
-import com.google.android.gms.cast.MediaStatus
+import com.google.android.gms.cast.MediaStatus.REPEAT_MODE_REPEAT_SINGLE
 import com.google.android.gms.cast.framework.CastButtonFactory
+import com.google.android.gms.cast.framework.CastSession
 import com.google.android.gms.cast.framework.media.uicontroller.UIController
 import com.google.android.gms.cast.framework.media.widget.ExpandedControllerActivity
 import com.lagradost.shiro.R
+import com.lagradost.shiro.utils.AppApi.settingsManager
 import org.json.JSONObject
 
 class SkipOpController(val view: ImageView) : UIController() {
-    override fun onMediaStatusUpdated() {
-        super.onMediaStatusUpdated()
+    init {
         view.setImageResource(R.drawable.exo_controls_fastforward)
         view.setOnClickListener {
             remoteMediaClient.seek(remoteMediaClient.approximateStreamPosition + 85000)
@@ -22,13 +25,10 @@ class SkipOpController(val view: ImageView) : UIController() {
 }
 
 class SelectSourceController(val view: ImageView) : UIController() {
-    override fun onMediaStatusUpdated() {
-        super.onMediaStatusUpdated()
-        println("Status update")
-        var overrideClick = false
+
+    init {
         view.setImageResource(R.drawable.ic_baseline_playlist_play_24)
         view.setOnClickListener {
-            remoteMediaClient.queueSetRepeatMode(MediaStatus.REPEAT_MODE_REPEAT_ALL, JSONObject())
             //remoteMediaClient.mediaQueue.itemCount
             //println(remoteMediaClient.mediaInfo.customData)
             //remoteMediaClient.queueJumpToItem()
@@ -41,26 +41,50 @@ class SelectSourceController(val view: ImageView) : UIController() {
                     )
                 }
             }
+
             // TODO FIX
             if (items.isNotEmpty()) {
                 val builder = AlertDialog.Builder(view.context, R.style.AlertDialogCustom)
                 builder.setTitle("Pick source")
 
                 builder.setSingleChoiceItems(
-                    items.map{it.second}.toTypedArray(),
-                    -1
+                    items.map { it.second }.toTypedArray(),
+                    remoteMediaClient.currentItem.itemId - 1
                 ) { _, which ->
-                    println(remoteMediaClient.queueJumpToItem(items[which].first, remoteMediaClient.approximateStreamPosition, null))
+                    println(
+                        remoteMediaClient.queueJumpToItem(
+                            items[which].first,
+                            remoteMediaClient.approximateStreamPosition,
+                            null
+                        )
+                    )
                     dialog.dismiss()
                 }
                 dialog = builder.create()
                 dialog.show()
-            } else if (!overrideClick){
-                // HACK! Because it doesn't work on the first click
-                overrideClick = true
-                view.performClick()
             }
+        }
+    }
 
+    override fun onMediaStatusUpdated() {
+        super.onMediaStatusUpdated()
+        // If there's 1 item it won't show
+        val dataString = remoteMediaClient.mediaQueue.getItemAtIndex(1)?.media?.customData?.get("data") as? String
+        view.visibility = if (dataString != null) VISIBLE else INVISIBLE
+    }
+
+    override fun onSessionConnected(castSession: CastSession?) {
+        super.onSessionConnected(castSession)
+        remoteMediaClient.queueSetRepeatMode(REPEAT_MODE_REPEAT_SINGLE, JSONObject())
+    }
+}
+
+class SkipTimeController(val view: ImageView, forwards: Boolean) : UIController() {
+    init {
+        val time = settingsManager?.getInt("chromecast_tap_time", 30) ?: 30
+        view.setImageResource(if (forwards) R.drawable.netflix_skip_forward else R.drawable.netflix_skip_back)
+        view.setOnClickListener {
+            remoteMediaClient.seek(remoteMediaClient.approximateStreamPosition + time * 1000 * if (forwards) 1 else -1)
         }
     }
 }
@@ -76,8 +100,12 @@ class ControllerActivity : ExpandedControllerActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val sourcesButton: ImageView = getButtonImageViewAt(0)
+        val skipBackButton: ImageView = getButtonImageViewAt(1)
+        val skipForwardButton: ImageView = getButtonImageViewAt(2)
         val skipOpButton: ImageView = getButtonImageViewAt(3)
         uiMediaController.bindViewToUIController(sourcesButton, SelectSourceController(sourcesButton))
+        uiMediaController.bindViewToUIController(skipBackButton, SkipTimeController(skipBackButton, false))
+        uiMediaController.bindViewToUIController(skipForwardButton, SkipTimeController(skipForwardButton, true))
         uiMediaController.bindViewToUIController(skipOpButton, SkipOpController(skipOpButton))
     }
 }

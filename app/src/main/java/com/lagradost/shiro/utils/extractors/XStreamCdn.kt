@@ -12,6 +12,7 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 class XStreamCdn : ExtractorApi() {
     override val name: String = "XStreamCdn"
     override val mainUrl: String = "https://fcdn.stream"
+    override val requiresReferer = true
 
     private data class ResponseData(
         @JsonProperty("file") val file: String,
@@ -55,7 +56,7 @@ class XStreamCdn : ExtractorApi() {
                                     "$name ${data.label}",
                                     data.file,
                                     url,
-                                    getQuality(data.label)
+                                    getQuality(data.label),
                                 )
                             )
                         }

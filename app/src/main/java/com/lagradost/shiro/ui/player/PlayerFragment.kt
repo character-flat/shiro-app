@@ -437,6 +437,13 @@ class PlayerFragment : Fragment() {
 
         // bottom_player_bar
         //bottom_player_bar.y += if (isShowing) (-200).toPx else 0
+
+        val titleMove = if (isShowing) 0f else -200.toPx.toFloat()
+        ObjectAnimator.ofFloat(video_title, "translationY", titleMove).apply {
+            duration = 200
+            start()
+        }
+
         val playerBarMove = if (isShowing) 0f else 200.toPx.toFloat()
         ObjectAnimator.ofFloat(bottom_player_bar, "translationY", playerBarMove).apply {
             duration = 200
@@ -774,7 +781,7 @@ class PlayerFragment : Fragment() {
                 DataStore.setKey(PLAYBACK_SPEED_KEY, playbackSpeed)
                 val param = PlaybackParameters(playbackSpeed!!)
                 exoPlayer.setPlaybackParameters(param)
-                player_speed_text.text = "Speed (${playbackSpeed}x)".replace(".0x","x")
+                player_speed_text.text = "Speed (${playbackSpeed}x)".replace(".0x", "x")
 
                 dialog.dismiss()
             }
@@ -980,7 +987,7 @@ class PlayerFragment : Fragment() {
                         player_view.player = exoPlayer
                         // Sets the speed
                         exoPlayer.setPlaybackParameters(PlaybackParameters(playbackSpeed!!))
-                        player_speed_text?.text = "Speed (${playbackSpeed}x)".replace(".0x","x")
+                        player_speed_text?.text = "Speed (${playbackSpeed}x)".replace(".0x", "x")
 
                         //https://stackoverflow.com/questions/47731779/detect-pause-resume-in-exoplayer
                         exoPlayer.addListener(object : Player.Listener {

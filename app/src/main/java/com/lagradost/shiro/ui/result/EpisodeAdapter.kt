@@ -15,12 +15,13 @@ import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.cast.CastPlayer
+import com.google.android.exoplayer2.extractor.Extractor
 import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.gms.cast.MediaInfo
 import com.google.android.gms.cast.MediaLoadOptions
 import com.google.android.gms.cast.MediaMetadata
 import com.google.android.gms.cast.MediaQueueItem
-import com.google.android.gms.cast.MediaStatus.REPEAT_MODE_REPEAT_ALL
+import com.google.android.gms.cast.MediaStatus.*
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
 import com.google.android.gms.common.images.WebImage
@@ -476,28 +477,47 @@ class EpisodeAdapter(
         }
 
         private fun castEpisode(data: ShiroApi.AnimePageData, episodeIndex: Int) {
+            Toast.makeText(activity, "Getting links", Toast.LENGTH_SHORT).show()
             val castContext = CastContext.getSharedInstance(activity.applicationContext)
             castContext.castOptions
             val key = getViewKey(data.slug, episodeIndex)
             thread {
-                val videoLinks = data.episodes?.get(episodeIndex)?.videos?.getOrNull(0)?.video_id.let { it1 ->
+                val videoLinks = data.episodes?.get(episodeIndex)?.videos?.getOrNull(0)?.video_id.let { video_id ->
                     getVideoLink(
-                        it1!!
+                        video_id!!, isCasting = true
                     )
                 }
+
+                /*val videoLinks = listOf(
+                    ExtractorLink(
+                        "Bus",
+                        "https://samplelib.com/lib/download/mp4/sample-10s.mp4",
+                        "",
+                        0
+                    ), ExtractorLink(
+                        "Traffic",
+                        "https://samplelib.com/lib/download/mp4/sample-20s.mp4",
+                        "",
+                        0
+                    ), ExtractorLink(
+                        "Crossing",
+                        "https://samplelib.com/lib/download/mp4/sample-30s.mp4",
+                        "",
+                        0
+                    )
+                )*/
+
                 println("LINK $videoLinks")
                 if (videoLinks != null) {
                     activity.runOnUiThread {
-
-                        val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE)
-                        movieMetadata.putString(
-                            MediaMetadata.KEY_TITLE,
-                            "Episode ${episodeIndex + 1}"
-                        )
-                        movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data.name)
-                        movieMetadata.addImage(WebImage(Uri.parse(getFullUrlCdn(data.image))))
-
                         val mediaItems = videoLinks.map {
+                            val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE)
+                            movieMetadata.putString(
+                                MediaMetadata.KEY_TITLE,
+                                "Episode ${episodeIndex + 1} - ${it.name}"
+                            )
+                            movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data.name)
+                            movieMetadata.addImage(WebImage(Uri.parse(getFullUrlCdn(data.image))))
                             MediaQueueItem.Builder(
                                 MediaInfo.Builder(it.url)
                                     .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
@@ -505,7 +525,8 @@ class EpisodeAdapter(
                                     .setCustomData(JSONObject().put("data", it.name))
                                     .setMetadata(movieMetadata)
                                     .build()
-                            ).build()
+                            )
+                                .build()
                         }.toTypedArray()
 
                         val castPlayer = CastPlayer(castContext)
@@ -513,7 +534,7 @@ class EpisodeAdapter(
                             mediaItems,
                             0,
                             DataStore.getKey(VIEW_POS_KEY, key, 0L)!!,
-                            REPEAT_MODE_REPEAT_ALL
+                            REPEAT_MODE_REPEAT_SINGLE
                         )
                     }
 

@@ -7,7 +7,7 @@ data class ExtractorLink(
     val url: String,
     val referer: String,
     val quality: Int,
-    val isM3u8: Boolean = false
+    val isM3u8: Boolean = false,
 )
 
 enum class Qualities(var value: Int) {
@@ -43,12 +43,11 @@ fun httpsify(url: String): String {
 }
 
 abstract class ExtractorApi {
-    open val name: String = "NONE"
-    open val mainUrl: String = "NONE"
+    abstract val name: String
+    abstract val mainUrl: String
+    abstract val requiresReferer: Boolean
 
-    open fun getUrl(url: String, referer: String? = null): List<ExtractorLink>? {
-        return null
-    }
+    abstract fun getUrl(url: String, referer: String? = null): List<ExtractorLink>?
 
     open fun getExtractorUrl(id: String): String{
         return id

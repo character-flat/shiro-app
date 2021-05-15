@@ -164,6 +164,15 @@
                 app:seekBarIncrement="5"
         >
         </SeekBarPreference>
+        <SeekBarPreference
+                android:icon="@drawable/ic_baseline_access_time_24"
+                android:title="Chromecast skip time"
+                android:defaultValue="30"
+                android:key="chromecast_tap_time"
+                app:showSeekBarValue="true"
+                app:seekBarIncrement="5"
+        >
+        </SeekBarPreference>
     </PreferenceCategory>
 
     <PreferenceCategory

@@ -1,136 +1,128 @@
-package com.lagradost.shiro.utils;
+package com.lagradost.shiro.utils
 
-import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import java.lang.Exception
+import java.lang.StringBuilder
+import java.util.HashMap
+import java.util.regex.Pattern
+import kotlin.math.pow
 
 // https://github.com/cylonu87/JsUnpacker
-public class JsUnpacker {
-	private String packedJS = null;
+class JsUnpacker(packedJS: String?) {
+    private var packedJS: String? = null
 
-	/**
-	 * @param  packedJS javascript P.A.C.K.E.R. coded.
-	 *
-	 */
-	public JsUnpacker(String packedJS) {
-		this.packedJS = packedJS;
-	}
+    /**
+     * Detects whether the javascript is P.A.C.K.E.R. coded.
+     *
+     * @return true if it's P.A.C.K.E.R. coded.
+     */
+    fun detect(): Boolean {
+        val js = packedJS!!.replace(" ", "")
+        val p = Pattern.compile("eval\\(function\\(p,a,c,k,e,[rd]")
+        val m = p.matcher(js)
+        return m.find()
+    }
 
-	/**
-	 * Detects whether the javascript is P.A.C.K.E.R. coded.
-	 *
-	 * @return true if it's P.A.C.K.E.R. coded.
-	 *
-	 */
-	public boolean detect() {
-		String js = packedJS.replace(" ", "");
-		Pattern p = Pattern.compile("eval\\(function\\(p,a,c,k,e,(?:r|d)");
-		Matcher m = p.matcher(js);
-		return m.find();
-	}
+    /**
+     * Unpack the javascript
+     *
+     * @return the javascript unpacked or null.
+     */
+    fun unpack(): String? {
+        val js = packedJS
+        try {
+            var p =
+                Pattern.compile("""\}\s*\('(.*)',\s*(.*?),\s*(\d+),\s*'(.*?)'\.split\('\|'\)""", Pattern.DOTALL)
+            var m = p.matcher(js)
+            if (m.find() && m.groupCount() == 4) {
+                val payload = m.group(1).replace("\\'", "'")
+                val radixStr = m.group(2)
+                val countStr = m.group(3)
+                val symtab = m.group(4).split("\\|".toRegex()).toTypedArray()
+                var radix = 36
+                var count = 0
+                try {
+                    radix = radixStr.toInt()
+                } catch (e: Exception) {
+                }
+                try {
+                    count = countStr.toInt()
+                } catch (e: Exception) {
+                }
+                if (symtab.size != count) {
+                    throw Exception("Unknown p.a.c.k.e.r. encoding")
+                }
+                val unbase = Unbase(radix)
+                p = Pattern.compile("\\b\\w+\\b")
+                m = p.matcher(payload)
+                val decoded = StringBuilder(payload)
+                var replaceOffset = 0
+                while (m.find()) {
+                    val word = m.group(0)
+                    val x = unbase.unbase(word)
+                    var value: String? = null
+                    if (x < symtab.size) {
+                        value = symtab[x]
+                    }
+                    if (value != null && value.isNotEmpty()) {
+                        decoded.replace(m.start() + replaceOffset, m.end() + replaceOffset, value)
+                        replaceOffset += value.length - word.length
+                    }
+                }
+                return decoded.toString()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return null
+    }
 
-	/**
-	 * Unpack the javascript
-	 *
-	 * @return the javascript unpacked or null.
-	 *
-	 */
-	public String unpack() {
-		String js = new String(packedJS);
-		try {
-			Pattern p = Pattern.compile("\\}\\s*\\('(.*)',\\s*(.*?),\\s*(\\d+),\\s*'(.*?)'\\.split\\('\\|'\\)", Pattern.DOTALL);
-			Matcher m = p.matcher(js);
-			if(m.find() && m.groupCount() == 4) {
-				String payload = m.group(1).replace("\\'", "'");
-				String radixStr = m.group(2);
-				String countStr = m.group(3);
-				String[] symtab = m.group(4).split("\\|");
+    private inner class Unbase(private val radix: Int) {
+        private val ALPHABET_62 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        private val ALPHABET_95 =
+            " !\"#$%&\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+        private var alphabet: String? = null
+        private var dictionary: HashMap<String, Int>? = null
+        fun unbase(str: String): Int {
+            var ret = 0
+            if (alphabet == null) {
+                ret = str.toInt(radix)
+            } else {
+                val tmp = StringBuilder(str).reverse().toString()
+                for (i in tmp.indices) {
+                    ret += (radix.toDouble().pow(i.toDouble()) * dictionary!![tmp.substring(i, i + 1)]!!).toInt()
+                }
+            }
+            return ret
+        }
 
-				int radix = 36;
-				int count = 0;
-				try {
-					radix = Integer.parseInt(radixStr);
-				} catch(Exception e) {
-				}
-				try {
-					count = Integer.parseInt(countStr);
-				} catch(Exception e) {
-				}
+        init {
+            if (radix > 36) {
+                when {
+                    radix < 62 -> {
+                        alphabet = ALPHABET_62.substring(0, radix)
+                    }
+                    radix in 63..94 -> {
+                        alphabet = ALPHABET_95.substring(0, radix)
+                    }
+                    radix == 62 -> {
+                        alphabet = ALPHABET_62
+                    }
+                    radix == 95 -> {
+                        alphabet = ALPHABET_95
+                    }
+                }
+                dictionary = HashMap(95)
+                for (i in 0 until alphabet!!.length) {
+                    dictionary!![alphabet!!.substring(i, i + 1)] = i
+                }
+            }
+        }
+    }
 
-				if(symtab.length != count) {
-					throw new Exception ("Unknown p.a.c.k.e.r. encoding");
-				}
-
-				Unbase unbase = new Unbase(radix);
-				p = Pattern.compile("\\b\\w+\\b");
-				m = p.matcher(payload);
-				StringBuilder decoded = new StringBuilder(payload);
-				int replaceOffset = 0;
-				while(m.find()) {
-					String word = m.group(0);
-
-					int x = unbase.unbase(word);
-					String value = null;
-					if(x < symtab.length) {
-						value = symtab[x];
-					}
-
-					if(value != null && value.length() > 0) {
-						decoded.replace(m.start() + replaceOffset, m.end() + replaceOffset, value);
-						replaceOffset += (value.length() - word.length());
-					}
-				}
-				return decoded.toString();
-			}
-
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	private class Unbase {
-		private final String ALPHABET_62 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		private final String ALPHABET_95 = " !\"#$%&\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-		private String alphabet = null;
-		private HashMap<String, Integer> dictionnary = null;
-		private int radix;
-
-		Unbase(int radix) {
-			this.radix = radix;
-
-			if (radix > 36) {
-				if (radix < 62) {
-					alphabet = ALPHABET_62.substring(0, radix);
-				} else if (radix > 62 && radix < 95) {
-					alphabet = ALPHABET_95.substring(0, radix);
-				} else if (radix == 62) {
-					alphabet = ALPHABET_62;
-				} else if (radix == 95) {
-					alphabet = ALPHABET_95;
-				}
-
-				dictionnary = new HashMap<>(95);
-				for (int i = 0; i < alphabet.length(); i++) {
-					dictionnary.put(alphabet.substring(i, i + 1), i);
-				}
-			}
-		}
-
-		int unbase(String str) {
-			int ret = 0;
-
-			if (alphabet == null) {
-				ret = Integer.parseInt(str, radix);
-			} else {
-				String tmp = new StringBuilder(str).reverse().toString();
-				for (int i = 0; i < tmp.length(); i++) {
-					ret += Math.pow(radix, i) * dictionnary.get(tmp.substring(i, i + 1));
-				}
-			}
-			return ret;
-		}
-	}
+    /**
+     * @param  packedJS javascript P.A.C.K.E.R. coded.
+     */
+    init {
+        this.packedJS = packedJS
+    }
 }
-
