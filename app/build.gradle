@@ -7,6 +7,7 @@ android {
     //noinspection GradleCompatible
     compileSdkVersion 28
     buildToolsVersion "30.0.3"
+    android.defaultConfig.vectorDrawables.useSupportLibrary = true
 
     defaultConfig {
         buildConfigField("boolean", "BETA", "false")
@@ -68,7 +69,8 @@ android {
         }
     }
     compileOptions {
-        coreLibraryDesugaringEnabled true
+        // https://github.com/FasterXML/jackson-databind/issues/2807
+        coreLibraryDesugaringEnabled false
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
@@ -154,5 +156,4 @@ dependencies {
     //implementation group: 'org.mozilla', name: 'rhino', version: '1.7.6'
 
     implementation "androidx.recyclerview:recyclerview:1.2.0"
-
 }

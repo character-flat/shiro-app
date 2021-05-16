@@ -89,7 +89,7 @@ class HomeFragment : Fragment() {
             if (data != null) {
                 activity?.displayCardData(data.data.trending_animes, trending_anime_scroll_view, trending_text)
                 activity?.displayCardData(
-                    data.data.latest_episodes.map { it.anime },
+                    data.data.latest_episodes.map { it.anime } as? List<ShiroApi.CommonAnimePage>,
                     recently_updated_scroll_view,
                     recently_updated_text
                 )

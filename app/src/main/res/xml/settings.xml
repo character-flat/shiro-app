@@ -36,6 +36,13 @@
                 android:title="Pick download source manually"
                 app:defaultValue="false"
         />
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_warning_24"
+                app:key="ignore_ssl"
+                android:title="Ignore SSL Certificate"
+                app:defaultValue="true"
+                app:summary="If you disable this some sources may not work"
+        />
         <SwitchPreference android:key="acra.disable"
                           android:icon="@drawable/ic_baseline_bug_report_24"
                           android:title="@string/pref_disable_acra"

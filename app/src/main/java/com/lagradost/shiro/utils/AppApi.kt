@@ -377,16 +377,23 @@ object AppApi {
 
     fun FragmentActivity.popCurrentPage(isInPlayer: Boolean, isInExpandedView: Boolean, isInResults: Boolean) {
         println("POPP")
-        val currentFragment = supportFragmentManager.fragments.last {
+
+        val currentFragment = supportFragmentManager.fragments.lastOrNull {
             it.isVisible
         }
 
+
         if (tvActivity == null) {
-            if (settingsManager?.getBoolean("force_landscape", false) == true) {
-                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+            requestedOrientation = if (settingsManager?.getBoolean("force_landscape", false) == true) {
+                ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
             } else {
-                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
+        }
+
+        if (currentFragment == null) {
+            //this.onBackPressed()
+            return
         }
 
         // No fucked animations leaving the player :)

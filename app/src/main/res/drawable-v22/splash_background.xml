@@ -4,9 +4,5 @@
     <item>
         <color android:color="?attr/darkBar"/>
     </item>
-    <item android:width="120dp" android:height="120dp" android:gravity="center"
-          android:drawable="@drawable/shiro_logo_rounded"
-    >
-    </item>
 </layer-list>
 

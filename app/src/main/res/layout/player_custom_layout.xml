@@ -415,6 +415,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
                                 android:src="@drawable/ic_baseline_aspect_ratio_24"
+                                app:tint="@android:color/white"
                                 android:layout_gravity="center">
 
                         </ImageView>
@@ -459,6 +460,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
                                 android:src="@drawable/ic_baseline_speed_24"
+                                app:tint="@android:color/white"
                         >
 
                         </ImageView>
@@ -505,6 +507,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
                                 android:src="@drawable/ic_baseline_playlist_play_24"
+                                app:tint="@android:color/white"
                                 android:layout_gravity="center">
 
                         </ImageView>
@@ -549,6 +552,7 @@
                                 android:layout_width="24dp"
                                 android:layout_height="match_parent"
                                 android:src="@drawable/exo_controls_fastforward"
+                                app:tint="@android:color/white"
                                 android:layout_gravity="center">
                         </ImageView>
                         <TextView

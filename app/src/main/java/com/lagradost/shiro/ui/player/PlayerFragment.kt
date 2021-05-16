@@ -106,12 +106,14 @@ class PlayerFragment : Fragment() {
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
 
     private class SettingsContentObserver(handler: Handler?) : ContentObserver(handler) {
-        private val audioManager = activity?.getSystemService(AUDIO_SERVICE) as AudioManager
+        private val audioManager = activity?.getSystemService(AUDIO_SERVICE) as? AudioManager
         override fun onChange(selfChange: Boolean) {
-            val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+            val currentVolume = audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC)
+            val maxVolume = audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
             val progressBarRight = activity?.findViewById<ProgressBar>(R.id.progressBarRight)
-            progressBarRight?.progress = currentVolume * 100 / maxVolume
+            if (currentVolume != null && maxVolume != null) {
+                progressBarRight?.progress = currentVolume * 100 / maxVolume
+            }
         }
     }
 
@@ -507,7 +509,7 @@ class PlayerFragment : Fragment() {
         // No swiping on unloaded
         // https://exoplayer.dev/doc/reference/constant-values.html
         if (isLocked || exoPlayer.duration == -9223372036854775807L || (!swipeEnabled && !swipeVerticalEnabled)) return
-        val audioManager = activity?.getSystemService(AUDIO_SERVICE) as AudioManager
+        val audioManager = activity?.getSystemService(AUDIO_SERVICE) as? AudioManager
 
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -532,23 +534,25 @@ class PlayerFragment : Fragment() {
                     }
                     if (hasPassedVerticalSwipeThreshold && abs(diffY) >= 0.1) {
                         if (currentX > width * 0.5) {
-                            progressBarLeftHolder?.alpha = 1f
-                            val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-                            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                            val newVolume =
-                                minOf(maxVolume, currentVolume + (maxVolume / 20) * if (diffY > 0) -1 else 1)
-                            val newVolumeAdjusted =
-                                if (diffY > 0) AudioManager.ADJUST_LOWER else AudioManager.ADJUST_RAISE
-                            //println(newVolume.toFloat() / maxVolume)
-                            if (audioManager.isVolumeFixed) {
-                                // Lmao might earrape, we'll see in bug reports
-                                exoPlayer.volume = minOf(1f, maxOf(newVolume.toFloat() / maxVolume, 0f))
-                            } else {
-                                //audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
-                                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, newVolumeAdjusted, 0)
+                            if (audioManager != null) {
+                                progressBarLeftHolder?.alpha = 1f
+                                val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+                                val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                                val newVolume =
+                                    minOf(maxVolume, currentVolume + (maxVolume / 20) * if (diffY > 0) -1 else 1)
+                                val newVolumeAdjusted =
+                                    if (diffY > 0) AudioManager.ADJUST_LOWER else AudioManager.ADJUST_RAISE
+                                //println(newVolume.toFloat() / maxVolume)
+                                if (audioManager.isVolumeFixed) {
+                                    // Lmao might earrape, we'll see in bug reports
+                                    exoPlayer.volume = minOf(1f, maxOf(newVolume.toFloat() / maxVolume, 0f))
+                                } else {
+                                    //audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
+                                    audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, newVolumeAdjusted, 0)
+                                }
+                                progressBarLeft?.progress = newVolume * 100 / maxVolume
+                                currentY = motionEvent.rawY
                             }
-                            progressBarLeft?.progress = newVolume * 100 / maxVolume
-                            currentY = motionEvent.rawY
                         } else {
                             progressBarRightHolder?.alpha = 1f
                             val alpha = minOf(0.95f, brightness_overlay.alpha + 0.05f * if (diffY > 0) 1 else -1)
@@ -877,14 +881,16 @@ class PlayerFragment : Fragment() {
                         val isOnline =
                             currentUrl.url.startsWith("https://") || currentUrl.url.startsWith("http://")
 
-                        // Disables ssl check
-                        val sslContext: SSLContext = SSLContext.getInstance("TLS")
-                        sslContext.init(null, arrayOf(SSLTrustManager()), java.security.SecureRandom())
-                        sslContext.createSSLEngine()
-                        HttpsURLConnection.setDefaultHostnameVerifier { string: String, sslSession: SSLSession ->
-                            true
+                        if (settingsManager?.getBoolean("ignore_ssl", true) == true) {
+                            // Disables ssl check
+                            val sslContext: SSLContext = SSLContext.getInstance("TLS")
+                            sslContext.init(null, arrayOf(SSLTrustManager()), java.security.SecureRandom())
+                            sslContext.createSSLEngine()
+                            HttpsURLConnection.setDefaultHostnameVerifier { _: String, _: SSLSession ->
+                                true
+                            }
+                            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
                         }
-                        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
 
                         class CustomFactory : DataSource.Factory {
                             override fun createDataSource(): DataSource {
@@ -893,7 +899,6 @@ class PlayerFragment : Fragment() {
                                     /*FastAniApi.currentHeaders?.forEach {
                                         dataSource.setRequestProperty(it.key, it.value)
                                     }*/
-                                    println("REFERER ${currentUrl.referer}")
                                     dataSource.setRequestProperty("Referer", currentUrl.referer)
                                     dataSource
                                 } else {

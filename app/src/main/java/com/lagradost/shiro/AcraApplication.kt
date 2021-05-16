@@ -16,14 +16,18 @@ import kotlin.concurrent.thread
 class CustomReportSender : ReportSender {
     // Sends all your crashes to google forms
     override fun send(context: Context, report: CrashReportData) {
-        println("Report sent")
-        val url =
-            "https://docs.google.com/forms/u/0/d/e/1FAIpQLSf8U6zVn4YPGhbCQXUBNH4k5wlYC2KmmGuUZz4O6TL2o62cAw/formResponse"
-        val data = mapOf(
-            "entry.1083318133" to report.toJSON()
-        )
-        thread {
-            khttp.post(url, data = data)
+        try {
+            println("Report sent")
+            val url =
+                "https://docs.google.com/forms/u/0/d/e/1FAIpQLSf8U6zVn4YPGhbCQXUBNH4k5wlYC2KmmGuUZz4O6TL2o62cAw/formResponse"
+            val data = mapOf(
+                "entry.1083318133" to report.toJSON()
+            )
+            thread {
+                khttp.post(url, data = data)
+            }
+        } catch (e: Exception) {
+            println("ERROR SENDING BUG")
         }
     }
 }
