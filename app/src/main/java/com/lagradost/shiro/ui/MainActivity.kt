@@ -5,6 +5,7 @@ import android.app.PictureInPictureParams
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.content.res.Resources
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
@@ -35,6 +36,7 @@ import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
 import com.lagradost.shiro.utils.AniListApi.Companion.initGetUser
 import com.lagradost.shiro.utils.AppApi.changeStatusBarState
 import com.lagradost.shiro.utils.AppApi.checkWrite
+import com.lagradost.shiro.utils.AppApi.getColorFromAttr
 import com.lagradost.shiro.utils.AppApi.hasPIPPermission
 import com.lagradost.shiro.utils.AppApi.hideSystemUI
 import com.lagradost.shiro.utils.AppApi.init
@@ -349,6 +351,7 @@ class MainActivity : AppCompatActivity() {
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
         navController = findNavController(R.id.nav_host_fragment)
         navView.setupWithNavController(navController!!)
+        navView.itemRippleColor = activity?.getColorFromAttr(R.attr.colorPrimary)?.let { ColorStateList.valueOf(it) }
 
         //navView.itemBackground = ColorDrawable(getColorFromAttr(R.attr.darkBar))
 

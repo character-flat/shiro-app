@@ -13,7 +13,6 @@ import android.widget.LinearLayout
 import androidx.appcompat.widget.LinearLayoutCompat
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.shiro.*
-import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.result.ResultFragment
@@ -22,7 +21,6 @@ import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.fragment_download.*
 import java.io.File
 import java.lang.Exception
-import kotlin.concurrent.thread
 
 class DownloadFragment : Fragment() {
 
@@ -47,14 +45,12 @@ class DownloadFragment : Fragment() {
         val epData = hashMapOf<String, EpisodesDownloaded>()
         try {
             val childKeys = getChildren()
-
             downloadCenterText.text =
                 if (isDonor) getString(R.string.resultpage1) else getString(R.string.resultpage2)
             downloadCenterRoot.visibility = if (childKeys.isEmpty()) VISIBLE else GONE
 
             for (k in childKeys) {
                 val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(k)
-
                 if (child != null) {
                     if (!File(child.videoPath).exists()) { // FILE DOESN'T EXIT
                         val thumbFile = File(child.thumbPath)
@@ -93,7 +89,6 @@ class DownloadFragment : Fragment() {
             for (k in keys) {
                 val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(k)
                 if (parent != null) {
-                    println("KEY::: $k")
                     if (epData.containsKey(parent.slug)) {
                         val cardView = inflator.inflate(R.layout.download_card, null)
 
@@ -169,17 +164,11 @@ class DownloadFragment : Fragment() {
         const val LEGACY_DOWNLOADS = "legacy_downloads"
     }
 
-    fun getChildren(): List<String> {
+    private fun getChildren(): List<String> {
+        val keys = DataStore.getKeys(DOWNLOAD_CHILD_KEY)
         val legacyDownloads = DataStore.getKey(LEGACY_DOWNLOADS, true)
         if (legacyDownloads == true) {
             convertOldDownloads()
-        }
-        val keys = DataStore.getKeys(DOWNLOAD_CHILD_KEY)
-
-        thread {
-            keys.pmap {
-                DataStore.getKey<BookmarkedTitle>(it)
-            }
         }
 
         return keys
@@ -189,42 +178,40 @@ class DownloadFragment : Fragment() {
     private fun convertOldDownloads() {
         try {
             val keys = DataStore.getKeys(DOWNLOAD_CHILD_KEY)
-            thread {
-                keys.pmap {
-                    DataStore.getKey<DownloadManager.DownloadFileMetadataLegacy>(it)
-                }
-                keys.forEach {
-                    val data = DataStore.getKey<DownloadManager.DownloadFileMetadataLegacy>(it)
-                    if (data != null) {
-                        // NEEDS REMOVAL TO PREVENT DUPLICATES
-                        DataStore.removeKey(it)
-                        DataStore.setKey(
-                            it, DownloadManager.DownloadFileMetadata(
-                                data.internalId,
-                                data.slug,
-                                data.animeData,
-                                data.thumbPath,
-                                data.videoPath,
-                                data.videoTitle,
-                                data.episodeIndex,
-                                data.downloadAt,
-                                data.maxFileSize,
-                                ExtractorLink(
-                                    "Shiro",
-                                    data.downloadFileUrl,
-                                    "https://shiro.is/",
-                                    Qualities.UHD.value
-                                )
+            println("KEYS $keys")
+            keys.pmap {
+                DataStore.getKey<DownloadManager.DownloadFileMetadataLegacy>(it)
+            }
+            keys.forEach {
+                val data = DataStore.getKey<DownloadManager.DownloadFileMetadataLegacy>(it)
+                println("DATA $data $it")
+                if (data != null) {
+                    // NEEDS REMOVAL TO PREVENT DUPLICATES
+                    DataStore.removeKey(it)
+                    DataStore.setKey(
+                        it, DownloadManager.DownloadFileMetadata(
+                            data.internalId,
+                            data.slug,
+                            data.animeData,
+                            data.thumbPath,
+                            data.videoPath,
+                            data.videoTitle,
+                            data.episodeIndex,
+                            data.downloadAt,
+                            data.maxFileSize,
+                            ExtractorLink(
+                                "Shiro",
+                                data.downloadFileUrl,
+                                "https://shiro.is/",
+                                Qualities.UHD.value
                             )
                         )
-                    } else {
-                        DataStore.removeKey(it)
-                    }
+                    )
                 }
-                DataStore.setKey(LEGACY_DOWNLOADS, false)
             }
+            DataStore.setKey(LEGACY_DOWNLOADS, false)
         } catch (e: Exception) {
-            return
+            println("ERRROR IN convertOldDownloads")
         }
 
     }
