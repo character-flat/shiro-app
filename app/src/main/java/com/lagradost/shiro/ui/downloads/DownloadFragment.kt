@@ -165,13 +165,12 @@ class DownloadFragment : Fragment() {
     }
 
     private fun getChildren(): List<String> {
-        val keys = DataStore.getKeys(DOWNLOAD_CHILD_KEY)
         val legacyDownloads = DataStore.getKey(LEGACY_DOWNLOADS, true)
         if (legacyDownloads == true) {
             convertOldDownloads()
         }
 
-        return keys
+        return DataStore.getKeys(DOWNLOAD_CHILD_KEY)
     }
 
 
