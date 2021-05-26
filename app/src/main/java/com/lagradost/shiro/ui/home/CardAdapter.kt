@@ -119,11 +119,12 @@ class CardAdapter(
                 }
                 itemView.home_card_root.setOnClickListener {
                     println("SLIG ${cardInfo.slug}")
+                    val home = if (tvActivity != null) R.id.home_root_tv else R.id.homeRoot
                     /*val navController = findNavController(getCurrentActivity()!!, R.id.nav_host_fragment)
                     navController.navigate(R.id.navigation_results, Bundle().apply { putString("slug", cardInfo.slug) })*/
                     getCurrentActivity()?.supportFragmentManager?.beginTransaction()
                         ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                        ?.add(R.id.homeRoot, ResultFragment.newInstance(cardInfo.slug))
+                        ?.add(home, ResultFragment.newInstance(cardInfo.slug))
                         ?.commitAllowingStateLoss()
                 }
             }

@@ -11,6 +11,8 @@ android {
 
     defaultConfig {
         buildConfigField("boolean", "BETA", "false")
+        // Hack :)
+        buildConfigField("String", "BUILDDATE", "new java.text.SimpleDateFormat(\"yyyy-MM-dd HH:mm\").format(new java.util.Date(" + System.currentTimeMillis() + "L));")
         vectorDrawables.useSupportLibrary = true
         applicationId "com.lagradost.shiro"
         minSdkVersion 21

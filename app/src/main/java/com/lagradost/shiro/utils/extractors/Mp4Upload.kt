@@ -24,9 +24,8 @@ class Mp4Upload : ExtractorApi() {
                     }
                 }
             }
-            return null
         } catch (e: Exception) {
-            return null
         }
+            return null
     }
 }

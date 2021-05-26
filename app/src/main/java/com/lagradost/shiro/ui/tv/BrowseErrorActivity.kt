@@ -31,13 +31,13 @@ class BrowseErrorActivity : Activity() {
         mErrorFragment = ErrorFragment()
         fragmentManager
             .beginTransaction()
-            .add(R.id.main_browse_fragment, mErrorFragment)
+            .add(R.id.home_root_tv, mErrorFragment)
             .commitAllowingStateLoss()
 
         mSpinnerFragment = SpinnerFragment()
         fragmentManager
             .beginTransaction()
-            .add(R.id.main_browse_fragment, mSpinnerFragment)
+            .add(R.id.home_root_tv, mSpinnerFragment)
             .commitAllowingStateLoss()
 
         val handler = Handler()

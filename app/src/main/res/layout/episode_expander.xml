@@ -70,7 +70,7 @@
                 android:layout_marginBottom="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/title_season_cards"
+                android:id="@+id/episodes_res_view"
                 android:orientation="vertical"
                 app:spanCount="2"
                 tools:listitem="@layout/episode_result_compact"

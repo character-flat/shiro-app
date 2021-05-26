@@ -3,6 +3,7 @@ package com.lagradost.shiro.utils.extractors
 import com.lagradost.shiro.utils.ExtractorApi
 import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.APIS
+import com.lagradost.shiro.utils.pmap
 import org.jsoup.Jsoup
 
 class Vidstream {
@@ -38,7 +39,7 @@ class Vidstream {
                     //val name = element.text()
 
                     // Matches vidstream links with extractors
-                    APIS.filter { !it.requiresReferer || !isCasting}.forEach { api ->
+                    APIS.filter { !it.requiresReferer || !isCasting}.pmap { api ->
                         if (link.startsWith(api.mainUrl)) {
                             val extractedLinks = api.getUrl(link, url)
                             if (extractedLinks?.isNotEmpty() == true) {

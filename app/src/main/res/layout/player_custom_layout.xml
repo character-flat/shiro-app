@@ -399,7 +399,7 @@
                         android:layout_marginEnd="20dp"
                         card_view:cardCornerRadius="@dimen/card_corner_radius"
                         card_view:cardBackgroundColor="@color/transparent"
-                        android:foreground="?attr/selectableItemBackgroundBorderless"
+                        android:foreground="@drawable/ripple_always_white"
                         android:id="@+id/resize_player"
                         card_view:cardElevation="0dp"
 
@@ -444,7 +444,7 @@
                         android:layout_marginEnd="20dp"
                         card_view:cardCornerRadius="@dimen/card_corner_radius"
                         card_view:cardBackgroundColor="@color/transparent"
-                        android:foreground="?attr/selectableItemBackgroundBorderless"
+                        android:foreground="@drawable/ripple_always_white"
                         android:id="@+id/playback_speed_btt"
                         card_view:cardElevation="0dp"
 
@@ -491,7 +491,7 @@
                         android:layout_marginEnd="20dp"
                         card_view:cardCornerRadius="@dimen/card_corner_radius"
                         card_view:cardBackgroundColor="@color/transparent"
-                        android:foreground="?attr/selectableItemBackgroundBorderless"
+                        android:foreground="@drawable/ripple_always_white"
                         android:id="@+id/sources_btt"
                         card_view:cardElevation="0dp"
 
@@ -533,10 +533,9 @@
                         android:layout_marginBottom="5dp"
                         android:layout_marginStart="20dp"
                         android:layout_marginEnd="20dp"
-
                         card_view:cardCornerRadius="@dimen/card_corner_radius"
                         card_view:cardBackgroundColor="@color/transparent"
-                        android:foreground="?attr/selectableItemBackgroundBorderless"
+                        android:foreground="@drawable/ripple_always_white"
                         android:id="@+id/skip_op"
                         card_view:cardElevation="0dp"
 

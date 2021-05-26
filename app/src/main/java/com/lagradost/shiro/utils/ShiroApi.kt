@@ -374,12 +374,14 @@ class ShiroApi {
 
         fun getHome(canBeCached: Boolean, usedToken: Token? = currentToken): ShiroHomePage? {
             var res: ShiroHomePage? = null
+            println("HOME GETTING FETCHED ")
             if (canBeCached && cachedHome != null) {
                 res = cachedHome
             } else {
                 val url = "https://tapi.shiro.is/latest?token=${usedToken!!.token}"
                 try {
                     val response = khttp.get(url, timeout = 120.0)
+                            println("HOMEFFF ${response.text}")
                     res = response.text.let { mapper.readValue(it) }
                 } catch (e: Exception) {
                     println(e.message)

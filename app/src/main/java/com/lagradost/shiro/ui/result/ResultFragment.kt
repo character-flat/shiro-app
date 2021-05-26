@@ -401,7 +401,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
         val save = settingsManager!!.getBoolean("save_history", true)
         val data = if (isDefaultData) data else dataOther
         if (data?.episodes?.isNotEmpty() == true) {
-            if (title_season_cards?.adapter == null) {
+            if (episodes_res_view?.adapter == null) {
                 val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = activity?.let {
                     MasterEpisodeAdapter(
                         it,
@@ -409,12 +409,12 @@ private fun ToggleViewState(_isViewState: Boolean) {
                         save,
                     )
                 }
-                title_season_cards.adapter = adapter
-                (title_season_cards.adapter as MasterEpisodeAdapter).notifyDataSetChanged()
+                episodes_res_view.adapter = adapter
+                (episodes_res_view.adapter as MasterEpisodeAdapter).notifyDataSetChanged()
             } else {
-                (title_season_cards.adapter as MasterEpisodeAdapter).data = data
-                (title_season_cards.adapter as MasterEpisodeAdapter).items = generateItems(data.episodes!!, data.slug)
-                (title_season_cards.adapter as MasterEpisodeAdapter).notifyDataSetChanged()
+                (episodes_res_view.adapter as MasterEpisodeAdapter).data = data
+                (episodes_res_view.adapter as MasterEpisodeAdapter).items = generateItems(data.episodes!!, data.slug)
+                (episodes_res_view.adapter as MasterEpisodeAdapter).notifyDataSetChanged()
             }
         }
     }
@@ -427,7 +427,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
     }
 
     private fun onLeftVideoPlayer(event: Boolean) {
-        (title_season_cards?.adapter as? MasterEpisodeAdapter)?.notifyDataSetChanged()
+        (episodes_res_view?.adapter as? MasterEpisodeAdapter)?.notifyDataSetChanged()
         //loadSeason()
         /*if (tvActivity != null) {
             title_season_cards.requestFocus()
@@ -441,7 +441,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
         activity?.runOnUiThread {
             // Cast failure when going out of the page, making it catch to fully stop any of those crashes
             try {
-                (title_season_cards.adapter as MasterEpisodeAdapter).notifyDataSetChanged()
+                (episodes_res_view.adapter as MasterEpisodeAdapter).notifyDataSetChanged()
             } catch (e: java.lang.NullPointerException) {
             }
         }

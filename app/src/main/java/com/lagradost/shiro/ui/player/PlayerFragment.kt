@@ -63,6 +63,7 @@ import com.lagradost.shiro.utils.AppApi.setViewPosDur
 import com.lagradost.shiro.utils.AppApi.settingsManager
 import com.lagradost.shiro.utils.AppApi.showSystemUI
 import java.io.File
+import java.security.SecureRandom
 import javax.net.ssl.*
 import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
@@ -171,9 +172,11 @@ class PlayerFragment : Fragment() {
     private val playerResizeEnabled = true//settingsManager!!.getBoolean("player_resize_enabled", false)
     private val doubleTapTime = settingsManager!!.getInt("dobule_tap_time", 10)
     private val fastForwardTime = settingsManager!!.getInt("fast_forward_button_time", 10)
-
+    private val ignoreSSL = settingsManager?.getBoolean("ignore_ssl", false) == true
     private var selectedSource: Int = 0
     private var sources: List<ExtractorLink>? = null
+    private val defaultVerifier = HttpsURLConnection.getDefaultHostnameVerifier()
+    private val defaultFactory = HttpsURLConnection.getDefaultSSLSocketFactory()
 
     private val resizeModes = listOf(
         AspectRatioFrameLayout.RESIZE_MODE_FIT,
@@ -320,6 +323,13 @@ class PlayerFragment : Fragment() {
         MainActivity.onPlayerEvent -= ::handlePlayerEvent
         MainActivity.onAudioFocusEvent -= ::handleAudioFocusEvent
         activity?.contentResolver?.unregisterContentObserver(volumeObserver)
+
+        // Restores SSL
+        if (ignoreSSL) {
+            HttpsURLConnection.setDefaultHostnameVerifier(defaultVerifier)
+            HttpsURLConnection.setDefaultSSLSocketFactory(defaultFactory)
+        }
+
         super.onDestroy()
         //MainActivity.showSystemUI()
     }
@@ -784,7 +794,7 @@ class PlayerFragment : Fragment() {
                 playbackSpeed = speedsNumbers[which]
                 DataStore.setKey(PLAYBACK_SPEED_KEY, playbackSpeed)
                 val param = PlaybackParameters(playbackSpeed!!)
-                exoPlayer.setPlaybackParameters(param)
+                exoPlayer.playbackParameters = param
                 player_speed_text.text = "Speed (${playbackSpeed}x)".replace(".0x", "x")
 
                 dialog.dismiss()
@@ -796,11 +806,11 @@ class PlayerFragment : Fragment() {
         sources_btt.setOnClickListener {
             lateinit var dialog: AlertDialog
             sources?.let {
-                val speedsText = sources!!.map { it.name }
+                val sourcesText = sources!!.map { it.name }
 
                 val builder = AlertDialog.Builder(requireContext(), R.style.AlertDialogCustom)
                 builder.setTitle("Pick source")
-                builder.setSingleChoiceItems(speedsText.toTypedArray(), selectedSource) { _, which ->
+                builder.setSingleChoiceItems(sourcesText.toTypedArray(), selectedSource) { _, which ->
                     //val speed = speedsText[which]
                     //Toast.makeText(requireContext(), "$speed selected.", Toast.LENGTH_SHORT).show()
                     selectedSource = which
@@ -881,10 +891,10 @@ class PlayerFragment : Fragment() {
                         val isOnline =
                             currentUrl.url.startsWith("https://") || currentUrl.url.startsWith("http://")
 
-                        if (settingsManager?.getBoolean("ignore_ssl", true) == true) {
+                        if (ignoreSSL) {
                             // Disables ssl check
                             val sslContext: SSLContext = SSLContext.getInstance("TLS")
-                            sslContext.init(null, arrayOf(SSLTrustManager()), java.security.SecureRandom())
+                            sslContext.init(null, arrayOf(SSLTrustManager()), SecureRandom())
                             sslContext.createSSLEngine()
                             HttpsURLConnection.setDefaultHostnameVerifier { _: String, _: SSLSession ->
                                 true
@@ -991,7 +1001,7 @@ class PlayerFragment : Fragment() {
                         exoPlayer.setHandleAudioBecomingNoisy(true) // WHEN HEADPHONES ARE PLUGGED OUT https://github.com/google/ExoPlayer/issues/7288
                         player_view.player = exoPlayer
                         // Sets the speed
-                        exoPlayer.setPlaybackParameters(PlaybackParameters(playbackSpeed!!))
+                        exoPlayer.playbackParameters = PlaybackParameters(playbackSpeed!!)
                         player_speed_text?.text = "Speed (${playbackSpeed}x)".replace(".0x", "x")
 
                         //https://stackoverflow.com/questions/47731779/detect-pause-resume-in-exoplayer

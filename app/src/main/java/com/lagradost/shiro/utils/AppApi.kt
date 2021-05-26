@@ -200,7 +200,10 @@ object AppApi {
         val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)
         val filteredData = if (hideDubbed) data?.filter { it?.name?.endsWith("Dubbed") == false } else data
         resView.adapter = newAdapter
-        (resView.adapter as CardAdapter).cardList = filteredData as ArrayList<ShiroApi.CommonAnimePage?>
+        // TODO FIX DOEST WORK PROPERLY WITH TV (SINGLETONLIST)
+        (filteredData as? ArrayList<ShiroApi.CommonAnimePage?>)?.let {
+            (resView.adapter as CardAdapter).cardList = it
+        }
         (resView.adapter as CardAdapter).notifyDataSetChanged()
 
         textView.setOnClickListener {

@@ -33,7 +33,7 @@ class TvActivity : AppCompatActivity() {
         if ((isInSearch || isInSettings) && !isInResults) {
             this.supportFragmentManager.beginTransaction()
                 .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                .replace(R.id.main_browse_fragment, MainFragment())
+                .replace(R.id.home_root_tv, MainFragment())
                 .commit()
         } else if (isInResults) {
             popCurrentPage(isInPlayer, isInExpandedView, isInResults)
@@ -73,7 +73,7 @@ class TvActivity : AppCompatActivity() {
         return if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
             try {
                 val nextFocused =
-                    FocusFinder.getInstance().findNextFocus(main_browse_fragment, currentFocus, View.FOCUS_UP)
+                    FocusFinder.getInstance().findNextFocus(home_root_tv, currentFocus, View.FOCUS_UP)
                 if (nextFocused == null) {
                     //println("Null focus")
                     search_icon.requestFocus()

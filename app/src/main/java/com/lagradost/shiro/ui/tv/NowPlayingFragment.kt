@@ -1,5 +1,6 @@
 package com.lagradost.shiro.ui.tv
 
+import android.annotation.SuppressLint
 import com.lagradost.shiro.R
 
 /*
@@ -20,6 +21,7 @@ import com.lagradost.shiro.R
 
 
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
@@ -29,6 +31,8 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
+import android.widget.Toast.LENGTH_LONG
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.leanback.app.PlaybackSupportFragment
 import androidx.leanback.app.VideoSupportFragment
@@ -50,9 +54,11 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.MimeTypes
 import com.lagradost.shiro.ui.player.PlayerData
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onLeftPlayer
+import com.lagradost.shiro.utils.AppApi.getCurrentActivity
 import com.lagradost.shiro.utils.AppApi.getViewPosDur
 import com.lagradost.shiro.utils.AppApi.setViewPosDur
 import com.lagradost.shiro.utils.DataStore.mapper
+import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
@@ -77,12 +83,15 @@ class NowPlayingFragment : VideoSupportFragment() {
 
     /** Glue layer between the player and our UI */
     private lateinit var playerGlue: MediaPlayerGlue
-    private var currentUrl: String? = null
+    private var currentUrl: ExtractorLink? = null
     private lateinit var exoPlayer: SimpleExoPlayer
 
     var dataString: String? = null
     var data: ShiroApi.AnimePageData? = null
     var episodeIndex: Int? = null
+
+    private var selectedSource: Int = 0
+    private var sources: List<ExtractorLink>? = null
 
     // Prevent clicking next episode button multiple times
     private var isLoadingNextEpisode = false
@@ -100,6 +109,7 @@ class NowPlayingFragment : VideoSupportFragment() {
         private val actionFastForward = PlaybackControlsRow.FastForwardAction(context)
         private val actionSkipOp = PlaybackControlsRow.FastForwardAction(context)
         private val actionNextEpisode = PlaybackControlsRow.SkipNextAction(context)
+        private val actionSources = PlaybackControlsRow.MoreActions(context)
 
         //private val actionClosedCaptions = PlaybackControlsRow.ClosedCaptioningAction(context)
 
@@ -123,12 +133,16 @@ class NowPlayingFragment : VideoSupportFragment() {
             actionFastForward.icon = ContextCompat.getDrawable(context, R.drawable.netflix_skip_forward)
             actionSkipOp.icon = ContextCompat.getDrawable(context, R.drawable.ic_baseline_fast_forward_24)
             actionNextEpisode.icon = ContextCompat.getDrawable(context, R.drawable.exo_controls_next)
+            actionSources.icon = ContextCompat.getDrawable(context, R.drawable.ic_baseline_playlist_play_24)
 
             // Append rewind and fast forward actions to our player, keeping the play/pause actions
             // created by default by the glue
-            adapter.add(actionRewind)
-            adapter.add(actionFastForward)
+            // adapter.add(actionRewind)
+            // adapter.add(actionFastForward)
             adapter.add(actionSkipOp)
+            if (sources?.size ?: 0 > 1) {
+                adapter.add(actionSources)
+            }
             if (episodeIndex!! + 1 < data?.episodes?.size!!) {
                 adapter.add(actionNextEpisode)
             }
@@ -149,6 +163,18 @@ class NowPlayingFragment : VideoSupportFragment() {
                     initPlayer()
                 } else {
                 }
+            }
+            actionSources -> {
+                sources?.let {
+                    selectedSource += 1 % sources!!.size
+                    //val speed = speedsText[which]
+                    savePos()
+                    exoPlayer.release()
+                    initPlayer()
+                }
+                val sourcesTxt = sources!!.map { it.name }
+                Toast.makeText(requireContext(), "${sourcesTxt[selectedSource]} selected.", Toast.LENGTH_SHORT).show()
+
             }
             else -> super.onActionClicked(action)
         }
@@ -223,7 +249,7 @@ class NowPlayingFragment : VideoSupportFragment() {
                 && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0
             ) {
                 val playerData = PlayerData(
-                    data!!.name, currentUrl, episodeIndex, 0, data, 0L, data!!.slug
+                    data!!.name, currentUrl?.url, episodeIndex, 0, data, 0L, data!!.slug
                 )
                 setViewPosDur(playerData, exoPlayer.currentPosition, exoPlayer.duration)
             }
@@ -244,7 +270,7 @@ class NowPlayingFragment : VideoSupportFragment() {
                 return@thread
             }
             val isOnline =
-                currentUrl?.startsWith("https://") == true || currentUrl?.startsWith("http://") == true
+                currentUrl?.url?.startsWith("https://") == true || currentUrl?.url?.startsWith("http://") == true
             //database = TvMediaDatabase.getInstance(requireContext())
             //val metadata = args.metadata
 
@@ -265,7 +291,7 @@ class NowPlayingFragment : VideoSupportFragment() {
                         /*FastAniApi.currentHeaders?.forEach {
                             dataSource.setRequestProperty(it.key, it.value)
                         }*/
-                        dataSource.setRequestProperty("Referer", "https://cherry.subsplea.se/")
+                        currentUrl?.referer?.let { dataSource.setRequestProperty("Referer", it) }
                         dataSource
                     } else {
                         DefaultDataSourceFactory(requireContext(), USER_AGENT).createDataSource()
@@ -274,27 +300,30 @@ class NowPlayingFragment : VideoSupportFragment() {
             }
 
             if (isOnline) {
-                _mediaItem.setUri(currentUrl)
+                _mediaItem.setUri(currentUrl?.url)
             } else {
                 currentUrl?.let {
-                    _mediaItem.setUri(Uri.fromFile(File(it)))
+                    _mediaItem.setUri(Uri.fromFile(File(it.url)))
                 }
             }
 
 
             val mediaItem = _mediaItem.build()
-            val trackSelector = DefaultTrackSelector(requireContext())
-            // Disable subtitles
-            trackSelector.parameters = DefaultTrackSelector.ParametersBuilder(requireContext())
-                .setRendererDisabled(C.TRACK_TYPE_VIDEO, true)
-                .setRendererDisabled(C.TRACK_TYPE_TEXT, true)
-                .setDisabledTextTrackSelectionFlags(C.TRACK_TYPE_TEXT)
-                .clearSelectionOverrides()
-                .build()
-
-            val _exoPlayer =
-                SimpleExoPlayer.Builder(this.requireContext())
+            val _exoPlayer = if (context != null) {
+                println("CONTEXT IS NULL!")
+                val trackSelector = DefaultTrackSelector(requireContext())
+                // Disable subtitles
+                trackSelector.parameters = DefaultTrackSelector.ParametersBuilder(requireContext())
+                    .setRendererDisabled(C.TRACK_TYPE_VIDEO, true)
+                    .setRendererDisabled(C.TRACK_TYPE_TEXT, true)
+                    .setDisabledTextTrackSelectionFlags(C.TRACK_TYPE_TEXT)
+                    .clearSelectionOverrides()
+                    .build()
+                SimpleExoPlayer.Builder(requireContext())
                     .setTrackSelector(trackSelector)
+            } else {
+                SimpleExoPlayer.Builder(getCurrentActivity()!!)
+            }
 
             _exoPlayer.setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
 
@@ -319,6 +348,42 @@ class NowPlayingFragment : VideoSupportFragment() {
                     setMediaItem(mediaItem, false)
                     prepare()
                 }
+                exoPlayer.addListener(object : Player.Listener {
+                    override fun onPlayerError(error: ExoPlaybackException) {
+                        // Lets pray this doesn't spam Toasts :)
+                        when (error.type) {
+                            ExoPlaybackException.TYPE_SOURCE -> {
+                                if (currentUrl?.url != "") {
+                                    Toast.makeText(
+                                        activity,
+                                        "Source error\n" + error.sourceException.message,
+                                        LENGTH_LONG
+                                    )
+                                        .show()
+                                }
+                            }
+                            ExoPlaybackException.TYPE_REMOTE -> {
+                                Toast.makeText(activity, "Remote error", LENGTH_LONG)
+                                    .show()
+                            }
+                            ExoPlaybackException.TYPE_RENDERER -> {
+                                Toast.makeText(
+                                    activity,
+                                    "Renderer error\n" + error.rendererException.message,
+                                    LENGTH_LONG
+                                )
+                                    .show()
+                            }
+                            ExoPlaybackException.TYPE_UNEXPECTED -> {
+                                Toast.makeText(
+                                    activity,
+                                    "Unexpected player error\n" + error.unexpectedException.message,
+                                    LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    }
+                })
 
                 // Initializes the video player
                 //player = ExoPlayerFactory.newSimpleInstance(requireContext())
@@ -414,10 +479,13 @@ class NowPlayingFragment : VideoSupportFragment() {
         return data?.episodes?.get(episodeIndex!!)//data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.episodeIndex!!)
     }
 
-    private fun getCurrentUrl(): String? {
-        //println("MAN::: " + data?.url)
-        //if (data?.url != null) return data?.url!!
-        return getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { getVideoLink(it) }?.get(0)?.url
+    private fun getCurrentUrls(): List<ExtractorLink>? {
+        sources = getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { getVideoLink(it) }
+        return sources
+    }
+
+    private fun getCurrentUrl(): ExtractorLink? {
+        return getCurrentUrls()?.getOrNull(selectedSource)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -456,7 +524,7 @@ class NowPlayingFragment : VideoSupportFragment() {
 
     override fun onResume() {
         super.onResume()
-
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
         if (this::exoPlayer.isInitialized) {
             mediaSessionConnector.setPlayer(exoPlayer)
         }

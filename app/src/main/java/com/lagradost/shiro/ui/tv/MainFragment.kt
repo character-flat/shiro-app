@@ -8,18 +8,13 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.AutoTransition
-import androidx.transition.ChangeBounds
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ui.home.HomeViewModel
 import com.lagradost.shiro.ui.home.MasterCardAdapter
-import com.lagradost.shiro.ui.settings.SettingsFragment
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
-import com.lagradost.shiro.utils.ShiroApi.Companion.search
 import kotlinx.android.synthetic.main.fragment_main_tv.*
-import kotlin.concurrent.thread
 
 
 class MainFragment : Fragment() {
@@ -72,7 +67,7 @@ class MainFragment : Fragment() {
         }*/
         search_icon.setOnClickListener {
             activity?.supportFragmentManager?.beginTransaction()
-                ?.replace(R.id.main_browse_fragment, SearchFragmentTv())
+                ?.replace(R.id.home_root_tv, SearchFragmentTv())
                 ?.commit()
         }
         mainViewModel.apiData.observe(viewLifecycleOwner) {

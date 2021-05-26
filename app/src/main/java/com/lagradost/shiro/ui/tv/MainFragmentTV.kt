@@ -159,7 +159,7 @@ class MainFragmentTV : BrowseSupportFragment() {
         setOnSearchClickedListener {
             activity?.supportFragmentManager?.beginTransaction()
                 ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                ?.replace(R.id.main_browse_fragment, MySearchFragment())
+                ?.replace(R.id.home_root_tv, MySearchFragment())
                 ?.commit()
         }
         onItemViewClickedListener = ItemViewClickedListener()
@@ -177,7 +177,7 @@ class MainFragmentTV : BrowseSupportFragment() {
                 Log.d(TAG, "Item: $item")
                 activity?.supportFragmentManager?.beginTransaction()
                     ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                    ?.add(R.id.main_browse_fragment, ResultFragment.newInstance(item.slug))
+                    ?.add(R.id.home_root_tv, ResultFragment.newInstance(item.slug))
                     ?.addToBackStack("ResultFragment")
                     ?.commitAllowingStateLoss()
                 /*val intent = Intent(activity, DetailsActivityTV::class.java)

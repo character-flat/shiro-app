@@ -13,12 +13,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.*
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.cast.CastPlayer
-import com.google.android.exoplayer2.extractor.Extractor
 import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.gms.cast.MediaInfo
-import com.google.android.gms.cast.MediaLoadOptions
 import com.google.android.gms.cast.MediaMetadata
 import com.google.android.gms.cast.MediaQueueItem
 import com.google.android.gms.cast.MediaStatus.*
@@ -46,6 +43,7 @@ import com.lagradost.shiro.utils.AppApi.settingsManager
 import kotlinx.android.synthetic.main.episode_result_compact.view.*
 import kotlinx.android.synthetic.main.episode_result_compact.view.cardBg
 import kotlinx.android.synthetic.main.episode_result_compact.view.cardTitle
+import kotlinx.android.synthetic.main.fragment_results.view.*
 import org.json.JSONObject
 import java.io.File
 import kotlin.concurrent.thread
@@ -53,8 +51,8 @@ import kotlin.concurrent.thread
 class EpisodeAdapter(
     val activity: FragmentActivity,
     val data: ShiroApi.AnimePageData,
-    private val resView: AutofitRecyclerView,
-    val parentPosition: Int,
+    private val resView: View,
+    private val parentPosition: Int,
     rangeStart: Int? = null,
     rangeStop: Int? = null,
 ) :
@@ -82,7 +80,7 @@ class EpisodeAdapter(
             //lastSelectedEpisode = position
             if (prevFocus != null) {
                 if (kotlin.math.abs(position - prevFocus!!) > 3 * 2) {
-                    this.resView.layoutManager?.scrollToPosition(0)
+                    this.resView.episodes_res_view.layoutManager?.scrollToPosition(0)
                 }
             }
             prevFocus = position
@@ -102,16 +100,24 @@ class EpisodeAdapter(
 
     class CardViewHolder
     constructor(
-        itemView: View, val activity: FragmentActivity, private val resView: RecyclerView,
+        itemView: View, val activity: FragmentActivity, private val resView: View,
         val data: ShiroApi.AnimePageData, val start: Int, val parentPosition: Int
     ) :
         RecyclerView.ViewHolder(itemView) {
-        // To prevent having to redo this operation on every bind
-
         val card: LinearLayout = itemView.episode_result_root
 
         // Downloads is only updated when re-bound!
         fun bind(position: Int) {
+            if (position == 0) {
+                card.requestFocus()
+            }
+            if (position == 0 || position == 1) {
+                card.setOnFocusChangeListener { view: View, focused: Boolean ->
+                    resView.isFocusable = focused
+                }
+            }
+
+
             //println("START $start pos $position")
             val episodePos = start + position
             val key = getViewKey(data.slug, episodePos)
@@ -184,11 +190,19 @@ class EpisodeAdapter(
                         castEpisode(data, episodePos)
                     } else {
                         thread {
-                            activity.loadPlayer(episodePos, 0L, data)
+                            if (tvActivity != null) {
+                                val intent = Intent(tvActivity, PlaybackActivity::class.java)
+                                intent.putExtra(DetailsActivityTV.MOVIE, mapper.writeValueAsString(data))
+                                intent.putExtra("position", episodePos)
+                                tvActivity?.startActivity(intent)
+                            } else {
+                                activity.loadPlayer(episodePos, 0L, data)
+                            }
                         }
                     }
                 } else {
                     thread {
+                        //TODO FIX CAN BE TOO MUCH DATA ONE PIECE
                         if (tvActivity != null) {
                             val intent = Intent(tvActivity, PlaybackActivity::class.java)
                             intent.putExtra(DetailsActivityTV.MOVIE, mapper.writeValueAsString(data))
@@ -208,7 +222,7 @@ class EpisodeAdapter(
                     DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
                 }
                 // Hack, but works
-                (activity.findViewById<RecyclerView>(R.id.title_season_cards).adapter as MasterEpisodeAdapter).notifyItemChanged(
+                (activity.findViewById<RecyclerView>(R.id.episodes_res_view).adapter as MasterEpisodeAdapter).notifyItemChanged(
                     parentPosition
                 )
                 //resView.adapter?.notifyDataSetChanged()

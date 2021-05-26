@@ -286,7 +286,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         if (BuildConfig.BETA) {
             coolMode?.summary = "Overrides the Beta theme"
         }
-        versionButton?.summary = BuildConfig.VERSION_NAME
+
+        versionButton?.summary = BuildConfig.VERSION_NAME + " Built on " + BuildConfig.BUILDDATE
         versionButton?.setOnPreferenceClickListener {
             if (easterEggClicks == 7 && coolMode?.isChecked == false) {
                 Toast.makeText(context, "Unlocked cool mode", Toast.LENGTH_LONG).show()

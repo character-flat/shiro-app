@@ -68,19 +68,20 @@ class MasterEpisodeAdapter(
             val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder> = EpisodeAdapter(
                 activity,
                 data,
-                itemView.title_season_cards,
+                itemView,
                 position,
                 item.start,
                 item.end,
             )
-            itemView.title_season_cards.adapter = adapter
-            (itemView.title_season_cards.adapter as EpisodeAdapter).notifyDataSetChanged()
+            itemView.episodes_res_view.adapter = adapter
+            (itemView.episodes_res_view.adapter as EpisodeAdapter).notifyDataSetChanged()
 
             //val transition: Transition = ChangeTransform()
             //transition.duration = 3000
             //TransitionManager.beginDelayedTransition(itemView.cardBg, transition)
+
             itemView.expand_icon.rotation = if (item.visible) 90f else 0f
-            itemView.title_season_cards.visibility = if (item.visible) VISIBLE else GONE
+            itemView.episodes_res_view.visibility = if (item.visible) VISIBLE else GONE
 
             var isSeen = false
             for (episode in item.start..item.end) {

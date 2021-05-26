@@ -22,7 +22,7 @@ class MySearchFragment : SearchSupportFragment(), SearchSupportFragment.SearchRe
             if (item is ShiroApi.ShiroSearchResponseShow) {
                 activity?.supportFragmentManager?.beginTransaction()
                     ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                    ?.add(R.id.main_browse_fragment, ResultFragment.newInstance(item.slug))
+                    ?.add(R.id.home_root_tv, ResultFragment.newInstance(item.slug))
                     ?.addToBackStack("ResultFragment")
                     ?.commitAllowingStateLoss()
             }

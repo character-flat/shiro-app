@@ -356,7 +356,7 @@
                             android:layout_marginTop="10dp"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:id="@+id/title_season_cards"
+                            android:id="@+id/episodes_res_view"
                             android:orientation="vertical"
                             android:minHeight="250dp"
                             tools:listitem="@layout/episode_expander"
