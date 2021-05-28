@@ -10,8 +10,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.google.common.math.IntMath.mod
 import com.lagradost.shiro.R
-import com.lagradost.shiro.utils.AppApi.getColorFromAttr
-import com.lagradost.shiro.utils.AppApi.getViewKey
+import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.getViewKey
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.VIEWSTATE_KEY

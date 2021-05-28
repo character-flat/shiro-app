@@ -30,6 +30,7 @@ import android.os.*
 import android.view.*
 import android.view.View.*
 import android.view.animation.AccelerateInterpolator
+import android.view.animation.Animation
 import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
@@ -52,16 +53,16 @@ import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedVi
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.*
-import com.lagradost.shiro.utils.AppApi.getColorFromAttr
-import com.lagradost.shiro.utils.AppApi.getViewKey
-import com.lagradost.shiro.utils.AppApi.getViewPosDur
-import com.lagradost.shiro.utils.AppApi.hideKeyboard
-import com.lagradost.shiro.utils.AppApi.hideSystemUI
-import com.lagradost.shiro.utils.AppApi.popCurrentPage
-import com.lagradost.shiro.utils.AppApi.requestAudioFocus
-import com.lagradost.shiro.utils.AppApi.setViewPosDur
-import com.lagradost.shiro.utils.AppApi.settingsManager
-import com.lagradost.shiro.utils.AppApi.showSystemUI
+import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.getViewKey
+import com.lagradost.shiro.utils.AppUtils.getViewPosDur
+import com.lagradost.shiro.utils.AppUtils.hideKeyboard
+import com.lagradost.shiro.utils.AppUtils.hideSystemUI
+import com.lagradost.shiro.utils.AppUtils.popCurrentPage
+import com.lagradost.shiro.utils.AppUtils.requestAudioFocus
+import com.lagradost.shiro.utils.AppUtils.setViewPosDur
+import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.AppUtils.showSystemUI
 import java.io.File
 import java.security.SecureRandom
 import javax.net.ssl.*
@@ -161,6 +162,7 @@ class PlayerFragment : Fragment() {
     private var hasPassedSkipLimit = false
     private var preventHorizontalSwipe = false
     private var hasPassedVerticalSwipeThreshold = false
+    private var cachedVolume = 0f
 
     private var playbackSpeed = DataStore.getKey(PLAYBACK_SPEED_KEY, 1f)
 
@@ -349,14 +351,14 @@ class PlayerFragment : Fragment() {
         exo_rew.isClickable = isClick
         exo_prev.isClickable = isClick
         video_go_back.isClickable = isClick
-        exo_progress.isClickable = isClick
+        //exo_progress.isClickable = isClick
         next_episode_btt.isClickable = isClick
         playback_speed_btt.isClickable = isClick
         skip_op.isClickable = isClick
         resize_player.isClickable = isClick
 
         // Clickable doesn't seem to work on com.google.android.exoplayer2.ui.DefaultTimeBar
-        exo_progress.visibility = if (isLocked) INVISIBLE else VISIBLE
+        exo_progress.isEnabled = !isLocked
 
         val fadeTo = if (!isLocked) 1f else 0f
         val fadeAnimation = AlphaAnimation(1f - fadeTo, fadeTo)
@@ -366,6 +368,7 @@ class PlayerFragment : Fragment() {
 
         shadow_overlay.startAnimation(fadeAnimation)
     }
+
 
     private var receiver: BroadcastReceiver? = null
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
@@ -542,32 +545,53 @@ class PlayerFragment : Fragment() {
                         preventHorizontalSwipe = true
 
                     }
-                    if (hasPassedVerticalSwipeThreshold && abs(diffY) >= 0.1) {
+                    if (hasPassedVerticalSwipeThreshold) {
                         if (currentX > width * 0.5) {
-                            if (audioManager != null) {
-                                progressBarLeftHolder?.alpha = 1f
+                            if (audioManager != null && progressBarLeftHolder != null) {
                                 val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
                                 val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                                val newVolume =
-                                    minOf(maxVolume, currentVolume + (maxVolume / 20) * if (diffY > 0) -1 else 1)
-                                val newVolumeAdjusted =
-                                    if (diffY > 0) AudioManager.ADJUST_LOWER else AudioManager.ADJUST_RAISE
-                                //println(newVolume.toFloat() / maxVolume)
+
+                                if (progressBarLeftHolder.alpha <= 0f) {
+                                    cachedVolume = currentVolume.toFloat() / maxVolume.toFloat()
+                                }
+
+                                progressBarLeftHolder?.alpha = 1f
+                                val vol = minOf(
+                                    1f,
+                                    cachedVolume - diffY.toFloat() * 0.5f
+                                ) // 0.05f *if (diffY > 0) 1 else -1
+                                cachedVolume = vol
+                                //progressBarRight?.progress = ((1f - alpha) * 100).toInt()
+
+                                progressBarLeft?.max = 100 * 100
+                                progressBarLeft?.progress = ((vol) * 100 * 100).toInt()
+
                                 if (audioManager.isVolumeFixed) {
                                     // Lmao might earrape, we'll see in bug reports
-                                    exoPlayer.volume = minOf(1f, maxOf(newVolume.toFloat() / maxVolume, 0f))
+                                    exoPlayer.volume = minOf(1f, maxOf(vol, 0f))
                                 } else {
+                                    // audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, vol*, 0)
+                                    val desiredVol = (vol * maxVolume).toInt()
+                                    if (desiredVol != currentVolume) {
+                                        val newVolumeAdjusted =
+                                            if (desiredVol < currentVolume) AudioManager.ADJUST_LOWER else AudioManager.ADJUST_RAISE
+
+                                        audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, newVolumeAdjusted, 0)
+                                    }
                                     //audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
-                                    audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, newVolumeAdjusted, 0)
                                 }
-                                progressBarLeft?.progress = newVolume * 100 / maxVolume
                                 currentY = motionEvent.rawY
                             }
-                        } else {
+                        } else if (progressBarRightHolder != null) {
                             progressBarRightHolder?.alpha = 1f
-                            val alpha = minOf(0.95f, brightness_overlay.alpha + 0.05f * if (diffY > 0) 1 else -1)
+                            val alpha = minOf(
+                                0.95f,
+                                brightness_overlay.alpha + diffY.toFloat() * 0.5f
+                            ) // 0.05f *if (diffY > 0) 1 else -1
                             brightness_overlay?.alpha = alpha
-                            progressBarRight?.progress = ((1f - alpha) * 100).toInt()
+
+                            progressBarRight?.max = 100 * 100
+                            progressBarRight?.progress = ((1f - alpha) * 100 * 100).toInt()
 
                             currentY = motionEvent.rawY
                         }
@@ -766,7 +790,7 @@ class PlayerFragment : Fragment() {
         }
         exo_rew_text.text = fastForwardTime.toString()
         exo_ffwd_text.text = fastForwardTime.toString()
-        exo_rew.setOnClickListener {
+        /*exo_rew.setOnClickListener {
             val rotateLeft = AnimationUtils.loadAnimation(context, R.anim.rotate_left)
             exo_rew.startAnimation(rotateLeft)
             seekTime(fastForwardTime * -1000L)
@@ -774,6 +798,54 @@ class PlayerFragment : Fragment() {
         exo_ffwd.setOnClickListener {
             val rotateRight = AnimationUtils.loadAnimation(context, R.anim.rotate_right)
             exo_ffwd.startAnimation(rotateRight)
+            seekTime(fastForwardTime * 1000L)
+        }*/
+
+
+
+        exo_rew_text.text = fastForwardTime.toString()
+        exo_ffwd_text.text = fastForwardTime.toString()
+        exo_rew.setOnClickListener {
+            val rotateLeft = AnimationUtils.loadAnimation(context, R.anim.rotate_left)
+            exo_rew.startAnimation(rotateLeft)
+
+            val goLeft = AnimationUtils.loadAnimation(context, R.anim.go_left)
+            goLeft.setAnimationListener(object : Animation.AnimationListener {
+                override fun onAnimationStart(animation: Animation?) {
+                }
+
+                override fun onAnimationRepeat(animation: Animation?) {
+
+                }
+
+                override fun onAnimationEnd(animation: Animation?) {
+                    exo_rew_text.post { exo_rew_text.text = "$fastForwardTime" }
+                }
+            })
+            exo_rew_text.startAnimation(goLeft)
+            exo_rew_text.text = "-$fastForwardTime"
+            seekTime(fastForwardTime * -1000L)
+
+        }
+        exo_ffwd.setOnClickListener {
+            val rotateRight = AnimationUtils.loadAnimation(context, R.anim.rotate_right)
+            exo_ffwd.startAnimation(rotateRight)
+
+            val goRight = AnimationUtils.loadAnimation(context, R.anim.go_right)
+            goRight.setAnimationListener(object : Animation.AnimationListener {
+                override fun onAnimationStart(animation: Animation?) {
+                }
+
+                override fun onAnimationRepeat(animation: Animation?) {
+
+                }
+
+                override fun onAnimationEnd(animation: Animation?) {
+                    exo_ffwd_text.post { exo_ffwd_text.text = "$fastForwardTime" }
+                }
+            })
+            exo_ffwd_text.startAnimation(goRight)
+            exo_ffwd_text.text = "+$fastForwardTime"
             seekTime(fastForwardTime * 1000L)
         }
 

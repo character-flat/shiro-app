@@ -27,12 +27,12 @@ import com.lagradost.shiro.ui.result.ResultFragment.Companion.fixEpTitle
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isViewState
 import com.lagradost.shiro.utils.*
-import com.lagradost.shiro.utils.AppApi.getColorFromAttr
-import com.lagradost.shiro.utils.AppApi.getViewKey
-import com.lagradost.shiro.utils.AppApi.getViewPosDur
-import com.lagradost.shiro.utils.AppApi.loadPlayer
-import com.lagradost.shiro.utils.AppApi.popCurrentPage
-import com.lagradost.shiro.utils.AppApi.settingsManager
+import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.getViewKey
+import com.lagradost.shiro.utils.AppUtils.getViewPosDur
+import com.lagradost.shiro.utils.AppUtils.loadPlayer
+import com.lagradost.shiro.utils.AppUtils.popCurrentPage
+import com.lagradost.shiro.utils.AppUtils.settingsManager
 
 const val SLUG = "slug"
 

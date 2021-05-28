@@ -12,7 +12,7 @@ import com.google.android.gms.cast.framework.CastSession
 import com.google.android.gms.cast.framework.media.uicontroller.UIController
 import com.google.android.gms.cast.framework.media.widget.ExpandedControllerActivity
 import com.lagradost.shiro.R
-import com.lagradost.shiro.utils.AppApi.settingsManager
+import com.lagradost.shiro.utils.AppUtils.settingsManager
 import org.json.JSONObject
 
 class SkipOpController(val view: ImageView) : UIController() {

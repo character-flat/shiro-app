@@ -37,15 +37,15 @@ import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
-import com.lagradost.shiro.utils.AppApi.canPlayNextEpisode
-import com.lagradost.shiro.utils.AppApi.getColorFromAttr
-import com.lagradost.shiro.utils.AppApi.getLatestSeenEpisode
-import com.lagradost.shiro.utils.AppApi.getViewPosDur
-import com.lagradost.shiro.utils.AppApi.hideKeyboard
-import com.lagradost.shiro.utils.AppApi.isCastApiAvailable
-import com.lagradost.shiro.utils.AppApi.loadPlayer
-import com.lagradost.shiro.utils.AppApi.popCurrentPage
-import com.lagradost.shiro.utils.AppApi.settingsManager
+import com.lagradost.shiro.utils.AppUtils.canPlayNextEpisode
+import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.getLatestSeenEpisode
+import com.lagradost.shiro.utils.AppUtils.getViewPosDur
+import com.lagradost.shiro.utils.AppUtils.hideKeyboard
+import com.lagradost.shiro.utils.AppUtils.isCastApiAvailable
+import com.lagradost.shiro.utils.AppUtils.loadPlayer
+import com.lagradost.shiro.utils.AppUtils.popCurrentPage
+import com.lagradost.shiro.utils.AppUtils.settingsManager
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.fragment_results_new.*
 import java.util.*
@@ -70,6 +70,7 @@ class ResultFragment : Fragment() {
         //var lastSelectedEpisode = 0
         var isInResults: Boolean = false
         var isViewState: Boolean = true
+        val onLeftResults = Event<Boolean>()
         fun fixEpTitle(
             _title: String?,
             epNum: Int,
@@ -421,6 +422,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
 
     override fun onDestroy() {
         super.onDestroy()
+        onLeftResults.invoke(true)
         PlayerFragment.onLeftPlayer -= ::onLeftVideoPlayer
         DownloadManager.downloadStartEvent -= ::onDownloadStarted
         isInResults = false

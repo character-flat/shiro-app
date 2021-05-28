@@ -41,18 +41,22 @@ import com.lagradost.shiro.ui.home.ExpandedHomeFragment
 import com.lagradost.shiro.ui.player.PlayerData
 import com.lagradost.shiro.ui.player.PlayerFragment
 import com.lagradost.shiro.ui.result.ResultFragment
+import com.lagradost.shiro.ui.tv.DetailsActivityTV
+import com.lagradost.shiro.ui.tv.PlaybackActivity
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.DataStore.mapper
+import com.lagradost.shiro.utils.extractors.Vidstream
 import java.net.URL
 import java.net.URLDecoder
 import java.security.MessageDigest
 import kotlin.concurrent.thread
 
 
-object AppApi {
+object AppUtils {
     var settingsManager: SharedPreferences? = null
-
+    val allApi: Vidstream = Vidstream()
     fun FragmentActivity.init() {
+
         settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
     }
 
@@ -200,8 +204,8 @@ object AppApi {
         val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)
         val filteredData = if (hideDubbed) data?.filter { it?.name?.endsWith("Dubbed") == false } else data
         resView.adapter = newAdapter
-        // TODO FIX DOEST WORK PROPERLY WITH TV (SINGLETONLIST)
-        (filteredData as? ArrayList<ShiroApi.CommonAnimePage?>)?.let {
+
+        (ArrayList(filteredData) as? ArrayList<ShiroApi.CommonAnimePage?>)?.let {
             (resView.adapter as CardAdapter).cardList = it
         }
         (resView.adapter as CardAdapter).notifyDataSetChanged()
@@ -225,10 +229,15 @@ object AppApi {
         }
     }
 
-    fun Context.displayCardData(data: List<LastEpisodeInfo?>?, resView: RecyclerView) {
+    fun FragmentActivity.displayCardData(
+        data: List<LastEpisodeInfo?>?,
+        resView: RecyclerView,
+        isOnTop: Boolean = false
+    ) {
         val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder> = CardContinueAdapter(
             this,
             listOf(),
+            isOnTop
         )
 
         //val snapHelper = LinearSnapHelper()
@@ -489,14 +498,22 @@ object AppApi {
 
     fun FragmentActivity.loadPlayer(data: PlayerData) {
         println("LAODED PLAYER")
-        this.supportFragmentManager.beginTransaction()
-            .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-            .add(
-                R.id.videoRoot, PlayerFragment.newInstance(
-                    data
+        if (tvActivity != null) {
+            //TODO FIX CAN BE TOO MUCH DATA ONE PIECE
+            val intent = Intent(tvActivity, PlaybackActivity::class.java)
+            intent.putExtra(DetailsActivityTV.MOVIE, mapper.writeValueAsString(data.card))
+            intent.putExtra("position", data.episodeIndex)
+            tvActivity?.startActivity(intent)
+        } else {
+            this.supportFragmentManager.beginTransaction()
+                .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                .add(
+                    R.id.videoRoot, PlayerFragment.newInstance(
+                        data
+                    )
                 )
-            )
-            .commit()
+                .commit()
+        }
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
     }
 

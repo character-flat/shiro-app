@@ -33,6 +33,8 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:clipChildren="false"
+                android:visibility="gone"
+                tools:visibility="visible"
                 android:id="@+id/tv_menu_bar"
         >
             <ImageView

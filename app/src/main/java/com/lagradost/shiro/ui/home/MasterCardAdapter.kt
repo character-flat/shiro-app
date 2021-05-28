@@ -8,11 +8,9 @@ import android.widget.LinearLayout
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.lagradost.shiro.*
-import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.LastEpisodeInfo
-import com.lagradost.shiro.utils.AppApi.displayCardData
+import com.lagradost.shiro.utils.AppUtils.displayCardData
 import com.lagradost.shiro.utils.ShiroApi
-import kotlinx.android.synthetic.main.home_card.view.*
 import kotlinx.android.synthetic.main.vertical_grid_view_child.view.*
 
 
@@ -81,20 +79,21 @@ class MasterCardAdapter(
         fun bind(pair: Pair<List<Any?>?, String?>, position: Int) {
             card.expand_text.text = pair.second
             card.visibility = VISIBLE
-            val isFirst = position == 0
+            val isOnTop = position == 0
             when {
-                pair.first as? List<ShiroApi.CommonAnimePage?> != null -> {
+                pair.first as? List<ShiroApi.CommonAnimePage?> != null && pair.second != activity.getString(R.string.continue_watching) -> {
                     activity.displayCardData(
                         pair.first as List<ShiroApi.CommonAnimePage?>?,
                         card.horizontalGridView,
                         card.expand_text,
-                        isFirst
+                        isOnTop
                     )
                 }
                 pair.first as? List<LastEpisodeInfo?> != null -> {
                     activity.displayCardData(
                         pair.first as? List<LastEpisodeInfo>,
                         card.horizontalGridView,
+                        isOnTop
                     )
                 }
                 else -> {

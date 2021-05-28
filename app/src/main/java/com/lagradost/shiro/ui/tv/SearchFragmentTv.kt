@@ -6,13 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.leanback.widget.SearchBar
-import androidx.recyclerview.widget.RecyclerView
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.home.CardAdapter
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.isInSearch
-import com.lagradost.shiro.utils.AppApi.displayCardData
-import com.lagradost.shiro.utils.AppApi.settingsManager
-import com.lagradost.shiro.utils.ShiroApi
+import com.lagradost.shiro.utils.AppUtils.displayCardData
 import com.lagradost.shiro.utils.ShiroApi.Companion.quickSearch
 import com.lagradost.shiro.utils.ShiroApi.Companion.search
 import kotlinx.android.synthetic.main.fragment_search_tv.*

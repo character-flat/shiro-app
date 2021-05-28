@@ -1,5 +1,6 @@
 package com.lagradost.shiro.utils.extractors
 
+import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.utils.ExtractorApi
 import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.APIS
@@ -9,6 +10,7 @@ import org.jsoup.Jsoup
 class Vidstream {
     val name: String = "Vidstream"
     private val mainUrl: String = "https://gogo-stream.com"
+    public var providersActive = HashSet<String>()
 
     private fun getExtractorUrl(id: String): String {
         return "$mainUrl/streaming.php?id=$id"
@@ -24,13 +26,19 @@ class Vidstream {
                 val extractedLinksList: MutableList<ExtractorLink> = mutableListOf()
 
                 // --- Shiro ---
-                val shiroUrl = Shiro().getExtractorUrl(id)
-                val shiroSource = Shiro().getUrl(shiroUrl)
-                shiroSource?.forEach { extractedLinksList.add(it) }
+                val shiro = Shiro()
+                if (providersActive.size == 0 || providersActive.contains(shiro.name)) {
+                    val shiroUrl = shiro.getExtractorUrl(id)
+                    val shiroSource = shiro.getUrl(shiroUrl)
+                    shiroSource?.forEach { extractedLinksList.add(it) }
+                }
                 // --- MultiQuality ---
-                val multiQualityUrl = MultiQuality().getExtractorUrl(id)
-                val multiQualitySource = MultiQuality().getUrl(multiQualityUrl)
-                multiQualitySource?.forEach { extractedLinksList.add(it) }
+                val multiQuality = MultiQuality()
+                if (providersActive.size == 0 || providersActive.contains(multiQuality.name)) {
+                    val multiQualityUrl = multiQuality.getExtractorUrl(id)
+                    val multiQualitySource = multiQuality.getUrl(multiQualityUrl)
+                    multiQualitySource?.forEach { extractedLinksList.add(it) }
+                }
                 // --------------------
 
                 // All vidstream links passed to extractors
@@ -39,7 +47,11 @@ class Vidstream {
                     //val name = element.text()
 
                     // Matches vidstream links with extractors
-                    APIS.filter { !it.requiresReferer || !isCasting}.pmap { api ->
+                    APIS.filter {
+                        (!it.requiresReferer || !isCasting) && (providersActive.size == 0 || providersActive.contains(
+                            it.name
+                        ))
+                    }.pmap { api ->
                         if (link.startsWith(api.mainUrl)) {
                             val extractedLinks = api.getUrl(link, url)
                             if (extractedLinks?.isNotEmpty() == true) {

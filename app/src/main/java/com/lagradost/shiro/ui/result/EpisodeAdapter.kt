@@ -1,6 +1,5 @@
 package com.lagradost.shiro.ui.result
 
-import android.content.Intent
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
@@ -23,23 +22,18 @@ import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
 import com.google.android.gms.common.images.WebImage
 import com.lagradost.shiro.*
-import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
-import com.lagradost.shiro.ui.AutofitRecyclerView
 import com.lagradost.shiro.ui.toPx
-import com.lagradost.shiro.ui.tv.DetailsActivityTV
-import com.lagradost.shiro.ui.tv.PlaybackActivity
-import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
-import com.lagradost.shiro.utils.AppApi.getColorFromAttr
-import com.lagradost.shiro.utils.AppApi.getLatestSeenEpisode
-import com.lagradost.shiro.utils.AppApi.getViewKey
-import com.lagradost.shiro.utils.AppApi.getViewPosDur
-import com.lagradost.shiro.utils.AppApi.isCastApiAvailable
-import com.lagradost.shiro.utils.AppApi.loadPlayer
-import com.lagradost.shiro.utils.AppApi.settingsManager
+import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.getLatestSeenEpisode
+import com.lagradost.shiro.utils.AppUtils.getViewKey
+import com.lagradost.shiro.utils.AppUtils.getViewPosDur
+import com.lagradost.shiro.utils.AppUtils.isCastApiAvailable
+import com.lagradost.shiro.utils.AppUtils.loadPlayer
+import com.lagradost.shiro.utils.AppUtils.settingsManager
 import kotlinx.android.synthetic.main.episode_result_compact.view.*
 import kotlinx.android.synthetic.main.episode_result_compact.view.cardBg
 import kotlinx.android.synthetic.main.episode_result_compact.view.cardTitle
@@ -190,27 +184,12 @@ class EpisodeAdapter(
                         castEpisode(data, episodePos)
                     } else {
                         thread {
-                            if (tvActivity != null) {
-                                val intent = Intent(tvActivity, PlaybackActivity::class.java)
-                                intent.putExtra(DetailsActivityTV.MOVIE, mapper.writeValueAsString(data))
-                                intent.putExtra("position", episodePos)
-                                tvActivity?.startActivity(intent)
-                            } else {
-                                activity.loadPlayer(episodePos, 0L, data)
-                            }
+                            activity.loadPlayer(episodePos, 0L, data)
                         }
                     }
                 } else {
                     thread {
-                        //TODO FIX CAN BE TOO MUCH DATA ONE PIECE
-                        if (tvActivity != null) {
-                            val intent = Intent(tvActivity, PlaybackActivity::class.java)
-                            intent.putExtra(DetailsActivityTV.MOVIE, mapper.writeValueAsString(data))
-                            intent.putExtra("position", episodePos)
-                            tvActivity?.startActivity(intent)
-                        } else {
-                            activity.loadPlayer(episodePos, 0L, data)
-                        }
+                        activity.loadPlayer(episodePos, 0L, data)
                     }
                 }
             }

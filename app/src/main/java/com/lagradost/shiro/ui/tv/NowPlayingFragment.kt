@@ -1,6 +1,5 @@
 package com.lagradost.shiro.ui.tv
 
-import android.annotation.SuppressLint
 import com.lagradost.shiro.R
 
 /*
@@ -32,7 +31,6 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.leanback.app.PlaybackSupportFragment
 import androidx.leanback.app.VideoSupportFragment
@@ -54,9 +52,9 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.MimeTypes
 import com.lagradost.shiro.ui.player.PlayerData
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onLeftPlayer
-import com.lagradost.shiro.utils.AppApi.getCurrentActivity
-import com.lagradost.shiro.utils.AppApi.getViewPosDur
-import com.lagradost.shiro.utils.AppApi.setViewPosDur
+import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
+import com.lagradost.shiro.utils.AppUtils.getViewPosDur
+import com.lagradost.shiro.utils.AppUtils.setViewPosDur
 import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.ShiroApi
@@ -91,7 +89,7 @@ class NowPlayingFragment : VideoSupportFragment() {
     var episodeIndex: Int? = null
 
     private var selectedSource: Int = 0
-    private var sources: List<ExtractorLink>? = null
+    private var sources: Pair<Int?, List<ExtractorLink>?> = Pair(null, null)
 
     // Prevent clicking next episode button multiple times
     private var isLoadingNextEpisode = false
@@ -140,7 +138,9 @@ class NowPlayingFragment : VideoSupportFragment() {
             // adapter.add(actionRewind)
             // adapter.add(actionFastForward)
             adapter.add(actionSkipOp)
-            if (sources?.size ?: 0 > 1) {
+
+            println("THIS123 ${sources.second}")
+            if (sources.second?.size ?: 0 > 1) {
                 adapter.add(actionSources)
             }
             if (episodeIndex!! + 1 < data?.episodes?.size!!) {
@@ -155,25 +155,31 @@ class NowPlayingFragment : VideoSupportFragment() {
             actionSkipOp -> skipForward(SKIP_OP_MILLIS)
             actionNextEpisode -> {
                 if (episodeIndex != null && !isLoadingNextEpisode) {
+                    savePos()
                     playerGlue.host.hideControlsOverlay(false)
                     isLoadingNextEpisode = true
                     episodeIndex = minOf(episodeIndex!! + 1, data?.episodes?.size!! - 1)
-
+                    selectedSource = 0
                     releasePlayer()
                     initPlayer()
                 } else {
                 }
             }
             actionSources -> {
-                sources?.let {
-                    selectedSource += 1 % sources!!.size
+                sources.second?.let {
+                    selectedSource = (selectedSource + 1) % it.size
                     //val speed = speedsText[which]
                     savePos()
                     exoPlayer.release()
                     initPlayer()
                 }
-                val sourcesTxt = sources!!.map { it.name }
-                Toast.makeText(requireContext(), "${sourcesTxt[selectedSource]} selected.", Toast.LENGTH_SHORT).show()
+                val sourcesTxt =
+                    sources.second!!.mapIndexed { index, extractorLink -> if (index == selectedSource) "✦ ${extractorLink.name} selected" else extractorLink.name }
+                Toast.makeText(
+                    requireContext(),
+                    "${sourcesTxt.joinToString(separator = "\n")}",
+                    Toast.LENGTH_SHORT
+                ).show()
 
             }
             else -> super.onActionClicked(action)
@@ -244,13 +250,13 @@ class NowPlayingFragment : VideoSupportFragment() {
         println("Savepos")
         if (this::exoPlayer.isInitialized) {
             if (((data?.slug != null
-
                         && episodeIndex != null) || data != null)
                 && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0
             ) {
                 val playerData = PlayerData(
-                    data!!.name, currentUrl?.url, episodeIndex, 0, data, 0L, data!!.slug
+                    data!!.name, currentUrl?.url, episodeIndex, 0, data, playbackPosition, data!!.slug
                 )
+                //println("SAVED POS $playbackPosition ${exoPlayer.currentPosition}")
                 setViewPosDur(playerData, exoPlayer.currentPosition, exoPlayer.duration)
             }
         }
@@ -450,6 +456,7 @@ class NowPlayingFragment : VideoSupportFragment() {
                         /*val navController = Navigation.findNavController(
                                 requireActivity(), R.id.fragment_container)
                         navController.currentDestination?.id?.let { navController.popBackStack(it, true) }*/
+                        savePos()
                         activity?.onBackPressed()
                         return@setOnKeyInterceptListener true
                     }
@@ -479,19 +486,25 @@ class NowPlayingFragment : VideoSupportFragment() {
         return data?.episodes?.get(episodeIndex!!)//data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.episodeIndex!!)
     }
 
-    private fun getCurrentUrls(): List<ExtractorLink>? {
-        sources = getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { getVideoLink(it) }
+    private fun getCurrentUrls(): Pair<Int?, List<ExtractorLink>?> {
+        // Cached, first is index, second is links
+        sources = if (sources.first == episodeIndex && episodeIndex != null) {
+            sources
+        } else {
+            Pair(episodeIndex, getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { getVideoLink(it) })
+        }
         return sources
     }
 
     private fun getCurrentUrl(): ExtractorLink? {
-        return getCurrentUrls()?.getOrNull(selectedSource)
+        return getCurrentUrls().second?.getOrNull(selectedSource)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         dataString =
             activity?.intent?.getSerializableExtra(DetailsActivityTV.MOVIE) as String
+        //playbackPosition = activity?.intent?.getSerializableExtra(DetailsActivityTV.PLAYERPOS) as? Long ?: 0L
         data = mapper.readValue<ShiroApi.AnimePageData>(dataString!!)
         episodeIndex = activity?.intent?.getSerializableExtra("position") as Int
         mediaSession = MediaSessionCompat(requireContext(), getString(R.string.app_name))

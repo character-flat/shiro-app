@@ -1,13 +1,16 @@
 package com.lagradost.shiro.ui.home
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.ScaleAnimation
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.core.view.updateMargins
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -15,10 +18,11 @@ import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.*
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
-import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.LastEpisodeInfo
-import com.lagradost.shiro.utils.AppApi.loadPlayer
+import com.lagradost.shiro.ui.toPx
+import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
+import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.VIEW_LST_KEY
 import kotlinx.android.synthetic.main.home_card.view.home_card_root
@@ -28,17 +32,18 @@ import kotlinx.android.synthetic.main.home_card_recently_seen.view.*
 
 
 class CardContinueAdapter(
-    context: Context,
-    animeList: List<LastEpisodeInfo?>?
+    activity: FragmentActivity,
+    animeList: List<LastEpisodeInfo?>?,
+    private val isOnTop: Boolean = false
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var cardList = animeList
-    var context: Context? = context
+    var activity: FragmentActivity? = activity
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return CardViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.home_card_recently_seen, parent, false),
-            context!!
+            activity!!
         )
     }
 
@@ -47,7 +52,30 @@ class CardContinueAdapter(
             is CardViewHolder -> {
                 holder.bind(cardList?.get(position))
             }
-
+        }
+        holder.itemView.setOnFocusChangeListener { view, hasFocus ->
+            val toSize = if (hasFocus) 1.1f else 1.0f
+            val fromSize = if (!hasFocus) 1.1f else 1.0f
+            val animation = ScaleAnimation(
+                fromSize,
+                toSize,
+                fromSize,
+                toSize,
+                Animation.RELATIVE_TO_SELF,
+                0.5f,
+                Animation.RELATIVE_TO_SELF,
+                0.5f
+            )
+            animation.duration = 100
+            animation.isFillEnabled = true
+            animation.fillAfter = true
+            view.startAnimation(animation)
+            view.home_card_recently_seen.radius = if (hasFocus) 0F else 6.toPx.toFloat()
+            if (isOnTop) {
+                activity?.findViewById<View>(R.id.tv_menu_bar)?.visibility = VISIBLE
+            } else {
+                activity?.findViewById<View>(R.id.tv_menu_bar)?.visibility = GONE
+            }
         }
     }
 
@@ -55,45 +83,61 @@ class CardContinueAdapter(
         return if (cardList?.size == null) 0 else cardList!!.size
     }
 
-    class CardViewHolder(itemView: View, _context: Context) : RecyclerView.ViewHolder(itemView) {
-        val context = _context
+    class CardViewHolder(itemView: View, val activity: FragmentActivity) : RecyclerView.ViewHolder(itemView) {
         val card: ImageView = itemView.imageView
         fun bind(cardInfo: LastEpisodeInfo?) {
             if (cardInfo != null) {
+                if (tvActivity != null) {
+                    val param = itemView.layoutParams as ViewGroup.MarginLayoutParams
+                    param.updateMargins(
+                        5.toPx,
+                        10.toPx,
+                        5.toPx,
+                        10.toPx
+                    )
+                    itemView.layoutParams = param
+                }
                 val glideUrl =
                     GlideUrl(cardInfo.id?.let { getFullUrlCdn(it.image) })
                 //  activity?.runOnUiThread {
-                context.let {
-                    GlideApp.with(it)
-                        .load(glideUrl)
-                        .transition(DrawableTransitionOptions.withCrossFade(100))
-                        .into(card.imageView)
-                }
+
+                GlideApp.with(activity)
+                    .load(glideUrl)
+                    .transition(DrawableTransitionOptions.withCrossFade(100))
+                    .into(card.imageView)
+
                 itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).start()
                 itemView.imageText.text =
                     if (cardInfo.id?.name?.endsWith("Dubbed") == true) "✦ Episode ${cardInfo.episodeIndex + 1}" else "Episode ${cardInfo.episodeIndex + 1}"
-                if (cardInfo.id != null) {
+                if (cardInfo.id != null && tvActivity == null) {
                     itemView.infoButton.visibility = VISIBLE
                     itemView.infoButton.setOnClickListener {
-                        activity?.supportFragmentManager?.beginTransaction()
-                            ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                            ?.add(R.id.homeRoot, ResultFragment.newInstance(cardInfo.id.slug))
-                            ?.commitAllowingStateLoss()
+                        activity.supportFragmentManager.beginTransaction()
+                            .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                            .add(R.id.homeRoot, ResultFragment.newInstance(cardInfo.id.slug))
+                            .commitAllowingStateLoss()
 
                     }
                 } else {
                     itemView.infoButton.visibility = GONE
                 }
                 itemView.home_card_root.setOnLongClickListener {
-                    Toast.makeText(context, cardInfo.id?.name, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, cardInfo.id?.name, Toast.LENGTH_SHORT).show()
                     return@setOnLongClickListener true
                 }
                 itemView.home_card_root.setOnClickListener {
-                    cardInfo.id?.let { it1 -> activity?.loadPlayer(cardInfo.episodeIndex, cardInfo.pos, it1) }
+                    cardInfo.id?.let { data ->
+                        activity.loadPlayer(cardInfo.episodeIndex, cardInfo.pos, data)
+                    }
                 }
-                itemView.removeButton.setOnClickListener {
-                    DataStore.removeKey(VIEW_LST_KEY, cardInfo.aniListId)
-                    requestHome(true)
+                if (tvActivity != null) {
+                    itemView.removeButton.visibility = GONE
+                } else {
+                    itemView.removeButton.visibility = VISIBLE
+                    itemView.removeButton.setOnClickListener {
+                        DataStore.removeKey(VIEW_LST_KEY, cardInfo.aniListId)
+                        requestHome(true)
+                    }
                 }
                 if (cardInfo.dur > 0 && cardInfo.pos > 0) {
                     var progress: Int = (cardInfo.pos * 100L / cardInfo.dur).toInt()

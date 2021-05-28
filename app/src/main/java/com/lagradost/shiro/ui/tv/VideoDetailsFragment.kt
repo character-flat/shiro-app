@@ -36,9 +36,8 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.ui.GlideApp
-import com.lagradost.shiro.utils.AppApi.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 
-import java.util.Collections
 import kotlin.math.roundToInt
 
 /**

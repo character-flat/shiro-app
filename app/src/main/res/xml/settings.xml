@@ -105,6 +105,13 @@
             android:title="Player"
             app:isPreferenceVisible="true"
     >
+        <MultiSelectListPreference
+                app:key="selected_providers"
+                android:title="Link loading sources"
+                android:icon="@drawable/ic_baseline_playlist_play_24"
+                app:useSimpleSummaryProvider="true"
+                app:summary="Selecting none is the same as selecting all"
+        />
         <SwitchPreference
                 android:icon="@drawable/ic_baseline_picture_in_picture_alt_24"
                 app:key="pip_enabled"

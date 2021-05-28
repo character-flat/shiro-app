@@ -10,7 +10,8 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.LastEpisodeInfo
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
-import com.lagradost.shiro.utils.AppApi.md5
+import com.lagradost.shiro.utils.AppUtils.allApi
+import com.lagradost.shiro.utils.AppUtils.md5
 import com.lagradost.shiro.utils.extractors.Vidstream
 import khttp.structures.cookie.CookieJar
 import java.lang.Exception
@@ -101,8 +102,8 @@ class ShiroApi {
         @JsonProperty("image") override val image: String,
         @JsonProperty("japanese") val japanese: String?,
         @JsonProperty("language") val language: String,
-        @JsonProperty("name") override val name: String,
-        @JsonProperty("slug") override val slug: String,
+        @JsonProperty("name") override var name: String,
+        @JsonProperty("slug") override var slug: String,
         @JsonProperty("synopsis") val synopsis: String,
         @JsonProperty("type") val type: String?,
         @JsonProperty("views") val views: Int?,
@@ -192,7 +193,7 @@ class ShiroApi {
             println("GETTING URL FOR $id iScasting $isCasting")
             return try {
                 //val url = Vidstream().getExtractorUrl(id)
-                val urls = Vidstream().getUrl(id, isCasting = isCasting).sortedBy { -it.quality }.distinctBy { it.url }
+                val urls = allApi.getUrl(id, isCasting = isCasting).sortedBy { -it.quality }.distinctBy { it.url }
                 println("Extracted URLS: $urls")
                 return urls
             } catch (e: Exception) {

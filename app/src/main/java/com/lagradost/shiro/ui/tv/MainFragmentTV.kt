@@ -34,7 +34,7 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.lagradost.shiro.R
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.ui.result.ResultFragment
-import com.lagradost.shiro.utils.AppApi.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 
 /**

@@ -1,20 +1,15 @@
 package com.lagradost.shiro.ui.home
 
-import android.app.Activity
 import android.content.Context
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.*
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.ScaleAnimation
-import android.widget.ScrollView
 import android.widget.Toast
 import androidx.core.view.updateMargins
-import androidx.core.view.updateMarginsRelative
 import androidx.fragment.app.FragmentActivity
-import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -22,13 +17,15 @@ import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.*
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.ui.GlideApp
-import com.lagradost.shiro.ui.MainActivity.Companion.navController
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
-import com.lagradost.shiro.utils.AppApi.fixCardTitle
-import com.lagradost.shiro.utils.AppApi.getCurrentActivity
+import com.lagradost.shiro.utils.AppUtils.fixCardTitle
+import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.ShiroApi
 import kotlinx.android.synthetic.main.home_card.view.*
+import kotlinx.android.synthetic.main.home_card.view.home_card_root
+import kotlinx.android.synthetic.main.home_card.view.imageText
+import kotlinx.android.synthetic.main.home_card.view.imageView
 
 
 class CardAdapter(

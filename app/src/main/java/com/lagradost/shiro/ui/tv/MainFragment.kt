@@ -4,7 +4,10 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.ScrollView
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.AutoTransition
@@ -12,6 +15,7 @@ import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.home.MasterCardAdapter
+import com.lagradost.shiro.ui.result.ResultFragment.Companion.onLeftResults
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import kotlinx.android.synthetic.main.fragment_main_tv.*
@@ -65,6 +69,11 @@ class MainFragment : Fragment() {
                 ?.replace(R.id.main_browse_fragment, SettingsFragment())
                 ?.commit()
         }*/
+        tv_menu_bar.visibility = VISIBLE
+
+        onLeftResults += ::restoreState
+
+
         search_icon.setOnClickListener {
             activity?.supportFragmentManager?.beginTransaction()
                 ?.replace(R.id.home_root_tv, SearchFragmentTv())
@@ -75,12 +84,26 @@ class MainFragment : Fragment() {
         }
     }
 
+    private fun restoreState(boolean: Boolean) {
+        println("LEFT RESULTS")
+        activity?.supportFragmentManager
+            ?.beginTransaction()
+            ?.detach(this)
+            ?.attach(this)
+            ?.commit()
+    }
+
     override fun onResume() {
         requestHome()
         mainViewModel.apiData.observe(viewLifecycleOwner) {
             homeLoaded(it)
         }
         super.onResume()
+    }
+
+    override fun onDestroy() {
+        onLeftResults -= ::restoreState
+        super.onDestroy()
     }
 
     companion object {

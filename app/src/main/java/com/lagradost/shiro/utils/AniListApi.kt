@@ -9,9 +9,9 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
-import com.lagradost.shiro.utils.AppApi.openBrowser
-import com.lagradost.shiro.utils.AppApi.splitQuery
-import com.lagradost.shiro.utils.AppApi.unixTime
+import com.lagradost.shiro.utils.AppUtils.openBrowser
+import com.lagradost.shiro.utils.AppUtils.splitQuery
+import com.lagradost.shiro.utils.AppUtils.unixTime
 import java.net.URL
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread

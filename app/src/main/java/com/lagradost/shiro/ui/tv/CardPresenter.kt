@@ -5,7 +5,6 @@ import android.text.TextUtils
 import androidx.leanback.widget.ImageCardView
 import androidx.leanback.widget.Presenter
 import androidx.core.content.ContextCompat
-import android.util.Log
 import android.view.ViewGroup
 import android.widget.TextView
 
@@ -14,8 +13,8 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.ui.GlideApp
-import com.lagradost.shiro.utils.AppApi.fixCardTitle
-import com.lagradost.shiro.utils.AppApi.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.fixCardTitle
+import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import kotlin.properties.Delegates
 
 /**

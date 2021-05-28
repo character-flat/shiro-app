@@ -5,31 +5,27 @@ import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.FrameLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import androidx.preference.PreferenceManager
-import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.ChangeBounds
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.shiro.*
-import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.ShiroApi.Companion.cachedHome
 import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.getRandomAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import com.lagradost.shiro.ui.*
-import com.lagradost.shiro.utils.AppApi.displayCardData
-import com.lagradost.shiro.utils.AppApi.getNextEpisode
-import com.lagradost.shiro.utils.AppApi.loadPage
-import com.lagradost.shiro.utils.AppApi.loadPlayer
-import com.lagradost.shiro.utils.AppApi.settingsManager
+import com.lagradost.shiro.utils.AppUtils.displayCardData
+import com.lagradost.shiro.utils.AppUtils.getNextEpisode
+import com.lagradost.shiro.utils.AppUtils.loadPage
+import com.lagradost.shiro.utils.AppUtils.loadPlayer
+import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.ShiroApi
 import kotlinx.android.synthetic.main.download_card.*
 import kotlinx.android.synthetic.main.fragment_home.*
@@ -145,9 +141,15 @@ class HomeFragment : Fragment() {
 
     private fun generateRandom(randomPage: ShiroApi.AnimePage? = null) {
         thread {
+            val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)
             val random: ShiroApi.AnimePage? = randomPage ?: getRandomAnimePage()
             cachedHome?.random = random
             val randomData = random?.data
+            // Hack, assuming all dubbed shows has a normal equivalent
+            if (hideDubbed && randomData != null) {
+                randomData.slug = randomData.slug.removeSuffix("-dubbed")
+                randomData.name = randomData.name.removeSuffix("Dubbed")
+            }
             activity?.runOnUiThread {
                 try {
                     if (randomData != null) {
@@ -174,7 +176,8 @@ class HomeFragment : Fragment() {
                         }
 
                         main_name.text = randomData.name
-                        main_genres.text = randomData.genres?.joinToString(prefix = "", postfix = "", separator = " • ")
+                        main_genres.text =
+                            randomData.genres?.joinToString(prefix = "", postfix = "", separator = " • ")
                         main_watch_button.setOnClickListener {
                             //MainActivity.loadPage(cardInfo!!)
                             Toast.makeText(activity, "Loading link", Toast.LENGTH_SHORT).show()

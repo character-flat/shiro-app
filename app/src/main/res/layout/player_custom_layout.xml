@@ -203,7 +203,8 @@
             <FrameLayout android:layout_width="wrap_content"
                          android:layout_marginEnd="140dp"
                          android:layout_gravity="center_vertical"
-                         android:layout_height="wrap_content">
+                         android:layout_height="wrap_content"
+            >
                 <TextView
                         android:id="@+id/exo_rew_text"
                         android:textColor="@color/white"
@@ -212,11 +213,12 @@
                         android:layout_gravity="center"
                         android:textFontWeight="900"
                         android:gravity="center"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp">
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content">
                 </TextView>
                 <ImageButton
                         android:id="@id/exo_rew"
+                        android:layout_gravity="center"
                         android:layout_height="50dp"
                         android:layout_width="50dp"
                         android:padding="5dp"
@@ -224,6 +226,7 @@
                         android:src="@drawable/netflix_skip_back"
                         android:scaleType="fitCenter"
                         android:tintMode="src_in"
+
 
                 />
             </FrameLayout>
@@ -256,7 +259,8 @@
             <FrameLayout android:layout_width="wrap_content"
                          android:layout_marginStart="140dp"
                          android:layout_gravity="center_vertical"
-                         android:layout_height="wrap_content">
+                         android:layout_height="wrap_content"
+            >
                 <TextView
                         android:id="@+id/exo_ffwd_text"
                         android:textColor="@color/white"
@@ -265,8 +269,8 @@
                         android:layout_gravity="center"
                         android:textFontWeight="900"
                         android:gravity="center"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp">
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content">
                 </TextView>
                 <ImageButton
                         android:layout_gravity="center"

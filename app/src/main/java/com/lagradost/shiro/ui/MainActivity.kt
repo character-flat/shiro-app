@@ -34,17 +34,16 @@ import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
 import com.lagradost.shiro.utils.AniListApi.Companion.initGetUser
-import com.lagradost.shiro.utils.AppApi.changeStatusBarState
-import com.lagradost.shiro.utils.AppApi.checkWrite
-import com.lagradost.shiro.utils.AppApi.getColorFromAttr
-import com.lagradost.shiro.utils.AppApi.hasPIPPermission
-import com.lagradost.shiro.utils.AppApi.hideSystemUI
-import com.lagradost.shiro.utils.AppApi.init
-import com.lagradost.shiro.utils.AppApi.popCurrentPage
-import com.lagradost.shiro.utils.AppApi.requestRW
-import com.lagradost.shiro.utils.AppApi.shouldShowPIPMode
+import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
+import com.lagradost.shiro.utils.AppUtils.checkWrite
+import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.hasPIPPermission
+import com.lagradost.shiro.utils.AppUtils.hideSystemUI
+import com.lagradost.shiro.utils.AppUtils.init
+import com.lagradost.shiro.utils.AppUtils.popCurrentPage
+import com.lagradost.shiro.utils.AppUtils.requestRW
+import com.lagradost.shiro.utils.AppUtils.shouldShowPIPMode
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
-import com.lagradost.shiro.utils.extractors.Vidstream
 import kotlin.concurrent.thread
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()

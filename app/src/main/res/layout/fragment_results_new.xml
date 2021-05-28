@@ -15,7 +15,6 @@
             android:alpha="0.3"
             android:background="?attr/background"
             android:id="@+id/result_poster_blur">
-
     </ImageView>
 
     <FrameLayout android:layout_width="match_parent"
@@ -253,12 +252,13 @@
                 </androidx.cardview.widget.CardView>
                 <androidx.cardview.widget.CardView
                         android:layout_marginTop="15dp"
-                        android:layout_marginStart="28dp"
+                        android:layout_marginLeft="28dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         app:cardCornerRadius="10dp"
+                        android:layout_gravity="left"
                         app:cardBackgroundColor="?attr/darkBar"
-                >
+                        tools:ignore="RtlHardcoded">
 
                     <!-- Width: 1280, Height 1802 -->
                     <ImageView

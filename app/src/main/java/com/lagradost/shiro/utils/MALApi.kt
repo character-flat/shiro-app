@@ -7,11 +7,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.lagradost.shiro.*
-import com.lagradost.shiro.ui.MainActivity
-import com.lagradost.shiro.utils.AppApi.openBrowser
-import com.lagradost.shiro.utils.AppApi.splitQuery
-import com.lagradost.shiro.utils.AppApi.unixTime
+import com.lagradost.shiro.utils.AppUtils.openBrowser
+import com.lagradost.shiro.utils.AppUtils.splitQuery
+import com.lagradost.shiro.utils.AppUtils.unixTime
 import java.net.URL
 import java.security.SecureRandom
 import kotlin.concurrent.thread

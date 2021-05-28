@@ -18,17 +18,18 @@ import com.lagradost.shiro.utils.DataStore.getKeys
 import com.lagradost.shiro.utils.DataStore.removeKeys
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
+import com.lagradost.shiro.utils.AppUtils.allApi
 import com.lagradost.shiro.utils.MALApi.Companion.authenticateMAL
-import com.lagradost.shiro.utils.AppApi.changeStatusBarState
-import com.lagradost.shiro.utils.AppApi.checkWrite
-import com.lagradost.shiro.utils.AppApi.getColorFromAttr
-import com.lagradost.shiro.utils.AppApi.md5
-import com.lagradost.shiro.utils.AppApi.requestRW
+import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
+import com.lagradost.shiro.utils.AppUtils.checkWrite
+import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.md5
+import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
+import com.lagradost.shiro.utils.extractors.Vidstream
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -140,6 +141,16 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         fun isLoggedIntoAniList(): Boolean {
             return DataStore.getKey<String>(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, null) != null
+        }
+
+        val selectedProvidersPreference = findPreference<MultiSelectListPreference>("selected_providers")!!
+        val apiNames = APIS.map { it.name }
+
+        selectedProvidersPreference.entries = apiNames.toTypedArray()
+        selectedProvidersPreference.entryValues = apiNames.toTypedArray()
+        selectedProvidersPreference.setOnPreferenceChangeListener { preference, newValue ->
+            allApi.providersActive = newValue as HashSet<String>
+            return@setOnPreferenceChangeListener true
         }
 
         val betaThemeButton = findPreference("beta_theme") as SwitchPreference?
