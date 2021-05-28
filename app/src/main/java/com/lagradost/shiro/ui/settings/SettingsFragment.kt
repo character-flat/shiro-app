@@ -28,6 +28,7 @@ import com.lagradost.shiro.utils.AppUtils.checkWrite
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.md5
 import com.lagradost.shiro.utils.AppUtils.requestRW
+import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import com.lagradost.shiro.utils.extractors.Vidstream
 import java.io.File
@@ -150,6 +151,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         selectedProvidersPreference.entryValues = apiNames.toTypedArray()
         selectedProvidersPreference.setOnPreferenceChangeListener { preference, newValue ->
             allApi.providersActive = newValue as HashSet<String>
+
             return@setOnPreferenceChangeListener true
         }
 

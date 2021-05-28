@@ -56,8 +56,8 @@ object AppUtils {
     var settingsManager: SharedPreferences? = null
     val allApi: Vidstream = Vidstream()
     fun FragmentActivity.init() {
-
         settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
+        allApi.providersActive = settingsManager?.getStringSet("selected_providers", hashSetOf()) as HashSet<String>
     }
 
     fun unixTime(): Long {
@@ -70,7 +70,7 @@ object AppUtils {
     }
 
     private fun Activity.getStatusBarHeight(): Int {
-        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android");
+        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
         return if (resourceId > 0) {
             resources.getDimensionPixelSize(resourceId);
         } else

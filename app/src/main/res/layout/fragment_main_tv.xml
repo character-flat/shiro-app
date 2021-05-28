@@ -26,7 +26,6 @@
             android:orientation="vertical"
             android:animateLayoutChanges="true"
     >
-
         <RelativeLayout
                 android:layout_margin="15dp"
                 android:layout_width="match_parent"

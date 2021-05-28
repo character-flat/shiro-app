@@ -86,11 +86,15 @@ class MainFragment : Fragment() {
 
     private fun restoreState(boolean: Boolean) {
         println("LEFT RESULTS")
-        activity?.supportFragmentManager
-            ?.beginTransaction()
-            ?.detach(this)
-            ?.attach(this)
-            ?.commit()
+        // Somehow fucks up if you've been in player, I've yet to understand why
+        if (hasBeenInPlayer) {
+            hasBeenInPlayer = false
+            activity?.supportFragmentManager
+                ?.beginTransaction()
+                ?.detach(this)
+                ?.attach(this)
+                ?.commitAllowingStateLoss()
+        }
     }
 
     override fun onResume() {
@@ -107,6 +111,7 @@ class MainFragment : Fragment() {
     }
 
     companion object {
+        var hasBeenInPlayer: Boolean = false
         fun newInstance() =
             MainFragment().apply {
                 arguments = Bundle().apply {

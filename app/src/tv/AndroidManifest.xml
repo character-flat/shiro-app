@@ -61,7 +61,7 @@
         <activity
                 tools:node="merge"
                 android:name=".ui.tv.TvActivity"
-                android:banner="@drawable/shiro_tv_banner"
+                android:banner="@mipmap/ic_banner_foreground"
                 android:icon="@mipmap/ic_launcher"
                 android:label="@string/app_name"
                 android:theme="@style/Theme.LeanbackCustom"

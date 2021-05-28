@@ -52,6 +52,8 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.MimeTypes
 import com.lagradost.shiro.ui.player.PlayerData
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onLeftPlayer
+import com.lagradost.shiro.ui.player.SSLTrustManager
+import com.lagradost.shiro.ui.tv.MainFragment.Companion.hasBeenInPlayer
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.setViewPosDur
@@ -61,7 +63,11 @@ import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
 import java.io.File
+import java.security.SecureRandom
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSession
 import kotlin.concurrent.thread
 import kotlin.math.max
 import kotlin.math.min
@@ -139,7 +145,6 @@ class NowPlayingFragment : VideoSupportFragment() {
             // adapter.add(actionFastForward)
             adapter.add(actionSkipOp)
 
-            println("THIS123 ${sources.second}")
             if (sources.second?.size ?: 0 > 1) {
                 adapter.add(actionSources)
             }
@@ -286,9 +291,10 @@ class NowPlayingFragment : VideoSupportFragment() {
                 database.metadata().update(metadata.apply { watchNext = true })
             }*/
 
+            val mimeType = if (currentUrl!!.isM3u8) MimeTypes.APPLICATION_M3U8 else MimeTypes.APPLICATION_MP4
             val _mediaItem = MediaItem.Builder()
                 //Replace needed for android 6.0.0  https://github.com/google/ExoPlayer/issues/5983
-                .setMimeType(MimeTypes.APPLICATION_MP4)
+                .setMimeType(mimeType)
 
             class CustomFactory : DataSource.Factory {
                 override fun createDataSource(): DataSource {
@@ -537,12 +543,22 @@ class NowPlayingFragment : VideoSupportFragment() {
 
     override fun onResume() {
         super.onResume()
+
+        // Disables ssl check
+        val sslContext: SSLContext = SSLContext.getInstance("TLS")
+        sslContext.init(null, arrayOf(SSLTrustManager()), SecureRandom())
+        sslContext.createSSLEngine()
+        HttpsURLConnection.setDefaultHostnameVerifier { _: String, _: SSLSession ->
+            true
+        }
+        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
+
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
         if (this::exoPlayer.isInitialized) {
             mediaSessionConnector.setPlayer(exoPlayer)
         }
         mediaSession.isActive = true
-
+        hasBeenInPlayer = true
         // Kick off metadata update task which runs periodically in the main thread
         //view?.postDelayed(updateMetadataTask, METADATA_UPDATE_INTERVAL_MILLIS)
     }
