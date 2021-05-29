@@ -12,6 +12,7 @@ import com.lagradost.shiro.ui.LastEpisodeInfo
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.utils.AppUtils.allApi
 import com.lagradost.shiro.utils.AppUtils.md5
+import com.lagradost.shiro.utils.extractors.Shiro
 import com.lagradost.shiro.utils.extractors.Vidstream
 import khttp.structures.cookie.CookieJar
 import java.lang.Exception
@@ -382,7 +383,6 @@ class ShiroApi {
                 val url = "https://tapi.shiro.is/latest?token=${usedToken!!.token}"
                 try {
                     val response = khttp.get(url, timeout = 120.0)
-                            println("HOMEFFF ${response.text}")
                     res = response.text.let { mapper.readValue(it) }
                 } catch (e: Exception) {
                     println(e.message)

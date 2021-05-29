@@ -113,6 +113,14 @@
                 app:summary="Selecting none is the same as selecting all"
         />
         <SwitchPreference
+                android:icon="@drawable/ic_baseline_vpn_lock_24"
+                app:key="alternative_vidstream"
+                android:title="Use alternative Vidstream"
+                android:summaryOn="Some ISPs block vidstream\nUsing streamani.net"
+                android:summaryOff="Some ISPs block vidstream\nUsing gogo-stream.com"
+                app:defaultValue="false"
+        />
+        <SwitchPreference
                 android:icon="@drawable/ic_baseline_picture_in_picture_alt_24"
                 app:key="pip_enabled"
                 android:title="Picture-in-picture"

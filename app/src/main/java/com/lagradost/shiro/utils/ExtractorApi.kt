@@ -31,6 +31,7 @@ fun getAndUnpack(string: String): String? {
 val APIS: Array<ExtractorApi> = arrayOf(
     //AllProvider(),
     Shiro(),
+    MultiQuality(),
     Mp4Upload(),
     StreamTape(),
     MixDrop(),

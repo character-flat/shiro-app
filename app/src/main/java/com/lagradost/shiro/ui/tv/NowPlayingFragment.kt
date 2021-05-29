@@ -247,6 +247,7 @@ class NowPlayingFragment : VideoSupportFragment() {
 
     private fun releasePlayer() {
         if (this::exoPlayer.isInitialized) {
+            exoPlayer.stop()
             exoPlayer.release()
         }
     }
@@ -590,6 +591,7 @@ class NowPlayingFragment : VideoSupportFragment() {
     override fun onDestroy() {
         super.onDestroy()
         savePos()
+        releasePlayer()
         mediaSession.release()
         onLeftPlayer.invoke(true)
     }

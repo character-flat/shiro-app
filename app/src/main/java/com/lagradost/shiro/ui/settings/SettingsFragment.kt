@@ -154,6 +154,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
             return@setOnPreferenceChangeListener true
         }
+        /*val vidstreamButton = findPreference<SwitchPreference>("alternative_vidstream")!!
+        vidstreamButton.setOnPreferenceChangeListener { _, _ ->
+            return@setOnPreferenceChangeListener true
+        }*/
+
 
         val betaThemeButton = findPreference("beta_theme") as SwitchPreference?
         betaThemeButton?.isVisible = BuildConfig.BETA

@@ -54,7 +54,7 @@ import kotlin.concurrent.thread
 
 object AppUtils {
     var settingsManager: SharedPreferences? = null
-    val allApi: Vidstream = Vidstream()
+    var allApi: Vidstream = Vidstream()
     fun FragmentActivity.init() {
         settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
         allApi.providersActive = settingsManager?.getStringSet("selected_providers", hashSetOf()) as HashSet<String>

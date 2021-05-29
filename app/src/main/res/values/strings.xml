@@ -1,11 +1,9 @@
 <resources>
     <string name="changelog">\n
-        - Added more video sources!\n
-        - New player UI\n
-        - Added chromecast skip OP button and custom time skip buttons\n
-        - Fixed crash on low android versions (I\'m sorry!)\n
-        - Added beta channel (enabling this will make update searches also include beta versions)\n
-        - Made navbar highlight and tons of other small improvements\n
+        - Video Player improvements\n
+        - Option to change links loaded\n
+        - Increased link loading speed\n
+        - Crash fixes\n
     </string>
     <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>
