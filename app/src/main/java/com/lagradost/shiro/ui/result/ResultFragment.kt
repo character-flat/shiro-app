@@ -35,6 +35,7 @@ import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.player.PlayerFragment
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
+import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onNavigatedPlayer
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.canPlayNextEpisode
@@ -70,7 +71,7 @@ class ResultFragment : Fragment() {
         //var lastSelectedEpisode = 0
         var isInResults: Boolean = false
         var isViewState: Boolean = true
-        val onLeftResults = Event<Boolean>()
+        val onResultsNavigated = Event<Boolean>()
         fun fixEpTitle(
             _title: String?,
             epNum: Int,
@@ -124,6 +125,11 @@ class ResultFragment : Fragment() {
                 TransitionManager.beginDelayedTransition(it, transition)
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        onResultsNavigated.invoke(true)
     }
 
     private fun onLoadEvent(isSucc: Boolean) {
@@ -422,14 +428,21 @@ private fun ToggleViewState(_isViewState: Boolean) {
 
     override fun onDestroy() {
         super.onDestroy()
-        onLeftResults.invoke(true)
-        PlayerFragment.onLeftPlayer -= ::onLeftVideoPlayer
+        onResultsNavigated.invoke(false)
+        onNavigatedPlayer -= ::handleVideoPlayerNavigation
         DownloadManager.downloadStartEvent -= ::onDownloadStarted
+        onLoadedOther -= ::onLoadOtherEvent
+        onLoaded -= ::onLoadEvent
         isInResults = false
     }
 
-    private fun onLeftVideoPlayer(event: Boolean) {
-        (episodes_res_view?.adapter as? MasterEpisodeAdapter)?.notifyDataSetChanged()
+    private fun handleVideoPlayerNavigation(hasEntered: Boolean) {
+        if (hasEntered) {
+            this.view?.visibility = GONE
+        } else {
+            this.view?.visibility = VISIBLE
+            (episodes_res_view?.adapter as? MasterEpisodeAdapter)?.notifyDataSetChanged()
+        }
         //loadSeason()
         /*if (tvActivity != null) {
             title_season_cards.requestFocus()
@@ -448,6 +461,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
             }
         }
     }
+
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -472,7 +486,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
             }
         }
         //isViewState = false
-        PlayerFragment.onLeftPlayer += ::onLeftVideoPlayer
+        onNavigatedPlayer += ::handleVideoPlayerNavigation
         DownloadManager.downloadStartEvent += ::onDownloadStarted
 
         results_root.setPadding(0, MainActivity.statusHeight, 0, 0)

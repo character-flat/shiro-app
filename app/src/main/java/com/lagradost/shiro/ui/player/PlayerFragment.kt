@@ -127,7 +127,7 @@ class PlayerFragment : Fragment() {
 
     companion object {
         var isInPlayer: Boolean = false
-        var onLeftPlayer = Event<Boolean>()
+        var onNavigatedPlayer = Event<Boolean>()
         fun newInstance(data: PlayerData) =
             PlayerFragment().apply {
                 arguments = Bundle().apply {
@@ -143,7 +143,6 @@ class PlayerFragment : Fragment() {
         arguments?.getString("data")?.let {
             data = mapper.readValue(it, PlayerData::class.java)
         }
-
     }
 
     private var isLocked = false
@@ -320,7 +319,7 @@ class PlayerFragment : Fragment() {
         // DON'T SAVE DATA OF TRAILERS
 
         isInPlayer = false
-        onLeftPlayer.invoke(true)
+        onNavigatedPlayer.invoke(false)
         activity?.showSystemUI()
         MainActivity.onPlayerEvent -= ::handlePlayerEvent
         MainActivity.onAudioFocusEvent -= ::handleAudioFocusEvent
@@ -1152,6 +1151,7 @@ class PlayerFragment : Fragment() {
         super.onResume()
         // When restarting activity the rotation is ensured :)
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+        onNavigatedPlayer.invoke(true)
 
         if (Util.SDK_INT <= 23) {
             initPlayer()

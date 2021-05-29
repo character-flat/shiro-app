@@ -7,7 +7,6 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.widget.ScrollView
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.AutoTransition
@@ -15,7 +14,7 @@ import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.home.MasterCardAdapter
-import com.lagradost.shiro.ui.result.ResultFragment.Companion.onLeftResults
+import com.lagradost.shiro.ui.result.ResultFragment.Companion.onResultsNavigated
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import kotlinx.android.synthetic.main.fragment_main_tv.*
@@ -35,7 +34,6 @@ class MainFragment : Fragment() {
             (vertical_grid_view.adapter as MasterCardAdapter).notifyDataSetChanged()
             //val snapHelper = LinearSnapHelper()
             //snapHelper.attachToRecyclerView(vertical_grid_view)
-
         }
     }
 
@@ -71,8 +69,7 @@ class MainFragment : Fragment() {
         }*/
         tv_menu_bar.visibility = VISIBLE
 
-        onLeftResults += ::restoreState
-
+        onResultsNavigated += ::restoreState
 
         search_icon.setOnClickListener {
             activity?.supportFragmentManager?.beginTransaction()
@@ -84,16 +81,22 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun restoreState(boolean: Boolean) {
-        println("LEFT RESULTS")
-        // Somehow fucks up if you've been in player, I've yet to understand why
-        if (hasBeenInPlayer) {
-            hasBeenInPlayer = false
-            activity?.supportFragmentManager
-                ?.beginTransaction()
-                ?.detach(this)
-                ?.attach(this)
-                ?.commitAllowingStateLoss()
+    private fun restoreState(hasEntered: Boolean) {
+        if (hasEntered) {
+            // Needed to prevent focus when on bottom
+            this.view?.visibility = GONE
+        } else {
+            println("LEFT RESULTS")
+            this.view?.visibility = VISIBLE
+            // Somehow fucks up if you've been in player, I've yet to understand why
+            if (hasBeenInPlayer) {
+                hasBeenInPlayer = false
+                activity?.supportFragmentManager
+                    ?.beginTransaction()
+                    ?.detach(this)
+                    ?.attach(this)
+                    ?.commitAllowingStateLoss()
+            }
         }
     }
 
@@ -106,7 +109,7 @@ class MainFragment : Fragment() {
     }
 
     override fun onDestroy() {
-        onLeftResults -= ::restoreState
+        onResultsNavigated -= ::restoreState
         super.onDestroy()
     }
 

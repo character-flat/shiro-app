@@ -1,7 +1,5 @@
 package com.lagradost.shiro.ui.tv
 
-import com.lagradost.shiro.R
-
 /*
  * Copyright 2019 Google LLC
  *
@@ -40,7 +38,6 @@ import androidx.leanback.media.PlaybackTransportControlGlue
 import androidx.leanback.widget.Action
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.PlaybackControlsRow
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.ext.leanback.LeanbackPlayerAdapter
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
@@ -50,8 +47,9 @@ import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.MimeTypes
+import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.player.PlayerData
-import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onLeftPlayer
+import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onNavigatedPlayer
 import com.lagradost.shiro.ui.player.SSLTrustManager
 import com.lagradost.shiro.ui.tv.MainFragment.Companion.hasBeenInPlayer
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
@@ -74,7 +72,7 @@ import kotlin.math.min
 
 
 /** A fragment representing the current metadata item being played */
-class NowPlayingFragment : VideoSupportFragment() {
+class PlayerFragmentTv : VideoSupportFragment() {
 
     /** AndroidX navigation arguments */
 
@@ -90,9 +88,7 @@ class NowPlayingFragment : VideoSupportFragment() {
     private var currentUrl: ExtractorLink? = null
     private lateinit var exoPlayer: SimpleExoPlayer
 
-    var dataString: String? = null
-    var data: ShiroApi.AnimePageData? = null
-    var episodeIndex: Int? = null
+    var data: PlayerData? = null
 
     private var selectedSource: Int = 0
     private var sources: Pair<Int?, List<ExtractorLink>?> = Pair(null, null)
@@ -148,7 +144,7 @@ class NowPlayingFragment : VideoSupportFragment() {
             if (sources.second?.size ?: 0 > 1) {
                 adapter.add(actionSources)
             }
-            if (episodeIndex!! + 1 < data?.episodes?.size!!) {
+            if (data?.episodeIndex!! + 1 < data?.card?.episodes?.size!!) {
                 adapter.add(actionNextEpisode)
             }
             //adapter.add(actionClosedCaptions)
@@ -159,11 +155,11 @@ class NowPlayingFragment : VideoSupportFragment() {
             actionFastForward -> skipForward()
             actionSkipOp -> skipForward(SKIP_OP_MILLIS)
             actionNextEpisode -> {
-                if (episodeIndex != null && !isLoadingNextEpisode) {
+                if (data?.episodeIndex != null && !isLoadingNextEpisode) {
                     savePos()
                     playerGlue.host.hideControlsOverlay(false)
                     isLoadingNextEpisode = true
-                    episodeIndex = minOf(episodeIndex!! + 1, data?.episodes?.size!! - 1)
+                    data?.episodeIndex = minOf(data?.episodeIndex!! + 1, data?.card?.episodes?.size!! - 1)
                     selectedSource = 0
                     releasePlayer()
                     initPlayer()
@@ -255,27 +251,23 @@ class NowPlayingFragment : VideoSupportFragment() {
     private fun savePos() {
         println("Savepos")
         if (this::exoPlayer.isInitialized) {
-            if (((data?.slug != null
-                        && episodeIndex != null) || data != null)
+            if (((data != null
+                        && data?.episodeIndex != null) || data?.card?.episodes != null)
                 && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0
             ) {
-                val playerData = PlayerData(
-                    data!!.name, currentUrl?.url, episodeIndex, 0, data, playbackPosition, data!!.slug
-                )
                 //println("SAVED POS $playbackPosition ${exoPlayer.currentPosition}")
-                setViewPosDur(playerData, exoPlayer.currentPosition, exoPlayer.duration)
+                setViewPosDur(data!!, exoPlayer.currentPosition, exoPlayer.duration)
             }
         }
     }
 
     private fun initPlayer() {
-        backgroundType = PlaybackSupportFragment.BG_NONE
         thread {
             currentUrl = getCurrentUrl()
             if (currentUrl == null) {
                 activity?.let {
                     it.runOnUiThread {
-                        Toast.makeText(it, "Error getting link", Toast.LENGTH_LONG).show()
+                        Toast.makeText(it, "Error getting link", LENGTH_LONG).show()
                         it.onBackPressed()
                     }
                 }
@@ -341,11 +333,10 @@ class NowPlayingFragment : VideoSupportFragment() {
             _exoPlayer.setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
 
             activity?.runOnUiThread {
-
-                if (data != null || (data?.slug != null && episodeIndex != null)) {
+                if (data?.card?.episodes != null || (data?.slug != null && data?.episodeIndex != null)) {
                     val pro = getViewPosDur(
-                        if (data != null) data!!.slug else data?.slug!!,
-                        episodeIndex!!
+                        data?.slug!!,
+                        data?.episodeIndex!!
                     )
                     playbackPosition =
                         if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
@@ -412,8 +403,8 @@ class NowPlayingFragment : VideoSupportFragment() {
 
                 // Enables pass-through of transport controls to our player instance
                 playerGlue = MediaPlayerGlue(requireContext(), playerAdapter).apply {
-                    host = VideoSupportFragmentGlueHost(this@NowPlayingFragment)
-                    title = "${data?.name} - Episode ${episodeIndex!! + 1}"
+                    host = VideoSupportFragmentGlueHost(this@PlayerFragmentTv)
+                    title = "${data?.card?.name} - Episode ${data?.episodeIndex!! + 1}"
 
 
                     // Adds playback state listeners
@@ -455,7 +446,7 @@ class NowPlayingFragment : VideoSupportFragment() {
                     // Early exit: if the controls overlay is visible, don't intercept any keys
                     if (playerGlue.host.isControlsOverlayVisible) return@setOnKeyInterceptListener false
 
-                    // TODO(owahltinez): This workaround is necessary for navigation library to work with
+                    //  This workaround is necessary for navigation library to work with
                     //  Leanback's [PlaybackSupportFragment]
                     if (!playerGlue.host.isControlsOverlayVisible &&
                         keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_DOWN
@@ -490,15 +481,15 @@ class NowPlayingFragment : VideoSupportFragment() {
     }
 
     private fun getCurrentEpisode(): ShiroApi.ShiroEpisodes? {
-        return data?.episodes?.get(episodeIndex!!)//data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.episodeIndex!!)
+        return data?.card?.episodes?.get(data?.episodeIndex!!)//data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.data?.episodeIndex!!)
     }
 
     private fun getCurrentUrls(): Pair<Int?, List<ExtractorLink>?> {
         // Cached, first is index, second is links
-        sources = if (sources.first == episodeIndex && episodeIndex != null) {
+        sources = if (sources.first == data?.episodeIndex && data?.episodeIndex != null) {
             sources
         } else {
-            Pair(episodeIndex, getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { getVideoLink(it) })
+            Pair(data?.episodeIndex, getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { getVideoLink(it) })
         }
         return sources
     }
@@ -509,14 +500,11 @@ class NowPlayingFragment : VideoSupportFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        dataString =
-            activity?.intent?.getSerializableExtra(DetailsActivityTV.MOVIE) as String
+        //dataString = activity?.intent?.getSerializableExtra(DetailsActivityTV.MOVIE) as String
         //playbackPosition = activity?.intent?.getSerializableExtra(DetailsActivityTV.PLAYERPOS) as? Long ?: 0L
-        data = mapper.readValue<ShiroApi.AnimePageData>(dataString!!)
-        episodeIndex = activity?.intent?.getSerializableExtra("position") as Int
+        //data = mapper.readValue<ShiroApi.AnimePageData>(dataString!!)
         mediaSession = MediaSessionCompat(requireContext(), getString(R.string.app_name))
         mediaSessionConnector = MediaSessionConnector(mediaSession)
-        initPlayer()
     }
 
     /** Workaround used to prevent controls overlay from showing and taking focus */
@@ -528,14 +516,15 @@ class NowPlayingFragment : VideoSupportFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view.setBackgroundColor(Color.BLACK)
+        backgroundType = PlaybackSupportFragment.BG_NONE
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
 
     override fun onStart() {
         super.onStart()
-        if (data != null && episodeIndex != null) {
-            val pro = getViewPosDur(data!!.slug, episodeIndex!!)
+        if (data != null && data?.episodeIndex != null) {
+            val pro = getViewPosDur(data!!.slug, data?.episodeIndex!!)
             if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
                 playbackPosition = pro.pos
             }
@@ -560,6 +549,9 @@ class NowPlayingFragment : VideoSupportFragment() {
         }
         mediaSession.isActive = true
         hasBeenInPlayer = true
+        isInPlayer = true
+        onNavigatedPlayer.invoke(true)
+        initPlayer()
         // Kick off metadata update task which runs periodically in the main thread
         //view?.postDelayed(updateMetadataTask, METADATA_UPDATE_INTERVAL_MILLIS)
     }
@@ -593,7 +585,8 @@ class NowPlayingFragment : VideoSupportFragment() {
         savePos()
         releasePlayer()
         mediaSession.release()
-        onLeftPlayer.invoke(true)
+        onNavigatedPlayer.invoke(false)
+        isInPlayer = false
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -601,8 +594,18 @@ class NowPlayingFragment : VideoSupportFragment() {
         savePos()
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        arguments?.getString(DATA)?.let {
+            println("DATA $it")
+            data = mapper.readValue(it, PlayerData::class.java)
+        }
+    }
+
     companion object {
-        private val TAG = NowPlayingFragment::class.java.simpleName
+        const val DATA = "data"
+
+        private val TAG = PlayerFragmentTv::class.java.simpleName
 
         /** How often the player refreshes its views in milliseconds */
         private const val PLAYER_UPDATE_INTERVAL_MILLIS: Int = 100
@@ -614,5 +617,14 @@ class NowPlayingFragment : VideoSupportFragment() {
         private val SKIP_PLAYBACK_MILLIS: Long = TimeUnit.SECONDS.toMillis(10)
 
         private val SKIP_OP_MILLIS: Long = TimeUnit.SECONDS.toMillis(85)
+        var isInPlayer: Boolean = false
+
+        fun newInstance(data: PlayerData) =
+            PlayerFragmentTv().apply {
+                arguments = Bundle().apply {
+                    //println(data)
+                    putString(DATA, mapper.writeValueAsString(data))
+                }
+            }
     }
 }

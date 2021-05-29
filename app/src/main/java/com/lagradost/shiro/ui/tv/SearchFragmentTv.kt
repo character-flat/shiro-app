@@ -4,10 +4,13 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.leanback.widget.SearchBar
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.home.CardAdapter
+import com.lagradost.shiro.ui.result.ResultFragment.Companion.onResultsNavigated
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.isInSearch
 import com.lagradost.shiro.utils.AppUtils.displayCardData
 import com.lagradost.shiro.utils.ShiroApi.Companion.quickSearch
@@ -28,12 +31,22 @@ class SearchFragmentTv : Fragment() {
 
     override fun onDestroy() {
         isInSearch = false
+        onResultsNavigated -= ::restoreState
         super.onDestroy()
+    }
+
+    private fun restoreState(hasEntered: Boolean) {
+        if (hasEntered) {
+            this.view?.visibility = GONE
+        } else {
+            this.view?.visibility = VISIBLE
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        onResultsNavigated += ::restoreState
         //val snapHelper = PagerSnapHelper()
         //snapHelper.attachToRecyclerView(scrollView)
 

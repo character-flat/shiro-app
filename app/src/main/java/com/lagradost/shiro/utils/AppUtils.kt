@@ -33,16 +33,18 @@ import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ui.*
+import com.lagradost.shiro.ui.EpisodePosDurInfo
+import com.lagradost.shiro.ui.LastEpisodeInfo
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
+import com.lagradost.shiro.ui.NextEpisode
 import com.lagradost.shiro.ui.home.CardAdapter
 import com.lagradost.shiro.ui.home.CardContinueAdapter
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment
 import com.lagradost.shiro.ui.player.PlayerData
 import com.lagradost.shiro.ui.player.PlayerFragment
 import com.lagradost.shiro.ui.result.ResultFragment
-import com.lagradost.shiro.ui.tv.DetailsActivityTV
-import com.lagradost.shiro.ui.tv.PlaybackActivity
+import com.lagradost.shiro.ui.tv.MainFragment
+import com.lagradost.shiro.ui.tv.PlayerFragmentTv
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.extractors.Vidstream
@@ -464,7 +466,7 @@ object AppUtils {
         return MessageDigest
             .getInstance(algorithm)
             .digest(input.toByteArray())
-            .fold("", { str, it -> str + "%02x".format(it) })
+            .fold("") { str, it -> str + "%02x".format(it) }
     }
 
     // Shows the system bars by removing all the flags
@@ -497,23 +499,18 @@ object AppUtils {
     }*/
 
     fun FragmentActivity.loadPlayer(data: PlayerData) {
-        println("LAODED PLAYER")
-        if (tvActivity != null) {
-            //TODO FIX CAN BE TOO MUCH DATA ONE PIECE
-            val intent = Intent(tvActivity, PlaybackActivity::class.java)
-            intent.putExtra(DetailsActivityTV.MOVIE, mapper.writeValueAsString(data.card))
-            intent.putExtra("position", data.episodeIndex)
-            tvActivity?.startActivity(intent)
-        } else {
-            this.supportFragmentManager.beginTransaction()
+        this.runOnUiThread {
+            val instance =
+                if (tvActivity != null) PlayerFragmentTv.newInstance(data) else PlayerFragment.newInstance(data)
+
+            supportFragmentManager.beginTransaction()
                 .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 .add(
-                    R.id.videoRoot, PlayerFragment.newInstance(
-                        data
-                    )
+                    android.R.id.content, instance
                 )
                 .commit()
         }
+
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
     }
 

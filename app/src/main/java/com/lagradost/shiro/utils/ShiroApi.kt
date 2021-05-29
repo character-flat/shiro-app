@@ -143,7 +143,6 @@ class ShiroApi {
             try {
                 val headers = mapOf("User-Agent" to USER_AGENT)
                 val shiro = khttp.get("https://shiro.is", headers = headers, timeout = 120.0)
-
                 val jsMatch = Regex("""src="(/static/js/main.*?)"""").find(shiro.text)
                 val (destructed) = jsMatch!!.destructured
                 val jsLocation = "https://shiro.is$destructed"

@@ -49,7 +49,7 @@ class DownloadFragmentChild : Fragment() {
             MainActivity.statusHeight // view height
         )
         top_padding_download_child.layoutParams = topParams
-        PlayerFragment.onLeftPlayer += ::onPlayerLeft
+        PlayerFragment.onNavigatedPlayer += ::onPlayerLeft
         download_go_back.setOnClickListener {
             activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         }
@@ -58,7 +58,7 @@ class DownloadFragmentChild : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        PlayerFragment.onLeftPlayer -= ::onPlayerLeft
+        PlayerFragment.onNavigatedPlayer -= ::onPlayerLeft
         isInResults = false
     }
 

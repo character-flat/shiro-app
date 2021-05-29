@@ -7,10 +7,10 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.settings.SettingsFragment.Companion.isInSettings
+import com.lagradost.shiro.ui.tv.PlayerFragmentTv.Companion.isInPlayer
 import com.lagradost.shiro.utils.AppUtils.init
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.DownloadManager
@@ -35,9 +35,10 @@ class TvActivity : AppCompatActivity() {
                 .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 .replace(R.id.home_root_tv, MainFragment())
                 .commit()
-        } else if (isInResults) {
+        } else if (isInResults || isInPlayer) {
             popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         } else {
+            println("SUPER BACK")
             super.onBackPressed()
         }
     }
@@ -69,7 +70,7 @@ class TvActivity : AppCompatActivity() {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        return if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+        return if (keyCode == KeyEvent.KEYCODE_DPAD_UP && !isInPlayer && !isInResults) {
             try {
                 val nextFocused =
                     FocusFinder.getInstance().findNextFocus(home_root_tv, currentFocus, View.FOCUS_UP)
@@ -84,7 +85,6 @@ class TvActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 return false
             }
-
         } else {
             //println("Not")
             super.onKeyDown(keyCode, event)
