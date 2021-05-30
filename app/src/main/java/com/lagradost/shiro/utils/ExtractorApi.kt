@@ -1,5 +1,6 @@
 package com.lagradost.shiro.utils
 
+import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.extractors.*
 
 data class ExtractorLink(
@@ -38,6 +39,10 @@ val APIS: Array<ExtractorApi> = arrayOf(
     XStreamCdn()
 )
 
+/*val linKLoadingTimeout: Double
+    get() {
+        return (settingsManager?.getInt("link_loading_timeout", 15) ?: 15).toDouble()
+    }*/
 
 fun httpsify(url: String): String {
     return if (url.startsWith("//")) "https:$url" else url
@@ -50,7 +55,7 @@ abstract class ExtractorApi {
 
     abstract fun getUrl(url: String, referer: String? = null): List<ExtractorLink>?
 
-    open fun getExtractorUrl(id: String): String{
+    open fun getExtractorUrl(id: String): String {
         return id
     }
 }

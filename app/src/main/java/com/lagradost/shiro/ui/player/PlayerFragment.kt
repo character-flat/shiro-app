@@ -41,10 +41,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.C.TIME_UNSET
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
-import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
@@ -63,7 +63,9 @@ import com.lagradost.shiro.utils.AppUtils.requestAudioFocus
 import com.lagradost.shiro.utils.AppUtils.setViewPosDur
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.AppUtils.showSystemUI
+import com.lagradost.shiro.utils.ShiroApi.Companion.loadLinks
 import java.io.File
+import java.lang.Thread.sleep
 import java.security.SecureRandom
 import javax.net.ssl.*
 import kotlin.collections.ArrayList
@@ -149,6 +151,8 @@ class PlayerFragment : Fragment() {
     private var isShowing = true
     private lateinit var exoPlayer: SimpleExoPlayer
 
+    private val extractorLinks = mutableListOf<ExtractorLink>()
+
     // private val url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
     private var currentWindow = 0
     private var playbackPosition: Long = 0
@@ -163,6 +167,7 @@ class PlayerFragment : Fragment() {
     private var hasPassedVerticalSwipeThreshold = false
     private var cachedVolume = 0f
 
+    private var isCurrentlyPlaying: Boolean = false
     private var playbackSpeed = DataStore.getKey(PLAYBACK_SPEED_KEY, 1f)
 
     private val swipeEnabled = settingsManager!!.getBoolean("swipe_enabled", true)
@@ -174,10 +179,12 @@ class PlayerFragment : Fragment() {
     private val doubleTapTime = settingsManager!!.getInt("dobule_tap_time", 10)
     private val fastForwardTime = settingsManager!!.getInt("fast_forward_button_time", 10)
     private val ignoreSSL = settingsManager?.getBoolean("ignore_ssl", false) == true
-    private var selectedSource: Int = 0
-    private var sources: List<ExtractorLink>? = null
+    private var selectedSource: ExtractorLink? = null
+    private var sources: Pair<Int?, List<ExtractorLink>?> = Pair(null, null)
     private val defaultVerifier = HttpsURLConnection.getDefaultHostnameVerifier()
     private val defaultFactory = HttpsURLConnection.getDefaultSSLSocketFactory()
+
+    //private val linkLoadedEvent = Event<ExtractorLink>()
 
     private val resizeModes = listOf(
         AspectRatioFrameLayout.RESIZE_MODE_FIT,
@@ -273,19 +280,46 @@ class PlayerFragment : Fragment() {
     }
 
     private fun getCurrentEpisode(): ShiroApi.ShiroEpisodes? {
-        println(data!!.episodeIndex)
         return data?.card?.episodes?.getOrNull(data?.episodeIndex!!)//data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.episodeIndex!!)
     }
 
-    private fun getCurrentUrls(): List<ExtractorLink>? {
-        sources = getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { getVideoLink(it) }
-        return sources
+    private fun loadAndPlay() {
+        // Cached, first is index, second is links
+        thread {
+            if (!(sources.first == data?.episodeIndex && data?.episodeIndex != null)) {
+                getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let {
+                    loadLinks(
+                        it,
+                        false,
+                        callback = ::linkLoaded
+                    )
+                }
+            }
+            activity?.runOnUiThread {
+                initPlayerIfPossible()
+            }
+        }
     }
 
+    private fun linkLoaded(link: ExtractorLink) {
+        extractorLinks.add(link)
+
+        activity?.runOnUiThread {
+            links_loaded_text.text = "Loaded ${link.name}"
+        }
+        sources = Pair(data?.episodeIndex, extractorLinks.sortedBy { -it.quality }.distinctBy { it.url })
+        // Quickstart
+        if (link.name == "Shiro") {
+            activity?.runOnUiThread {
+                initPlayerIfPossible(link)
+            }
+        }
+    }
+
+
     private fun getCurrentUrl(): ExtractorLink? {
-        println("MAN::: " + data?.url)
-        if (data?.url != null) return ExtractorLink("Local", data?.url!!, "", Qualities.Unknown.value)
-        return getCurrentUrls()?.getOrNull(selectedSource)
+        val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
+        return sources.second?.getOrNull(index)
     }
 
     private fun getCurrentTitle(): String {
@@ -517,10 +551,9 @@ class PlayerFragment : Fragment() {
     }
 
     fun handleMotionEvent(motionEvent: MotionEvent) {
-        // TIME_UNSET   ==   -9223372036854775807L
         // No swiping on unloaded
         // https://exoplayer.dev/doc/reference/constant-values.html
-        if (isLocked || exoPlayer.duration == -9223372036854775807L || (!swipeEnabled && !swipeVerticalEnabled)) return
+        if (isLocked || exoPlayer.duration == TIME_UNSET || (!swipeEnabled && !swipeVerticalEnabled)) return
         val audioManager = activity?.getSystemService(AUDIO_SERVICE) as? AudioManager
 
         when (motionEvent.action) {
@@ -631,7 +664,7 @@ class PlayerFragment : Fragment() {
 
                 TransitionManager.beginDelayedTransition(player_holder, transition)
 
-                if (abs(skipTime) > 7000 && !preventHorizontalSwipe && swipeEnabled) {
+                if (abs(skipTime) > 3000 && !preventHorizontalSwipe && swipeEnabled) {
                     exoPlayer.seekTo(maxOf(minOf(skipTime + isMovingStartTime, exoPlayer.duration), 0))
                 }
                 hasPassedSkipLimit = false
@@ -705,7 +738,7 @@ class PlayerFragment : Fragment() {
             resize_player.visibility = GONE
         }
 
-        class Listener : DoubleClickListener(this) {
+        class Listener : PlayerFragment.DoubleClickListener(this) {
             // Declaring a seekAnimation here will cause a bug
 
             override fun onDoubleClickRight(clicks: Int) {
@@ -876,18 +909,18 @@ class PlayerFragment : Fragment() {
 
         sources_btt.setOnClickListener {
             lateinit var dialog: AlertDialog
-            sources?.let {
-                val sourcesText = sources!!.map { it.name }
-
+            sources.second?.let {
+                val sourcesText = it.map { link -> link.name }
                 val builder = AlertDialog.Builder(requireContext(), R.style.AlertDialogCustom)
                 builder.setTitle("Pick source")
-                builder.setSingleChoiceItems(sourcesText.toTypedArray(), selectedSource) { _, which ->
+                val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
+                builder.setSingleChoiceItems(sourcesText.toTypedArray(), index) { _, which ->
                     //val speed = speedsText[which]
                     //Toast.makeText(requireContext(), "$speed selected.", Toast.LENGTH_SHORT).show()
-                    selectedSource = which
+                    selectedSource = it[which]
                     savePos()
-                    exoPlayer.release()
-                    initPlayer()
+                    releasePlayer()
+                    loadAndPlay()
 
                     dialog.dismiss()
                 }
@@ -924,6 +957,7 @@ class PlayerFragment : Fragment() {
         alphaAnimation.fillAfter = true
         loading_overlay.startAnimation(alphaAnimation)
         video_go_back_holder.visibility = VISIBLE
+        isCurrentlyPlaying = false
         if (this::exoPlayer.isInitialized) {
             isPlayerPlaying = exoPlayer.playWhenReady
             playbackPosition = exoPlayer.currentPosition
@@ -945,11 +979,18 @@ class PlayerFragment : Fragment() {
         super.onSaveInstanceState(outState)
     }
 
+    private fun initPlayerIfPossible(link: ExtractorLink? = null) {
+        if (!isCurrentlyPlaying) {
+            initPlayer(link)
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
-    private fun initPlayer() {
+    private fun initPlayer(currentUrl: ExtractorLink? = null) {
+        isCurrentlyPlaying = true
         view?.setOnTouchListener { _, _ -> return@setOnTouchListener true } // VERY IMPORTANT https://stackoverflow.com/questions/28818926/prevent-clicking-on-a-button-in-an-activity-while-showing-a-fragment
         thread {
-            val currentUrl = getCurrentUrl()
+            val currentUrl = currentUrl ?: getCurrentUrl()
             println(currentUrl?.name)
             if (currentUrl == null) {
                 activity?.runOnUiThread {
@@ -1006,7 +1047,8 @@ class PlayerFragment : Fragment() {
                         if (canPlayNextEpisode()) {
                             next_episode_btt?.visibility = VISIBLE
                             next_episode_btt?.setOnClickListener {
-                                selectedSource = 0
+                                selectedSource = null
+                                extractorLinks.clear()
                                 if (isLoadingNextEpisode) return@setOnClickListener
                                 isLoadingNextEpisode = true
                                 savePos()
@@ -1022,7 +1064,7 @@ class PlayerFragment : Fragment() {
                                 data?.seasonIndex = 0
                                 data?.episodeIndex = data!!.episodeIndex!! + 1
                                 releasePlayer()
-                                initPlayer()
+                                loadAndPlay()
                             }
                         }
                         // this to make the button visible in the editor
@@ -1068,9 +1110,11 @@ class PlayerFragment : Fragment() {
                         alphaAnimation.fillAfter = true
                         loading_overlay.startAnimation(alphaAnimation)
                         video_go_back_holder.visibility = GONE
+                        links_loaded_text.text = ""
 
                         exoPlayer.setHandleAudioBecomingNoisy(true) // WHEN HEADPHONES ARE PLUGGED OUT https://github.com/google/ExoPlayer/issues/7288
                         player_view.player = exoPlayer
+
                         // Sets the speed
                         exoPlayer.playbackParameters = PlaybackParameters(playbackSpeed!!)
                         player_speed_text?.text = "Speed (${playbackSpeed}x)".replace(".0x", "x")
@@ -1141,7 +1185,7 @@ class PlayerFragment : Fragment() {
         }
         thread {
             if (Util.SDK_INT > 23) {
-                initPlayer()
+                loadAndPlay()
                 if (player_view != null) player_view.onResume()
             }
         }
@@ -1154,7 +1198,7 @@ class PlayerFragment : Fragment() {
         onNavigatedPlayer.invoke(true)
 
         if (Util.SDK_INT <= 23) {
-            initPlayer()
+            loadAndPlay()
             if (player_view != null) player_view.onResume()
         }
     }

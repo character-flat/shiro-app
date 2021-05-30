@@ -38,7 +38,6 @@ class TvActivity : AppCompatActivity() {
         } else if (isInResults || isInPlayer) {
             popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         } else {
-            println("SUPER BACK")
             super.onBackPressed()
         }
     }

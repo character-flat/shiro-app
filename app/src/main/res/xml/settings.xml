@@ -36,13 +36,7 @@
                 android:title="Pick download source manually"
                 app:defaultValue="false"
         />
-        <SwitchPreference
-                android:icon="@drawable/ic_baseline_warning_24"
-                app:key="ignore_ssl"
-                android:title="Ignore SSL Certificate"
-                app:defaultValue="false"
-                app:summary="If you enable this more sources may work"
-        />
+
         <SwitchPreference android:key="acra.disable"
                           android:icon="@drawable/ic_baseline_bug_report_24"
                           android:title="@string/pref_disable_acra"
@@ -101,8 +95,8 @@
         </SeekBarPreference>-->
     </PreferenceCategory>
     <PreferenceCategory
-            android:key="player"
-            android:title="Player"
+            android:key="link_loading"
+            android:title="Link loading"
             app:isPreferenceVisible="true"
     >
         <MultiSelectListPreference
@@ -120,6 +114,33 @@
                 android:summaryOff="Some ISPs block vidstream\nUsing gogo-stream.com"
                 app:defaultValue="false"
         />
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_warning_24"
+                app:key="ignore_ssl"
+                android:title="Ignore SSL Certificate"
+                app:defaultValue="false"
+                app:summary="If you enable this more sources may work"
+        />
+        <!--<SeekBarPreference
+                android:icon="@drawable/ic_baseline_access_time_24"
+                android:title="Link loading timeout"
+                android:defaultValue="15"
+                android:key="link_loading_timeout"
+                app:showSeekBarValue="true"
+                app:seekBarIncrement="5"
+                android:max="60"
+                app:min="3"
+                app:isPreferenceVisible="false"
+        >
+        </SeekBarPreference>-->
+    </PreferenceCategory>
+
+    <PreferenceCategory
+            android:key="player"
+            android:title="Player"
+            app:isPreferenceVisible="true"
+    >
+
         <SwitchPreference
                 android:icon="@drawable/ic_baseline_picture_in_picture_alt_24"
                 app:key="pip_enabled"

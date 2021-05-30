@@ -3,6 +3,7 @@ package com.lagradost.shiro.utils.extractors
 import com.lagradost.shiro.utils.ExtractorApi
 import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.Qualities
+import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 
 class MultiQuality : ExtractorApi() {
     override val name: String = "MultiQuality"
@@ -34,7 +35,8 @@ class MultiQuality : ExtractorApi() {
                     val extractedUrl = sourceMatch.groupValues[1]
                     // Trusting this isn't mp4, may fuck up stuff
                     if (extractedUrl.endsWith(".m3u8")) {
-                        with(khttp.get(extractedUrl)) {
+                        val headers = mapOf("User-Agent" to USER_AGENT, "Referer" to url)
+                        with(khttp.get(extractedUrl, headers = headers)) {
                             m3u8Regex.findAll(this.text).forEach { match ->
                                 extractedLinksList.add(
                                     ExtractorLink(

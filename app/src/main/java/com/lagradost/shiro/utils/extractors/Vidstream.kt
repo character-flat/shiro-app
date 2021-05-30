@@ -26,24 +26,16 @@ class Vidstream(var providersActive: HashSet<String> = HashSet()) {
 
     // https://gogo-stream.com/streaming.php?id=MTE3NDg5
     //   https://streamani.net/streaming.php?id=MTE3NDg5
-    fun getUrl(id: String, isCasting: Boolean = false): List<ExtractorLink> {
-        val extractedLinksList: MutableList<ExtractorLink> = mutableListOf()
+    fun getUrl(id: String, isCasting: Boolean = false, callback: (ExtractorLink) -> Unit): Boolean {
+        //val extractedLinksList: MutableList<ExtractorLink> = mutableListOf()
+        val normalApis = arrayListOf(Shiro(), MultiQuality())
         try {
-            // --- Shiro ---
-            val shiro = Shiro()
-            if (providersActive.size == 0 || providersActive.contains(shiro.name)) {
-                val shiroUrl = shiro.getExtractorUrl(id)
-                val shiroSource = shiro.getUrl(shiroUrl)
-                shiroSource?.forEach { extractedLinksList.add(it) }
+            normalApis.pmap { api ->
+                val url = api.getExtractorUrl(id)
+                val source = api.getUrl(url)
+                source?.forEach { callback.invoke(it) }
             }
-            // --- MultiQuality ---
-            val multiQuality = MultiQuality()
-            if (providersActive.size == 0 || providersActive.contains(multiQuality.name)) {
-                val multiQualityUrl = multiQuality.getExtractorUrl(id)
-                val multiQualitySource = multiQuality.getUrl(multiQualityUrl)
-                multiQualitySource?.forEach { extractedLinksList.add(it) }
-            }
-            // --------------------
+
             val url = getExtractorUrl(id)
             with(khttp.get(url)) {
                 val document = Jsoup.parse(this.text)
@@ -63,15 +55,16 @@ class Vidstream(var providersActive: HashSet<String> = HashSet()) {
                             val extractedLinks = api.getUrl(link, url)
                             if (extractedLinks?.isNotEmpty() == true) {
                                 extractedLinks.forEach {
-                                    extractedLinksList.add(it)
+                                    callback.invoke(it)
                                 }
                             }
                         }
                     }
                 }
             }
+            return true
         } catch (e: Exception) {
+            return false
         }
-        return extractedLinksList
     }
 }

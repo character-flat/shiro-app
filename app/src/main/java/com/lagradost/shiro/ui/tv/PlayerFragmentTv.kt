@@ -56,10 +56,11 @@ import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.setViewPosDur
 import com.lagradost.shiro.utils.DataStore.mapper
+import com.lagradost.shiro.utils.Event
 import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
-import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
+import com.lagradost.shiro.utils.ShiroApi.Companion.loadLinks
 import java.io.File
 import java.security.SecureRandom
 import java.util.concurrent.TimeUnit
@@ -95,6 +96,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
     // Prevent clicking next episode button multiple times
     private var isLoadingNextEpisode = false
+    private val extractorLinks = mutableListOf<ExtractorLink>()
 
     /**
      * Connects a [MediaSessionCompat] to a [Player] so transport controls are handled automatically
@@ -484,18 +486,23 @@ class PlayerFragmentTv : VideoSupportFragment() {
         return data?.card?.episodes?.get(data?.episodeIndex!!)//data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.data?.episodeIndex!!)
     }
 
-    private fun getCurrentUrls(): Pair<Int?, List<ExtractorLink>?> {
+    private fun getCurrentUrls() {
         // Cached, first is index, second is links
         sources = if (sources.first == data?.episodeIndex && data?.episodeIndex != null) {
             sources
         } else {
-            Pair(data?.episodeIndex, getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { getVideoLink(it) })
+            getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { loadLinks(it, false, callback = ::addToList) }
+            Pair(data?.episodeIndex, extractorLinks)
         }
-        return sources
+    }
+
+    private fun addToList(link: ExtractorLink) {
+        extractorLinks.add(link)
     }
 
     private fun getCurrentUrl(): ExtractorLink? {
-        return getCurrentUrls().second?.getOrNull(selectedSource)
+        getCurrentUrls()
+        return sources.second?.getOrNull(selectedSource)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

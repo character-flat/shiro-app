@@ -190,15 +190,16 @@ class ShiroApi {
 
 
         fun getVideoLink(id: String, isCasting: Boolean = false): List<ExtractorLink>? {
-            println("GETTING URL FOR $id iScasting $isCasting")
-            return try {
-                //val url = Vidstream().getExtractorUrl(id)
-                val urls = allApi.getUrl(id, isCasting = isCasting).sortedBy { -it.quality }.distinctBy { it.url }
-                println("Extracted URLS: $urls")
-                return urls
-            } catch (e: Exception) {
-                println("Failed to load video URL}")
-                null
+            val links = mutableListOf<ExtractorLink>()
+            allApi.getUrl(id, isCasting) {
+                links.add(it)
+            }
+            return if(links.isNullOrEmpty()) null else links.sortedBy { -it.quality }.distinctBy { it.url }
+        }
+
+        fun loadLinks(id: String, isCasting: Boolean, callback: (ExtractorLink) -> Unit): Boolean {
+            return allApi.getUrl(id, isCasting) {
+                callback.invoke(it)
             }
         }
 
