@@ -64,8 +64,8 @@ import com.lagradost.shiro.utils.AppUtils.setViewPosDur
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.AppUtils.showSystemUI
 import com.lagradost.shiro.utils.ShiroApi.Companion.loadLinks
+import com.lagradost.shiro.utils.extractors.Shiro
 import java.io.File
-import java.lang.Thread.sleep
 import java.security.SecureRandom
 import javax.net.ssl.*
 import kotlin.collections.ArrayList
@@ -129,7 +129,7 @@ class PlayerFragment : Fragment() {
 
     companion object {
         var isInPlayer: Boolean = false
-        var onNavigatedPlayer = Event<Boolean>()
+        var onPlayerNavigated = Event<Boolean>()
         fun newInstance(data: PlayerData) =
             PlayerFragment().apply {
                 arguments = Bundle().apply {
@@ -304,12 +304,14 @@ class PlayerFragment : Fragment() {
     private fun linkLoaded(link: ExtractorLink) {
         extractorLinks.add(link)
 
-        activity?.runOnUiThread {
-            links_loaded_text.text = "Loaded ${link.name}"
+        if (!isCurrentlyPlaying) {
+            activity?.runOnUiThread {
+                links_loaded_text.text = "Loaded ${link.name}"
+            }
         }
         sources = Pair(data?.episodeIndex, extractorLinks.sortedBy { -it.quality }.distinctBy { it.url })
         // Quickstart
-        if (link.name == "Shiro") {
+        if (link.name == Shiro().name) {
             activity?.runOnUiThread {
                 initPlayerIfPossible(link)
             }
@@ -318,6 +320,7 @@ class PlayerFragment : Fragment() {
 
 
     private fun getCurrentUrl(): ExtractorLink? {
+        if (data?.url != null) return ExtractorLink("Local", data?.url!!, "", Qualities.Unknown.value)
         val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
         return sources.second?.getOrNull(index)
     }
@@ -353,7 +356,7 @@ class PlayerFragment : Fragment() {
         // DON'T SAVE DATA OF TRAILERS
 
         isInPlayer = false
-        onNavigatedPlayer.invoke(false)
+        onPlayerNavigated.invoke(false)
         activity?.showSystemUI()
         MainActivity.onPlayerEvent -= ::handlePlayerEvent
         MainActivity.onAudioFocusEvent -= ::handleAudioFocusEvent
@@ -991,10 +994,9 @@ class PlayerFragment : Fragment() {
         view?.setOnTouchListener { _, _ -> return@setOnTouchListener true } // VERY IMPORTANT https://stackoverflow.com/questions/28818926/prevent-clicking-on-a-button-in-an-activity-while-showing-a-fragment
         thread {
             val currentUrl = currentUrl ?: getCurrentUrl()
-            println(currentUrl?.name)
             if (currentUrl == null) {
                 activity?.runOnUiThread {
-                    Toast.makeText(activity, "Error getting link", LENGTH_LONG).show()
+                    Toast.makeText(activity, "No links found", LENGTH_LONG).show()
                     //MainActivity.popCurrentPage()
                 }
             } else {
@@ -1044,6 +1046,11 @@ class PlayerFragment : Fragment() {
                             playbackPosition = data?.startAt!!
                         }
                         video_title?.text = getCurrentTitle()
+
+                        // removes sources button if downloaded file
+                        if (currentUrl.name == "Local") {
+                            sources_btt.visibility = GONE
+                        }
                         if (canPlayNextEpisode()) {
                             next_episode_btt?.visibility = VISIBLE
                             next_episode_btt?.setOnClickListener {
@@ -1195,7 +1202,7 @@ class PlayerFragment : Fragment() {
         super.onResume()
         // When restarting activity the rotation is ensured :)
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
-        onNavigatedPlayer.invoke(true)
+        onPlayerNavigated.invoke(true)
 
         if (Util.SDK_INT <= 23) {
             loadAndPlay()

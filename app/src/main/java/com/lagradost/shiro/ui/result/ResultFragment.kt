@@ -32,10 +32,9 @@ import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.GlideOptions.bitmapTransform
 import com.lagradost.shiro.ui.MainActivity
-import com.lagradost.shiro.ui.player.PlayerFragment
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
-import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onNavigatedPlayer
+import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.canPlayNextEpisode
@@ -129,6 +128,7 @@ class ResultFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        isInResults = true
         onResultsNavigated.invoke(true)
     }
 
@@ -428,12 +428,12 @@ private fun ToggleViewState(_isViewState: Boolean) {
 
     override fun onDestroy() {
         super.onDestroy()
+        isInResults = false
         onResultsNavigated.invoke(false)
-        onNavigatedPlayer -= ::handleVideoPlayerNavigation
+        onPlayerNavigated -= ::handleVideoPlayerNavigation
         DownloadManager.downloadStartEvent -= ::onDownloadStarted
         onLoadedOther -= ::onLoadOtherEvent
         onLoaded -= ::onLoadEvent
-        isInResults = false
     }
 
     private fun handleVideoPlayerNavigation(hasEntered: Boolean) {
@@ -466,7 +466,6 @@ private fun ToggleViewState(_isViewState: Boolean) {
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        isInResults = true
 
         hideKeyboard()
         //title_duration.text = data!!.duration.toString() + "min"
@@ -486,7 +485,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
             }
         }
         //isViewState = false
-        onNavigatedPlayer += ::handleVideoPlayerNavigation
+        onPlayerNavigated += ::handleVideoPlayerNavigation
         DownloadManager.downloadStartEvent += ::onDownloadStarted
 
         results_root.setPadding(0, MainActivity.statusHeight, 0, 0)

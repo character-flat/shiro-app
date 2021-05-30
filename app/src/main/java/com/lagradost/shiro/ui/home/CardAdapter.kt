@@ -21,6 +21,7 @@ import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.AppUtils.fixCardTitle
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
+import com.lagradost.shiro.utils.AppUtils.onLongCardClick
 import com.lagradost.shiro.utils.ShiroApi
 import kotlinx.android.synthetic.main.home_card.view.*
 import kotlinx.android.synthetic.main.home_card.view.home_card_root
@@ -111,7 +112,7 @@ class CardAdapter(
                 itemView.imageText.text = fixCardTitle(cardInfo.name)
 
                 itemView.home_card_root.setOnLongClickListener {
-                    Toast.makeText(context, cardInfo.name, Toast.LENGTH_SHORT).show()
+                    context.onLongCardClick(cardInfo)
                     return@setOnLongClickListener true
                 }
                 itemView.home_card_root.setOnClickListener {

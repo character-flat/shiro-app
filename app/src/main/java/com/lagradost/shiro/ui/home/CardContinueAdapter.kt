@@ -23,6 +23,7 @@ import com.lagradost.shiro.ui.LastEpisodeInfo
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
+import com.lagradost.shiro.utils.AppUtils.onLongCardClick
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.VIEW_LST_KEY
 import kotlinx.android.synthetic.main.home_card.view.home_card_root
@@ -122,7 +123,7 @@ class CardContinueAdapter(
                     itemView.infoButton.visibility = GONE
                 }
                 itemView.home_card_root.setOnLongClickListener {
-                    Toast.makeText(activity, cardInfo.id?.name, Toast.LENGTH_SHORT).show()
+                    cardInfo.id?.let { card -> activity.onLongCardClick(card) }
                     return@setOnLongClickListener true
                 }
                 itemView.home_card_root.setOnClickListener {

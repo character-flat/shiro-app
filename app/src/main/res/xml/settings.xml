@@ -24,6 +24,12 @@
                 app:defaultValue="true"
         />
         <SwitchPreference
+                android:icon="@drawable/outlined_heart"
+                app:key="hold_to_favorite"
+                android:title="Hold to favorite"
+                app:defaultValue="false"
+        />
+        <SwitchPreference
                 android:icon="@drawable/ic_baseline_storage_24"
                 app:key="use_external_storage"
                 android:title="Use external storage for downloads"

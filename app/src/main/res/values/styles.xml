@@ -25,7 +25,7 @@
         <item name="colorOnPrimary">@color/colorAccent</item>
         <item name="textColorAlertDialogListItem">?attr/textColor</item>
         <item name="actionMenuTextColor">?attr/textColor</item>
-
+        <item name="android:indeterminateTint">?attr/colorPrimary</item>
         <item name="android:windowBackground">@drawable/splash_background</item>
         <item name="colorPrimaryMegaDark">@color/colorPrimaryMegaDark</item>
         <item name="colorPrimaryDarker">@color/colorPrimaryDarker</item>

@@ -2,6 +2,8 @@
     <string name="changelog">\n
         - Video Player improvements\n
         - Option to change links loaded\n
+        - Option to change vidstream server\n
+        - Option to quickly add to favorites\n
         - Increased link loading speed\n
         - Crash fixes\n
     </string>

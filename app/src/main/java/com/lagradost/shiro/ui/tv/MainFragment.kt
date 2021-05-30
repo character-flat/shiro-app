@@ -14,10 +14,13 @@ import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.home.MasterCardAdapter
+import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
+import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.onResultsNavigated
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import kotlinx.android.synthetic.main.fragment_main_tv.*
+import kotlin.concurrent.thread
 
 
 class MainFragment : Fragment() {
@@ -25,6 +28,8 @@ class MainFragment : Fragment() {
 
     private fun homeLoaded(data: ShiroApi.ShiroHomePage?) {
         activity?.runOnUiThread {
+            main_load?.visibility = GONE
+            main_reload_data_btt?.visibility = GONE
             val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder> = MasterCardAdapter(
                 requireActivity(),
                 data,
@@ -53,6 +58,11 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        ShiroApi.onHomeError += ::onHomeErrorCatch
+        if (ShiroApi.hasThrownError != -1) {
+            onHomeErrorCatch(ShiroApi.hasThrownError == 1)
+        }
+
         search_icon.setOnFocusChangeListener { v, hasFocus ->
             val transition: Transition = AutoTransition()
             transition.duration = 2000 // DURATION OF ANIMATION IN MS
@@ -70,6 +80,7 @@ class MainFragment : Fragment() {
         tv_menu_bar.visibility = VISIBLE
 
         onResultsNavigated += ::restoreState
+        onPlayerNavigated += ::restoreState
 
         search_icon.setOnClickListener {
             activity?.supportFragmentManager?.beginTransaction()
@@ -86,7 +97,7 @@ class MainFragment : Fragment() {
             // Needed to prevent focus when on bottom
             this.view?.visibility = GONE
         } else {
-            println("LEFT RESULTS")
+            if (isInResults) return
             this.view?.visibility = VISIBLE
             // Somehow fucks up if you've been in player, I've yet to understand why
             if (hasBeenInPlayer) {
@@ -96,6 +107,28 @@ class MainFragment : Fragment() {
                     ?.detach(this)
                     ?.attach(this)
                     ?.commitAllowingStateLoss()
+            }
+        }
+    }
+
+    private fun onHomeErrorCatch(fullRe: Boolean) {
+        // Null check because somehow this can crash
+        activity?.runOnUiThread {
+            // ?. because it somehow crashes anyways without it for one person
+            if (main_reload_data_btt != null) {
+                main_reload_data_btt?.visibility = VISIBLE
+                main_load?.visibility = GONE
+                main_reload_data_btt?.setOnClickListener {
+                    main_reload_data_btt?.visibility = GONE
+                    main_load?.visibility = VISIBLE
+                    thread {
+                        if (fullRe) {
+                            ShiroApi.init()
+                        } else {
+                            requestHome(false)
+                        }
+                    }
+                }
             }
         }
     }
@@ -110,6 +143,7 @@ class MainFragment : Fragment() {
 
     override fun onDestroy() {
         onResultsNavigated -= ::restoreState
+        onPlayerNavigated -= ::restoreState
         super.onDestroy()
     }
 

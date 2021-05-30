@@ -21,6 +21,7 @@ import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppUtils.fixCardTitle
+import com.lagradost.shiro.utils.AppUtils.onLongCardClick
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.BOOKMARK_KEY
 import com.lagradost.shiro.utils.DataStore
@@ -41,7 +42,8 @@ class ResAdapter(
     var cardList = animeList
     var context: Context? = context
     private var resView: AutofitRecyclerView? = resView
-    private val compactView = settingsManager?.getBoolean("compact_search_enabled", true) == true && !forceDisableCompact
+    private val compactView =
+        settingsManager?.getBoolean("compact_search_enabled", true) == true && !forceDisableCompact
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val hideDubbed = settingsManager?.getBoolean("hide_dubbed", false) == true
@@ -121,6 +123,15 @@ class ResAdapter(
                         ?.add(R.id.homeRoot, ResultFragment.newInstance(card.slug))
                         ?.commitAllowingStateLoss()
                 }
+                cardView.setOnLongClickListener {
+                    if (context.onLongCardClick(card)) toggleHeart(!isBookmarked)
+                    return@setOnLongClickListener true
+                }
+            } else {
+                cardView.setOnLongClickListener {
+                    context.onLongCardClick(card)
+                    return@setOnLongClickListener true
+                }
             }
 
             itemView.apply {
@@ -130,10 +141,6 @@ class ResAdapter(
                 )
             }
             itemView.imageText.text = fixCardTitle(card.name)
-            cardView.setOnLongClickListener {
-                Toast.makeText(context, card.name, Toast.LENGTH_SHORT).show()
-                return@setOnLongClickListener true
-            }
             cardView.setOnClickListener {
                 activity?.supportFragmentManager?.beginTransaction()
                     ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)

@@ -20,6 +20,7 @@ import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
@@ -33,6 +34,7 @@ import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.EpisodePosDurInfo
 import com.lagradost.shiro.ui.LastEpisodeInfo
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
@@ -47,6 +49,7 @@ import com.lagradost.shiro.ui.tv.MainFragment
 import com.lagradost.shiro.ui.tv.PlayerFragmentTv
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.DataStore.mapper
+import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import com.lagradost.shiro.utils.extractors.Vidstream
 import java.net.URL
 import java.net.URLDecoder
@@ -77,6 +80,40 @@ object AppUtils {
             resources.getDimensionPixelSize(resourceId);
         } else
             0
+    }
+
+    fun toggleHeart(name: String, image: String, slug: String): Boolean {
+        /*Saving the new bookmark in the database*/
+        val isBookmarked = DataStore.getKey<BookmarkedTitle>(BOOKMARK_KEY, slug, null) != null
+        if (!isBookmarked) {
+            DataStore.setKey(
+                BOOKMARK_KEY,
+                slug,
+                BookmarkedTitle(
+                    name,
+                    image,
+                    slug
+                )
+            )
+        } else {
+            DataStore.removeKey(BOOKMARK_KEY, slug)
+        }
+        thread {
+            requestHome(true)
+        }
+        return !isBookmarked
+    }
+
+    fun Context.onLongCardClick(card: ShiroApi.CommonAnimePage): Boolean {
+        return if (settingsManager?.getBoolean("hold_to_favorite", false) == true) {
+            val isBookmarked = toggleHeart(card.name, card.image, card.slug)
+            val prefix = if (isBookmarked) "Added" else "Removed"
+            Toast.makeText(this, "$prefix ${card.name}", Toast.LENGTH_SHORT).show()
+            true
+        } else {
+            Toast.makeText(this, card.name, Toast.LENGTH_SHORT).show()
+            false
+        }
     }
 
     fun Context.isCastApiAvailable(): Boolean {

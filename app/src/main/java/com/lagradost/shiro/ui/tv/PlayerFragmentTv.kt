@@ -49,14 +49,13 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.MimeTypes
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.player.PlayerData
-import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onNavigatedPlayer
+import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.player.SSLTrustManager
 import com.lagradost.shiro.ui.tv.MainFragment.Companion.hasBeenInPlayer
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.setViewPosDur
 import com.lagradost.shiro.utils.DataStore.mapper
-import com.lagradost.shiro.utils.Event
 import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
@@ -90,8 +89,9 @@ class PlayerFragmentTv : VideoSupportFragment() {
     private lateinit var exoPlayer: SimpleExoPlayer
 
     var data: PlayerData? = null
+    private var isCurrentlyPlaying: Boolean = false
 
-    private var selectedSource: Int = 0
+    private var selectedSource: ExtractorLink? = null
     private var sources: Pair<Int?, List<ExtractorLink>?> = Pair(null, null)
 
     // Prevent clicking next episode button multiple times
@@ -162,22 +162,24 @@ class PlayerFragmentTv : VideoSupportFragment() {
                     playerGlue.host.hideControlsOverlay(false)
                     isLoadingNextEpisode = true
                     data?.episodeIndex = minOf(data?.episodeIndex!! + 1, data?.card?.episodes?.size!! - 1)
-                    selectedSource = 0
+                    selectedSource = null
+                    extractorLinks.clear()
                     releasePlayer()
-                    initPlayer()
+                    loadAndPlay()
                 } else {
                 }
             }
             actionSources -> {
                 sources.second?.let {
-                    selectedSource = (selectedSource + 1) % it.size
+                    val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
+                    selectedSource = it[(index + 1) % it.size]
                     //val speed = speedsText[which]
                     savePos()
-                    exoPlayer.release()
-                    initPlayer()
+                    releasePlayer()
+                    loadAndPlay()
                 }
                 val sourcesTxt =
-                    sources.second!!.mapIndexed { index, extractorLink -> if (index == selectedSource) "✦ ${extractorLink.name} selected" else extractorLink.name }
+                    sources.second!!.mapIndexed { index, extractorLink -> if (extractorLink == selectedSource) "✦ ${extractorLink.name} selected" else extractorLink.name }
                 Toast.makeText(
                     requireContext(),
                     "${sourcesTxt.joinToString(separator = "\n")}",
@@ -242,8 +244,8 @@ class PlayerFragmentTv : VideoSupportFragment() {
             view?.postDelayed(this, METADATA_UPDATE_INTERVAL_MILLIS)
         }
     }
-
     private fun releasePlayer() {
+        isCurrentlyPlaying = false
         if (this::exoPlayer.isInitialized) {
             exoPlayer.stop()
             exoPlayer.release()
@@ -263,20 +265,21 @@ class PlayerFragmentTv : VideoSupportFragment() {
         }
     }
 
-    private fun initPlayer() {
+    private fun initPlayer(currentUrl: ExtractorLink? = null) {
+        isCurrentlyPlaying = true
         thread {
-            currentUrl = getCurrentUrl()
+            val currentUrl = currentUrl ?: getCurrentUrl()
             if (currentUrl == null) {
                 activity?.let {
                     it.runOnUiThread {
-                        Toast.makeText(it, "Error getting link", LENGTH_LONG).show()
+                        Toast.makeText(it, "No links found", LENGTH_LONG).show()
                         it.onBackPressed()
                     }
                 }
                 return@thread
             }
             val isOnline =
-                currentUrl?.url?.startsWith("https://") == true || currentUrl?.url?.startsWith("http://") == true
+                currentUrl.url.startsWith("https://") || currentUrl.url.startsWith("http://")
             //database = TvMediaDatabase.getInstance(requireContext())
             //val metadata = args.metadata
 
@@ -286,7 +289,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
                 database.metadata().update(metadata.apply { watchNext = true })
             }*/
 
-            val mimeType = if (currentUrl!!.isM3u8) MimeTypes.APPLICATION_M3U8 else MimeTypes.APPLICATION_MP4
+            val mimeType = if (currentUrl.isM3u8) MimeTypes.APPLICATION_M3U8 else MimeTypes.APPLICATION_MP4
             val _mediaItem = MediaItem.Builder()
                 //Replace needed for android 6.0.0  https://github.com/google/ExoPlayer/issues/5983
                 .setMimeType(mimeType)
@@ -483,26 +486,62 @@ class PlayerFragmentTv : VideoSupportFragment() {
     }
 
     private fun getCurrentEpisode(): ShiroApi.ShiroEpisodes? {
-        return data?.card?.episodes?.get(data?.episodeIndex!!)//data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.data?.episodeIndex!!)
+        return data?.card?.episodes?.getOrNull(data?.episodeIndex!!)//data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.episodeIndex!!)
     }
 
-    private fun getCurrentUrls() {
+    private fun loadAndPlay() {
         // Cached, first is index, second is links
-        sources = if (sources.first == data?.episodeIndex && data?.episodeIndex != null) {
-            sources
-        } else {
-            getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let { loadLinks(it, false, callback = ::addToList) }
-            Pair(data?.episodeIndex, extractorLinks)
+        thread {
+            if (!(sources.first == data?.episodeIndex && data?.episodeIndex != null)) {
+                getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let {
+                    loadLinks(
+                        it,
+                        false,
+                        callback = ::linkLoaded
+                    )
+                }
+            }
+            activity?.runOnUiThread {
+                initPlayerIfPossible()
+            }
         }
     }
 
-    private fun addToList(link: ExtractorLink) {
+    private fun linkLoaded(link: ExtractorLink) {
+        println(" LINK ADDED ${link.name}")
         extractorLinks.add(link)
+        sources = Pair(data?.episodeIndex, extractorLinks.sortedBy { -it.quality }.distinctBy { it.url })
+        // Quickstart
+        /*if (link.name == "Shiro") {
+            activity?.runOnUiThread {
+                initPlayerIfPossible(link)
+            }
+        }*/
+    }
+
+    private fun initPlayerIfPossible(link: ExtractorLink? = null) {
+        if (!isCurrentlyPlaying) {
+            initPlayer(link)
+        }
     }
 
     private fun getCurrentUrl(): ExtractorLink? {
-        getCurrentUrls()
-        return sources.second?.getOrNull(selectedSource)
+        val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
+        println("SOURcES ${sources.second}")
+        return sources.second?.getOrNull(index)
+    }
+
+    private fun getCurrentTitle(): String {
+        if (data?.title != null) return data?.title!!
+
+        val isMovie: Boolean = data?.card!!.episodes!!.size == 1 && data?.card?.status == "finished"
+        // data?.card!!.cdndata?.seasons.size == 1 && data?.card!!.cdndata?.seasons[0].episodes.size == 1
+        var preTitle = ""
+        if (!isMovie) {
+            preTitle = "Episode ${data?.episodeIndex!! + 1} · "
+        }
+        // Replaces with "" if it's null
+        return preTitle + data?.card?.name
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -557,8 +596,8 @@ class PlayerFragmentTv : VideoSupportFragment() {
         mediaSession.isActive = true
         hasBeenInPlayer = true
         isInPlayer = true
-        onNavigatedPlayer.invoke(true)
-        initPlayer()
+        onPlayerNavigated.invoke(true)
+        loadAndPlay()
         // Kick off metadata update task which runs periodically in the main thread
         //view?.postDelayed(updateMetadataTask, METADATA_UPDATE_INTERVAL_MILLIS)
     }
@@ -592,7 +631,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
         savePos()
         releasePlayer()
         mediaSession.release()
-        onNavigatedPlayer.invoke(false)
+        onPlayerNavigated.invoke(false)
         isInPlayer = false
     }
 
@@ -604,7 +643,6 @@ class PlayerFragmentTv : VideoSupportFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         arguments?.getString(DATA)?.let {
-            println("DATA $it")
             data = mapper.readValue(it, PlayerData::class.java)
         }
     }
