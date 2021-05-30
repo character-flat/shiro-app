@@ -33,6 +33,7 @@ import androidx.core.content.ContextCompat
 import androidx.leanback.app.PlaybackSupportFragment
 import androidx.leanback.app.VideoSupportFragment
 import androidx.leanback.app.VideoSupportFragmentGlueHost
+import androidx.leanback.media.MediaPlayerGlue
 import androidx.leanback.media.PlaybackGlue
 import androidx.leanback.media.PlaybackTransportControlGlue
 import androidx.leanback.widget.Action
@@ -85,7 +86,6 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
     /** Glue layer between the player and our UI */
     private lateinit var playerGlue: MediaPlayerGlue
-    private var currentUrl: ExtractorLink? = null
     private lateinit var exoPlayer: SimpleExoPlayer
 
     var data: PlayerData? = null
@@ -508,15 +508,16 @@ class PlayerFragmentTv : VideoSupportFragment() {
     }
 
     private fun linkLoaded(link: ExtractorLink) {
-        println(" LINK ADDED ${link.name}")
+        println("LINK ADDED ${link.name}")
         extractorLinks.add(link)
         sources = Pair(data?.episodeIndex, extractorLinks.sortedBy { -it.quality }.distinctBy { it.url })
-        // Quickstart
-        /*if (link.name == "Shiro") {
+        // Quickstart provided shiro is loaded and one other link, because I haven't figured out how to refresh the glue
+        if (sources.second?.size ?: 0 > 1 && sources.second?.map { it.name }?.contains("Shiro") == true){
+        //if (link.name == "Shiro") {
             activity?.runOnUiThread {
                 initPlayerIfPossible(link)
             }
-        }*/
+        }
     }
 
     private fun initPlayerIfPossible(link: ExtractorLink? = null) {
@@ -527,7 +528,6 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
     private fun getCurrentUrl(): ExtractorLink? {
         val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
-        println("SOURcES ${sources.second}")
         return sources.second?.getOrNull(index)
     }
 

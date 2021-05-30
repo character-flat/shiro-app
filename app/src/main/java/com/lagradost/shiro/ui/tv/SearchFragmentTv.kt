@@ -7,7 +7,10 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import androidx.core.content.ContextCompat
 import androidx.leanback.widget.SearchBar
+import androidx.leanback.widget.SpeechOrbView
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.home.CardAdapter
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.onResultsNavigated
@@ -45,6 +48,8 @@ class SearchFragmentTv : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val speechOrbView: SpeechOrbView = view.findViewById(R.id.lb_search_bar_speech_orb)
+        speechOrbView.visibility = GONE
 
         onResultsNavigated += ::restoreState
         //val snapHelper = PagerSnapHelper()
