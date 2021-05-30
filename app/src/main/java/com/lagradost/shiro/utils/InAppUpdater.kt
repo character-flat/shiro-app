@@ -67,6 +67,7 @@ object InAppUpdater {
 
             val cleanedResponse = response.filter { (!it.prerelease || isBetaMode) && !it.draft}
 
+            val versionRegexUniversal = Regex("""(.*?((\d)\.(\d)\.(\d)).*?\.apk)""")
             val versionRegex = if (isTv) {
                 Regex("""(.*?((\d)\.(\d)\.(\d))-TV\.apk)""")
             } else {
@@ -84,12 +85,13 @@ object InAppUpdater {
                 cleanedResponse.sortedWith(compareBy { release ->
                     release.assets.filter { it.content_type == "application/vnd.android.package-archive" }
                         .getOrNull(0)?.name?.let { it1 ->
-                            versionRegex.find(
+                            versionRegexUniversal.find(
                                 it1
                             )?.groupValues?.get(2)
                         }
                 }).toList().lastOrNull()
-            val foundAsset = found?.assets?.getOrNull(0)
+            val foundAsset =
+                found?.assets?.filter { !versionRegex.find(it.name)?.groupValues.isNullOrEmpty() }?.getOrNull(0)
             val currentVersion = this.packageName?.let {
                 this.packageManager.getPackageInfo(
                     it,
