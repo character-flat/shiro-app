@@ -36,7 +36,8 @@ val APIS: Array<ExtractorApi> = arrayOf(
     Mp4Upload(),
     StreamTape(),
     MixDrop(),
-    XStreamCdn()
+    XStreamCdn(),
+    StreamSB()
 )
 
 /*val linKLoadingTimeout: Double

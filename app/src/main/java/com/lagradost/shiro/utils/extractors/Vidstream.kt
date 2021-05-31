@@ -8,6 +8,7 @@ import com.lagradost.shiro.utils.AppUtils.allApi
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.pmap
 import org.jsoup.Jsoup
+import kotlin.concurrent.thread
 
 class Vidstream(var providersActive: HashSet<String> = HashSet()) {
     val name: String = "Vidstream"
@@ -30,10 +31,16 @@ class Vidstream(var providersActive: HashSet<String> = HashSet()) {
         //val extractedLinksList: MutableList<ExtractorLink> = mutableListOf()
         val normalApis = arrayListOf(Shiro(), MultiQuality())
         try {
-            normalApis.pmap { api ->
-                val url = api.getExtractorUrl(id)
-                val source = api.getUrl(url)
-                source?.forEach { callback.invoke(it) }
+            thread {
+                normalApis.pmap { api ->
+                    if (providersActive.size == 0 || providersActive.contains(api.name)) {
+                        val url = api.getExtractorUrl(id)
+                        val source = api.getUrl(url)
+                        source?.forEach {
+                            callback.invoke(it)
+                        }
+                    }
+                }
             }
 
             val url = getExtractorUrl(id)
