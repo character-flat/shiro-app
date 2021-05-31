@@ -39,30 +39,48 @@
             android:backgroundTint="@android:color/black"
     >
         <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:layout_gravity="center"
-                android:animateLayoutChanges="true"
+                android:gravity="center"
         >
-            <ProgressBar
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:id="@+id/main_load"
-                    android:layout_gravity="center"
+            <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:animateLayoutChanges="true"
             >
-            </ProgressBar>
-            <TextView
+                <ProgressBar
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:id="@+id/main_load"
+                        android:layout_gravity="center"
+                >
+                </ProgressBar>
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_margin="10dp"
+                        android:visibility="visible"
+                        android:id="@+id/links_loaded_text"
+                        tools:text="3 - Loaded StreamSB"
+                >
+                </TextView>
+            </LinearLayout>
+            <com.google.android.material.button.MaterialButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_margin="10dp"
-                    android:visibility="visible"
-                    android:id="@+id/links_loaded_text"
-                    tools:text="Loaded 7 links"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    android:text="Start"
+                    android:id="@+id/quickstart_btt"
+                    android:textColor="@color/white"
             >
-            </TextView>
+            </com.google.android.material.button.MaterialButton>
         </LinearLayout>
+
         <FrameLayout
                 android:layout_margin="5dp"
                 app:layout_constraintLeft_toLeftOf="parent"

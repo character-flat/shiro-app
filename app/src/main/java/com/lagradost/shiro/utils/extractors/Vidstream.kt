@@ -8,6 +8,7 @@ import com.lagradost.shiro.utils.AppUtils.allApi
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.pmap
 import org.jsoup.Jsoup
+import java.lang.Thread.sleep
 import kotlin.concurrent.thread
 
 class Vidstream(var providersActive: HashSet<String> = HashSet()) {
@@ -59,6 +60,7 @@ class Vidstream(var providersActive: HashSet<String> = HashSet()) {
                         ))
                     }.pmap { api ->
                         if (link.startsWith(api.mainUrl)) {
+                            println("GETTING API FOR ${api.name}")
                             val extractedLinks = api.getUrl(link, url)
                             if (extractedLinks?.isNotEmpty() == true) {
                                 extractedLinks.forEach {

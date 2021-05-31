@@ -4,6 +4,7 @@ import com.lagradost.shiro.utils.ExtractorApi
 import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.Qualities
 import org.jsoup.Jsoup
+import java.lang.Thread.sleep
 
 class Shiro : ExtractorApi() {
     override val name: String = "Shiro"
@@ -29,7 +30,8 @@ class Shiro : ExtractorApi() {
                     )
                 )
             }
-        } catch (e :Exception){}
+        } catch (e: Exception) {
+        }
         return null
     }
 }

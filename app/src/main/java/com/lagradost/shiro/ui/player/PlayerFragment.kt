@@ -305,7 +305,9 @@ class PlayerFragment : Fragment() {
         // Prevent duplicate urls and editing the text post-player
         if (!isCurrentlyPlaying && !extractorLinks.map { it.url }.contains(link.url)) {
             activity?.runOnUiThread {
-                links_loaded_text.text = "Loaded ${link.name}"
+                // Would seem .size + 1 is correct, but in practice the threading is slower than extractorLinks.add(link)
+                links_loaded_text.text = "${extractorLinks.distinctBy { it.url }.size} - Loaded ${link.name}"
+                quickstart_btt.visibility = VISIBLE
             }
         }
         extractorLinks.add(link)
@@ -741,7 +743,9 @@ class PlayerFragment : Fragment() {
         } else {
             resize_player.visibility = GONE
         }
-
+        quickstart_btt.setOnClickListener {
+            initPlayerIfPossible()
+        }
         class Listener : PlayerFragment.DoubleClickListener(this) {
             // Declaring a seekAnimation here will cause a bug
 
@@ -1052,6 +1056,7 @@ class PlayerFragment : Fragment() {
                         if (currentUrl.name == "Local") {
                             sources_btt.visibility = GONE
                         }
+                        quickstart_btt.visibility = GONE
                         if (canPlayNextEpisode()) {
                             next_episode_btt?.visibility = VISIBLE
                             next_episode_btt?.setOnClickListener {
