@@ -64,15 +64,16 @@
     </style>
 
     <style name="AlertDialogCustom" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:colorBackground">?attr/background</item>
         <item name="android:textColor">?attr/textColor</item>
         <item name="android:textColorPrimary">?attr/textColor</item>
-        <item name="android:background">?attr/background</item>
+        <item name="android:colorControlHighlight">?attr/white</item>
+        <!--<item name="android:background">?attr/background</item>-->
         <item name="android:textAllCaps">false</item>
-        <item name="android:colorBackground">?attr/background</item>
         <item name="textColorAlertDialogListItem">?attr/textColor</item>
         <item name="colorControlNormal">?attr/textColor</item>
+        <item name="colorControlActivated">?attr/colorPrimarySecond</item>-->
         <!-- colorPrimarySecond used because colorPrimary fails for no reason -->
-        <item name="colorControlActivated">?attr/colorPrimarySecond</item>
     </style>
 
     <style name="Theme.LeanbackCustom" parent="Theme.Leanback">

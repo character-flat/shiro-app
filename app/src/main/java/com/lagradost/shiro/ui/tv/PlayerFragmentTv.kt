@@ -29,6 +29,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.leanback.app.PlaybackSupportFragment
 import androidx.leanback.app.VideoSupportFragment
@@ -170,7 +171,29 @@ class PlayerFragmentTv : VideoSupportFragment() {
                 }
             }
             actionSources -> {
+                lateinit var dialog: AlertDialog
                 sources.second?.let {
+                    val sourcesText = it.map { link -> link.name }
+                    val builder = AlertDialog.Builder(requireContext(), R.style.AlertDialogCustom)
+                    builder.setTitle("Pick source")
+                    val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
+                    builder.setSingleChoiceItems(sourcesText.toTypedArray(), index) { _, which ->
+                        //val speed = speedsText[which]
+                        //Toast.makeText(requireContext(), "$speed selected.", Toast.LENGTH_SHORT).show()
+                        selectedSource = it[which]
+                        savePos()
+                        releasePlayer()
+                        loadAndPlay()
+
+                        dialog.dismiss()
+                    }
+                    dialog = builder.create()
+                    dialog.show()
+                }
+                // Do not remove
+                Unit
+
+                /*sources.second?.let {
                     val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
                     selectedSource = it[(index + 1) % it.size]
                     //val speed = speedsText[which]
@@ -184,7 +207,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
                     requireContext(),
                     "${sourcesTxt.joinToString(separator = "\n")}",
                     Toast.LENGTH_SHORT
-                ).show()
+                ).show()*/
 
             }
             else -> super.onActionClicked(action)
@@ -321,7 +344,6 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
             val mediaItem = _mediaItem.build()
             val _exoPlayer = if (context != null) {
-                println("CONTEXT IS NULL!")
                 val trackSelector = DefaultTrackSelector(requireContext())
                 // Disable subtitles
                 trackSelector.parameters = DefaultTrackSelector.ParametersBuilder(requireContext())

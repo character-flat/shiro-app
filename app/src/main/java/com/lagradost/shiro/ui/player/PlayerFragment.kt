@@ -306,8 +306,8 @@ class PlayerFragment : Fragment() {
         if (!isCurrentlyPlaying && !extractorLinks.map { it.url }.contains(link.url)) {
             activity?.runOnUiThread {
                 // Would seem .size + 1 is correct, but in practice the threading is slower than extractorLinks.add(link)
-                links_loaded_text.text = "${extractorLinks.distinctBy { it.url }.size} - Loaded ${link.name}"
-                quickstart_btt.visibility = VISIBLE
+                links_loaded_text?.text = "${extractorLinks.distinctBy { it.url }.size} - Loaded ${link.name}"
+                quickstart_btt?.visibility = VISIBLE
             }
         }
         extractorLinks.add(link)
@@ -1123,7 +1123,7 @@ class PlayerFragment : Fragment() {
                         alphaAnimation.fillAfter = true
                         loading_overlay.startAnimation(alphaAnimation)
                         video_go_back_holder.visibility = GONE
-                        links_loaded_text.text = ""
+                        links_loaded_text?.text = ""
 
                         exoPlayer.setHandleAudioBecomingNoisy(true) // WHEN HEADPHONES ARE PLUGGED OUT https://github.com/google/ExoPlayer/issues/7288
                         player_view.player = exoPlayer
