@@ -229,7 +229,8 @@ object AppUtils {
         resView: RecyclerView,
         textView: TextView,
         isOnTop: Boolean = false,
-        adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = null
+        adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = null,
+        overrideHideDubbed: Boolean = false
     ) {
         val newAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder> = adapter ?: CardAdapter(
             this,
@@ -240,7 +241,7 @@ object AppUtils {
         //val snapHelper = PagerSnapHelper()
         //snapHelper.attachToRecyclerView(scrollView)
 
-        val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)
+        val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)  && !overrideHideDubbed
         val filteredData = if (hideDubbed) data?.filter { it?.name?.endsWith("Dubbed") == false } else data
         resView.adapter = newAdapter
 

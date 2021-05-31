@@ -19,6 +19,7 @@ import com.lagradost.shiro.utils.DataStore.removeKeys
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
+import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
 import com.lagradost.shiro.utils.AppUtils.allApi
@@ -45,7 +46,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        setPreferencesFromResource(R.xml.settings, rootKey)
+        val settingsXml = if (tvActivity == null) R.xml.settings else R.xml.settings_tv
+        setPreferencesFromResource(settingsXml, rootKey)
 
         var easterEggClicks = 0
         //val saveHistory = findPreference("save_history") as SwitchPreference?
@@ -144,12 +146,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
             return DataStore.getKey<String>(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, null) != null
         }
 
-        val selectedProvidersPreference = findPreference<MultiSelectListPreference>("selected_providers")!!
+        val selectedProvidersPreference = findPreference<MultiSelectListPreference>("selected_providers")
         val apiNames = APIS.map { it.name }
 
-        selectedProvidersPreference.entries = apiNames.toTypedArray()
-        selectedProvidersPreference.entryValues = apiNames.toTypedArray()
-        selectedProvidersPreference.setOnPreferenceChangeListener { preference, newValue ->
+        selectedProvidersPreference?.entries = apiNames.toTypedArray()
+        selectedProvidersPreference?.entryValues = apiNames.toTypedArray()
+        selectedProvidersPreference?.setOnPreferenceChangeListener { preference, newValue ->
             allApi.providersActive = newValue as HashSet<String>
 
             return@setOnPreferenceChangeListener true

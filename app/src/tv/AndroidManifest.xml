@@ -71,9 +71,6 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".ui.tv.DetailsActivityTV"/>
-        <activity android:name=".ui.tv.PlaybackActivity"/>
-        <activity android:name=".ui.tv.BrowseErrorActivity"/>
 
         <provider
                 android:name="androidx.core.content.FileProvider"

@@ -35,6 +35,7 @@ import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
+import com.lagradost.shiro.ui.tv.TvActivity
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.canPlayNextEpisode
@@ -106,7 +107,9 @@ class ResultFragment : Fragment() {
         savedInstanceState: Bundle?,
     ): View? {
         val useNewLayout = settingsManager!!.getBoolean("new_results_page", false)
-        val layout = if (useNewLayout) R.layout.fragment_results_new else R.layout.fragment_results
+        // TV has its own overlay
+        val layout =
+            if (tvActivity == null) (if (useNewLayout) R.layout.fragment_results_new else R.layout.fragment_results) else R.layout.fragment_results_tv
 
         return inflater.inflate(layout, container, false)
 
@@ -120,7 +123,8 @@ class ResultFragment : Fragment() {
             val transition: Transition = ChangeBounds()
             transition.duration = 100
             language_button?.visibility = VISIBLE
-            episodes_text_holder?.let {
+            results_root.findViewById<FrameLayout?>(R.id.language_button_holder)?.visibility = VISIBLE
+            results_root?.let {
                 TransitionManager.beginDelayedTransition(it, transition)
             }
         }
@@ -261,7 +265,7 @@ class ResultFragment : Fragment() {
                     .replace("\n", " ")
 
 
-                share_holder.setOnClickListener {
+                share_holder?.setOnClickListener {
                     val intent = Intent()
                     intent.action = Intent.ACTION_SEND
                     intent.putExtra(Intent.EXTRA_TEXT, "https://shiro.is/anime/${data.slug}")
@@ -392,9 +396,6 @@ private fun ToggleViewState(_isViewState: Boolean) {
             }
         }
         super.onCreate(savedInstanceState)
-        if (tvActivity != null) {
-            activity?.theme?.applyStyle(R.style.AppTheme, true)
-        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

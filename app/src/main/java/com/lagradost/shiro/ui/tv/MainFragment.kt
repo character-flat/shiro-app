@@ -8,6 +8,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProviders
+import androidx.preference.PreferenceFragmentCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.AutoTransition
 import androidx.transition.Transition
@@ -17,6 +18,8 @@ import com.lagradost.shiro.ui.home.MasterCardAdapter
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.onResultsNavigated
+import com.lagradost.shiro.ui.settings.SettingsFragment
+import com.lagradost.shiro.ui.settings.SettingsFragmentTv
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import kotlinx.android.synthetic.main.fragment_main_tv.*
@@ -46,8 +49,6 @@ class MainFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        activity?.theme?.applyStyle(R.style.AppTheme, true)
-        activity?.theme?.applyStyle(R.style.Theme_LeanbackCustom, true)
 
         mainViewModel =
             activity?.let { ViewModelProviders.of(it).get(MainFragmentViewModel::class.java) }!!
@@ -72,6 +73,15 @@ class MainFragment : Fragment() {
             search_icon.scaleX = scale
             search_icon.scaleY = scale
         }
+        settings_icon.setOnFocusChangeListener { v, hasFocus ->
+            val transition: Transition = AutoTransition()
+            transition.duration = 2000 // DURATION OF ANIMATION IN MS
+
+            TransitionManager.beginDelayedTransition(tv_menu_bar, transition)
+            val scale = if (hasFocus) 0.8f else 0.5f
+            settings_icon.scaleX = scale
+            settings_icon.scaleY = scale
+        }
         /*settings_button.setOnClickListener {
             activity?.supportFragmentManager?.beginTransaction()
                 ?.replace(R.id.main_browse_fragment, SettingsFragment())
@@ -85,6 +95,11 @@ class MainFragment : Fragment() {
         search_icon.setOnClickListener {
             activity?.supportFragmentManager?.beginTransaction()
                 ?.replace(R.id.home_root_tv, SearchFragmentTv())
+                ?.commit()
+        }
+        settings_icon.setOnClickListener {
+            activity?.supportFragmentManager?.beginTransaction()
+                ?.replace(R.id.home_root_tv, SettingsFragment())
                 ?.commit()
         }
         mainViewModel.apiData.observe(viewLifecycleOwner) {

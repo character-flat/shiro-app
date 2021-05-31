@@ -149,11 +149,10 @@ dependencies {
     implementation "androidx.leanback:leanback-paging:1.1.0-alpha07"
 
     // leanback-preference is an add-on that provides a settings UI for TV apps.
-    implementation "androidx.leanback:leanback-preference:1.0.0"
+    implementation "androidx.leanback:leanback-preference:1.1.0-rc01"
 
     // leanback-tab is an add-on that provides customized TabLayout to be used as the top navigation bar.
     implementation "androidx.leanback:leanback-tab:1.1.0-beta01"
-
     // https://mvnrepository.com/artifact/org.mozilla/rhino
     //implementation group: 'org.mozilla', name: 'rhino', version: '1.7.6'
 

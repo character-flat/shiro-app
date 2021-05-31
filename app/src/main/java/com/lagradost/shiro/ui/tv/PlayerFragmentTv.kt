@@ -244,6 +244,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
             view?.postDelayed(this, METADATA_UPDATE_INTERVAL_MILLIS)
         }
     }
+
     private fun releasePlayer() {
         isCurrentlyPlaying = false
         if (this::exoPlayer.isInitialized) {
@@ -512,8 +513,8 @@ class PlayerFragmentTv : VideoSupportFragment() {
         extractorLinks.add(link)
         sources = Pair(data?.episodeIndex, extractorLinks.sortedBy { -it.quality }.distinctBy { it.url })
         // Quickstart provided shiro is loaded and one other link, because I haven't figured out how to refresh the glue
-        if (sources.second?.size ?: 0 > 1 && sources.second?.map { it.name }?.contains("Shiro") == true){
-        //if (link.name == "Shiro") {
+        if (sources.second?.size ?: 0 > 1 && sources.second?.map { it.name }?.contains("Shiro") == true) {
+            //if (link.name == "Shiro") {
             activity?.runOnUiThread {
                 initPlayerIfPossible(link)
             }
@@ -546,6 +547,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         //dataString = activity?.intent?.getSerializableExtra(DetailsActivityTV.MOVIE) as String
         //playbackPosition = activity?.intent?.getSerializableExtra(DetailsActivityTV.PLAYERPOS) as? Long ?: 0L
         //data = mapper.readValue<ShiroApi.AnimePageData>(dataString!!)

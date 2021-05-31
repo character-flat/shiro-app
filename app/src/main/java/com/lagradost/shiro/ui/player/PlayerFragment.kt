@@ -302,14 +302,15 @@ class PlayerFragment : Fragment() {
     }
 
     private fun linkLoaded(link: ExtractorLink) {
-        extractorLinks.add(link)
-
-        if (!isCurrentlyPlaying) {
+        // Prevent duplicate urls and editing the text post-player
+        if (!isCurrentlyPlaying && !extractorLinks.map { it.url }.contains(link.url)) {
             activity?.runOnUiThread {
                 links_loaded_text.text = "Loaded ${link.name}"
             }
         }
+        extractorLinks.add(link)
         sources = Pair(data?.episodeIndex, extractorLinks.sortedBy { -it.quality }.distinctBy { it.url })
+
         // Quickstart
         if (link.name == Shiro().name) {
             activity?.runOnUiThread {

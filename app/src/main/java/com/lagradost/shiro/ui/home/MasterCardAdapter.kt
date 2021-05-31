@@ -80,13 +80,15 @@ class MasterCardAdapter(
             card.expand_text.text = pair.second
             card.visibility = VISIBLE
             val isOnTop = position == 0
+            val isFavorite = activity.getString(R.string.favorites) == pair.second
             when {
                 pair.first as? List<ShiroApi.CommonAnimePage?> != null && pair.second != activity.getString(R.string.continue_watching) -> {
                     activity.displayCardData(
                         pair.first as List<ShiroApi.CommonAnimePage?>?,
                         card.horizontalGridView,
                         card.expand_text,
-                        isOnTop
+                        isOnTop,
+                        overrideHideDubbed = isFavorite
                     )
                 }
                 pair.first as? List<LastEpisodeInfo?> != null -> {

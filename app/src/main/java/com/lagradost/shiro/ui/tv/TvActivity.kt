@@ -5,6 +5,8 @@ import android.view.FocusFinder
 import android.view.KeyEvent
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.PreferenceManager
+import com.lagradost.shiro.BuildConfig
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
@@ -31,10 +33,11 @@ class TvActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         if ((isInSearch || isInSettings) && !isInResults) {
-            this.supportFragmentManager.beginTransaction()
+            supportFragmentManager.beginTransaction()
                 .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 .replace(R.id.home_root_tv, MainFragment())
                 .commit()
+
         } else if (isInResults || isInPlayer) {
             popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         } else {
@@ -61,10 +64,29 @@ class TvActivity : AppCompatActivity() {
         thread {
             runAutoUpdate(this)
         }
-        // ----- Theme -----
-        theme.applyStyle(R.style.AppTheme, true)
+
+        // ----- Themes ----
+        //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        //theme.applyStyle(R.style.AppTheme, true)
+        val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
+
+        val currentTheme = when (settingsManager.getString("theme", "Black")) {
+            "Black" -> R.style.AppTheme
+            "Dark" -> R.style.DarkMode
+            "Light" -> R.style.LightMode
+            else -> R.style.AppTheme
+        }
+
+        /*if (settingsManager.getBoolean("cool_mode", false)) {
+            theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
+        } else if (BuildConfig.BETA && settingsManager.getBoolean("beta_theme", false)) {
+            theme.applyStyle(R.style.OverlayPrimaryColorGreen, true)
+        }*/
+        //theme.applyStyle(R.style.AppTheme, true)
         theme.applyStyle(R.style.Theme_LeanbackCustom, true)
+        theme.applyStyle(currentTheme, true)
         // -----------------
+
         setContentView(R.layout.activity_tv)
     }
 
