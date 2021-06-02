@@ -1,7 +1,9 @@
 <resources>
     <string name="changelog">\n
-        - Added basic settings\n
-        - Redid some of the anime info page\n
+        - Improved link loading times a lot\n
+        - Added Long tap to favorite\n
+        - Added a link provider (StreamSB)\n
+        - Added some link loading settings (Check them out if your ISP is blocking vidstream)\n
     </string>
     <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>

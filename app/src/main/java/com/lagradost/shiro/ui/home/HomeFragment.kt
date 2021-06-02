@@ -101,7 +101,8 @@ class HomeFragment : Fragment() {
                 activity?.displayCardData(
                     data.favorites?.sortedWith(compareBy { it?.name })?.toList(),
                     favouriteScrollView,
-                    favorites_text
+                    favorites_text,
+                    overrideHideDubbed = true
                 )
             } else {
                 favouriteRoot.visibility = GONE

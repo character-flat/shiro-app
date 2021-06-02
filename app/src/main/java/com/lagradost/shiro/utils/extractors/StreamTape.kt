@@ -7,7 +7,7 @@ import com.lagradost.shiro.utils.Qualities
 class StreamTape : ExtractorApi() {
     override val name: String = "StreamTape"
     override val mainUrl: String = "https://streamtape.com"
-    override val requiresReferer = true
+    override val requiresReferer = false
 
     // Because they add concatenation to fuck up scrapers
     private val linkRegex =
