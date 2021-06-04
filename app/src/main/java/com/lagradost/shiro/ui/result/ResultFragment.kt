@@ -132,6 +132,8 @@ class ResultFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        onPlayerNavigated += ::handleVideoPlayerNavigation
+        DownloadManager.downloadStartEvent += ::onDownloadStarted
         isInResults = true
         onResultsNavigated.invoke(true)
     }
@@ -486,8 +488,6 @@ private fun ToggleViewState(_isViewState: Boolean) {
             }
         }
         //isViewState = false
-        onPlayerNavigated += ::handleVideoPlayerNavigation
-        DownloadManager.downloadStartEvent += ::onDownloadStarted
 
         results_root.setPadding(0, MainActivity.statusHeight, 0, 0)
         //media_route_button_holder.setPadding(0, MainActivity.statusHeight, 0, 0)

@@ -1,5 +1,6 @@
 package com.lagradost.shiro.ui.tv
 
+import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -7,6 +8,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.core.graphics.drawable.DrawableCompat.applyTheme
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceFragmentCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -88,9 +90,6 @@ class MainFragment : Fragment() {
         }*/
         tv_menu_bar.visibility = VISIBLE
 
-        onResultsNavigated += ::restoreState
-        onPlayerNavigated += ::restoreState
-
         search_icon.setOnClickListener {
             activity?.supportFragmentManager?.beginTransaction()
                 ?.replace(R.id.home_root_tv, SearchFragmentTv())
@@ -109,10 +108,10 @@ class MainFragment : Fragment() {
     private fun restoreState(hasEntered: Boolean) {
         if (hasEntered) {
             // Needed to prevent focus when on bottom
-            this.view?.visibility = GONE
+            view?.visibility = GONE
         } else {
             if (isInResults) return
-            this.view?.visibility = VISIBLE
+            view?.visibility = VISIBLE
             // Somehow fucks up if you've been in player, I've yet to understand why
             if (hasBeenInPlayer) {
                 hasBeenInPlayer = false
@@ -149,6 +148,8 @@ class MainFragment : Fragment() {
 
     override fun onResume() {
         requestHome()
+        onResultsNavigated += ::restoreState
+        onPlayerNavigated += ::restoreState
         mainViewModel.apiData.observe(viewLifecycleOwner) {
             homeLoaded(it)
         }

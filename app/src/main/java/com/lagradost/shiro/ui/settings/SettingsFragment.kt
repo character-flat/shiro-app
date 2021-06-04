@@ -19,6 +19,7 @@ import com.lagradost.shiro.utils.DataStore.removeKeys
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
+import com.lagradost.shiro.ui.tv.TvActivity
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
@@ -58,7 +59,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
         ).size
 
         findPreference<ListPreference>("theme")?.setOnPreferenceChangeListener { preference, newValue ->
-            activity?.recreate()
+            if (tvActivity != null) {
+                // Crashes on android tv due to styles if this is changed
+                val intent = Intent(requireActivity(), TvActivity::class.java)
+                this.startActivity(intent)
+                requireActivity().finishAffinity()
+            } else {
+                activity?.recreate()
+            }
             return@setOnPreferenceChangeListener true
         }
 
