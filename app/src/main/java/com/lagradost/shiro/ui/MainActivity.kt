@@ -269,6 +269,12 @@ class MainActivity : AppCompatActivity() {
             theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
         } else if (BuildConfig.BETA && settingsManager.getBoolean("beta_theme", false)) {
             theme.applyStyle(R.style.OverlayPrimaryColorGreen, true)
+        } else if (settingsManager.getBoolean("purple_theme", false) && settingsManager.getBoolean(
+                "auto_update",
+                true
+            ) && settingsManager.getBoolean("beta_mode", true)
+        ) {
+            theme.applyStyle(R.style.OverlayPrimaryColorPurple, true)
         }
         // -----------------
 

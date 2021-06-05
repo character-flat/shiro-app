@@ -34,12 +34,12 @@ import androidx.core.content.ContextCompat
 import androidx.leanback.app.PlaybackSupportFragment
 import androidx.leanback.app.VideoSupportFragment
 import androidx.leanback.app.VideoSupportFragmentGlueHost
-import androidx.leanback.media.MediaPlayerGlue
 import androidx.leanback.media.PlaybackGlue
 import androidx.leanback.media.PlaybackTransportControlGlue
 import androidx.leanback.widget.Action
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.PlaybackControlsRow
+import androidx.leanback.widget.SeekBar
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.ext.leanback.LeanbackPlayerAdapter
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
@@ -470,9 +470,10 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
                 // Adds key listeners
                 playerGlue.host.setOnKeyInterceptListener { view, keyCode, event ->
-
+                    val playbackProgress = view.findViewById<SeekBar>(R.id.playback_progress)
+                    playbackProgress.isFocusable = playerGlue.host.isControlsOverlayVisible
                     // Early exit: if the controls overlay is visible, don't intercept any keys
-                    if (playerGlue.host.isControlsOverlayVisible) return@setOnKeyInterceptListener false
+                    if (playerGlue.host.isControlsOverlayVisible && !playbackProgress.isFocused) return@setOnKeyInterceptListener false
 
                     //  This workaround is necessary for navigation library to work with
                     //  Leanback's [PlaybackSupportFragment]
@@ -490,14 +491,20 @@ class PlayerFragmentTv : VideoSupportFragment() {
                     // Skips ahead when user presses DPAD_RIGHT
                     if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && event.action == KeyEvent.ACTION_DOWN) {
                         playerGlue.skipForward()
-                        preventControlsOverlay(playerGlue)
+                        if (!playbackProgress.isFocused) {
+                            preventControlsOverlay(playerGlue)
+                            playbackProgress.isFocusable = false
+                        }
                         return@setOnKeyInterceptListener true
                     }
 
                     // Rewinds when user presses DPAD_LEFT
                     if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && event.action == KeyEvent.ACTION_DOWN) {
                         playerGlue.skipBackward()
-                        preventControlsOverlay(playerGlue)
+                        if (!playbackProgress.isFocused) {
+                            preventControlsOverlay(playerGlue)
+                            playbackProgress.isFocusable = false
+                        }
                         return@setOnKeyInterceptListener true
                     }
 

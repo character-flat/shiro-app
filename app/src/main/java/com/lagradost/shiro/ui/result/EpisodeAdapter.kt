@@ -3,6 +3,8 @@ package com.lagradost.shiro.ui.result
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -117,14 +119,17 @@ class EpisodeAdapter(
             val key = getViewKey(data.slug, episodePos)
 
             // Because the view is recycled
-            card.cdi.visibility = View.VISIBLE
-            card.progressBar.visibility = View.GONE
-            card.cardPauseIcon.visibility = View.GONE
-            card.cardRemoveIcon.visibility = View.GONE
+            card.cdi.visibility = VISIBLE
+            card.progressBar.visibility = GONE
+            card.cardPauseIcon.visibility = GONE
+            card.cardRemoveIcon.visibility = GONE
+            card.cdi_loading.visibility = GONE
 
             if (isDonor) {
-                card.cdi.visibility = View.VISIBLE
+                card.cdi.visibility = VISIBLE
                 card.cdi.setOnClickListener {
+                    card.cdi_loading.visibility = VISIBLE
+                    card.cdi.visibility = GONE
                     thread {
                         val sources = data.episodes?.get(episodePos)?.videos?.getOrNull(0)?.video_id.let { video_id ->
                             getVideoLink(
@@ -133,6 +138,8 @@ class EpisodeAdapter(
                         }?.filter { !it.isM3u8 }
                         activity.runOnUiThread {
                             if (!sources.isNullOrEmpty()) {
+                                card.cdi.visibility = VISIBLE
+                                card.cdi_loading.visibility = GONE
                                 if (settingsManager?.getBoolean("pick_downloads", false) == true) {
                                     lateinit var dialog: AlertDialog
                                     val sourcesTexts = sources.map { it.name }
@@ -165,7 +172,7 @@ class EpisodeAdapter(
                     }
                 }
             } else {
-                card.cdi.visibility = View.GONE
+                card.cdi.visibility = GONE
                 val param = card.cardTitle.layoutParams as ViewGroup.MarginLayoutParams
                 param.updateMarginsRelative(
                     card.cardTitle.marginLeft,
@@ -232,20 +239,20 @@ class EpisodeAdapter(
                 val file = File(child.videoPath)
                 val megaBytesTotal = DownloadManager.convertBytesToAny(child.maxFileSize, 0, 2.0).toInt()
                 if (!file.exists()) {
-                    card.cdi.visibility = View.VISIBLE
-                    card.progressBar.visibility = View.GONE
-                    card.cardPauseIcon.visibility = View.GONE
-                    card.cardRemoveIcon.visibility = View.GONE
+                    card.cdi.visibility = VISIBLE
+                    card.progressBar.visibility = GONE
+                    card.cardPauseIcon.visibility = GONE
+                    card.cardRemoveIcon.visibility = GONE
                 } else {
-                    card.cdi.visibility = View.GONE
+                    card.cdi.visibility = GONE
                     if (megabytes + 3 >= megaBytesTotal) {
-                        card.progressBar.visibility = View.GONE
-                        card.cardPauseIcon.visibility = View.GONE
-                        card.cardRemoveIcon.visibility = View.VISIBLE
+                        card.progressBar.visibility = GONE
+                        card.cardPauseIcon.visibility = GONE
+                        card.cardRemoveIcon.visibility = VISIBLE
                     } else {
-                        card.progressBar.visibility = View.VISIBLE
-                        card.cardRemoveIcon.visibility = View.GONE
-                        card.cardPauseIcon.visibility = View.VISIBLE
+                        card.progressBar.visibility = VISIBLE
+                        card.cardRemoveIcon.visibility = GONE
+                        card.cardPauseIcon.visibility = VISIBLE
                     }
                 }
             }
@@ -411,17 +418,19 @@ class EpisodeAdapter(
                         }
                         // TODO Doesn't work when resuming
                         // Warning: this somehow causes huge issues in other places in the app for no good reason
-                        /*DownloadManager.downloadEvent += {
-                            try {
-                                //resView.adapter?.notifyItemChanged(position)
-                            } catch (e: Exception){}
-                        }*/
+
+                        DownloadManager.downloadEvent += {
+                            activity.runOnUiThread {
+                                if (it.downloadEvent.id == child.internalId) {
+                                    (resView.episodes_res_view.adapter as EpisodeAdapter).notifyItemChanged(position)
+                                }
+                            }
+                        }
                     }
                 }
             }
 
         }
-
 
         private fun setCardViewState(key: String, episodePos: Int) {
             if (DataStore.containsKey(VIEWSTATE_KEY, key)) {

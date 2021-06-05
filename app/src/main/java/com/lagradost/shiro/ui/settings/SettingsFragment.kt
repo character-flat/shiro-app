@@ -32,7 +32,6 @@ import com.lagradost.shiro.utils.AppUtils.md5
 import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
-import com.lagradost.shiro.utils.extractors.Vidstream
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -177,6 +176,16 @@ class SettingsFragment : PreferenceFragmentCompat() {
             return@setOnPreferenceChangeListener true
         }
 
+        val purpleTheme = findPreference("purple_theme") as SwitchPreference?
+        purpleTheme?.isVisible = settingsManager!!.getBoolean(
+            "auto_update",
+            true
+        ) && settingsManager!!.getBoolean("beta_mode", true)
+        purpleTheme?.setOnPreferenceChangeListener { _, _ ->
+            activity?.recreate()
+            return@setOnPreferenceChangeListener true
+        }
+
         val anilistButton = findPreference("anilist_setting_btt") as Preference?
         val isLoggedInAniList = isLoggedIntoAniList()
         anilistButton?.summary = if (isLoggedInAniList) "Logged in" else "Not logged in"
@@ -311,8 +320,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         if (coolMode?.isChecked == true) {
             coolMode.isVisible = true
         }
-        if (BuildConfig.BETA) {
-            coolMode?.summary = "Overrides the Beta theme"
+        if (BuildConfig.BETA || settingsManager!!.getBoolean("purple_theme", false)) {
+            coolMode?.summary = "Overrides the other themes"
         }
 
         versionButton?.summary = BuildConfig.VERSION_NAME + " Built on " + BuildConfig.BUILDDATE

@@ -78,6 +78,23 @@
                            android:background="?android:attr/selectableItemBackgroundBorderless"
                            android:contentDescription="@string/start_download"/>
 
+                <ProgressBar android:layout_width="40dp"
+                             android:layout_height="40dp"
+                             app:layout_constraintBottom_toBottomOf="parent"
+                             app:layout_constraintTop_toTopOf="parent"
+                             app:layout_constraintStart_toEndOf="@id/cardTitle"
+                             app:layout_constraintEnd_toEndOf="parent"
+                             android:src="@drawable/netflix_download"
+                             app:tint="?attr/white"
+                             android:layout_margin="10dp"
+                             android:id="@+id/cdi_loading"
+                             android:nextFocusRight="@+id/episode_result_root"
+                             android:nextFocusLeft="@+id/episode_result_root"
+                             android:layout_gravity="end|center_vertical"
+                             android:visibility="gone"
+                             android:background="?android:attr/selectableItemBackgroundBorderless"
+                             android:contentDescription="@string/start_download"/>
+
                 <ImageView android:layout_width="40dp"
                            android:layout_height="40dp"
                            android:src="@drawable/exo_icon_stop"
