@@ -35,6 +35,7 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AlertDialog
+import androidx.core.os.HandlerCompat.postDelayed
 import androidx.transition.*
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -71,6 +72,7 @@ import javax.net.ssl.*
 import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
 import kotlin.math.*
+import kotlin.properties.Delegates
 
 const val STATE_RESUME_WINDOW = "resumeWindow"
 const val STATE_RESUME_POSITION = "resumePosition"
@@ -178,11 +180,19 @@ class PlayerFragment : Fragment() {
     private val playerResizeEnabled = true//settingsManager!!.getBoolean("player_resize_enabled", false)
     private val doubleTapTime = settingsManager!!.getInt("dobule_tap_time", 10)
     private val fastForwardTime = settingsManager!!.getInt("fast_forward_button_time", 10)
-    private val ignoreSSL = settingsManager?.getBoolean("ignore_ssl", false) == true
     private var selectedSource: ExtractorLink? = null
     private var sources: Pair<Int?, List<ExtractorLink>?> = Pair(null, null)
+
+    // SSL
+    private val ignoreSSL = settingsManager?.getBoolean("ignore_ssl", false) == true
     private val defaultVerifier = HttpsURLConnection.getDefaultHostnameVerifier()
     private val defaultFactory = HttpsURLConnection.getDefaultSSLSocketFactory()
+
+    // Auto hide
+    private var hideAtMs by Delegates.notNull<Long>()
+    private val handler = Handler()
+    private val showTimeoutMs = 5000L
+    private val hideAction = Runnable { hide() }
 
     //private val linkLoadedEvent = Event<ExtractorLink>()
 
@@ -302,15 +312,19 @@ class PlayerFragment : Fragment() {
     }
 
     private fun linkLoaded(link: ExtractorLink) {
-        // Prevent duplicate urls and editing the text post-player
-        if (!isCurrentlyPlaying && !extractorLinks.map { it.url }.contains(link.url)) {
+        if (
+            // Prevent editing the text post-player
+            !isCurrentlyPlaying &&
+            // Prevent duplicate urls
+            !extractorLinks.map { it.url }.contains(link.url) &&
+            // Add the link post url check
+            extractorLinks.add(link)
+        ) {
             activity?.runOnUiThread {
-                // Would seem .size + 1 is correct, but in practice the threading is slower than extractorLinks.add(link)
                 links_loaded_text?.text = "${extractorLinks.distinctBy { it.url }.size} - Loaded ${link.name}"
                 quickstart_btt?.visibility = VISIBLE
             }
         }
-        extractorLinks.add(link)
         sources = Pair(data?.episodeIndex, extractorLinks.sortedBy { -it.quality }.distinctBy { it.url })
 
         // Quickstart
@@ -486,6 +500,9 @@ class PlayerFragment : Fragment() {
 
     private fun onClickChange() {
         isShowing = !isShowing
+        if (isShowing) {
+            hideAfterTimeout()
+        }
 
         click_overlay?.visibility = if (isShowing) GONE else VISIBLE
 
@@ -581,9 +598,8 @@ class PlayerFragment : Fragment() {
                     if (abs(diffY) >= 0.2 && !hasPassedSkipLimit) {
                         hasPassedVerticalSwipeThreshold = true
                         preventHorizontalSwipe = true
-
                     }
-                    if (hasPassedVerticalSwipeThreshold) {
+                    if (hasPassedVerticalSwipeThreshold && abs(diffY) <= 0.8) {
                         if (currentX > width * 0.5) {
                             if (audioManager != null && progressBarLeftHolder != null) {
                                 val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
@@ -714,6 +730,7 @@ class PlayerFragment : Fragment() {
         updateLock()
 
         video_lock.setOnClickListener {
+            updateHideTime()
             isLocked = !isLocked
             val fadeTo = if (isLocked) 0f else 1f
 
@@ -734,6 +751,7 @@ class PlayerFragment : Fragment() {
         if (playerResizeEnabled) {
             resize_player.visibility = VISIBLE
             resize_player.setOnClickListener {
+                updateHideTime()
                 resizeMode = Math.floorMod(resizeMode!! + 1, resizeModes.size)
                 //println("RESIZE $resizeMode")
                 DataStore.setKey(RESIZE_MODE_KEY, resizeMode)
@@ -841,11 +859,10 @@ class PlayerFragment : Fragment() {
             seekTime(fastForwardTime * 1000L)
         }*/
 
-
-
         exo_rew_text.text = fastForwardTime.toString()
         exo_ffwd_text.text = fastForwardTime.toString()
         exo_rew.setOnClickListener {
+            updateHideTime()
             val rotateLeft = AnimationUtils.loadAnimation(context, R.anim.rotate_left)
             exo_rew.startAnimation(rotateLeft)
 
@@ -867,7 +884,16 @@ class PlayerFragment : Fragment() {
             seekTime(fastForwardTime * -1000L)
 
         }
+        exo_play.setOnClickListener {
+            exoPlayer.play()
+            updateHideTime()
+        }
+        exo_pause.setOnClickListener {
+            exoPlayer.pause()
+            updateHideTime()
+        }
         exo_ffwd.setOnClickListener {
+            updateHideTime()
             val rotateRight = AnimationUtils.loadAnimation(context, R.anim.rotate_right)
             exo_ffwd.startAnimation(rotateRight)
 
@@ -891,6 +917,7 @@ class PlayerFragment : Fragment() {
 
         playback_speed_btt.visibility = if (playBackSpeedEnabled) VISIBLE else GONE
         playback_speed_btt.setOnClickListener {
+            updateHideTime()
             lateinit var dialog: AlertDialog
             // Lmao kind bad
             val speedsText = arrayOf("0.5x", "0.75x", "1x", "1.25x", "1.5x", "1.75x", "2x")
@@ -916,6 +943,7 @@ class PlayerFragment : Fragment() {
         }
 
         sources_btt.setOnClickListener {
+            updateHideTime()
             lateinit var dialog: AlertDialog
             sources.second?.let {
                 val sourcesText = it.map { link -> link.name }
@@ -941,6 +969,7 @@ class PlayerFragment : Fragment() {
         if (skipOpEnabled) {
             skip_op.visibility = VISIBLE
             skip_op.setOnClickListener {
+                updateHideTime()
                 seekTime(85000L)
             }
         }
@@ -954,6 +983,39 @@ class PlayerFragment : Fragment() {
             playbackSpeed = savedInstanceState.getFloat(PLAYBACK_SPEED)
         }
     }
+
+    fun updateHideTime() {
+        handler.removeCallbacks(hideAction)
+        hideAtMs = SystemClock.uptimeMillis() + showTimeoutMs
+        handler.postDelayed(hideAction, showTimeoutMs)
+    }
+
+    private fun hideAfterTimeout() {
+        handler.removeCallbacks(hideAction)
+        if (showTimeoutMs > 0) {
+            hideAtMs = SystemClock.uptimeMillis() + showTimeoutMs
+            handler.postDelayed(hideAction, showTimeoutMs)
+        } else {
+            hideAtMs = TIME_UNSET
+        }
+    }
+
+    fun hide() {
+        if (isShowing) {
+            onClickChange()
+            handler.removeCallbacks(hideAction)
+            hideAtMs = TIME_UNSET
+        }
+    }
+
+    /*fun show() {
+        if (!isShowing) {
+            onClickChange()
+        }
+        // Call hideAfterTimeout even if already visible to reset the timeout.
+        hideAfterTimeout()
+    }*/
+
 
     private fun seekTime(time: Long) {
         exoPlayer.seekTo(maxOf(minOf(exoPlayer.currentPosition + time, exoPlayer.duration), 0))
@@ -1060,6 +1122,7 @@ class PlayerFragment : Fragment() {
                         if (canPlayNextEpisode()) {
                             next_episode_btt?.visibility = VISIBLE
                             next_episode_btt?.setOnClickListener {
+                                updateHideTime()
                                 selectedSource = null
                                 extractorLinks.clear()
                                 if (isLoadingNextEpisode) return@setOnClickListener
