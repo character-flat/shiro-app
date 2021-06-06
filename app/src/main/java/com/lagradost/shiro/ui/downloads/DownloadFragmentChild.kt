@@ -72,16 +72,11 @@ class DownloadFragmentChild : Fragment() {
         val save = settingsManager!!.getBoolean("save_history", true)
 
         // When fastani is down it doesn't report any seasons and this is needed.
-        val episodeKeys = DownloadFragment.childMetadataKeys[slug]
         val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(DOWNLOAD_PARENT_KEY, slug!!)
         download_header_text.text = parent?.title
         // Sorts by Seasons and Episode Index
 
-        val sortedEpisodeKeys =
-            episodeKeys!!.associateBy({ key ->
-                DataStore.getKey<DownloadManager.DownloadFileMetadata>(key)
-            }, { it }).toList()
-                .sortedBy { (key, _) -> key?.episodeIndex }.toMap()
+        val sortedEpisodeKeys = getAllDownloadedEpisodes(slug!!)
 
         sortedEpisodeKeys.forEach { it ->
             val child = it.key
@@ -341,6 +336,18 @@ class DownloadFragmentChild : Fragment() {
 
 
     companion object {
+        fun getAllDownloadedEpisodes(slug: String): Map<DownloadManager.DownloadFileMetadata?, String> {
+            // When shiro is down it doesn't report any seasons and this is needed.
+            val episodeKeys = DownloadFragment.childMetadataKeys[slug]
+            //val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(DOWNLOAD_PARENT_KEY, slug!!)
+            // Sorts by Seasons and Episode Index
+
+            return episodeKeys!!.associateBy<String, DownloadManager.DownloadFileMetadata?, String>({ key ->
+                DataStore.getKey(key)
+            }, { it }).toList()
+                .sortedBy { (key, _) -> key?.episodeIndex }.toMap()
+        }
+
         fun newInstance(slug: String) =
             DownloadFragmentChild().apply {
                 arguments = Bundle().apply {

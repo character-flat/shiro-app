@@ -416,20 +416,18 @@ class EpisodeAdapter(
                                 deleteFile()
                             }
                         }
-                        // TODO Doesn't work when resuming
-                        // Warning: this somehow causes huge issues in other places in the app for no good reason
 
-                        DownloadManager.downloadEvent += {
+                        // This makes progress work but is incredibly laggy
+                        /*DownloadManager.downloadEvent += {
                             activity.runOnUiThread {
                                 if (it.downloadEvent.id == child.internalId) {
                                     (resView.episodes_res_view.adapter as EpisodeAdapter).notifyItemChanged(position)
                                 }
                             }
-                        }
+                        }*/
                     }
                 }
             }
-
         }
 
         private fun setCardViewState(key: String, episodePos: Int) {

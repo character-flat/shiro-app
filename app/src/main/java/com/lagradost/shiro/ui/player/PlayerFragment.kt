@@ -50,6 +50,7 @@ import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
+import com.lagradost.shiro.ui.downloads.DownloadFragmentChild.Companion.getAllDownloadedEpisodes
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.toPx
@@ -85,8 +86,8 @@ const val PLAYBACK_SPEED = "playback_speed"
 // TITLE AND URL OR CARD MUST BE PROVIDED
 // EPISODE AND SEASON SHOULD START AT 0
 data class PlayerData(
-    @JsonProperty("title") val title: String?,
-    @JsonProperty("url") val url: String?,
+    @JsonProperty("title") var title: String?,
+    @JsonProperty("url") var url: String?,
 
     @JsonProperty("episodeIndex") var episodeIndex: Int?,
     @JsonProperty("seasonIndex") var seasonIndex: Int?,
@@ -313,7 +314,7 @@ class PlayerFragment : Fragment() {
 
     private fun linkLoaded(link: ExtractorLink) {
         if (
-            // Prevent editing the text post-player
+        // Prevent editing the text post-player
             !isCurrentlyPlaying &&
             // Prevent duplicate urls
             !extractorLinks.map { it.url }.contains(link.url) &&
@@ -1115,17 +1116,46 @@ class PlayerFragment : Fragment() {
                         video_title?.text = getCurrentTitle()
 
                         // removes sources button if downloaded file
-                        if (currentUrl.name == "Local") {
-                            sources_btt.visibility = GONE
-                        }
                         quickstart_btt.visibility = GONE
-                        if (canPlayNextEpisode()) {
+
+                        if (currentUrl.name == "Local" && data != null) {
+                            data?.slug?.let { slug ->
+                                val episodes = getAllDownloadedEpisodes(slug).map { it.key }
+                                val nextEpisode = episodes.filter { it!!.episodeIndex == data!!.episodeIndex!! + 1 }
+                                if (!nextEpisode.isNullOrEmpty()) {
+                                    next_episode_btt?.visibility = VISIBLE
+                                    next_episode_btt?.setOnClickListener {
+                                        if (isLoadingNextEpisode) return@setOnClickListener
+                                        updateHideTime()
+                                        isLoadingNextEpisode = true
+                                        savePos()
+                                        val key = getViewKey(
+                                            slug,
+                                            data!!.episodeIndex!! + 1
+                                        )
+                                        DataStore.removeKey(VIEW_POS_KEY, key)
+                                        DataStore.removeKey(VIEW_DUR_KEY, key)
+
+                                        releasePlayer()
+                                        loadAndPlay()
+
+                                        data!!.title =
+                                            "Episode ${nextEpisode[0]!!.episodeIndex + 1} · ${nextEpisode[0]!!.videoTitle}"
+                                        data?.url = nextEpisode[0]!!.videoPath
+                                        data?.episodeIndex = data!!.episodeIndex!! + 1
+                                    }
+                                } else {
+                                    next_episode_btt?.visibility = GONE
+                                }
+                            }
+                            sources_btt.visibility = GONE
+                        } else if (canPlayNextEpisode()) {
                             next_episode_btt?.visibility = VISIBLE
                             next_episode_btt?.setOnClickListener {
+                                if (isLoadingNextEpisode) return@setOnClickListener
                                 updateHideTime()
                                 selectedSource = null
                                 extractorLinks.clear()
-                                if (isLoadingNextEpisode) return@setOnClickListener
                                 isLoadingNextEpisode = true
                                 savePos()
                                 /*val next =
