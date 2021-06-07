@@ -1,6 +1,13 @@
 <resources>
     <string name="changelog">\n
-        - Made settings usable\n
+        - Added notifications on new episodes\n
+        - Added more sources to chromecast\n
+        - Added purple theme\n
+        - Added next episode in downloaded files\n
+        - Added auto hide in player\n
+        - Made player work with normal files in filesystem\n
+        - Made cool mode cooler\n
+        - Made splash screen work again\n
     </string>
     <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>

@@ -19,7 +19,6 @@
                   android:gravity="end"
                   android:id="@+id/video_lock_holder"
     >
-
         <FrameLayout
                 android:layout_margin="5dp"
                 android:layout_width="match_parent"

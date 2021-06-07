@@ -42,6 +42,8 @@ import com.lagradost.shiro.ui.NextEpisode
 import com.lagradost.shiro.ui.home.CardAdapter
 import com.lagradost.shiro.ui.home.CardContinueAdapter
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment
+import com.lagradost.shiro.ui.player.PlayerActivity
+import com.lagradost.shiro.ui.player.PlayerActivity.Companion.playerActivity
 import com.lagradost.shiro.ui.player.PlayerData
 import com.lagradost.shiro.ui.player.PlayerFragment
 import com.lagradost.shiro.ui.result.ResultFragment
@@ -450,6 +452,10 @@ object AppUtils {
 
         // No fucked animations leaving the player :)
         when {
+            playerActivity != null -> {
+                playerActivity!!.finish()
+            }
+
             isInPlayer -> {
                 supportFragmentManager.beginTransaction()
                     //.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)

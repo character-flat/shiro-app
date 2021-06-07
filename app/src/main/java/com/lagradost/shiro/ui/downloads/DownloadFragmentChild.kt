@@ -342,10 +342,10 @@ class DownloadFragmentChild : Fragment() {
             //val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(DOWNLOAD_PARENT_KEY, slug!!)
             // Sorts by Seasons and Episode Index
 
-            return episodeKeys!!.associateBy<String, DownloadManager.DownloadFileMetadata?, String>({ key ->
+            return episodeKeys?.associateBy<String, DownloadManager.DownloadFileMetadata?, String>({ key ->
                 DataStore.getKey(key)
-            }, { it }).toList()
-                .sortedBy { (key, _) -> key?.episodeIndex }.toMap()
+            }, { it })?.toList()
+                ?.sortedBy { (key, _) -> key?.episodeIndex }?.toMap() ?: mapOf()
         }
 
         fun newInstance(slug: String) =

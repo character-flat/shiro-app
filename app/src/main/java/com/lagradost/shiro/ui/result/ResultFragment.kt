@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.text.Html
 import android.transition.ChangeBounds
 import android.transition.Transition
@@ -24,6 +25,8 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.ktx.messaging
 import com.lagradost.shiro.*
 import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
@@ -35,7 +38,6 @@ import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
-import com.lagradost.shiro.ui.tv.TvActivity
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.canPlayNextEpisode
@@ -48,7 +50,27 @@ import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import jp.wasabeef.glide.transformations.BlurTransformation
-import kotlinx.android.synthetic.main.fragment_results_new.*
+import kotlinx.android.synthetic.main.fragment_results.*
+import kotlinx.android.synthetic.main.fragment_results_new.bookmark_holder
+import kotlinx.android.synthetic.main.fragment_results_new.episodes_res_view
+import kotlinx.android.synthetic.main.fragment_results_new.language_button
+import kotlinx.android.synthetic.main.fragment_results_new.loading_overlay
+import kotlinx.android.synthetic.main.fragment_results_new.media_route_button
+import kotlinx.android.synthetic.main.fragment_results_new.next_episode_btt
+import kotlinx.android.synthetic.main.fragment_results_new.result_poster_blur
+import kotlinx.android.synthetic.main.fragment_results_new.results_root
+import kotlinx.android.synthetic.main.fragment_results_new.share_holder
+import kotlinx.android.synthetic.main.fragment_results_new.title_background
+import kotlinx.android.synthetic.main.fragment_results_new.title_bookmark
+import kotlinx.android.synthetic.main.fragment_results_new.title_day_of_week
+import kotlinx.android.synthetic.main.fragment_results_new.title_descript
+import kotlinx.android.synthetic.main.fragment_results_new.title_episodes
+import kotlinx.android.synthetic.main.fragment_results_new.title_genres
+import kotlinx.android.synthetic.main.fragment_results_new.title_go_back
+import kotlinx.android.synthetic.main.fragment_results_new.title_holder
+import kotlinx.android.synthetic.main.fragment_results_new.title_name
+import kotlinx.android.synthetic.main.fragment_results_new.title_status
+import kotlinx.android.synthetic.main.fragment_results_new.title_year
 import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.thread
@@ -273,6 +295,48 @@ class ResultFragment : Fragment() {
                     intent.putExtra(Intent.EXTRA_TEXT, "https://shiro.is/anime/${data.slug}")
                     intent.type = "text/plain"
                     startActivity(Intent.createChooser(intent, "Share To:"))
+                }
+
+
+                slug?.let { slug ->
+                    title_subscribe_holder.visibility = VISIBLE
+                    val subbed = DataStore.getKey(SUBSCRIPTIONS_KEY, slug, false)!!
+                    val drawable =
+                        if (subbed) R.drawable.ic_baseline_notifications_active_24 else R.drawable.ic_baseline_notifications_none_24
+                    subscribe_image.setImageResource(drawable)
+                    subscribe_holder?.setOnClickListener {
+                        val subbed = DataStore.getKey(SUBSCRIPTIONS_KEY, slug, false)!!
+                        println("SLUIG $slug")
+                        if (subbed) {
+                            Firebase.messaging.unsubscribeFromTopic(slug)
+                                .addOnCompleteListener { task ->
+                                    if (task.isSuccessful) {
+                                        subscribe_image.setImageResource(R.drawable.ic_baseline_notifications_none_24)
+                                        DataStore.removeKey(SUBSCRIPTIONS_KEY, slug)
+                                    }
+                                    var msg = "Unsubscribed to ${data.name}"//getString(R.string.msg_subscribed)
+                                    if (!task.isSuccessful) {
+                                        msg = "Unsubscribing failed :("//getString(R.string.msg_subscribe_failed)
+                                    }
+                                    //Log.d(TAG, msg)
+                                    Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                                }
+                        } else {
+                            Firebase.messaging.subscribeToTopic(slug)
+                                .addOnCompleteListener { task ->
+                                    if (task.isSuccessful) {
+                                        subscribe_image.setImageResource(R.drawable.ic_baseline_notifications_active_24)
+                                        DataStore.setKey(SUBSCRIPTIONS_KEY, slug, true)
+                                    }
+                                    var msg = "Subscribed to ${data.name}"//getString(R.string.msg_subscribed)
+                                    if (!task.isSuccessful) {
+                                        msg = "Subscription failed :("//getString(R.string.msg_subscribe_failed)
+                                    }
+                                    //Log.d(TAG, msg)
+                                    Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                                }
+                        }
+                    }
                 }
 
 

@@ -119,9 +119,8 @@
         <item name="colorOnPrimary">#007dfe</item>
         <item name="colorPrimarySecond">#3F51B5</item>
     </style>
-    -->
 
-    <style name="OverlayPrimaryColorBlue">
+    <style name="OverlayPrimaryColorBlueer">
         <item name="colorPrimaryMegaDark">#00264B</item>
         <item name="colorPrimary">#027ffb</item>
         <item name="colorPrimaryDark">#045DB6</item>
@@ -130,6 +129,18 @@
         <item name="colorOnPrimary">#1186FE</item>
         <item name="colorPrimarySecond">#027ffb</item>
     </style>
+    -->
+
+    <style name="OverlayPrimaryColorBlue">
+        <item name="colorPrimaryMegaDark">#191F43</item>
+        <item name="colorPrimary">#5664B7</item>
+        <item name="colorPrimaryDark">#4855A2</item>
+        <item name="colorPrimaryDarker">#363E74</item>
+        <item name="colorAccent">#1186FE</item>
+        <item name="colorOnPrimary">#1186FE</item>
+        <item name="colorPrimarySecond">#5664B7</item>
+    </style>
+
 
     <style name="OverlayPrimaryColorPurple">
         <item name="colorPrimaryMegaDark">#210648</item>

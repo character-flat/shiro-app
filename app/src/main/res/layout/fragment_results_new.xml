@@ -343,7 +343,7 @@
                 <FrameLayout android:layout_width="wrap_content"
                              android:layout_height="wrap_content"
                              android:id="@+id/title_share_holder"
-                             android:layout_toStartOf="@+id/title_bookmark_holder"
+                             android:layout_toStartOf="@+id/title_subscribe_holder"
                 >
                     <ImageView
                             android:id="@+id/title_share"
@@ -361,6 +361,36 @@
                             android:focusable="true"
                             android:clickable="true"
                             android:id="@+id/share_holder"
+                            android:nextFocusRight="@id/bookmark_holder"
+                            android:nextFocusLeft="@id/title_go_back"
+                            android:background="@drawable/video_tap_button">
+                    </ImageView>
+                </FrameLayout>
+                <FrameLayout android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:id="@+id/title_subscribe_holder"
+                             android:visibility="gone"
+                             tools:visibility="visible"
+                             android:layout_toStartOf="@+id/title_bookmark_holder"
+                >
+                    <ImageView
+                            android:id="@+id/subscribe_image"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:elevation="10dp"
+                            android:background="@color/transparent"
+                            android:src="@drawable/ic_baseline_notifications_none_24"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bookmark_btt_hint"/>
+                    <ImageView
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_gravity="center"
+                            android:focusable="true"
+                            android:clickable="true"
+                            android:id="@+id/subscribe_holder"
+                            android:nextFocusRight="@id/bookmark_holder"
+                            android:nextFocusLeft="@id/title_go_back"
                             android:background="@drawable/video_tap_button">
                     </ImageView>
                 </FrameLayout>
@@ -369,8 +399,6 @@
                              android:layout_alignParentEnd="true"
                              android:id="@+id/title_bookmark_holder"
                              android:background="@color/transparent"
-                             android:layout_marginStart="10dp"
-                             android:layout_marginEnd="10dp"
                 >
                     <ImageView
                             android:id="@+id/title_bookmark"
@@ -388,6 +416,7 @@
                             android:focusable="true"
                             android:clickable="true"
                             android:id="@+id/bookmark_holder"
+                            android:nextFocusLeft="@id/share_holder"
                             android:background="@drawable/video_tap_button">
                     </ImageView>
                 </FrameLayout>

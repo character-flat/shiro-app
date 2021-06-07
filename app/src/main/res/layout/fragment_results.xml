@@ -79,7 +79,7 @@
                 <FrameLayout android:layout_width="wrap_content"
                              android:layout_height="wrap_content"
                              android:id="@+id/title_share_holder"
-                             android:layout_toStartOf="@+id/title_bookmark_holder"
+                             android:layout_toStartOf="@+id/title_subscribe_holder"
                 >
                     <ImageView
                             android:id="@+id/title_share"
@@ -97,6 +97,34 @@
                             android:focusable="true"
                             android:clickable="true"
                             android:id="@+id/share_holder"
+                            android:nextFocusRight="@id/bookmark_holder"
+                            android:nextFocusLeft="@id/title_go_back"
+                            android:background="@drawable/video_tap_button">
+                    </ImageView>
+                </FrameLayout>
+                <FrameLayout android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:id="@+id/title_subscribe_holder"
+                             android:visibility="gone"
+                             tools:visibility="visible"
+                             android:layout_toStartOf="@+id/title_bookmark_holder"
+                >
+                    <ImageView
+                            android:id="@+id/subscribe_image"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:elevation="10dp"
+                            android:background="@color/transparent"
+                            android:src="@drawable/ic_baseline_notifications_none_24"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bookmark_btt_hint"/>
+                    <ImageView
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_gravity="center"
+                            android:focusable="true"
+                            android:clickable="true"
+                            android:id="@+id/subscribe_holder"
                             android:nextFocusRight="@id/bookmark_holder"
                             android:nextFocusLeft="@id/title_go_back"
                             android:background="@drawable/video_tap_button">
@@ -260,92 +288,92 @@
                     </LinearLayout>
 
                     <androidx.constraintlayout.widget.ConstraintLayout
-                                android:layout_width="match_parent"
+                            android:layout_width="match_parent"
+                            android:layout_height="24dp"
+                            android:layout_marginTop="5dp"
+                            android:layout_marginBottom="5dp"
+                            android:id="@+id/episodes_text_holder"
+                    >
+                        <ImageView
+                                android:id="@+id/next_episode_btt"
+                                android:layout_width="24dp"
                                 android:layout_height="24dp"
-                                android:layout_marginTop="5dp"
-                                android:layout_marginBottom="5dp"
-                                android:id="@+id/episodes_text_holder"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintHorizontal_bias="0"
+                                app:layout_constraintEnd_toStartOf="@id/episodes_text"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginStart="20dp"
+                                android:src="@drawable/netflix_play"
+                                android:background="@drawable/video_tap_button"
+                                app:tint="?attr/white"
+                                android:tooltipText="Play next episode"
                         >
-                            <ImageView
-                                    android:id="@+id/next_episode_btt"
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    app:layout_constraintStart_toStartOf="parent"
-                                    app:layout_constraintHorizontal_bias="0"
-                                    app:layout_constraintEnd_toStartOf="@id/episodes_text"
-                                    app:layout_constraintTop_toTopOf="parent"
-                                    app:layout_constraintBottom_toBottomOf="parent"
-                                    android:layout_marginStart="20dp"
-                                    android:src="@drawable/netflix_play"
-                                    android:background="@drawable/video_tap_button"
-                                    app:tint="?attr/white"
-                                    android:tooltipText="Play next episode"
-                            >
-                            </ImageView>
+                        </ImageView>
 
-                            <androidx.cardview.widget.CardView
-                                    android:backgroundTint="?attr/textColorGray"
-                                    app:layout_constraintStart_toEndOf="@+id/next_episode_btt"
-                                    app:layout_constraintEnd_toStartOf="@+id/episodes_text"
-                                    app:layout_constraintTop_toTopOf="parent"
-                                    app:layout_constraintBottom_toBottomOf="parent"
-                                    android:id="@+id/startLine"
-                                    android:layout_width="0dp"
-                                    android:layout_height="2dp"
-                                    android:layout_marginEnd="20dp"
-                                    android:layout_marginStart="20dp"
-                            >
+                        <androidx.cardview.widget.CardView
+                                android:backgroundTint="?attr/textColorGray"
+                                app:layout_constraintStart_toEndOf="@+id/next_episode_btt"
+                                app:layout_constraintEnd_toStartOf="@+id/episodes_text"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:id="@+id/startLine"
+                                android:layout_width="0dp"
+                                android:layout_height="2dp"
+                                android:layout_marginEnd="20dp"
+                                android:layout_marginStart="20dp"
+                        >
 
-                            </androidx.cardview.widget.CardView>
-                            <TextView
-                                    android:textSize="17sp"
-                                    android:textColor="?attr/textColor"
-                                    app:layout_constraintStart_toEndOf="@id/startLine"
-                                    app:layout_constraintEnd_toStartOf="@id/endLine"
-                                    app:layout_constraintTop_toTopOf="parent"
-                                    app:layout_constraintBottom_toBottomOf="parent"
-                                    android:id="@+id/episodes_text"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/episodes"
-                                    android:textStyle="bold"
-                            >
+                        </androidx.cardview.widget.CardView>
+                        <TextView
+                                android:textSize="17sp"
+                                android:textColor="?attr/textColor"
+                                app:layout_constraintStart_toEndOf="@id/startLine"
+                                app:layout_constraintEnd_toStartOf="@id/endLine"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:id="@+id/episodes_text"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/episodes"
+                                android:textStyle="bold"
+                        >
 
-                            </TextView>
-                            <androidx.cardview.widget.CardView
-                                    android:backgroundTint="?attr/textColorGray"
-                                    android:layout_marginEnd="20dp"
-                                    android:layout_marginStart="20dp"
-                                    app:layout_constraintEnd_toStartOf="@id/language_button"
-                                    app:layout_constraintStart_toEndOf="@id/episodes_text"
-                                    app:layout_constraintTop_toTopOf="parent"
-                                    app:layout_constraintBottom_toBottomOf="parent"
-                                    android:id="@+id/endLine"
-                                    android:layout_width="0dp"
-                                    android:layout_height="2dp"
-                            >
+                        </TextView>
+                        <androidx.cardview.widget.CardView
+                                android:backgroundTint="?attr/textColorGray"
+                                android:layout_marginEnd="20dp"
+                                android:layout_marginStart="20dp"
+                                app:layout_constraintEnd_toStartOf="@id/language_button"
+                                app:layout_constraintStart_toEndOf="@id/episodes_text"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:id="@+id/endLine"
+                                android:layout_width="0dp"
+                                android:layout_height="2dp"
+                        >
 
-                            </androidx.cardview.widget.CardView>
+                        </androidx.cardview.widget.CardView>
 
-                            <ImageView
-                                    android:id="@+id/language_button"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="match_parent"
-                                    app:layout_constraintEnd_toEndOf="parent"
-                                    app:layout_constraintHorizontal_bias="1"
-                                    app:layout_constraintStart_toEndOf="@id/episodes_text"
-                                    app:layout_constraintTop_toTopOf="parent"
-                                    app:layout_constraintBottom_toBottomOf="parent"
-                                    android:layout_marginEnd="20dp"
-                                    android:src="@drawable/ic_baseline_language_24"
-                                    android:visibility="gone"
-                                    tools:visibility="visible"
-                                    android:background="@drawable/video_tap_button"
-                                    android:tooltipText="Switch language"
-                            >
-                            </ImageView>
+                        <ImageView
+                                android:id="@+id/language_button"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1"
+                                app:layout_constraintStart_toEndOf="@id/episodes_text"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="20dp"
+                                android:src="@drawable/ic_baseline_language_24"
+                                android:visibility="gone"
+                                tools:visibility="visible"
+                                android:background="@drawable/video_tap_button"
+                                android:tooltipText="Switch language"
+                        >
+                        </ImageView>
 
-                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
                     <androidx.recyclerview.widget.RecyclerView
                             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                             android:clipToPadding="false"
