@@ -188,12 +188,12 @@
             </ImageView>
 
         </FrameLayout>
-        <LinearLayout
+        <RelativeLayout
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_gravity="center"
@@ -201,8 +201,11 @@
         >
 
             <FrameLayout android:layout_width="wrap_content"
-                         android:layout_marginEnd="140dp"
+                         android:layout_alignParentStart="true"
                          android:layout_gravity="center_vertical"
+                         android:layout_centerVertical="true"
+                         android:layout_marginStart="30dp"
+                         android:layout_marginEnd="30dp"
                          android:layout_height="wrap_content"
             >
                 <TextView
@@ -235,6 +238,7 @@
                                 android:background="?android:selectableItemBackgroundBorderless"
 -->
             <ImageButton
+                    android:layout_centerInParent="true"
                     android:id="@id/exo_play"
                     android:scaleType="fitCenter"
                     android:layout_height="70dp"
@@ -245,6 +249,7 @@
                     android:clickable="true"
                     android:focusable="true"/>
             <ImageButton
+                    android:layout_centerInParent="true"
                     android:id="@id/exo_pause"
                     android:scaleType="fitCenter"
                     android:layout_height="70dp"
@@ -257,9 +262,11 @@
 
 
             <FrameLayout android:layout_width="wrap_content"
-                         android:layout_marginStart="140dp"
-                         android:layout_gravity="center_vertical"
                          android:layout_height="wrap_content"
+                         android:layout_centerVertical="true"
+                         android:layout_alignParentEnd="true"
+                         android:layout_marginEnd="30dp"
+                         android:layout_marginStart="30dp"
             >
                 <TextView
                         android:id="@+id/exo_ffwd_text"
@@ -287,7 +294,7 @@
             </FrameLayout>
 
 
-        </LinearLayout>
+        </RelativeLayout>
 
 
         <LinearLayout
@@ -406,7 +413,6 @@
                         android:foreground="@drawable/ripple_always_white"
                         android:id="@+id/resize_player"
                         card_view:cardElevation="0dp"
-
                 >
                     <LinearLayout
                             android:layout_width="wrap_content"
@@ -432,6 +438,7 @@
                                 android:paddingEnd="10dp"
                                 android:layout_gravity="center"
                                 android:textColor="@android:color/white"
+                                android:singleLine="true"
                         >
                         </TextView>
 
@@ -478,6 +485,7 @@
                                 android:id="@+id/player_speed_text"
                                 android:layout_gravity="center"
                                 android:textColor="@android:color/white"
+                                android:singleLine="true"
                         >
                         </TextView>
 
@@ -524,6 +532,7 @@
                                 android:paddingEnd="10dp"
                                 android:layout_gravity="center"
                                 android:textColor="@android:color/white"
+                                android:singleLine="true"
                         >
                         </TextView>
 
@@ -567,6 +576,7 @@
                                 android:paddingEnd="10dp"
                                 android:layout_gravity="center"
                                 android:textColor="@android:color/white"
+                                android:singleLine="true"
                         >
                         </TextView>
                     </LinearLayout>
@@ -591,7 +601,8 @@
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+    >
         <RelativeLayout
                 android:layout_gravity="center_vertical"
                 android:gravity="left"

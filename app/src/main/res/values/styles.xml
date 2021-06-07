@@ -109,7 +109,8 @@
         <item name="android:textAllCaps">false</item>
     </style>
 
-    <style name="OverlayPrimaryColorBlue">
+    <!--
+    <style name="OverlayPrimaryColorBlueOriginal">
         <item name="colorPrimaryMegaDark">#121840</item>
         <item name="colorPrimary">#3F51B5</item>
         <item name="colorPrimaryDark">#303F9F</item>
@@ -118,8 +119,9 @@
         <item name="colorOnPrimary">#007dfe</item>
         <item name="colorPrimarySecond">#3F51B5</item>
     </style>
+    -->
 
-    <style name="OverlayPrimaryColorBlueSecond">
+    <style name="OverlayPrimaryColorBlue">
         <item name="colorPrimaryMegaDark">#00264B</item>
         <item name="colorPrimary">#027ffb</item>
         <item name="colorPrimaryDark">#045DB6</item>
