@@ -256,6 +256,18 @@ class HomeFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        homeViewModel.apiData.let {
+            it.observe(viewLifecycleOwner) { homePage ->
+                homeLoaded(homePage)
+            }
+            if (it.value != null && main_load.alpha == 1.0f) {
+                homeLoaded(it.value)
+            }
+        }
+        super.onResume()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         main_scroll.alpha = 0f
@@ -276,8 +288,6 @@ class HomeFragment : Fragment() {
                val gray: Int = Color.argb(fade, 0f, fade, 0f)
             //   main_backgroundImage.alpha = maxOf(0f, MAXIMUM_FADE * fade) // DONT DUE TO ALPHA FADING HINDERING FORGOUND GRADIENT
         }*/
-        homeViewModel.apiData.observe(viewLifecycleOwner) {
-            homeLoaded(it)
-        }
+
     }
 }

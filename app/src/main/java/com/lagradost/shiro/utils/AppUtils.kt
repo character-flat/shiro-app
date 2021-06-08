@@ -157,7 +157,12 @@ object AppUtils {
     }
 
     fun getCurrentActivity(): AppCompatActivity? {
-        return if (activity != null) activity else tvActivity
+        return when {
+            activity != null -> activity
+            tvActivity != null -> tvActivity
+            playerActivity != null -> playerActivity
+            else -> null
+        }
     }
 
     fun Activity.requestAudioFocus(focusRequest: AudioFocusRequest?) {
@@ -452,10 +457,6 @@ object AppUtils {
 
         // No fucked animations leaving the player :)
         when {
-            playerActivity != null -> {
-                playerActivity!!.finish()
-            }
-
             isInPlayer -> {
                 supportFragmentManager.beginTransaction()
                     //.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)

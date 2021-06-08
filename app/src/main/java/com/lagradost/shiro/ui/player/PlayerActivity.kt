@@ -75,7 +75,7 @@ class PlayerActivity : AppCompatActivity() {
         //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
         if (!checkWrite()) {
-            Toast.makeText(this, "Accept storage permissions to download", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Accept storage permissions to play", Toast.LENGTH_LONG).show()
             requestRW()
         }
         val currentTheme = when (settingsManager.getString("theme", "Black")) {

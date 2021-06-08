@@ -46,16 +46,17 @@ import com.google.android.exoplayer2.C.TIME_UNSET
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
-import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
 import com.lagradost.shiro.ui.downloads.DownloadFragmentChild.Companion.getAllDownloadedEpisodes
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
+import com.lagradost.shiro.ui.player.PlayerActivity.Companion.playerActivity
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getViewKey
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.hideKeyboard
@@ -133,6 +134,8 @@ class PlayerFragment : Fragment() {
     companion object {
         var isInPlayer: Boolean = false
         var onPlayerNavigated = Event<Boolean>()
+        val activity = getCurrentActivity()
+
         fun newInstance(data: PlayerData) =
             PlayerFragment().apply {
                 arguments = Bundle().apply {
@@ -793,17 +796,18 @@ class PlayerFragment : Fragment() {
             }
 
             override fun onSingleClick() {
+                println("GGG123123123123")
                 onClickChange()
                 activity?.hideSystemUI()
             }
 
             override fun onMotionEvent(event: MotionEvent) {
+                println("MOTION EVENT")
                 handleMotionEvent(event)
             }
-
         }
 
-        click_overlay?.setOnTouchListener(
+        click_overlay.setOnTouchListener(
             Listener()
         )
 
@@ -841,11 +845,22 @@ class PlayerFragment : Fragment() {
         retainInstance = true // OTHERWISE IT WILL CAUSE A CRASH
 
         video_go_back.setOnClickListener {
-            activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
+            // Local player
+            if (playerActivity != null && data?.title != null && data?.title == data?.url) {
+                playerActivity!!.finish()
+                playerActivity = null
+            } else {
+                activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
+            }
         }
         video_go_back_holder.setOnClickListener {
-            println("video_go_back_pressed")
-            activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
+            // Local player
+            if (playerActivity != null && data?.title != null && data?.title == data?.url) {
+                playerActivity!!.finish()
+                playerActivity = null
+            } else {
+                activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
+            }
         }
         exo_rew_text.text = fastForwardTime.toString()
         exo_ffwd_text.text = fastForwardTime.toString()
@@ -1059,7 +1074,10 @@ class PlayerFragment : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     private fun initPlayer(currentUrl: ExtractorLink? = null) {
         isCurrentlyPlaying = true
-        view?.setOnTouchListener { _, _ -> return@setOnTouchListener true } // VERY IMPORTANT https://stackoverflow.com/questions/28818926/prevent-clicking-on-a-button-in-an-activity-while-showing-a-fragment
+        view?.setOnTouchListener { _, _ ->
+            println("OVERRIDEN TOUCH")
+            return@setOnTouchListener true
+        } // VERY IMPORTANT https://stackoverflow.com/questions/28818926/prevent-clicking-on-a-button-in-an-activity-while-showing-a-fragment
         thread {
             val currentUrl = currentUrl ?: getCurrentUrl()
             if (currentUrl == null) {
