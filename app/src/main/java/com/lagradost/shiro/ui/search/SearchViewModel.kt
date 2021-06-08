@@ -1,5 +1,16 @@
 package com.lagradost.shiro.ui.search
 
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.lagradost.shiro.utils.ShiroApi
 
-class SearchViewModel : ViewModel()
+class SearchViewModel : ViewModel() {
+    val searchOptions = MutableLiveData<ShiroApi.AllSearchMethodsData>().apply {
+        ShiroApi.onSearchFetched += ::searchLoaded
+    }
+    val selectedGenres = mutableListOf<ShiroApi.Genre>()
+
+    private fun searchLoaded(data: ShiroApi.AllSearchMethodsData?) {
+        searchOptions.postValue(data!!)
+    }
+}

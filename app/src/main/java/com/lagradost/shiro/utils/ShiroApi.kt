@@ -50,6 +50,7 @@ class ShiroApi {
         @JsonProperty("data") val data: ShiroHomePageData,
         @JsonProperty("random") var random: AnimePage?,
         @JsonProperty("favorites") var favorites: List<BookmarkedTitle?>?,
+        @JsonProperty("subscribed") var subscribed: List<BookmarkedTitle?>?,
         @JsonProperty("recentlySeen") var recentlySeen: List<LastEpisodeInfo?>?,
         // A hack for android TV MasterCardAdapter
         // @JsonProperty("searchResults") var searchResults: List<ShiroSearchResponseShow?>?
@@ -133,6 +134,25 @@ class ShiroApi {
         val slug: String
     }
 
+    data class AllSearchMethods(
+        @JsonProperty("data") val data: AllSearchMethodsData,
+        @JsonProperty("status") val status: String
+    )
+
+    data class AllSearchMethodsData(
+        @JsonProperty("genres") val genres: List<Genre>,
+        @JsonProperty("language") val language: List<Genre>,
+        @JsonProperty("sort") val sort: List<Genre>,
+        @JsonProperty("status") val status: List<Genre>,
+        @JsonProperty("type") val type: List<Genre>,
+        @JsonProperty("year") val year: List<Genre>,
+    )
+
+    data class Genre(
+        @JsonProperty("slug") val slug: String,
+        @JsonProperty("name") val name: String
+    )
+
     companion object {
         const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
         private val mapper = JsonMapper.builder().addModule(KotlinModule())
@@ -194,7 +214,7 @@ class ShiroApi {
             allApi.getUrl(id, isCasting) {
                 links.add(it)
             }
-            return if(links.isNullOrEmpty()) null else links.sortedBy { -it.quality }.distinctBy { it.url }
+            return if (links.isNullOrEmpty()) null else links.sortedBy { -it.quality }.distinctBy { it.url }
         }
 
         fun loadLinks(id: String, isCasting: Boolean, callback: (ExtractorLink) -> Unit): Boolean {
@@ -233,6 +253,27 @@ class ShiroApi {
             }
         }
 
+        fun getSearchMethods(usedToken: Token? = currentToken): AllSearchMethodsData? {
+            try {
+                // Tags and years can be added
+                val url = "https://tapi.shiro.is/types/all?token=${usedToken?.token}".replace("+", "%20")
+                // Security headers
+                val headers = usedToken?.headers
+                val response = headers?.let { khttp.get(url, timeout = 120.0) }
+                val mapped = response?.let { mapper.readValue<AllSearchMethods>(it.text) }
+
+                if (mapped?.status == "Found") {
+                    println("MAPPED $mapped")
+                    onSearchFetched.invoke(mapped.data)
+                    return mapped.data
+                }
+            } catch (e: Exception) {
+                println("EXCEPTION123")
+            }
+            return null
+        }
+
+
         fun quickSearch(query: String, usedToken: Token? = currentToken): List<ShiroSearchResponseShow>? {
             try {
                 // Tags and years can be added
@@ -256,14 +297,22 @@ class ShiroApi {
             //return response?.text?.let { mapper.readValue(it) }
         }
 
-        fun search(query: String, usedToken: Token? = currentToken): List<ShiroSearchResponseShow>? {
+        fun search(
+            query: String,
+            usedToken: Token? = currentToken,
+            genres: List<Genre>? = null
+        ): List<ShiroSearchResponseShow>? {
             try {
+                val genres = genres?.joinToString(separator = "%2C") { it.slug } ?: ""
+                val genresString = if (genres != "") "&genres=$genres" else ""
+
                 val url = "https://tapi.shiro.is/advanced?search=${
                     URLEncoder.encode(
                         query,
                         "UTF-8"
                     )
-                }&token=${usedToken?.token}".replace("+", "%20")
+                }$genresString&token=${usedToken?.token}".replace("+", "%20")
+                println(url)
                 val headers = usedToken?.headers
                 val response = headers?.let { khttp.get(url, timeout = 120.0) }
                 val mapped = response?.let { mapper.readValue<ShiroFullSearchResponse>(it.text) }
@@ -344,6 +393,20 @@ class ShiroApi {
             }
         }
 
+        private fun getSubbed(): List<BookmarkedTitle?> {
+            val keys = DataStore.getKeys(SUBSCRIPTIONS_BOOKMARK_KEY)
+
+            thread {
+                keys.pmap {
+                    DataStore.getKey<BookmarkedTitle>(it)
+                }
+            }
+
+            return keys.map {
+                DataStore.getKey(it)
+            }
+        }
+
         private fun getLastWatch(): List<LastEpisodeInfo?> {
             val keys = DataStore.getKeys(VIEW_LST_KEY)
             println("KEYS: $keys")
@@ -401,6 +464,7 @@ class ShiroApi {
                 return null
             }
             res.favorites = getFav()
+            res.subscribed = getSubbed()
             res.recentlySeen = getLastWatch()
             cachedHome = res
             onHomeFetched.invoke(res)
@@ -410,6 +474,7 @@ class ShiroApi {
         private var currentToken: Token? = null
         var currentHeaders: MutableMap<String, String>? = null
         var onHomeFetched = Event<ShiroHomePage?>()
+        var onSearchFetched = Event<AllSearchMethodsData?>()
         var onHomeError = Event<Boolean>() // TRUE IF FULL RELOAD OF TOKEN, FALSE IF JUST HOME
         var hasThrownError = -1
 
@@ -423,6 +488,7 @@ class ShiroApi {
                 currentToken?.cookies?.forEach {
                     currentHeaders?.set("Cookie", it.key + "=" + it.value.substring(0, it.value.indexOf(';')) + ";")
                 }
+
                 requestHome()
             } else {
                 println("TOKEN ERROR")

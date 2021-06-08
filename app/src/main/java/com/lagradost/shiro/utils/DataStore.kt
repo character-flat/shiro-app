@@ -19,8 +19,8 @@ const val PLAYBACK_SPEED_KEY: String = "playback_speed" // Last used playback sp
 const val RESIZE_MODE_KEY: String = "resize_mode" // Last used resize mode
 
 const val LEGACY_BOOKMARKS: String = "legacy_bookmarks" // for converting old bookmark system
-const val SUBSCRIPTIONS_KEY: String = "subscriptions" // refresh token
-
+const val SUBSCRIPTIONS_KEY: String = "subscriptions"
+const val SUBSCRIPTIONS_BOOKMARK_KEY: String = "subscriptions_bookmarked"
 
 const val ANILIST_UNIXTIME_KEY: String = "anilist_unixtime" // When token expires
 const val MAL_UNIXTIME_KEY: String = "mal_unixtime" // When token expires

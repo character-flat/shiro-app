@@ -258,6 +258,44 @@
                             </androidx.recyclerview.widget.RecyclerView>
                         </RelativeLayout>
                     </LinearLayout>
+
+                    <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:id="@+id/subscribedRoot"
+                            android:visibility="gone"
+                            tools:visibility="visible"
+                    >
+                        <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/subscriptions"
+                                android:gravity="center_horizontal"
+                                android:textStyle="bold"
+                                android:textColor="?attr/textColor"
+                                android:textSize="16sp"
+                                android:padding="10dp"
+                                android:id="@+id/subscribed_text"
+                                app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
+                        >
+                        </TextView>
+                        <RelativeLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="200dp"
+                                android:layout_marginBottom="20dp"
+                        >
+                            <androidx.recyclerview.widget.RecyclerView
+                                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                                    android:id="@+id/subscribedScrollView"
+                                    tools:listitem="@layout/home_card"
+                                    android:orientation="horizontal"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content">
+                            </androidx.recyclerview.widget.RecyclerView>
+                        </RelativeLayout>
+                    </LinearLayout>
+
                     <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"

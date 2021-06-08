@@ -1,13 +1,8 @@
 <resources>
     <string name="changelog">\n
-        - Added notifications on new episodes\n
-        - Added more sources to chromecast\n
-        - Added purple theme\n
-        - Added next episode in downloaded files\n
-        - Added auto hide in player\n
-        - Made player work with normal files in filesystem\n
-        - Made cool mode cooler\n
-        - Made splash screen work again\n
+        - Added genres to search\n
+        - Made subbed titles show up like favorite shows\n
+        - Fixed player bug when opening files from file manger\n
     </string>
     <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>
@@ -95,4 +90,5 @@
     <!-- Error messages -->
     <string name="error_fragment_message">An error occurred</string>
     <string name="dismiss_error">Dismiss</string>
+    <string name="subscriptions">Subscriptions</string>
 </resources>

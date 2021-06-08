@@ -136,8 +136,8 @@
         <item name="colorPrimary">#5664B7</item>
         <item name="colorPrimaryDark">#4855A2</item>
         <item name="colorPrimaryDarker">#363E74</item>
-        <item name="colorAccent">#1186FE</item>
-        <item name="colorOnPrimary">#1186FE</item>
+        <item name="colorAccent">#5A6BCB</item>
+        <item name="colorOnPrimary">#5A6BCB</item>
         <item name="colorPrimarySecond">#5664B7</item>
     </style>
 
@@ -153,13 +153,13 @@
     </style>
 
     <style name="OverlayPrimaryColorGreen">
-        <item name="colorPrimaryMegaDark">#0F3007</item>
-        <item name="colorPrimary">#37722F</item>
-        <item name="colorPrimaryDark">#194E14</item>
-        <item name="colorPrimaryDarker">#0E3D11</item>
-        <item name="colorAccent">#307E2B</item>
-        <item name="colorOnPrimary">#307E2B</item>
-        <item name="colorPrimarySecond">#43B53F</item>
+        <item name="colorPrimaryMegaDark">#003029</item>
+        <item name="colorPrimary">#00BFA5</item>
+        <item name="colorPrimaryDark">#007363</item>
+        <item name="colorPrimaryDarker">#004F44</item>
+        <item name="colorAccent">#39C1AE</item>
+        <item name="colorOnPrimary">#39C1AE</item>
+        <item name="colorPrimarySecond">#00BFA5</item>
     </style>
 
     <style name="LightMode" parent="AppTheme">

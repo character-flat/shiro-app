@@ -300,23 +300,32 @@ class ResultFragment : Fragment() {
 
                 slug?.let { slug ->
                     title_subscribe_holder.visibility = VISIBLE
-                    val subbed = DataStore.getKey(SUBSCRIPTIONS_KEY, slug, false)!!
+                    val subbedBookmark = DataStore.getKey<BookmarkedTitle>(SUBSCRIPTIONS_BOOKMARK_KEY, slug, null)
+                    val isSubbedOld = DataStore.getKey(SUBSCRIPTIONS_KEY, slug, false)!!
+                    val isSubbed = isSubbedOld || subbedBookmark != null
+
                     val drawable =
-                        if (subbed) R.drawable.ic_baseline_notifications_active_24 else R.drawable.ic_baseline_notifications_none_24
+                        if (isSubbed) R.drawable.ic_baseline_notifications_active_24 else R.drawable.ic_baseline_notifications_none_24
                     subscribe_image.setImageResource(drawable)
                     subscribe_holder?.setOnClickListener {
-                        val subbed = DataStore.getKey(SUBSCRIPTIONS_KEY, slug, false)!!
-                        println("SLUIG $slug")
-                        if (subbed) {
+                        val subbedBookmark = DataStore.getKey<BookmarkedTitle>(SUBSCRIPTIONS_BOOKMARK_KEY, slug, null)
+                        val isSubbedOld = DataStore.getKey(SUBSCRIPTIONS_KEY, slug, false)!!
+                        val isSubbed = isSubbedOld || subbedBookmark != null
+
+                        if (isSubbed) {
                             Firebase.messaging.unsubscribeFromTopic(slug)
                                 .addOnCompleteListener { task ->
                                     if (task.isSuccessful) {
                                         subscribe_image.setImageResource(R.drawable.ic_baseline_notifications_none_24)
+                                        DataStore.removeKey(SUBSCRIPTIONS_BOOKMARK_KEY, slug)
                                         DataStore.removeKey(SUBSCRIPTIONS_KEY, slug)
                                     }
                                     var msg = "Unsubscribed to ${data.name}"//getString(R.string.msg_subscribed)
                                     if (!task.isSuccessful) {
                                         msg = "Unsubscribing failed :("//getString(R.string.msg_subscribe_failed)
+                                    }
+                                    thread {
+                                        requestHome(true)
                                     }
                                     //Log.d(TAG, msg)
                                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
@@ -326,11 +335,20 @@ class ResultFragment : Fragment() {
                                 .addOnCompleteListener { task ->
                                     if (task.isSuccessful) {
                                         subscribe_image.setImageResource(R.drawable.ic_baseline_notifications_active_24)
-                                        DataStore.setKey(SUBSCRIPTIONS_KEY, slug, true)
+                                        DataStore.setKey(
+                                            SUBSCRIPTIONS_BOOKMARK_KEY, slug, BookmarkedTitle(
+                                                data.name,
+                                                data.image,
+                                                data.slug
+                                            )
+                                        )
                                     }
                                     var msg = "Subscribed to ${data.name}"//getString(R.string.msg_subscribed)
                                     if (!task.isSuccessful) {
                                         msg = "Subscription failed :("//getString(R.string.msg_subscribe_failed)
+                                    }
+                                    thread {
+                                        requestHome(true)
                                     }
                                     //Log.d(TAG, msg)
                                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()

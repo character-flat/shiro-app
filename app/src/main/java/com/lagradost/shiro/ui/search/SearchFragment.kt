@@ -1,6 +1,7 @@
 package com.lagradost.shiro.ui.search
 
 import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.os.Bundle
 import android.transition.ChangeBounds
@@ -8,19 +9,25 @@ import android.transition.Transition
 import android.transition.TransitionManager
 import android.view.*
 import android.widget.LinearLayout
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.button.MaterialButton
 import com.lagradost.shiro.R
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
+import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.ShiroApi.Companion.getSearchMethods
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlin.concurrent.thread
 
@@ -61,13 +68,47 @@ class SearchFragment : Fragment() {
             )
         }
         cardSpace.adapter = adapter
+
+        search_fab_button.setOnClickListener {
+            val tags = searchViewModel.searchOptions.value?.genres?.sortedBy { it.name }
+            val bottomSheetDialog = BottomSheetDialog(requireContext())
+            bottomSheetDialog.setContentView(R.layout.genres_search)
+            val filterButton = bottomSheetDialog.findViewById<MaterialButton>(R.id.filter_button)!!
+            val searchTags = bottomSheetDialog.findViewById<MyFlowLayout>(R.id.search_tags)!!
+
+            tags?.forEachIndexed { index, tag ->
+                val viewBtt = layoutInflater.inflate(R.layout.genre_tag, null)
+                val btt = viewBtt.findViewById<MaterialButton>(R.id.result_tag_card)
+                btt.text = tag.name
+                changeTagState(btt, tag)
+
+                btt.setOnClickListener {
+                    changeTagState(btt, tag, true)
+                }
+
+                searchTags.addView(viewBtt, index)
+            }
+
+            filterButton.setOnClickListener {
+                searchViewModel.selectedGenres.clear()
+                bottomSheetDialog.dismiss()
+            }
+
+            bottomSheetDialog.setOnDismissListener {
+                //  MainActivity.semihideNavbar()
+            }
+            bottomSheetDialog.show()
+            //  MainActivity.showNavbar()
+        }
+
+
         val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)
         main_search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
                 progress_bar.visibility = View.VISIBLE
                 (cardSpace.adapter as ResAdapter).cardList.clear()
                 thread {
-                    val data = ShiroApi.search(query)
+                    val data = ShiroApi.search(query, genres = searchViewModel.selectedGenres)
                     activity?.runOnUiThread {
                         if (data == null) {
                             Toast.makeText(activity, "Server error", Toast.LENGTH_LONG).show()
@@ -87,7 +128,7 @@ class SearchFragment : Fragment() {
 
             override fun onQueryTextChange(newText: String): Boolean {
                 (cardSpace.adapter as ResAdapter).cardList.clear()
-                if (newText != "") {
+                if (newText != "" && searchViewModel.selectedGenres.isEmpty()) {
                     progress_bar.visibility = View.VISIBLE
                     thread {
                         val data = ShiroApi.quickSearch(newText)
@@ -137,7 +178,35 @@ class SearchFragment : Fragment() {
         searchViewModel =
             ViewModelProviders.of(this).get(SearchViewModel::class.java)
 
+        if (searchViewModel.searchOptions.value == null) {
+            thread {
+                getSearchMethods()
+            }
+        }
         return inflater.inflate(R.layout.fragment_search, container, false)
+    }
+
+
+    private fun changeTagState(view: MaterialButton, tag: ShiroApi.Genre, changed: Boolean = false) {
+        val contains = searchViewModel.selectedGenres.contains(tag) == changed
+
+        activity?.let {
+            if (!contains) {
+                searchViewModel.selectedGenres.add(tag)
+                view.backgroundTintList = ColorStateList.valueOf(
+                    it.getColorFromAttr(R.attr.colorAccent)
+                )
+                //view.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+            } else if (changed) {
+                searchViewModel.selectedGenres.removeAll { it == tag }
+                view.backgroundTintList =
+                    ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.transparent))
+                /*view.setTextColor(
+                    it.getColorFromAttr(R.attr.colorAccent)
+                )*/
+
+            }
+        }
     }
 
     override fun onStop() {

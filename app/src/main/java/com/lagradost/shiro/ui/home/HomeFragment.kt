@@ -80,8 +80,7 @@ class HomeFragment : Fragment() {
 
             generateRandom(data?.random)
 
-
-
+            // TODO MAKE THIS LIKE MASTERCARDADAPTER
             if (data != null) {
                 activity?.displayCardData(data.data.trending_animes, trending_anime_scroll_view, trending_text)
                 activity?.displayCardData(
@@ -107,6 +106,20 @@ class HomeFragment : Fragment() {
             } else {
                 favouriteRoot.visibility = GONE
             }
+
+            if (data?.subscribed?.isNotEmpty() == true) {
+                subscribedRoot.visibility = VISIBLE
+                //println(data.favorites!!.map { it?.title?.english})
+                activity?.displayCardData(
+                    data.subscribed?.sortedWith(compareBy { it?.name })?.toList(),
+                    subscribedScrollView,
+                    subscribed_text,
+                    overrideHideDubbed = true
+                )
+            } else {
+                subscribedRoot.visibility = GONE
+            }
+
 
             /*
             if (data?.schedule?.isNotEmpty() == true) {
