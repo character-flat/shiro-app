@@ -28,6 +28,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.cast.framework.CastContext
@@ -42,16 +44,15 @@ import com.lagradost.shiro.ui.NextEpisode
 import com.lagradost.shiro.ui.home.CardAdapter
 import com.lagradost.shiro.ui.home.CardContinueAdapter
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment
-import com.lagradost.shiro.ui.player.PlayerActivity
+import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
 import com.lagradost.shiro.ui.player.PlayerActivity.Companion.playerActivity
 import com.lagradost.shiro.ui.player.PlayerData
 import com.lagradost.shiro.ui.player.PlayerFragment
 import com.lagradost.shiro.ui.result.ResultFragment
-import com.lagradost.shiro.ui.tv.MainFragment
 import com.lagradost.shiro.ui.tv.PlayerFragmentTv
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.DataStore.mapper
-import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFav
 import com.lagradost.shiro.utils.extractors.Vidstream
 import java.net.URL
 import java.net.URLDecoder
@@ -101,7 +102,7 @@ object AppUtils {
             DataStore.removeKey(BOOKMARK_KEY, slug)
         }
         thread {
-            requestHome(true)
+            homeViewModel.favorites.postValue(getFav())
         }
         return !isBookmarked
     }
@@ -248,7 +249,7 @@ object AppUtils {
         //val snapHelper = PagerSnapHelper()
         //snapHelper.attachToRecyclerView(scrollView)
 
-        val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)  && !overrideHideDubbed
+        val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false) && !overrideHideDubbed
         val filteredData = if (hideDubbed) data?.filter { it?.name?.endsWith("Dubbed") == false } else data
         resView.adapter = newAdapter
 
@@ -521,6 +522,10 @@ object AppUtils {
                 or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
 
+    }
+
+    fun <T> LifecycleOwner.observe(liveData: LiveData<T>, action: (t: T) -> Unit) {
+        liveData.observe(this) { it?.let { t -> action(t) } }
     }
 
     fun FragmentActivity.loadPlayer(episodeIndex: Int, startAt: Long, card: ShiroApi.AnimePageData) {

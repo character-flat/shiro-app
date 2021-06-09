@@ -375,7 +375,7 @@ class ShiroApi {
         }
 
 
-        private fun getFav(): List<BookmarkedTitle?> {
+        fun getFav(): List<BookmarkedTitle?> {
             val legacyBookmarks = DataStore.getKey(LEGACY_BOOKMARKS, true)
             if (legacyBookmarks == true) {
                 convertOldFavorites()
@@ -393,7 +393,7 @@ class ShiroApi {
             }
         }
 
-        private fun getSubbed(): List<BookmarkedTitle?> {
+        fun getSubbed(): List<BookmarkedTitle?> {
             val keys = DataStore.getKeys(SUBSCRIPTIONS_BOOKMARK_KEY)
 
             thread {

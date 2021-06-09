@@ -21,11 +21,14 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.getRandomAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import com.lagradost.shiro.ui.*
+import com.lagradost.shiro.ui.player.PlayerEventType
 import com.lagradost.shiro.utils.AppUtils.displayCardData
 import com.lagradost.shiro.utils.AppUtils.getNextEpisode
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
+import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.Event
 import com.lagradost.shiro.utils.ShiroApi
 import kotlinx.android.synthetic.main.download_card.*
 import kotlinx.android.synthetic.main.fragment_home.*
@@ -35,8 +38,9 @@ import kotlin.concurrent.thread
 //const val FADE_SCROLL_DISTANCE = 700f
 
 class HomeFragment : Fragment() {
-
-    private lateinit var homeViewModel: HomeViewModel
+    companion object {
+        lateinit var homeViewModel: HomeViewModel
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -92,34 +96,8 @@ class HomeFragment : Fragment() {
                 activity?.displayCardData(data.data.latest_animes, latest_anime_scroll_view, latest_anime_text)
             }
             //displayCardData(data?.recentlyAddedData, recentScrollView)
-
-            // RELOAD ON NEW FAV!
-            if (data?.favorites?.isNotEmpty() == true) {
-                favouriteRoot.visibility = VISIBLE
-                //println(data.favorites!!.map { it?.title?.english})
-                activity?.displayCardData(
-                    data.favorites?.sortedWith(compareBy { it?.name })?.toList(),
-                    favouriteScrollView,
-                    favorites_text,
-                    overrideHideDubbed = true
-                )
-            } else {
-                favouriteRoot.visibility = GONE
-            }
-
-            if (data?.subscribed?.isNotEmpty() == true) {
-                subscribedRoot.visibility = VISIBLE
-                //println(data.favorites!!.map { it?.title?.english})
-                activity?.displayCardData(
-                    data.subscribed?.sortedWith(compareBy { it?.name })?.toList(),
-                    subscribedScrollView,
-                    subscribed_text,
-                    overrideHideDubbed = true
-                )
-            } else {
-                subscribedRoot.visibility = GONE
-            }
-
+            displayFav()
+            displaySubbed()
 
             /*
             if (data?.schedule?.isNotEmpty() == true) {
@@ -269,7 +247,53 @@ class HomeFragment : Fragment() {
         }
     }
 
+
+    fun displayFav() {
+        val favorites = homeViewModel.favorites.value
+        activity?.runOnUiThread {
+            // RELOAD ON NEW FAV!
+            if (favorites?.isNotEmpty() == true) {
+                favouriteRoot.visibility = VISIBLE
+                //println(data.favorites!!.map { it?.title?.english})
+                activity?.displayCardData(
+                    favorites.sortedWith(compareBy { it?.name }).toList(),
+                    favouriteScrollView,
+                    favorites_text,
+                    overrideHideDubbed = true
+                )
+            } else {
+                favouriteRoot.visibility = GONE
+            }
+        }
+    }
+
+    fun displaySubbed() {
+        val subscribed = homeViewModel.subscribed.value
+        activity?.runOnUiThread {
+            if (subscribed?.isNotEmpty() == true) {
+                subscribedRoot.visibility = VISIBLE
+                //println(data.favorites!!.map { it?.title?.english})
+                activity?.displayCardData(
+                    subscribed.sortedWith(compareBy { it?.name }).toList(),
+                    subscribedScrollView,
+                    subscribed_text,
+                    overrideHideDubbed = true
+                )
+            } else {
+                subscribedRoot.visibility = GONE
+            }
+        }
+    }
+
+
     override fun onResume() {
+        observe(homeViewModel.subscribed) {
+            displaySubbed()
+        }
+        observe(homeViewModel.favorites) {
+            displayFav()
+        }
+
         homeViewModel.apiData.let {
             it.observe(viewLifecycleOwner) { homePage ->
                 homeLoaded(homePage)
@@ -279,6 +303,11 @@ class HomeFragment : Fragment() {
             }
         }
         super.onResume()
+    }
+
+    override fun onDestroy() {
+        ShiroApi.onHomeError -= ::onHomeErrorCatch
+        super.onDestroy()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

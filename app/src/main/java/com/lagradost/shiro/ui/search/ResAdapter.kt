@@ -19,6 +19,7 @@ import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.AutofitRecyclerView
 import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.GlideApp
+import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppUtils.fixCardTitle
 import com.lagradost.shiro.utils.AppUtils.onLongCardClick
@@ -26,6 +27,7 @@ import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.BOOKMARK_KEY
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.ShiroApi
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFav
 import kotlinx.android.synthetic.main.search_result.view.imageText
 import kotlinx.android.synthetic.main.search_result.view.imageView
 import kotlinx.android.synthetic.main.search_result_compact.view.*
@@ -109,7 +111,7 @@ class ResAdapter(
                         DataStore.removeKey(BOOKMARK_KEY, card.slug)
                     }
                     thread {
-                        requestHome(true)
+                        homeViewModel.favorites.postValue(getFav())
                     }
                 }
                 toggleHeartVisual(isBookmarked)

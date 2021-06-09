@@ -37,6 +37,7 @@ import com.lagradost.shiro.ui.GlideOptions.bitmapTransform
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
+import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
@@ -49,6 +50,8 @@ import com.lagradost.shiro.utils.AppUtils.isCastApiAvailable
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFav
+import com.lagradost.shiro.utils.ShiroApi.Companion.getSubbed
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.fragment_results.*
 import kotlinx.android.synthetic.main.fragment_results_new.bookmark_holder
@@ -325,7 +328,7 @@ class ResultFragment : Fragment() {
                                         msg = "Unsubscribing failed :("//getString(R.string.msg_subscribe_failed)
                                     }
                                     thread {
-                                        requestHome(true)
+                                        homeViewModel.subscribed.postValue(getSubbed())
                                     }
                                     //Log.d(TAG, msg)
                                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
@@ -348,7 +351,7 @@ class ResultFragment : Fragment() {
                                         msg = "Subscription failed :("//getString(R.string.msg_subscribe_failed)
                                     }
                                     thread {
-                                        requestHome(true)
+                                        homeViewModel.subscribed.postValue(getSubbed())
                                     }
                                     //Log.d(TAG, msg)
                                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
@@ -467,7 +470,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
             DataStore.removeKey(BOOKMARK_KEY, data.slug)
         }
         thread {
-            requestHome(true)
+            homeViewModel.favorites.postValue(getFav())
         }
     }
 
