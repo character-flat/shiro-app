@@ -1,8 +1,8 @@
 <resources>
     <string name="changelog">\n
-        - Added genres to search\n
-        - Made subbed titles show up like favorite shows\n
-        - Fixed player bug when opening files from file manger\n
+        - (hopefully) fixed the crash when loading episode links, please say if you still get those!\n
+        - Made swipe to seek/change settings consistent (it would usually randomly activate on normal presses)\n
+        - Made subscriptions and favorites not refresh the whole home layout\n
     </string>
     <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>

@@ -70,6 +70,9 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.loadLinks
 import com.lagradost.shiro.utils.extractors.Shiro
 import java.io.File
 import java.security.SecureRandom
+import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.ConcurrentMap
 import javax.net.ssl.*
 import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
@@ -157,6 +160,7 @@ class PlayerFragment : Fragment() {
     private var isShowing = true
     private lateinit var exoPlayer: SimpleExoPlayer
 
+    //private val extractorLinks = mutableListOf<ExtractorLink>()
     private val extractorLinks = mutableListOf<ExtractorLink>()
 
     // private val url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
@@ -316,23 +320,29 @@ class PlayerFragment : Fragment() {
     }
 
     private fun linkLoaded(link: ExtractorLink) {
+
+        val safeLinks = extractorLinks
+        extractorLinks.add(link)
+        println(extractorLinks.map { it.name })
+        println("LINK LOADED ${link.name}")
         if (
         // Prevent editing the text post-player
             !isCurrentlyPlaying &&
             // Prevent duplicate urls
-            !extractorLinks.map { it.url }.contains(link.url) &&
+            !safeLinks.map { it.url }.contains(link.url) &&
             // Add the link post url check
-            extractorLinks.add(link)
+            safeLinks.add(link)
         ) {
             activity?.runOnUiThread {
-                links_loaded_text?.text = "${extractorLinks.distinctBy { it.url }.size} - Loaded ${link.name}"
+                links_loaded_text?.text = "${safeLinks.distinctBy { it.url }.size} - Loaded ${link.name}"
                 quickstart_btt?.visibility = VISIBLE
             }
         }
-        sources = Pair(data?.episodeIndex, extractorLinks.sortedBy { -it.quality }.distinctBy { it.url })
+        sources = Pair(data?.episodeIndex, safeLinks.sortedBy { -it.quality }.distinctBy { it.url })
+
 
         // Quickstart
-        if (link.name == Shiro().name) {
+        if (link.name == "Shiro"/*Shiro().name*/) {
             activity?.runOnUiThread {
                 initPlayerIfPossible(link)
             }
@@ -341,6 +351,7 @@ class PlayerFragment : Fragment() {
 
 
     private fun getCurrentUrl(): ExtractorLink? {
+
         if (data?.url != null) return ExtractorLink("Local", data?.url!!, "", Qualities.Unknown.value)
         val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
         return sources.second?.getOrNull(index)
@@ -583,17 +594,25 @@ class PlayerFragment : Fragment() {
         if (isLocked || exoPlayer.duration == TIME_UNSET || (!swipeEnabled && !swipeVerticalEnabled)) return
         val audioManager = activity?.getSystemService(AUDIO_SERVICE) as? AudioManager
 
+        fun recordCoordinates() {
+            currentX = motionEvent.rawX
+            currentY = motionEvent.rawY
+            //println("DOWN: " + currentX)
+            isMovingStartTime = exoPlayer.currentPosition
+        }
+
         when (motionEvent.action) {
+
             MotionEvent.ACTION_DOWN -> {
-                currentX = motionEvent.rawX
-                currentY = motionEvent.rawY
-                //println("DOWN: " + currentX)
-                isMovingStartTime = exoPlayer.currentPosition
+                recordCoordinates()
             }
             MotionEvent.ACTION_MOVE -> {
                 if (swipeVerticalEnabled) {
+                    if (currentY == 0f && currentX == 0f) {
+                        recordCoordinates()
+                    }
                     val distanceMultiplierY = 2F
-                    val distanceY = (motionEvent.rawY - currentY) * distanceMultiplierY
+                    val distanceY = if (currentY != 0f) (motionEvent.rawY - currentY) * distanceMultiplierY else 0f
                     val diffY = distanceY * 2.0 / height
 
                     // Forces 'smooth' moving preventing a bug where you
@@ -657,8 +676,11 @@ class PlayerFragment : Fragment() {
                 }
 
                 if (swipeEnabled) {
+                    if (currentY == 0f && currentX == 0f) {
+                        recordCoordinates()
+                    }
                     val distanceMultiplierX = 2F
-                    val distanceX = (motionEvent.rawX - currentX) * distanceMultiplierX
+                    val distanceX = if (currentX != 0f) (motionEvent.rawX - currentX) * distanceMultiplierX else 0f
                     val diffX = distanceX * 2.0 / width
                     if (abs(diffX - prevDiffX) > 0.5) {
                         return
@@ -685,6 +707,8 @@ class PlayerFragment : Fragment() {
                 }
             }
             MotionEvent.ACTION_UP -> {
+                currentX = 0f
+                currentY = 0f
                 val transition: Transition = Fade()
                 transition.duration = 1000
 
@@ -796,13 +820,11 @@ class PlayerFragment : Fragment() {
             }
 
             override fun onSingleClick() {
-                println("GGG123123123123")
                 onClickChange()
                 activity?.hideSystemUI()
             }
 
             override fun onMotionEvent(event: MotionEvent) {
-                println("MOTION EVENT")
                 handleMotionEvent(event)
             }
         }

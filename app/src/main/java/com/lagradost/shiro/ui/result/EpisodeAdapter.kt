@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.view.*
@@ -348,7 +349,8 @@ class EpisodeAdapter(
                         updateIcon(localBytesTotal, child)
 
                         card.cardPauseIcon.setOnClickListener { v ->
-                            val popup = PopupMenu(activity, v)
+                            val ctw = ContextThemeWrapper(activity, R.style.PopupMenu)
+                            val popup = PopupMenu(ctw, v)
                             if (getStatus()) {
                                 popup.setOnMenuItemClickListener {
                                     when (it.itemId) {

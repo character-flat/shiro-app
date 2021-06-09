@@ -20,7 +20,7 @@ android {
         targetSdkVersion 30
         // Don't forget to update versionCode too :)
         versionCode 16
-        versionName "2.3.1"
+        versionName "2.3.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 

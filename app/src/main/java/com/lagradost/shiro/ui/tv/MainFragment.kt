@@ -21,6 +21,7 @@ import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.onResultsNavigated
 import com.lagradost.shiro.ui.settings.SettingsFragment
+import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import kotlinx.android.synthetic.main.fragment_main_tv.*
@@ -147,6 +148,13 @@ class MainFragment : Fragment() {
     }
 
     override fun onResume() {
+
+        observe(mainViewModel.subscribed) {
+            (vertical_grid_view?.adapter as? MasterCardAdapter)?.notifyDataSetChanged()
+        }
+        observe(mainViewModel.favorites) {
+            (vertical_grid_view?.adapter as? MasterCardAdapter)?.notifyDataSetChanged()
+        }
         requestHome()
         onResultsNavigated += ::restoreState
         onPlayerNavigated += ::restoreState

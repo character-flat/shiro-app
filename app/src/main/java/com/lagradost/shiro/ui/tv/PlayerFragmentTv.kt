@@ -64,6 +64,7 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 import com.lagradost.shiro.utils.ShiroApi.Companion.loadLinks
 import java.io.File
 import java.security.SecureRandom
+import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
@@ -538,11 +539,13 @@ class PlayerFragmentTv : VideoSupportFragment() {
     }
 
     private fun linkLoaded(link: ExtractorLink) {
-        println("LINK ADDED ${link.name}")
         extractorLinks.add(link)
-        sources = Pair(data?.episodeIndex, extractorLinks.sortedBy { -it.quality }.distinctBy { it.url })
+        val safeLinks = extractorLinks
+        sources = Pair(data?.episodeIndex, safeLinks.sortedBy { -it.quality }.distinctBy { it.url })
+
+        // Prevent concurrentModification
         // Quickstart provided shiro is loaded and one other link, because I haven't figured out how to refresh the glue
-        if (sources.second?.size ?: 0 > 1 && sources.second?.map { it.name }?.contains("Shiro") == true) {
+        if (safeLinks.size > 1 && safeLinks.map { it.name }.contains("Shiro")) {
             //if (link.name == "Shiro") {
             activity?.runOnUiThread {
                 initPlayerIfPossible(link)

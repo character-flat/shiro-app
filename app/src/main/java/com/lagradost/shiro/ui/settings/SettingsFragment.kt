@@ -13,11 +13,14 @@ import androidx.preference.*
 
 import androidx.preference.PreferenceFragmentCompat
 import com.bumptech.glide.Glide
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.ktx.messaging
 import com.lagradost.shiro.*
 import com.lagradost.shiro.utils.DataStore.getKeys
 import com.lagradost.shiro.utils.DataStore.removeKeys
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
 import com.lagradost.shiro.ui.tv.TvActivity
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
@@ -299,6 +302,74 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
             return@setOnPreferenceChangeListener true
         }
+
+        val subToUpdates = findPreference("subscribe_to_updates") as SwitchPreference?
+        subToUpdates?.setOnPreferenceChangeListener { _, newValue ->
+            subToUpdates.isEnabled = false
+            if (newValue == true) {
+                Firebase.messaging.subscribeToTopic("subscribe_to_updates")
+                    .addOnCompleteListener { task ->
+                        val msg = if (task.isSuccessful) {
+                            subToUpdates.isChecked = true
+                            "Subscribed"
+                        } else {
+                            "Subscription failed :("
+                        }
+                        //Log.d(TAG, msg)
+                        Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                        subToUpdates.isEnabled = true
+                    }
+            } else {
+                Firebase.messaging.unsubscribeFromTopic("subscribe_to_updates")
+                    .addOnCompleteListener { task ->
+                        val msg = if (task.isSuccessful) {
+                            subToUpdates.isChecked = false
+                            "Unsubscribed"
+                        } else {
+                            "Unsubscribing failed :("
+                        }
+                        //Log.d(TAG, msg)
+                        Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                        subToUpdates.isEnabled = true
+                    }
+            }
+            return@setOnPreferenceChangeListener false
+        }
+
+        val subToAnnouncements = findPreference("subscribe_to_announcements") as SwitchPreference?
+        subToAnnouncements?.setOnPreferenceChangeListener { _, newValue ->
+            subToAnnouncements.isEnabled = false
+            if (newValue == true) {
+                Firebase.messaging.subscribeToTopic("subscribe_to_announcements")
+                    .addOnCompleteListener { task ->
+                        val msg = if (task.isSuccessful) {
+                            subToAnnouncements.isChecked = true
+                            "Subscribed"
+                        } else {
+                            "Subscription failed :("
+                        }
+                        //Log.d(TAG, msg)
+                        Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                        subToAnnouncements.isEnabled = true
+                    }
+            } else {
+                Firebase.messaging.unsubscribeFromTopic("subscribe_to_announcements")
+                    .addOnCompleteListener { task ->
+                        val msg = if (task.isSuccessful) {
+                            subToAnnouncements.isChecked = false
+                            "Unsubscribed"
+                        } else {
+                            "Unsubscribing failed :("
+                        }
+                        //Log.d(TAG, msg)
+                        Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                        subToAnnouncements.isEnabled = true
+                    }
+            }
+            return@setOnPreferenceChangeListener false
+        }
+
+
         val useExternalStorage = findPreference("use_external_storage") as SwitchPreference?
         //useExternalStorage.summaryOff = ""
         /*useExternalStorage?.summaryOn =

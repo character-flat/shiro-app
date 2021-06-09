@@ -42,7 +42,13 @@
                 android:title="Pick download source manually"
                 app:defaultValue="false"
         />
-
+        <SwitchPreference
+                app:key="subscribe_to_announcements"
+                android:title="Subscribe to announcement notifications"
+                app:summary="For example site downtime"
+                app:defaultValue="false"
+                android:icon="@drawable/ic_baseline_notifications_active_24"
+        />
         <SwitchPreference android:key="acra.disable"
                           android:icon="@drawable/ic_baseline_bug_report_24"
                           android:title="@string/pref_disable_acra"
@@ -277,7 +283,7 @@
 
     <PreferenceCategory
             android:key="update_info"
-            android:title="Version info"
+            android:title="Update info"
     >
         <Preference
                 android:icon="@drawable/ic_baseline_build_24"
@@ -293,10 +299,17 @@
         />
         <SwitchPreference
                 app:key="auto_update"
-                android:title="Show app updates"
+                android:title="Show app update pop-up"
                 app:defaultValue="true"
+                android:icon="@drawable/ic_baseline_system_update_24"
+        />
+        <SwitchPreference
+                app:key="subscribe_to_updates"
+                android:title="Subscribe to update notifications"
+                app:defaultValue="false"
                 android:icon="@drawable/ic_baseline_notifications_active_24"
         />
+
         <SwitchPreference
                 app:key="beta_mode"
                 android:title="Beta channel"

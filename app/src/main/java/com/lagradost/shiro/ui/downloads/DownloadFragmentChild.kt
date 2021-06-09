@@ -11,6 +11,7 @@ import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.content.ContextCompat
 import com.lagradost.shiro.*
@@ -219,7 +220,8 @@ class DownloadFragmentChild : Fragment() {
                 updateIcon(localBytesTotal)
 
                 card.cardPauseIcon.setOnClickListener { v ->
-                    val popup = PopupMenu(context, v)
+                    val ctw = ContextThemeWrapper(context, R.style.PopupMenu)
+                    val popup = PopupMenu(ctw, v)
                     if (getStatus()) {
                         popup.setOnMenuItemClickListener {
                             when (it.itemId) {
