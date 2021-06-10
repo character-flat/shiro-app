@@ -16,6 +16,8 @@ import androidx.transition.AutoTransition
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
+import com.lagradost.shiro.ui.home.HomeViewModel
 import com.lagradost.shiro.ui.home.MasterCardAdapter
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
@@ -29,7 +31,6 @@ import kotlin.concurrent.thread
 
 
 class MainFragment : Fragment() {
-    private lateinit var mainViewModel: MainFragmentViewModel
 
     private fun homeLoaded(data: ShiroApi.ShiroHomePage?) {
         activity?.runOnUiThread {
@@ -37,10 +38,8 @@ class MainFragment : Fragment() {
             main_reload_data_btt?.visibility = GONE
             val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder> = MasterCardAdapter(
                 requireActivity(),
-                data,
             )
             vertical_grid_view.adapter = adapter
-            (vertical_grid_view.adapter as MasterCardAdapter).data = data
             (vertical_grid_view.adapter as MasterCardAdapter).notifyDataSetChanged()
             //val snapHelper = LinearSnapHelper()
             //snapHelper.attachToRecyclerView(vertical_grid_view)
@@ -52,8 +51,8 @@ class MainFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        mainViewModel =
-            activity?.let { ViewModelProviders.of(it).get(MainFragmentViewModel::class.java) }!!
+        homeViewModel =
+            activity?.let { ViewModelProviders.of(it).get(HomeViewModel::class.java) }!!
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_main_tv, container, false)
     }
@@ -101,7 +100,7 @@ class MainFragment : Fragment() {
                 ?.replace(R.id.home_root_tv, SettingsFragment())
                 ?.commit()
         }
-        mainViewModel.apiData.observe(viewLifecycleOwner) {
+        homeViewModel.apiData.observe(viewLifecycleOwner) {
             homeLoaded(it)
         }
     }
@@ -149,16 +148,16 @@ class MainFragment : Fragment() {
 
     override fun onResume() {
 
-        observe(mainViewModel.subscribed) {
+        observe(homeViewModel.subscribed) {
             (vertical_grid_view?.adapter as? MasterCardAdapter)?.notifyDataSetChanged()
         }
-        observe(mainViewModel.favorites) {
+        observe(homeViewModel.favorites) {
             (vertical_grid_view?.adapter as? MasterCardAdapter)?.notifyDataSetChanged()
         }
         requestHome()
         onResultsNavigated += ::restoreState
         onPlayerNavigated += ::restoreState
-        mainViewModel.apiData.observe(viewLifecycleOwner) {
+        homeViewModel.apiData.observe(viewLifecycleOwner) {
             homeLoaded(it)
         }
         super.onResume()

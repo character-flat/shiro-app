@@ -30,6 +30,8 @@ import kotlinx.android.synthetic.main.home_card.view.home_card_root
 import kotlinx.android.synthetic.main.home_card.view.imageText
 import kotlinx.android.synthetic.main.home_card.view.imageView
 import kotlinx.android.synthetic.main.home_card_recently_seen.view.*
+import java.lang.Thread.sleep
+import kotlin.concurrent.thread
 
 
 class CardContinueAdapter(
@@ -54,7 +56,11 @@ class CardContinueAdapter(
                 holder.bind(cardList?.get(position))
             }
         }
+
+
         holder.itemView.setOnFocusChangeListener { view, hasFocus ->
+            val subFocus =
+                view.tv_button_info.hasFocus() || view.tv_button_cancel.hasFocus() || view.tv_button_remove.hasFocus()
             val toSize = if (hasFocus) 1.1f else 1.0f
             val fromSize = if (!hasFocus) 1.1f else 1.0f
             val animation = ScaleAnimation(
@@ -71,6 +77,7 @@ class CardContinueAdapter(
             animation.isFillEnabled = true
             animation.fillAfter = true
             view.startAnimation(animation)
+            if (!subFocus) view.menu_root.visibility = GONE
             view.home_card_recently_seen.radius = if (hasFocus) 0F else 6.toPx.toFloat()
             if (isOnTop) {
                 activity?.findViewById<View>(R.id.tv_menu_bar)?.visibility = VISIBLE
@@ -78,6 +85,7 @@ class CardContinueAdapter(
                 activity?.findViewById<View>(R.id.tv_menu_bar)?.visibility = GONE
             }
         }
+
     }
 
     override fun getItemCount(): Int {
@@ -119,11 +127,25 @@ class CardContinueAdapter(
                             .commitAllowingStateLoss()
 
                     }
-                } else {
+                } else if (cardInfo.id != null) {
+                    // TV INFO BUTTON
                     itemView.infoButton.visibility = GONE
+                    itemView.tv_button_info.setOnClickListener {
+                        activity.supportFragmentManager.beginTransaction()
+                            .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                            .add(R.id.home_root_tv, ResultFragment.newInstance(cardInfo.id.slug))
+                            .commitAllowingStateLoss()
+                    }
                 }
+
                 itemView.home_card_root.setOnLongClickListener {
-                    cardInfo.id?.let { card -> activity.onLongCardClick(card) }
+                    if (tvActivity != null) {
+                        itemView.menu_root.visibility = VISIBLE
+                        itemView.tv_button_info.requestFocus()
+                        itemView.home_card_root.isFocusable = false
+                    } else {
+                        cardInfo.id?.let { card -> activity.onLongCardClick(card) }
+                    }
                     return@setOnLongClickListener true
                 }
                 itemView.home_card_root.setOnClickListener {
@@ -133,6 +155,15 @@ class CardContinueAdapter(
                 }
                 if (tvActivity != null) {
                     itemView.removeButton.visibility = GONE
+                    itemView.tv_button_cancel.setOnClickListener {
+                        itemView.home_card_root.isFocusable = true
+                        itemView.menu_root.visibility = GONE
+                        itemView.home_card_root.requestFocus()
+                    }
+                    itemView.tv_button_remove.setOnClickListener {
+                        DataStore.removeKey(VIEW_LST_KEY, cardInfo.aniListId)
+                        requestHome(true)
+                    }
                 } else {
                     itemView.removeButton.visibility = VISIBLE
                     itemView.removeButton.setOnClickListener {

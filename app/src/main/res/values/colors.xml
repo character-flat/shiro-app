@@ -6,6 +6,7 @@
     <color name="grayForeground">#b3b3b3</color>
     <color name="transparent">#00000000</color>
     <color name="black_overlay">#66000000</color>
+    <color name="black_overlay_darker">#CC000000</color>
     <color name="video_ripple">#80FFFFFF</color>
 
     <color name="colorPrimary">#d01110</color>

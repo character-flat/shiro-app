@@ -302,7 +302,8 @@ class ResultFragment : Fragment() {
 
 
                 slug?.let { slug ->
-                    title_subscribe_holder.visibility = VISIBLE
+                    if (title_subscribe_holder == null) return@let
+                    title_subscribe_holder?.visibility = VISIBLE
                     val subbedBookmark = DataStore.getKey<BookmarkedTitle>(SUBSCRIPTIONS_BOOKMARK_KEY, slug, null)
                     val isSubbedOld = DataStore.getKey(SUBSCRIPTIONS_KEY, slug, false)!!
                     val isSubbed = isSubbedOld || subbedBookmark != null
