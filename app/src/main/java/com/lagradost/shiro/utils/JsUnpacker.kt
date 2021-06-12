@@ -1,8 +1,5 @@
 package com.lagradost.shiro.utils
 
-import java.lang.Exception
-import java.lang.StringBuilder
-import java.util.HashMap
 import java.util.regex.Pattern
 import kotlin.math.pow
 

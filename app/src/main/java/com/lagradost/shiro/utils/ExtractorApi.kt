@@ -1,6 +1,5 @@
 package com.lagradost.shiro.utils
 
-import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.extractors.*
 
 data class ExtractorLink(

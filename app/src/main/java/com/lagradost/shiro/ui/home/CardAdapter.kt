@@ -3,29 +3,27 @@ package com.lagradost.shiro.ui.home
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.*
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.ScaleAnimation
-import android.widget.Toast
 import androidx.core.view.updateMargins
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.lagradost.shiro.ui.result.ResultFragment
-import com.lagradost.shiro.*
-import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.GlideApp
+import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.AppUtils.fixCardTitle
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.onLongCardClick
 import com.lagradost.shiro.utils.ShiroApi
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import kotlinx.android.synthetic.main.home_card.view.*
-import kotlinx.android.synthetic.main.home_card.view.imageText
-import kotlinx.android.synthetic.main.home_card.view.imageView
 
 
 class CardAdapter(
@@ -115,7 +113,7 @@ class CardAdapter(
                     return@setOnLongClickListener true
                 }
                 itemView.home_card_root.setOnClickListener {
-                    println("SLIG ${cardInfo.slug}")
+                    println("SLUG ${cardInfo.slug}")
                     val home = if (tvActivity != null) R.id.home_root_tv else R.id.homeRoot
                     /*val navController = findNavController(getCurrentActivity()!!, R.id.nav_host_fragment)
                     navController.navigate(R.id.navigation_results, Bundle().apply { putString("slug", cardInfo.slug) })*/

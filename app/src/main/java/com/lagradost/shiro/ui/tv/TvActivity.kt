@@ -7,8 +7,6 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentActivity
 import androidx.preference.PreferenceManager
-import com.lagradost.shiro.BuildConfig
-import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
@@ -16,6 +14,7 @@ import com.lagradost.shiro.ui.settings.SettingsFragment.Companion.isInSettings
 import com.lagradost.shiro.ui.tv.PlayerFragmentTv.Companion.isInPlayer
 import com.lagradost.shiro.utils.AppUtils.init
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
+import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.DownloadManager
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import com.lagradost.shiro.utils.ShiroApi

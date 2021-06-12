@@ -16,7 +16,6 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
-import com.lagradost.shiro.BuildConfig
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.canShowPipMode
 import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
@@ -88,7 +87,7 @@ class PlayerActivity : AppCompatActivity() {
         theme.applyStyle(currentTheme, true)
         if (settingsManager.getBoolean("cool_mode", false)) {
             theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
-        } else if (BuildConfig.BETA && settingsManager.getBoolean("beta_theme", false)) {
+        } else if (settingsManager.getBoolean("beta_theme", false)) {
             theme.applyStyle(R.style.OverlayPrimaryColorGreen, true)
         } else if (settingsManager.getBoolean("purple_theme", false) && settingsManager.getBoolean(
                 "auto_update",
@@ -144,7 +143,7 @@ class PlayerActivity : AppCompatActivity() {
     private fun getUri(data: Uri?): Uri? {
         var uri = data
         val ctx = this
-        if (data != null && ctx != null && data.scheme == "content") {
+        if (data != null && data.scheme == "content") {
             // Mail-based apps - download the stream to a temporary file and play it
             if ("com.fsck.k9.attachmentprovider" == data.host || "gmail-ls" == data.host) {
                 var inputStream: InputStream? = null
@@ -186,11 +185,11 @@ class PlayerActivity : AppCompatActivity() {
                     if (it.moveToFirst()) Uri.fromFile(File(it.getString(columnIndex))) ?: data else data
                 }
                 //uri = MediaUtils.getContentMediaUri(data)
-            } else if (false /*data.authority == ctx.getString(R.string.tv_provider_authority)*/) {
+            /*} else if (data.authority == ctx.getString(R.string.tv_provider_authority)) {
                 println("TV AUTHORITY")
                 //val medialibrary = Medialibrary.getInstance()
                 //val media = medialibrary.getMedia(data.lastPathSegment!!.toLong())
-                uri = null//media.uri
+                uri = null//media.uri*/
             } else {
                 val inputPFD: ParcelFileDescriptor?
                 try {

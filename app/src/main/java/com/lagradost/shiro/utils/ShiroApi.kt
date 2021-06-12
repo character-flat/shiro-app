@@ -12,10 +12,7 @@ import com.lagradost.shiro.ui.LastEpisodeInfo
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.utils.AppUtils.allApi
 import com.lagradost.shiro.utils.AppUtils.md5
-import com.lagradost.shiro.utils.extractors.Shiro
-import com.lagradost.shiro.utils.extractors.Vidstream
 import khttp.structures.cookie.CookieJar
-import java.lang.Exception
 import java.net.URLEncoder
 import kotlin.concurrent.thread
 
@@ -154,6 +151,8 @@ class ShiroApi {
     )
 
     companion object {
+        infix fun Int.fmod(other: Int) = ((this % other) + other) % other
+
         const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
         private val mapper = JsonMapper.builder().addModule(KotlinModule())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
@@ -263,7 +262,6 @@ class ShiroApi {
                 val mapped = response?.let { mapper.readValue<AllSearchMethods>(it.text) }
 
                 if (mapped?.status == "Found") {
-                    println("MAPPED $mapped")
                     onSearchFetched.invoke(mapped.data)
                     return mapped.data
                 }
@@ -300,10 +298,10 @@ class ShiroApi {
         fun search(
             query: String,
             usedToken: Token? = currentToken,
-            genres: List<Genre>? = null
+            genresInput: List<Genre>? = null
         ): List<ShiroSearchResponseShow>? {
             try {
-                val genres = genres?.joinToString(separator = "%2C") { it.slug } ?: ""
+                val genres = genresInput?.joinToString(separator = "%2C") { it.slug } ?: ""
                 val genresString = if (genres != "") "&genres=$genres" else ""
 
                 val url = "https://tapi.shiro.is/advanced?search=${
@@ -437,7 +435,7 @@ class ShiroApi {
             }
         }
 
-        fun getHome(canBeCached: Boolean, usedToken: Token? = currentToken): ShiroHomePage? {
+        private fun getHome(canBeCached: Boolean, usedToken: Token? = currentToken): ShiroHomePage? {
             var res: ShiroHomePage? = null
             println("HOME GETTING FETCHED ")
             if (canBeCached && cachedHome != null) {

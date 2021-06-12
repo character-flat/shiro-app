@@ -2,50 +2,56 @@ package com.lagradost.shiro.ui.player
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.content.Context
-import android.graphics.Color
-import androidx.fragment.app.Fragment
-import android.view.animation.AnimationUtils
-import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
-import com.google.android.exoplayer2.upstream.*
-import com.google.android.exoplayer2.util.MimeTypes
-import com.google.android.exoplayer2.util.Util
-import kotlinx.android.synthetic.main.player.*
-import kotlinx.android.synthetic.main.player_custom_layout.*
-import android.view.animation.AlphaAnimation
-import android.app.RemoteAction
-import android.graphics.drawable.Icon
-import android.content.Intent
 import android.app.PendingIntent
 import android.app.PictureInPictureParams
+import android.app.RemoteAction
 import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Context.AUDIO_SERVICE
+import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.res.Resources
 import android.database.ContentObserver
+import android.graphics.Color
+import android.graphics.drawable.Icon
 import android.media.AudioManager
 import android.net.Uri
-import android.os.*
-import android.view.*
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
 import android.view.View.*
+import android.view.ViewGroup
 import android.view.animation.AccelerateInterpolator
+import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AlertDialog
-import androidx.core.os.HandlerCompat.postDelayed
-import androidx.transition.*
+import androidx.fragment.app.Fragment
+import androidx.transition.Fade
+import androidx.transition.Transition
+import androidx.transition.TransitionManager
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.C.TIME_UNSET
+import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
+import com.google.android.exoplayer2.upstream.DataSource
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
+import com.google.android.exoplayer2.util.MimeTypes
+import com.google.android.exoplayer2.util.Util
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
@@ -66,17 +72,19 @@ import com.lagradost.shiro.utils.AppUtils.requestAudioFocus
 import com.lagradost.shiro.utils.AppUtils.setViewPosDur
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.AppUtils.showSystemUI
+import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
+import com.lagradost.shiro.utils.ShiroApi.Companion.fmod
 import com.lagradost.shiro.utils.ShiroApi.Companion.loadLinks
-import com.lagradost.shiro.utils.extractors.Shiro
+import kotlinx.android.synthetic.main.player.*
+import kotlinx.android.synthetic.main.player_custom_layout.*
 import java.io.File
 import java.security.SecureRandom
-import java.util.*
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.ConcurrentMap
-import javax.net.ssl.*
-import kotlin.collections.ArrayList
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSession
 import kotlin.concurrent.thread
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.ceil
 import kotlin.properties.Delegates
 
 const val STATE_RESUME_WINDOW = "resumeWindow"
@@ -555,7 +563,9 @@ class PlayerFragment : Fragment() {
     }
 
     private fun handlePlayerEvent(event: PlayerEventType) {
-        handlePlayerEvent(event.value)
+        if (this::exoPlayer.isInitialized) {
+            handlePlayerEvent(event.value)
+        }
     }
 
     private fun handlePlayerEvent(event: Int) {
@@ -644,7 +654,6 @@ class PlayerFragment : Fragment() {
                                 progressBarLeft?.progress = ((vol) * 100 * 100).toInt()
 
                                 if (audioManager.isVolumeFixed) {
-                                    // Lmao might earrape, we'll see in bug reports
                                     exoPlayer.volume = minOf(1f, maxOf(vol, 0f))
                                 } else {
                                     // audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, vol*, 0)
@@ -780,7 +789,7 @@ class PlayerFragment : Fragment() {
             resize_player.visibility = VISIBLE
             resize_player.setOnClickListener {
                 updateHideTime()
-                resizeMode = Math.floorMod(resizeMode!! + 1, resizeModes.size)
+                resizeMode = (resizeMode!! + 1).fmod(resizeModes.size)
                 //println("RESIZE $resizeMode")
                 DataStore.setKey(RESIZE_MODE_KEY, resizeMode)
                 player_view.resizeMode = resizeModes[resizeMode!!]
@@ -1022,7 +1031,7 @@ class PlayerFragment : Fragment() {
         }
     }
 
-    fun updateHideTime() {
+    private fun updateHideTime() {
         handler.removeCallbacks(hideAction)
         hideAtMs = SystemClock.uptimeMillis() + showTimeoutMs
         handler.postDelayed(hideAction, showTimeoutMs)
@@ -1094,14 +1103,14 @@ class PlayerFragment : Fragment() {
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun initPlayer(currentUrl: ExtractorLink? = null) {
+    private fun initPlayer(inputUrl: ExtractorLink? = null) {
         isCurrentlyPlaying = true
         view?.setOnTouchListener { _, _ ->
-            println("OVERRIDEN TOUCH")
+            println("OVERRIDDEN TOUCH")
             return@setOnTouchListener true
         } // VERY IMPORTANT https://stackoverflow.com/questions/28818926/prevent-clicking-on-a-button-in-an-activity-while-showing-a-fragment
         thread {
-            val currentUrl = currentUrl ?: getCurrentUrl()
+            val currentUrl = inputUrl ?: getCurrentUrl()
             if (currentUrl == null) {
                 activity?.runOnUiThread {
                     Toast.makeText(activity, "No links found", LENGTH_LONG).show()
@@ -1156,12 +1165,13 @@ class PlayerFragment : Fragment() {
                         video_title?.text = getCurrentTitle()
 
                         // removes sources button if downloaded file
-                        quickstart_btt.visibility = GONE
+                        quickstart_btt?.visibility = GONE
 
                         if (currentUrl.name == "Local" && data != null) {
                             data?.slug?.let { slug ->
                                 val episodes = getAllDownloadedEpisodes(slug).map { it.key }
-                                val nextEpisode = episodes.filter { it!!.episodeIndex == data!!.episodeIndex!! + 1 }
+
+                                val nextEpisode = episodes.filter { it?.episodeIndex == data!!.episodeIndex!! + 1 }
                                 if (!nextEpisode.isNullOrEmpty()) {
                                     next_episode_btt?.visibility = VISIBLE
                                     next_episode_btt?.setOnClickListener {
@@ -1188,7 +1198,7 @@ class PlayerFragment : Fragment() {
                                     next_episode_btt?.visibility = GONE
                                 }
                             }
-                            sources_btt.visibility = GONE
+                            sources_btt?.visibility = GONE
                         } else if (canPlayNextEpisode()) {
                             next_episode_btt?.visibility = VISIBLE
                             next_episode_btt?.setOnClickListener {
@@ -1219,17 +1229,17 @@ class PlayerFragment : Fragment() {
                         }
 
                         val mimeType = if (currentUrl.isM3u8) MimeTypes.APPLICATION_M3U8 else MimeTypes.APPLICATION_MP4
-                        val _mediaItem = MediaItem.Builder()
+                        val mediaItemBuilder = MediaItem.Builder()
                             //Replace needed for android 6.0.0  https://github.com/google/ExoPlayer/issues/5983
                             .setMimeType(mimeType)
 
                         if (isOnline) {
-                            _mediaItem.setUri(currentUrl.url)
+                            mediaItemBuilder.setUri(currentUrl.url)
                         } else {
-                            _mediaItem.setUri(Uri.fromFile(File(currentUrl.url)))
+                            mediaItemBuilder.setUri(Uri.fromFile(File(currentUrl.url)))
                         }
 
-                        val mediaItem = _mediaItem.build()
+                        val mediaItem = mediaItemBuilder.build()
                         val trackSelector = DefaultTrackSelector(requireContext())
                         // Disable subtitles
                         trackSelector.parameters = DefaultTrackSelector.ParametersBuilder(requireContext())
@@ -1239,12 +1249,12 @@ class PlayerFragment : Fragment() {
                             .clearSelectionOverrides()
                             .build()
 
-                        val _exoPlayer =
+                        val exoPlayerBuilder =
                             SimpleExoPlayer.Builder(this.requireContext())
                                 .setTrackSelector(trackSelector)
 
-                        _exoPlayer.setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
-                        exoPlayer = _exoPlayer.build().apply {
+                        exoPlayerBuilder.setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
+                        exoPlayer = exoPlayerBuilder.build().apply {
                             playWhenReady = isPlayerPlaying
                             seekTo(currentWindow, playbackPosition)
                             setMediaItem(mediaItem, false)
@@ -1254,8 +1264,8 @@ class PlayerFragment : Fragment() {
                         val alphaAnimation = AlphaAnimation(1f, 0f)
                         alphaAnimation.duration = 300
                         alphaAnimation.fillAfter = true
-                        loading_overlay.startAnimation(alphaAnimation)
-                        video_go_back_holder.visibility = GONE
+                        loading_overlay?.startAnimation(alphaAnimation)
+                        video_go_back_holder?.visibility = GONE
                         links_loaded_text?.text = ""
 
                         exoPlayer.setHandleAudioBecomingNoisy(true) // WHEN HEADPHONES ARE PLUGGED OUT https://github.com/google/ExoPlayer/issues/7288

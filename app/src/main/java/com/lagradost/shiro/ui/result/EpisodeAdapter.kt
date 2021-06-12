@@ -12,7 +12,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
-import androidx.core.view.*
+import androidx.core.view.marginBottom
+import androidx.core.view.marginLeft
+import androidx.core.view.marginTop
+import androidx.core.view.updateMarginsRelative
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.exoplayer2.ext.cast.CastPlayer
@@ -20,13 +23,11 @@ import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.gms.cast.MediaInfo
 import com.google.android.gms.cast.MediaMetadata
 import com.google.android.gms.cast.MediaQueueItem
-import com.google.android.gms.cast.MediaStatus.*
+import com.google.android.gms.cast.MediaStatus.REPEAT_MODE_REPEAT_SINGLE
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
 import com.google.android.gms.common.images.WebImage
-import com.lagradost.shiro.*
-import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
+import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.*
@@ -37,9 +38,9 @@ import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.isCastApiAvailable
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
 import kotlinx.android.synthetic.main.episode_result_compact.view.*
-import kotlinx.android.synthetic.main.episode_result_compact.view.cardBg
-import kotlinx.android.synthetic.main.episode_result_compact.view.cardTitle
 import kotlinx.android.synthetic.main.fragment_results.view.*
 import org.json.JSONObject
 import java.io.File
@@ -73,7 +74,7 @@ class EpisodeAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         //lastSelectedEpisode = 0
-        holder.itemView.setOnFocusChangeListener { focusedView, hasFocus ->
+        holder.itemView.setOnFocusChangeListener { _, _ ->
             //lastSelectedEpisode = position
             if (prevFocus != null) {
                 if (kotlin.math.abs(position - prevFocus!!) > 3 * 2) {
@@ -109,7 +110,7 @@ class EpisodeAdapter(
                 card.requestFocus()
             }
             if (position == 0 || position == 1) {
-                card.setOnFocusChangeListener { view: View, focused: Boolean ->
+                card.setOnFocusChangeListener { _: View, focused: Boolean ->
                     resView.isFocusable = focused
                 }
             }
@@ -206,7 +207,7 @@ class EpisodeAdapter(
                 if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
                     DataStore.removeKey(VIEWSTATE_KEY, key)
                 } else {
-                    DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
+                    DataStore.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
                 }
                 // Hack, but works
                 (activity.findViewById<RecyclerView>(R.id.episodes_res_view).adapter as MasterEpisodeAdapter).notifyItemChanged(
@@ -298,12 +299,12 @@ class EpisodeAdapter(
                                 builder.apply {
                                     setPositiveButton(
                                         "Delete"
-                                    ) { dialog, id ->
+                                    ) { _, _ ->
                                         deleteFile()
                                     }
                                     setNegativeButton(
                                         "Cancel"
-                                    ) { dialog, id ->
+                                    ) { _, _ ->
                                         // User cancelled the dialog
                                     }
                                 }

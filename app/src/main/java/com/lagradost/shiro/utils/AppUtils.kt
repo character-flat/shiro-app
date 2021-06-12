@@ -30,7 +30,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.cast.framework.CastContext
@@ -81,12 +80,12 @@ object AppUtils {
     private fun Activity.getStatusBarHeight(): Int {
         val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
         return if (resourceId > 0) {
-            resources.getDimensionPixelSize(resourceId);
+            resources.getDimensionPixelSize(resourceId)
         } else
             0
     }
 
-    fun toggleHeart(name: String, image: String, slug: String): Boolean {
+    private fun toggleHeart(name: String, image: String, slug: String): Boolean {
         /*Saving the new bookmark in the database*/
         val isBookmarked = DataStore.getKey<BookmarkedTitle>(BOOKMARK_KEY, slug, null) != null
         if (!isBookmarked) {
@@ -103,7 +102,7 @@ object AppUtils {
             DataStore.removeKey(BOOKMARK_KEY, slug)
         }
         thread {
-            homeViewModel.favorites.postValue(getFav())
+            homeViewModel!!.favorites.postValue(getFav())
         }
         return !isBookmarked
     }
@@ -259,6 +258,7 @@ object AppUtils {
         }
         (resView.adapter as CardAdapter).notifyDataSetChanged()
 
+        val layoutId = if (tvActivity != null) R.id.home_root_tv else R.id.homeRoot
         textView.setOnClickListener {
             this.supportFragmentManager.beginTransaction()
                 .setCustomAnimations(
@@ -268,7 +268,7 @@ object AppUtils {
                     R.anim.exit_to_right
                 )
                 .add(
-                    R.id.homeRoot,
+                    layoutId,
                     ExpandedHomeFragment.newInstance(
                         mapper.writeValueAsString(data),
                         textView.text.toString()
@@ -595,11 +595,8 @@ object AppUtils {
     }
 
     fun Context.hasPIPPermission(): Boolean {
-        val appOps = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        val appOps =
             getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        } else {
-            return false
-        }
         return appOps.checkOpNoThrow(
             AppOpsManager.OPSTR_PICTURE_IN_PICTURE,
             android.os.Process.myUid(),

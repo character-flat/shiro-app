@@ -1,7 +1,10 @@
 package com.lagradost.shiro.utils
 
 import android.annotation.SuppressLint
-import android.app.*
+import android.app.IntentService
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -13,22 +16,20 @@ import androidx.core.app.NotificationManagerCompat
 import com.bumptech.glide.Glide
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.shiro.R
-import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
-import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
-import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
+import java.io.*
+import java.net.URL
+import java.net.URLConnection
+import java.util.*
 import kotlin.concurrent.thread
 import kotlin.math.pow
 import kotlin.math.round
-import java.lang.Exception
-import java.net.URL
-import java.net.URLConnection
-import java.io.*
-import java.util.*
-import kotlin.collections.ArrayList
 
 const val UPDATE_TIME = 1000
 const val CHANNEL_ID = "shiro.general"
@@ -215,7 +216,7 @@ object DownloadManager {
         rex.replace(name, "")//Regex.Replace(name, @"[^A-Za-z0-9\.]+", String.Empty)
         name.replace(" ", "")
         if (toLower) {
-            name = name.toLowerCase(Locale.ROOT)
+            name = name.lowercase(Locale.ROOT)
         }
         return name
     }
@@ -516,7 +517,7 @@ object DownloadManager {
 
                                     info
                                 )
-                                child?.let { DownloadEventAndChild(DownloadEvent(id, bytesRead), it) }?.let {
+                                child.let { DownloadEventAndChild(DownloadEvent(id, bytesRead), it) }.let {
                                     downloadEvent.invoke(
                                         it
                                     )
@@ -553,7 +554,7 @@ object DownloadManager {
                     }
                 } else {
                     showNot(bytesRead, bytesTotal, 0, DownloadType.IsDone, info)
-                    child?.let { DownloadEventAndChild(DownloadEvent(id, bytesRead), it) }?.let {
+                    child.let { DownloadEventAndChild(DownloadEvent(id, bytesRead), it) }.let {
                         downloadEvent.invoke(
                             it
                         )
@@ -661,7 +662,7 @@ object DownloadManager {
             }
         }
         if (body.contains("\n") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            println("BIG TEXT: $body")
+            //println("BIG TEXT: $body")
             val b = NotificationCompat.BigTextStyle()
             b.bigText(body)
             builder.setStyle(b)

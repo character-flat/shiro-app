@@ -8,7 +8,7 @@ class SearchViewModel : ViewModel() {
     val searchOptions = MutableLiveData<ShiroApi.AllSearchMethodsData>().apply {
         ShiroApi.onSearchFetched += ::searchLoaded
     }
-    val selectedGenres = mutableListOf<ShiroApi.Genre>()
+    val selectedGenres = MutableLiveData<List<ShiroApi.Genre>>()
 
     private fun searchLoaded(data: ShiroApi.AllSearchMethodsData?) {
         searchOptions.postValue(data!!)

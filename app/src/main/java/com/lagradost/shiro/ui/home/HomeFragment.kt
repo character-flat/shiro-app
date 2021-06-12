@@ -1,35 +1,38 @@
 package com.lagradost.shiro.ui.home
 
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.transition.ChangeBounds
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.bumptech.glide.load.model.GlideUrl
-import com.lagradost.shiro.*
-import com.lagradost.shiro.utils.ShiroApi.Companion.cachedHome
-import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
-import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.utils.ShiroApi.Companion.getRandomAnimePage
-import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
-import com.lagradost.shiro.ui.*
-import com.lagradost.shiro.ui.player.PlayerEventType
+import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.GlideApp
+import com.lagradost.shiro.ui.MainActivity
+import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppUtils.displayCardData
+import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getNextEpisode
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.AppUtils.settingsManager
-import com.lagradost.shiro.utils.Event
 import com.lagradost.shiro.utils.ShiroApi
+import com.lagradost.shiro.utils.ShiroApi.Companion.cachedHome
+import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.utils.ShiroApi.Companion.getRandomAnimePage
+import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import kotlinx.android.synthetic.main.download_card.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlin.concurrent.thread
@@ -39,7 +42,7 @@ import kotlin.concurrent.thread
 
 class HomeFragment : Fragment() {
     companion object {
-        lateinit var homeViewModel: HomeViewModel
+        var homeViewModel: HomeViewModel? = null
     }
 
     override fun onCreateView(
@@ -47,8 +50,8 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
-        homeViewModel =
-            activity?.let { ViewModelProviders.of(it).get(HomeViewModel::class.java) }!!
+        homeViewModel = homeViewModel ?:
+            ViewModelProvider(getCurrentActivity()!!).get(HomeViewModel::class.java)
 
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
@@ -248,8 +251,8 @@ class HomeFragment : Fragment() {
     }
 
 
-    fun displayFav() {
-        val favorites = homeViewModel.favorites.value
+    private fun displayFav() {
+        val favorites = homeViewModel!!.favorites.value
         activity?.runOnUiThread {
             // RELOAD ON NEW FAV!
             if (favorites?.isNotEmpty() == true) {
@@ -267,8 +270,8 @@ class HomeFragment : Fragment() {
         }
     }
 
-    fun displaySubbed() {
-        val subscribed = homeViewModel.subscribed.value
+    private fun displaySubbed() {
+        val subscribed = homeViewModel!!.subscribed.value
         activity?.runOnUiThread {
             if (subscribed?.isNotEmpty() == true) {
                 subscribedRoot.visibility = VISIBLE
@@ -287,21 +290,13 @@ class HomeFragment : Fragment() {
 
 
     override fun onResume() {
-        observe(homeViewModel.subscribed) {
+        observe(homeViewModel!!.subscribed) {
             displaySubbed()
         }
-        observe(homeViewModel.favorites) {
+        observe(homeViewModel!!.favorites) {
             displayFav()
         }
 
-        homeViewModel.apiData.let {
-            it.observe(viewLifecycleOwner) { homePage ->
-                homeLoaded(homePage)
-            }
-            if (it.value != null && main_load.alpha == 1.0f) {
-                homeLoaded(it.value)
-            }
-        }
         super.onResume()
     }
 
@@ -317,7 +312,14 @@ class HomeFragment : Fragment() {
         if (ShiroApi.hasThrownError != -1) {
             onHomeErrorCatch(ShiroApi.hasThrownError == 1)
         }
-
+        homeViewModel!!.apiData.let {
+            it.observe(viewLifecycleOwner) { homePage ->
+                homeLoaded(homePage)
+            }
+            if (it.value != null && main_load.alpha == 1.0f) {
+                homeLoaded(it.value)
+            }
+        }
         // This gets overwritten when data is loaded
         home_swipe_refresh.setOnRefreshListener {
             home_swipe_refresh.isRefreshing = false
@@ -328,7 +330,7 @@ class HomeFragment : Fragment() {
                val fade = (FADE_SCROLL_DISTANCE - scrollY) / FADE_SCROLL_DISTANCE
                // COLOR ARGB INTRODUCED IN 26!
                val gray: Int = Color.argb(fade, 0f, fade, 0f)
-            //   main_backgroundImage.alpha = maxOf(0f, MAXIMUM_FADE * fade) // DONT DUE TO ALPHA FADING HINDERING FORGOUND GRADIENT
+            //   main_backgroundImage.alpha = maxOf(0f, MAXIMUM_FADE * fade) // DON'T DUE TO ALPHA FADING HINDERING FOREGROUND GRADIENT
         }*/
 
     }

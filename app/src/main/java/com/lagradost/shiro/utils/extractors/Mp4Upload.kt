@@ -1,6 +1,9 @@
 package com.lagradost.shiro.utils.extractors
 
-import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.ExtractorApi
+import com.lagradost.shiro.utils.ExtractorLink
+import com.lagradost.shiro.utils.Qualities
+import com.lagradost.shiro.utils.getAndUnpack
 
 class Mp4Upload : ExtractorApi() {
     override val name: String = "Mp4Upload"

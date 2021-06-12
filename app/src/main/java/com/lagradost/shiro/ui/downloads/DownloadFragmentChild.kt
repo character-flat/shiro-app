@@ -2,7 +2,6 @@ package com.lagradost.shiro.ui.downloads
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -14,26 +13,29 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.content.ContextCompat
-import com.lagradost.shiro.*
-import com.lagradost.shiro.ui.player.PlayerData
-import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
-import kotlinx.android.synthetic.main.fragment_download_child.*
-import java.io.File
-
+import androidx.fragment.app.Fragment
+import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
+import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
+import com.lagradost.shiro.ui.player.PlayerData
 import com.lagradost.shiro.ui.player.PlayerFragment
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
-import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.fixEpTitle
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isViewState
-import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getViewKey
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.DOWNLOAD_PARENT_KEY
+import com.lagradost.shiro.utils.DataStore
+import com.lagradost.shiro.utils.DownloadManager
+import com.lagradost.shiro.utils.VIEWSTATE_KEY
+import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
+import kotlinx.android.synthetic.main.fragment_download_child.*
+import java.io.File
 
 const val SLUG = "slug"
 
@@ -49,9 +51,9 @@ class DownloadFragmentChild : Fragment() {
             LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
             MainActivity.statusHeight // view height
         )
-        top_padding_download_child.layoutParams = topParams
+        top_padding_download_child?.layoutParams = topParams
         PlayerFragment.onPlayerNavigated += ::onPlayerLeft
-        download_go_back.setOnClickListener {
+        download_go_back?.setOnClickListener {
             activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         }
         loadData()
@@ -74,7 +76,7 @@ class DownloadFragmentChild : Fragment() {
 
         // When fastani is down it doesn't report any seasons and this is needed.
         val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(DOWNLOAD_PARENT_KEY, slug!!)
-        download_header_text.text = parent?.title
+        download_header_text?.text = parent?.title
         // Sorts by Seasons and Episode Index
 
         val sortedEpisodeKeys = getAllDownloadedEpisodes(slug!!)
@@ -88,7 +90,7 @@ class DownloadFragmentChild : Fragment() {
                     return@forEach
                 }
 
-                val card: View = layoutInflater.inflate(R.layout.episode_result_downloaded, null)
+                val card: View = layoutInflater.inflate(R.layout.episode_result_downloaded, view?.parent as? ViewGroup?, false)
                 /*if (child.thumbPath != null) {
                     card.imageView.setImageURI(Uri.parse(child.thumbPath))
                 }
@@ -144,12 +146,12 @@ class DownloadFragmentChild : Fragment() {
                         builder.apply {
                             setPositiveButton(
                                 "Delete"
-                            ) { dialog, id ->
+                            ) { _, _ ->
                                 deleteFile()
                             }
                             setNegativeButton(
                                 "Cancel"
-                            ) { dialog, id ->
+                            ) { _, _ ->
                                 // User cancelled the dialog
                             }
                         }

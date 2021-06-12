@@ -4,7 +4,6 @@ import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import kotlin.collections.ArrayList
 
 //https://stackoverflow.com/questions/34697828/parallel-operations-on-kotlin-collections
 fun <T, R> Iterable<T>.pmap(

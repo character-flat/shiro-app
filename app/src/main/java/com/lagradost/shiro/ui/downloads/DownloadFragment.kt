@@ -3,7 +3,6 @@ package com.lagradost.shiro.ui.downloads
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -11,8 +10,9 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.fragment.app.Fragment
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.lagradost.shiro.*
+import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.result.ResultFragment
@@ -20,7 +20,6 @@ import com.lagradost.shiro.utils.*
 import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.fragment_download.*
 import java.io.File
-import java.lang.Exception
 
 class DownloadFragment : Fragment() {
 
@@ -38,8 +37,7 @@ class DownloadFragment : Fragment() {
         )
         top_padding_download.layoutParams = topParams
 
-        println("TTLLLL::: ")
-        val inflator = requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val inflater = requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         childMetadataKeys.clear()
 
         val epData = hashMapOf<String, EpisodesDownloaded>()
@@ -66,7 +64,7 @@ class DownloadFragment : Fragment() {
                         }
 
                         val id = child.slug
-                        println("EPINDEX: " + child.episodeIndex)
+                        println("EpisodeIndex: " + child.episodeIndex)
                         val isDownloading =
                             DownloadManager.downloadStatus.containsKey(child.internalId) &&
                                     DownloadManager.downloadStatus[child.internalId] == DownloadManager.DownloadStatusType.IsDownloading
@@ -90,7 +88,7 @@ class DownloadFragment : Fragment() {
                 val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(k)
                 if (parent != null) {
                     if (epData.containsKey(parent.slug)) {
-                        val cardView = inflator.inflate(R.layout.download_card, null)
+                        val cardView = inflater.inflate(R.layout.download_card, view.parent as ViewGroup, false)
 
                         cardView.imageView.setOnClickListener {
                             activity?.supportFragmentManager?.beginTransaction()
@@ -138,7 +136,7 @@ class DownloadFragment : Fragment() {
                 }
             }
         } catch (e: Exception) {
-            println("ERROR LOADING DLOADS:::")
+            println("ERROR LOADING DOWNLOADS:::")
             e.printStackTrace()
         }
     }
@@ -210,7 +208,7 @@ class DownloadFragment : Fragment() {
             }
             DataStore.setKey(LEGACY_DOWNLOADS, false)
         } catch (e: Exception) {
-            println("ERRROR IN convertOldDownloads")
+            println("Error IN convertOldDownloads")
         }
 
     }

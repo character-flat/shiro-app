@@ -1,16 +1,13 @@
 package com.lagradost.shiro.ui.tv
 
-import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import androidx.core.graphics.drawable.DrawableCompat.applyTheme
-import androidx.lifecycle.ViewModelProviders
-import androidx.preference.PreferenceFragmentCompat
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.AutoTransition
 import androidx.transition.Transition
@@ -23,6 +20,7 @@ import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.onResultsNavigated
 import com.lagradost.shiro.ui.settings.SettingsFragment
+import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
@@ -52,7 +50,7 @@ class MainFragment : Fragment() {
     ): View? {
 
         homeViewModel =
-            activity?.let { ViewModelProviders.of(it).get(HomeViewModel::class.java) }!!
+            ViewModelProvider(getCurrentActivity()!!).get(HomeViewModel::class.java)
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_main_tv, container, false)
     }
@@ -65,7 +63,7 @@ class MainFragment : Fragment() {
             onHomeErrorCatch(ShiroApi.hasThrownError == 1)
         }
 
-        search_icon.setOnFocusChangeListener { v, hasFocus ->
+        search_icon.setOnFocusChangeListener { _, hasFocus ->
             val transition: Transition = AutoTransition()
             transition.duration = 2000 // DURATION OF ANIMATION IN MS
 
@@ -74,7 +72,7 @@ class MainFragment : Fragment() {
             search_icon.scaleX = scale
             search_icon.scaleY = scale
         }
-        settings_icon.setOnFocusChangeListener { v, hasFocus ->
+        settings_icon.setOnFocusChangeListener { _, hasFocus ->
             val transition: Transition = AutoTransition()
             transition.duration = 2000 // DURATION OF ANIMATION IN MS
 
@@ -100,7 +98,7 @@ class MainFragment : Fragment() {
                 ?.replace(R.id.home_root_tv, SettingsFragment())
                 ?.commit()
         }
-        homeViewModel.apiData.observe(viewLifecycleOwner) {
+        homeViewModel!!.apiData.observe(viewLifecycleOwner) {
             homeLoaded(it)
         }
     }
@@ -148,16 +146,16 @@ class MainFragment : Fragment() {
 
     override fun onResume() {
 
-        observe(homeViewModel.subscribed) {
+        observe(homeViewModel!!.subscribed) {
             (vertical_grid_view?.adapter as? MasterCardAdapter)?.notifyDataSetChanged()
         }
-        observe(homeViewModel.favorites) {
+        observe(homeViewModel!!.favorites) {
             (vertical_grid_view?.adapter as? MasterCardAdapter)?.notifyDataSetChanged()
         }
         requestHome()
         onResultsNavigated += ::restoreState
         onPlayerNavigated += ::restoreState
-        homeViewModel.apiData.observe(viewLifecycleOwner) {
+        homeViewModel!!.apiData.observe(viewLifecycleOwner) {
             homeLoaded(it)
         }
         super.onResume()

@@ -176,16 +176,17 @@
     </style>
 
     <style name="DarkMode" parent="AppTheme">
-        <item name="darkBar">@color/darkDarkBar</item>
-        <item name="darkBarLight">@color/darkDarkBarLight</item>
-        <item name="darkBarTransparent">@color/darkDarkBarTransparent</item>
-        <item name="backgroundLight">@color/darkBackgroundLight</item>
-        <item name="background">@color/darkBackground</item>
+        <item name="darkBar">@color/CdarkBar</item>
+        <item name="darkBarLight">@color/CdarkBarLight</item>
+        <item name="darkBarTransparent">@color/CdarkBarTransparent</item>
+        <item name="backgroundLight">@color/CbackgroundLight</item>
+        <item name="background">@color/Cbackground</item>
         <item name="white">@android:color/white</item>
         <item name="textColor">@color/textColor</item>
         <item name="textColorGray">@color/textColorGray</item>
         <item name="textColorGrayWhite">@color/textColorGrayWhite</item>
     </style>
+
 
     <style name="CustomCastExpandedController" parent="CastExpandedController">
         <item name="castControlButtons">

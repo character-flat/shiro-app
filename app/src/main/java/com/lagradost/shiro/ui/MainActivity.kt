@@ -25,11 +25,10 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.lagradost.shiro.BuildConfig
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.player.PlayerEventType
+import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
@@ -135,11 +134,17 @@ class MainActivity : AppCompatActivity() {
             try {
                 enterPictureInPictureMode(PictureInPictureParams.Builder().build())
             } catch (e: Exception) {
-                enterPictureInPictureMode()
+                try {
+                    enterPictureInPictureMode()
+                } catch (e: Exception) {
+                }
             }
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                enterPictureInPictureMode()
+                try {
+                    enterPictureInPictureMode()
+                } catch (e: Exception) {
+                }
             }
         }
     }
@@ -173,7 +178,7 @@ class MainActivity : AppCompatActivity() {
         override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
             if (mediaButtonEvent != null) {
 
-                val event = mediaButtonEvent.getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT) as KeyEvent
+                val event = mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT) as KeyEvent
                 println("EVENT: " + event.keyCode)
                 when (event.keyCode) {
                     KeyEvent.KEYCODE_MEDIA_PAUSE -> onPlayerEvent.invoke(PlayerEventType.Pause)
@@ -259,7 +264,7 @@ class MainActivity : AppCompatActivity() {
 
         val currentTheme = when (settingsManager.getString("theme", "Black")) {
             "Black" -> R.style.AppTheme
-            "Dark" -> R.style.DarkMode
+            "Dark" -> R.style.DarkMode0
             "Light" -> R.style.LightMode
             else -> R.style.AppTheme
         }
@@ -267,7 +272,7 @@ class MainActivity : AppCompatActivity() {
         theme.applyStyle(currentTheme, true)
         if (settingsManager.getBoolean("cool_mode", false)) {
             theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
-        } else if (BuildConfig.BETA && settingsManager.getBoolean("beta_theme", false)) {
+        } else if (settingsManager.getBoolean("beta_theme", false)) {
             theme.applyStyle(R.style.OverlayPrimaryColorGreen, true)
         } else if (settingsManager.getBoolean("purple_theme", false) && settingsManager.getBoolean(
                 "auto_update",
@@ -384,7 +389,6 @@ class MainActivity : AppCompatActivity() {
                         newItem.isChecked = true
 
                     }
-                    // TODO FIX
                     KeyEvent.KEYCODE_ENTER -> {
                         navController!!.navigate(navView.selectedItemId)
                     }

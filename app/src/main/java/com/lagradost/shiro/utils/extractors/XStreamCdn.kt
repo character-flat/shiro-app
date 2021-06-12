@@ -2,12 +2,10 @@ package com.lagradost.shiro.utils.extractors
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.lagradost.shiro.utils.AniListApi
 import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.ExtractorApi
 import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.Qualities
-import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 
 class XStreamCdn : ExtractorApi() {
     override val name: String = "XStreamCdn"

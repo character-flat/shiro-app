@@ -45,7 +45,7 @@
                     android:layout_height="200dp"
                     android:scaleX="0.5"
                     android:scaleY="0.5"
-                    android:src="@drawable/nexflix_play_btt"
+                    android:src="@drawable/netflix_play_btt"
                     android:contentDescription="@string/continue_watching_play_episode_button">
             </ImageView>
             <RelativeLayout

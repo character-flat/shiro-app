@@ -2,22 +2,22 @@ package com.lagradost.shiro.ui.home
 
 import android.content.res.Configuration
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.search.ResAdapter
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.ShiroApi
 import kotlinx.android.synthetic.main.fragment_expanded_home.*
 
 private const val CARD_LIST = "card_list"

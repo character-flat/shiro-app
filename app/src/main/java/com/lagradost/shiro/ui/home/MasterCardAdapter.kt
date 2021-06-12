@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
-import com.lagradost.shiro.*
+import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.LastEpisodeInfo
 import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
 import com.lagradost.shiro.utils.AppUtils.displayCardData
@@ -24,11 +24,11 @@ class MasterCardAdapter(
     private var filtered: List<Pair<List<Any?>?, String?>> = generateFiltered()
 
     private fun generateFiltered(): List<Pair<List<Any?>?, String?>> {
-        val data = homeViewModel.apiData.value
+        val data = homeViewModel!!.apiData.value
         return arrayOf(
             //Pair(data?.searchResults, "Search results"),
             Pair(data?.recentlySeen, activity?.getString(R.string.continue_watching)),
-            Pair(homeViewModel.favorites.value, activity?.getString(R.string.favorites)),
+            Pair(homeViewModel!!.favorites.value, activity?.getString(R.string.favorites)),
             Pair(data?.data?.trending_animes, activity?.getString(R.string.trending_anime)),
             Pair(data?.data?.latest_episodes?.map { it.anime }, activity?.getString(R.string.home_recently_updated)),
             Pair(data?.data?.ongoing_animes, activity?.getString(R.string.home_ongoing)),
@@ -52,7 +52,7 @@ class MasterCardAdapter(
                 holder.bind(filtered[position], position)
             }
         }
-        holder.itemView.setOnFocusChangeListener { v, hasFocus ->
+        holder.itemView.setOnFocusChangeListener { _, _ ->
             val menu = activity?.findViewById<LinearLayout>(R.id.tv_menu_bar)
             println("menu $menu")
             if (position == 0) {

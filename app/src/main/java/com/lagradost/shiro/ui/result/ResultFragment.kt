@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.provider.ContactsContract
 import android.text.Html
 import android.transition.ChangeBounds
 import android.transition.Transition
@@ -15,7 +14,8 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
-import android.widget.*
+import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.mediarouter.app.MediaRouteButton
@@ -27,17 +27,14 @@ import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
-import com.lagradost.shiro.*
-import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
-import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
+import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.GlideOptions.bitmapTransform
 import com.lagradost.shiro.ui.MainActivity
-import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
+import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
@@ -50,7 +47,9 @@ import com.lagradost.shiro.utils.AppUtils.isCastApiAvailable
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFav
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.getSubbed
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.fragment_results.*
@@ -329,7 +328,7 @@ class ResultFragment : Fragment() {
                                         msg = "Unsubscribing failed :("//getString(R.string.msg_subscribe_failed)
                                     }
                                     thread {
-                                        homeViewModel.subscribed.postValue(getSubbed())
+                                        homeViewModel!!.subscribed.postValue(getSubbed())
                                     }
                                     //Log.d(TAG, msg)
                                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
@@ -352,7 +351,7 @@ class ResultFragment : Fragment() {
                                         msg = "Subscription failed :("//getString(R.string.msg_subscribe_failed)
                                     }
                                     thread {
-                                        homeViewModel.subscribed.postValue(getSubbed())
+                                        homeViewModel!!.subscribed.postValue(getSubbed())
                                     }
                                     //Log.d(TAG, msg)
                                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
@@ -471,7 +470,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
             DataStore.removeKey(BOOKMARK_KEY, data.slug)
         }
         thread {
-            homeViewModel.favorites.postValue(getFav())
+            homeViewModel!!.favorites.postValue(getFav())
         }
     }
 
@@ -494,7 +493,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
     }
 
     private fun loadSeason() {
-        val save = settingsManager!!.getBoolean("save_history", true)
+        settingsManager!!.getBoolean("save_history", true)
         val data = if (isDefaultData) data else dataOther
         if (data?.episodes?.isNotEmpty() == true) {
             if (episodes_res_view?.adapter == null) {
@@ -502,7 +501,6 @@ private fun ToggleViewState(_isViewState: Boolean) {
                     MasterEpisodeAdapter(
                         it,
                         data,
-                        save,
                     )
                 }
                 episodes_res_view.adapter = adapter

@@ -7,19 +7,16 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.lagradost.shiro.ui.result.ResultFragment
-import com.lagradost.shiro.*
-import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
-import com.lagradost.shiro.ui.MainActivity.Companion.activity
+import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.AutofitRecyclerView
 import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.GlideApp
+import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
+import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppUtils.fixCardTitle
 import com.lagradost.shiro.utils.AppUtils.onLongCardClick
@@ -28,6 +25,7 @@ import com.lagradost.shiro.utils.BOOKMARK_KEY
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFav
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import kotlinx.android.synthetic.main.search_result.view.imageText
 import kotlinx.android.synthetic.main.search_result.view.imageView
 import kotlinx.android.synthetic.main.search_result_compact.view.*
@@ -111,7 +109,7 @@ class ResAdapter(
                         DataStore.removeKey(BOOKMARK_KEY, card.slug)
                     }
                     thread {
-                        homeViewModel.favorites.postValue(getFav())
+                        homeViewModel!!.favorites.postValue(getFav())
                     }
                 }
                 toggleHeartVisual(isBookmarked)

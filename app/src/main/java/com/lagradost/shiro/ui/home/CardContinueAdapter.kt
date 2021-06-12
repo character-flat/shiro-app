@@ -8,30 +8,27 @@ import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.ScaleAnimation
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.core.view.updateMargins
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.lagradost.shiro.ui.result.ResultFragment
-import com.lagradost.shiro.*
-import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
+import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.LastEpisodeInfo
+import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.onLongCardClick
 import com.lagradost.shiro.utils.DataStore
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import com.lagradost.shiro.utils.VIEW_LST_KEY
 import kotlinx.android.synthetic.main.home_card.view.home_card_root
 import kotlinx.android.synthetic.main.home_card.view.imageText
 import kotlinx.android.synthetic.main.home_card.view.imageView
 import kotlinx.android.synthetic.main.home_card_recently_seen.view.*
-import java.lang.Thread.sleep
-import kotlin.concurrent.thread
 
 
 class CardContinueAdapter(

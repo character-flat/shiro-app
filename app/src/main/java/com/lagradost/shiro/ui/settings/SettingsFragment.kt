@@ -1,6 +1,9 @@
 package com.lagradost.shiro.ui.settings
 
-import android.content.*
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.provider.Settings
@@ -10,31 +13,28 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.*
-
-import androidx.preference.PreferenceFragmentCompat
 import com.bumptech.glide.Glide
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
-import com.lagradost.shiro.*
-import com.lagradost.shiro.utils.DataStore.getKeys
-import com.lagradost.shiro.utils.DataStore.removeKeys
-import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
+import com.lagradost.shiro.BuildConfig
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ui.BookmarkedTitle
+import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
 import com.lagradost.shiro.ui.tv.TvActivity
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
 import com.lagradost.shiro.utils.AppUtils.allApi
-import com.lagradost.shiro.utils.MALApi.Companion.authenticateMAL
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.checkWrite
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.md5
 import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.DataStore.getKeys
+import com.lagradost.shiro.utils.DataStore.removeKeys
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
+import com.lagradost.shiro.utils.MALApi.Companion.authenticateMAL
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -139,7 +139,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         donatorId?.setOnPreferenceClickListener {
             val clipboard = context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip: ClipData = ClipData.newPlainText("ID", encodedString)
-            clipboard.setPrimaryClip(clip)
+            clipboard.primaryClip = clip
             Toast.makeText(
                 requireContext(),
                 "Copied donor ID, give this to the devs to enable donor mode (if you have donated)",
@@ -173,7 +173,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
 
         val betaThemeButton = findPreference("beta_theme") as SwitchPreference?
-        betaThemeButton?.isVisible = BuildConfig.BETA
+        betaThemeButton?.isVisible = BuildConfig.BETA || betaThemeButton?.isChecked == true
         betaThemeButton?.setOnPreferenceChangeListener { _, _ ->
             activity?.recreate()
             return@setOnPreferenceChangeListener true
@@ -248,7 +248,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                         }
                         setNegativeButton(
                             "Cancel"
-                        ) { dialog, id ->
+                        ) { _, id ->
                             // User cancelled the dialog
                         }
                     }
@@ -404,13 +404,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
             easterEggClicks++
             return@setOnPreferenceClickListener true
         }
-        coolMode?.setOnPreferenceChangeListener { preference, newValue ->
+        coolMode?.setOnPreferenceChangeListener { _, newValue ->
             activity?.recreate()
             return@setOnPreferenceChangeListener true
         }
 
         val forceLandscape = findPreference("force_landscape") as SwitchPreference?
-        forceLandscape?.setOnPreferenceChangeListener { preference, newValue ->
+        forceLandscape?.setOnPreferenceChangeListener { _, newValue ->
             if (newValue == true) {
                 activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
             } else {

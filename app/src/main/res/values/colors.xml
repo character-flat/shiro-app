@@ -37,11 +37,27 @@
     <color name="lightVideo_ripple">#80000000</color>
 
     <!-- Dark theme -->
-    <color name="darkDarkBar">#272727</color>
-    <color name="darkDarkBarLight">#424242</color>
-    <color name="darkDarkBarTransparent">#BF303030</color>
-    <color name="darkBackgroundLight">#323232</color>
-    <color name="darkBackground">#232323</color>
+    <color name="darkDarkBar">#222222</color>
+    <color name="darkDarkBarLight">#292929</color>
+    <color name="darkDarkBarTransparent">#BF272727</color>
+    <color name="darkBackgroundLight">#262626</color>
+    <color name="darkBackground">#1C1C1C</color>
 
+    <color name="CdarkBar">#1E1E1E</color>
+    <color name="CdarkBarLight">#252525</color>
+    <color name="CdarkBarTransparent">#BF232323</color>
+    <color name="CbackgroundLight">#222222</color>
+    <color name="Cbackground">#181818</color>
 
+    <color name="AdarkBar">#1A1A1A</color>
+    <color name="AdarkBarLight">#242424</color>
+    <color name="AdarkBarTransparent">#BF242424</color>
+    <color name="AbackgroundLight">#262626</color>
+    <color name="Abackground">#141414</color>
+
+    <color name="BdarkBar">#171717</color>
+    <color name="BdarkBarLight">#212121</color>
+    <color name="BdarkBarTransparent">#BF212121</color>
+    <color name="BbackgroundLight">#232323</color>
+    <color name="Bbackground">#111111</color>
 </resources>

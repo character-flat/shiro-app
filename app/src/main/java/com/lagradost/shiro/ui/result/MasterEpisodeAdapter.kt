@@ -19,8 +19,7 @@ import kotlinx.android.synthetic.main.episode_expander.view.*
 
 class MasterEpisodeAdapter(
     val activity: FragmentActivity,
-    var data: ShiroApi.AnimePageData,
-    private val save: Boolean
+    var data: ShiroApi.AnimePageData
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     val episodes = data.episodes!!
 

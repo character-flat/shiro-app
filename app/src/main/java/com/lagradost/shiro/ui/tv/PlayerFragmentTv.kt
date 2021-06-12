@@ -64,7 +64,6 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 import com.lagradost.shiro.utils.ShiroApi.Companion.loadLinks
 import java.io.File
 import java.security.SecureRandom
-import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
@@ -214,59 +213,6 @@ class PlayerFragmentTv : VideoSupportFragment() {
             else -> super.onActionClicked(action)
         }
 
-        /** Custom function used to update the metadata displayed for currently playing media */
-        fun setMetadata() {
-            // Displays basic metadata in the player
-            /*title = metadata.title
-            subtitle = metadata.author
-            lifecycleScope.launch(Dispatchers.IO) {
-                metadata.artUri?.let { art = Coil.get(it) }
-            }*/
-
-            // Prepares metadata playback
-
-        }
-    }
-
-    /** Updates last know playback position */
-    private val updateMetadataTask: Runnable = object : Runnable {
-        override fun run() {
-
-            // Make sure that the view has not been destroyed
-            view ?: return
-            /*
-            // The player duration is more reliable, since metadata.playbackDurationMillis has the
-            //  "official" duration as per Google / IMDb which may not match the actual media
-            val contentDuration = exoPlayer.duration
-            val contentPosition = exoPlayer.currentPosition
-
-            // Updates metadata state
-            val metadata = args.metadata.apply {
-                playbackPositionMillis = contentPosition
-            }*/
-
-            // Marks as complete if 95% or more of video is complete
-            /*if (exoPlayer.playbackState == SimpleExoPlayer.STATE_ENDED ||
-                (contentDuration > 0 && contentPosition > contentDuration * 0.95)
-            ) {
-                /*val programUri = TvLauncherUtils.removeFromWatchNext(requireContext(), metadata)
-                if (programUri != null) lifecycleScope.launch(Dispatchers.IO) {
-                    database.metadata().update(metadata.apply { watchNext = false })
-                }*/
-
-                // If playback is not done, update the state in watch next row with latest time
-            } else {
-                /*val programUri = TvLauncherUtils.upsertWatchNext(requireContext(), metadata)
-                lifecycleScope.launch(Dispatchers.IO) {
-                    database.metadata().update(
-                            metadata.apply { if (programUri != null) watchNext = true })
-                }*/
-            }*/
-
-            // Schedules the next metadata update in METADATA_UPDATE_INTERVAL_MILLIS milliseconds
-            Log.d(TAG, "Media metadata updated successfully")
-            view?.postDelayed(this, METADATA_UPDATE_INTERVAL_MILLIS)
-        }
     }
 
     private fun releasePlayer() {
@@ -290,10 +236,10 @@ class PlayerFragmentTv : VideoSupportFragment() {
         }
     }
 
-    private fun initPlayer(currentUrl: ExtractorLink? = null) {
+    private fun initPlayer(inputUrl: ExtractorLink? = null) {
         isCurrentlyPlaying = true
         thread {
-            val currentUrl = currentUrl ?: getCurrentUrl()
+            val currentUrl = inputUrl ?: getCurrentUrl()
             if (currentUrl == null) {
                 activity?.let {
                     it.runOnUiThread {
@@ -315,7 +261,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
             }*/
 
             val mimeType = if (currentUrl.isM3u8) MimeTypes.APPLICATION_M3U8 else MimeTypes.APPLICATION_MP4
-            val _mediaItem = MediaItem.Builder()
+            val mediaItemBuilder = MediaItem.Builder()
                 //Replace needed for android 6.0.0  https://github.com/google/ExoPlayer/issues/5983
                 .setMimeType(mimeType)
 
@@ -326,7 +272,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
                         /*FastAniApi.currentHeaders?.forEach {
                             dataSource.setRequestProperty(it.key, it.value)
                         }*/
-                        currentUrl?.referer?.let { dataSource.setRequestProperty("Referer", it) }
+                        currentUrl.referer.let { dataSource.setRequestProperty("Referer", it) }
                         dataSource
                     } else {
                         DefaultDataSourceFactory(requireContext(), USER_AGENT).createDataSource()
@@ -335,16 +281,16 @@ class PlayerFragmentTv : VideoSupportFragment() {
             }
 
             if (isOnline) {
-                _mediaItem.setUri(currentUrl?.url)
+                mediaItemBuilder.setUri(currentUrl.url)
             } else {
-                currentUrl?.let {
-                    _mediaItem.setUri(Uri.fromFile(File(it.url)))
+                currentUrl.let {
+                    mediaItemBuilder.setUri(Uri.fromFile(File(it.url)))
                 }
             }
 
 
-            val mediaItem = _mediaItem.build()
-            val _exoPlayer = if (context != null) {
+            val mediaItem = mediaItemBuilder.build()
+            val exoPlayerBuilder = if (context != null) {
                 val trackSelector = DefaultTrackSelector(requireContext())
                 // Disable subtitles
                 trackSelector.parameters = DefaultTrackSelector.ParametersBuilder(requireContext())
@@ -359,7 +305,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
                 SimpleExoPlayer.Builder(getCurrentActivity()!!)
             }
 
-            _exoPlayer.setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
+            exoPlayerBuilder.setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
 
             activity?.runOnUiThread {
                 if (data?.card?.episodes != null || (data?.slug != null && data?.episodeIndex != null)) {
@@ -374,7 +320,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
                             0L
                         }
                 }
-                exoPlayer = _exoPlayer.build().apply {
+                exoPlayer = exoPlayerBuilder.build().apply {
                     //playWhenReady = isPlayerPlaying
                     //seekTo(currentWindow, playbackPosition)
                     seekTo(0, playbackPosition)
@@ -386,7 +332,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
                         // Lets pray this doesn't spam Toasts :)
                         when (error.type) {
                             ExoPlaybackException.TYPE_SOURCE -> {
-                                if (currentUrl?.url != "") {
+                                if (currentUrl.url != "") {
                                     Toast.makeText(
                                         activity,
                                         "Source error\n" + error.sourceException.message,
@@ -688,9 +634,6 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
         /** How often the player refreshes its views in milliseconds */
         private const val PLAYER_UPDATE_INTERVAL_MILLIS: Int = 100
-
-        /** Time between metadata updates in milliseconds */
-        private val METADATA_UPDATE_INTERVAL_MILLIS: Long = TimeUnit.SECONDS.toMillis(10)
 
         /** Default time used when skipping playback in milliseconds */
         private val SKIP_PLAYBACK_MILLIS: Long = TimeUnit.SECONDS.toMillis(10)

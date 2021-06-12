@@ -42,7 +42,6 @@ class SelectSourceController(val view: ImageView) : UIController() {
                 }
             }
 
-            // TODO FIX
             if (items.isNotEmpty()) {
                 val builder = AlertDialog.Builder(view.context, R.style.AlertDialogCustom)
                 builder.setTitle("Pick source")

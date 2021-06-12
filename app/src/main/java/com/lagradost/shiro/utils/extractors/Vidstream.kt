@@ -1,14 +1,10 @@
 package com.lagradost.shiro.utils.extractors
 
-import com.lagradost.shiro.ui.MainActivity
-import com.lagradost.shiro.utils.ExtractorApi
-import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.APIS
-import com.lagradost.shiro.utils.AppUtils.allApi
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.pmap
 import org.jsoup.Jsoup
-import java.lang.Thread.sleep
 import kotlin.concurrent.thread
 
 class Vidstream(var providersActive: HashSet<String> = HashSet()) {
