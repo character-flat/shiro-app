@@ -162,6 +162,16 @@
         <item name="colorPrimarySecond">#00BFA5</item>
     </style>
 
+    <style name="OverlayPrimaryColorGreenApple">
+        <item name="colorPrimaryMegaDark">#0F2F1B</item>
+        <item name="colorPrimary">#48E484</item>
+        <item name="colorPrimaryDark">#319B5A</item>
+        <item name="colorPrimaryDarker">#267845</item>
+        <item name="colorAccent">#51C57E</item>
+        <item name="colorOnPrimary">#51C57E</item>
+        <item name="colorPrimarySecond">#48E484</item>
+    </style>
+
     <style name="LightMode" parent="AppTheme">
         <item name="darkBar">@color/lightDarkBar</item>
         <item name="darkBarLight">@color/lightDarkBarLight</item>

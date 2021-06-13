@@ -25,13 +25,14 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     app:itemRippleColor="?attr/colorPrimary"
+                    android:background="?attr/darkBar"
+
                     app:itemIconTint="@color/bnv_tab_item_foreground"
                     app:itemTextColor="@color/bnv_tab_item_foreground"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
                     android:focusable="true"
-                    android:background="?attr/darkBar"
                     app:menu="@menu/bottom_nav_menu"
             />
             <fragment

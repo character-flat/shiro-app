@@ -1,6 +1,8 @@
 package com.lagradost.shiro.ui.search
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.os.Bundle
@@ -11,21 +13,22 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
-import com.lagradost.shiro.ui.home.HomeViewModel
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
@@ -45,13 +48,14 @@ class SearchFragment : Fragment() {
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
         super.onViewCreated(view, savedInstanceState)
-        if (!isInResults && this.isVisible) {
+
+
+        /*if (!isInResults && this.isVisible) {
             activity?.window?.setSoftInputMode(
                 WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
             )
-        }
+        }*/
         val orientation = resources.configuration.orientation
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             cardSpace?.spanCount = spanCountLandscape
@@ -122,7 +126,8 @@ class SearchFragment : Fragment() {
                         } else {
                             val filteredData =
                                 if (hideDubbed) data.filter { !it.name.endsWith("Dubbed") } else data
-                            progress_bar?.visibility = View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
+                            progress_bar?.visibility =
+                                View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
                             (cardSpace?.adapter as ResAdapter?)?.cardList =
                                 filteredData as ArrayList<ShiroApi.CommonAnimePage>
                             (cardSpace?.adapter as ResAdapter?)?.notifyDataSetChanged()
@@ -145,7 +150,8 @@ class SearchFragment : Fragment() {
                         } else {
                             val filteredData =
                                 if (hideDubbed) data.filter { !it.name.endsWith("Dubbed") } else data
-                            progress_bar?.visibility = View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
+                            progress_bar?.visibility =
+                                View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
                             (cardSpace?.adapter as ResAdapter?)?.cardList =
                                 filteredData as ArrayList<ShiroApi.CommonAnimePage>
                             (cardSpace?.adapter as ResAdapter?)?.notifyDataSetChanged()
@@ -181,11 +187,21 @@ class SearchFragment : Fragment() {
                 return true
             }
         })
-        main_search.setOnQueryTextFocusChangeListener { _, b ->
+        main_search.setOnQueryTextFocusChangeListener { view, b ->
             val searchParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
                 LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
                 60.toPx // view height
             )
+
+            if (b) {
+                // https://stackoverflow.com/questions/12022715/unable-to-show-keyboard-automatically-in-the-searchview
+                view.postDelayed({
+                    run {
+                        val imm: InputMethodManager? = requireActivity().getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager?
+                        imm?.showSoftInput(view.findFocus(), 0)
+                    }
+                }, 200)
+            }
             val transition: Transition = ChangeBounds()
             transition.duration = 100 // DURATION OF ANIMATION IN MS
 
@@ -197,6 +213,7 @@ class SearchFragment : Fragment() {
             main_search.layoutParams = searchParams
         }
         main_search.onActionViewExpanded()
+        //main_search.findViewById<EditText>(R.id.search_src_text).requestFocus()
     }
 
     override fun onCreateView(
@@ -204,7 +221,8 @@ class SearchFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
-        searchViewModel = searchViewModel ?: ViewModelProvider(getCurrentActivity()!!).get(SearchViewModel::class.java)
+        searchViewModel =
+            searchViewModel ?: ViewModelProvider(getCurrentActivity()!!).get(SearchViewModel::class.java)
 
         if (searchViewModel!!.searchOptions.value == null) {
             thread {
@@ -222,7 +240,8 @@ class SearchFragment : Fragment() {
             if (!contains) {
                 if (changed) {
                     // Same as .add(tag)
-                    val newGenres = listOf(searchViewModel!!.selectedGenres.value ?: listOf(), listOf(tag)).flatten()
+                    val newGenres =
+                        listOf(searchViewModel!!.selectedGenres.value ?: listOf(), listOf(tag)).flatten()
                     searchViewModel!!.selectedGenres.postValue(newGenres)
                 }
                 view.backgroundTintList = ColorStateList.valueOf(

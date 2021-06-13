@@ -445,7 +445,7 @@ class EpisodeAdapter(
                 } else {
                     activity.let {
                         card.cardBg.setCardBackgroundColor(
-                            it.getColorFromAttr(R.attr.colorPrimaryDarker)
+                            it.getColorFromAttr(R.attr.colorPrimaryMegaDark)
                         )
                     }
                 }

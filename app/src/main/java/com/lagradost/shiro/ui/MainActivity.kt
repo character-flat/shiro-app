@@ -20,6 +20,7 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
@@ -96,6 +97,7 @@ class MainActivity : AppCompatActivity() {
         var onPlayerEvent = Event<PlayerEventType>()
         var onAudioFocusEvent = Event<Boolean>()
 
+        var lightMode = false
         var focusRequest: AudioFocusRequest? = null
     }
 
@@ -261,11 +263,16 @@ class MainActivity : AppCompatActivity() {
 
         // ----- Themes ----
         //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-
+        lightMode = false
         val currentTheme = when (settingsManager.getString("theme", "Black")) {
             "Black" -> R.style.AppTheme
-            "Dark" -> R.style.DarkMode0
-            "Light" -> R.style.LightMode
+            "Dark" -> {
+                R.style.DarkMode
+            }
+            "Light" -> {
+                lightMode = true
+                R.style.LightMode
+            }
             else -> R.style.AppTheme
         }
 
@@ -273,7 +280,7 @@ class MainActivity : AppCompatActivity() {
         if (settingsManager.getBoolean("cool_mode", false)) {
             theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
         } else if (settingsManager.getBoolean("beta_theme", false)) {
-            theme.applyStyle(R.style.OverlayPrimaryColorGreen, true)
+            theme.applyStyle(R.style.OverlayPrimaryColorGreenApple, true)
         } else if (settingsManager.getBoolean("purple_theme", false) && settingsManager.getBoolean(
                 "auto_update",
                 true
@@ -361,7 +368,24 @@ class MainActivity : AppCompatActivity() {
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
         navController = findNavController(R.id.nav_host_fragment)
         navView.setupWithNavController(navController!!)
-        navView.itemRippleColor = activity?.getColorFromAttr(R.attr.colorPrimary)?.let { ColorStateList.valueOf(it) }
+        val attrPrimary = if (lightMode) R.attr.colorPrimaryDarker else R.attr.colorPrimary
+        val states = arrayOf(
+            intArrayOf(android.R.attr.state_checked),
+            intArrayOf(-android.R.attr.state_checked),
+            intArrayOf(android.R.attr.state_enabled),
+            intArrayOf(-android.R.attr.state_enabled),
+        )
+        val colors = intArrayOf(
+            this.getColorFromAttr(attrPrimary),
+            this.getColorFromAttr(R.attr.textColor),
+            this.getColorFromAttr(attrPrimary),
+            this.getColorFromAttr(R.attr.textColor),
+        )
+
+        navView.itemRippleColor = ColorStateList.valueOf(this.getColorFromAttr(attrPrimary))
+        navView.itemIconTintList = ColorStateList(states, colors)
+        navView.itemTextColor = ColorStateList(states, colors)
+
 
         //navView.itemBackground = ColorDrawable(getColorFromAttr(R.attr.darkBar))
 

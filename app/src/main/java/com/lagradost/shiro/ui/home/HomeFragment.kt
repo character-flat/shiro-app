@@ -27,6 +27,7 @@ import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.PositionedCropTransformation
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.cachedHome
 import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
@@ -50,8 +51,7 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
-        homeViewModel = homeViewModel ?:
-            ViewModelProvider(getCurrentActivity()!!).get(HomeViewModel::class.java)
+        homeViewModel = homeViewModel ?: ViewModelProvider(getCurrentActivity()!!).get(HomeViewModel::class.java)
 
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
@@ -167,7 +167,8 @@ class HomeFragment : Fragment() {
                         context?.let {
                             GlideApp.with(it)
                                 .load(glideUrlMain)
-                                .into(main_poster)
+                                .transform( PositionedCropTransformation ( 1f, 0f))
+                            .into(main_poster)
                         }
 
                         main_name.text = randomData.name

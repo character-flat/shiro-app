@@ -11,7 +11,6 @@ import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
-import android.content.res.Resources
 import android.database.ContentObserver
 import android.graphics.Color
 import android.graphics.drawable.Icon
@@ -219,9 +218,19 @@ class PlayerFragment : Fragment() {
     )
     private var resizeMode = DataStore.getKey(RESIZE_MODE_KEY, 0)
 
-    // width as it's rotated
-    private var width = Resources.getSystem().displayMetrics.heightPixels
-    private var height = Resources.getSystem().displayMetrics.widthPixels
+    // Made getters because this can change if user is in a split view for example
+    private val width: Int
+        get() {
+            //Resources.getSystem().displayMetrics.heightPixels
+            return player_view.width
+        }
+
+    private val height: Int
+        get() {
+            //Resources.getSystem().displayMetrics.widthPixels
+            return player_view.height
+        }
+
     private var prevDiffX = 0.0
 
     // Prevent clicking next episode button multiple times

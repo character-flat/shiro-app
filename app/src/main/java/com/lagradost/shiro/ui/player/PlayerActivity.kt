@@ -88,7 +88,7 @@ class PlayerActivity : AppCompatActivity() {
         if (settingsManager.getBoolean("cool_mode", false)) {
             theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
         } else if (settingsManager.getBoolean("beta_theme", false)) {
-            theme.applyStyle(R.style.OverlayPrimaryColorGreen, true)
+            theme.applyStyle(R.style.OverlayPrimaryColorGreenApple, true)
         } else if (settingsManager.getBoolean("purple_theme", false) && settingsManager.getBoolean(
                 "auto_update",
                 true
