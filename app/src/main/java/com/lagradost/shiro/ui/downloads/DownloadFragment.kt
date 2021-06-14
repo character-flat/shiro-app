@@ -8,23 +8,19 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
-import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.fragment_download.*
 import java.io.File
-import java.lang.Thread.sleep
 
 class DownloadFragment : Fragment() {
     private val downloadFragmentTag = "DownloadFragment"
@@ -35,16 +31,10 @@ class DownloadFragment : Fragment() {
         @JsonProperty("countBytes") val countBytes: Long,
     )
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        val topParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
-            LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
-            MainActivity.statusHeight // view height
-        )
-        top_padding_download.layoutParams = topParams
-
-        val inflater = requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+    private fun updateItems(bool: Boolean = true) {
+        downloadRoot.removeAllViews()
         childMetadataKeys.clear()
+        val inflater = requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
         val epData = hashMapOf<String, EpisodesDownloaded>()
         try {
@@ -94,7 +84,7 @@ class DownloadFragment : Fragment() {
                 val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(k)
                 if (parent != null) {
                     if (epData.containsKey(parent.slug)) {
-                        val cardView = inflater.inflate(R.layout.download_card, view.parent as ViewGroup, false)
+                        val cardView = inflater.inflate(R.layout.download_card, view?.parent as? ViewGroup, false)
 
                         cardView.imageView.setOnClickListener {
                             activity?.loadPage(parent.slug)
@@ -144,12 +134,23 @@ class DownloadFragment : Fragment() {
         }
     }
 
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val topParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
+            LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
+            MainActivity.statusHeight // view height
+        )
+        top_padding_download.layoutParams = topParams
+        updateItems()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val path = activity?.filesDir.toString() + "/Download/"
+        /*val path = activity?.filesDir.toString() + "/Download/"
         File(path).walk().forEach {
             println("PATH: $it")
-        }
+        }*/
     }
 
     override fun onCreateView(
@@ -161,6 +162,7 @@ class DownloadFragment : Fragment() {
     }
 
     companion object {
+        val downloadsUpdated = Event<Boolean>()
         val childMetadataKeys = hashMapOf<String, MutableList<String>>()
         const val LEGACY_DOWNLOADS = "legacy_downloads"
     }
@@ -174,6 +176,15 @@ class DownloadFragment : Fragment() {
         return DataStore.getKeys(DOWNLOAD_CHILD_KEY)
     }
 
+    override fun onResume() {
+        downloadsUpdated += ::updateItems
+        super.onResume()
+    }
+
+    override fun onDestroy() {
+        downloadsUpdated -= ::updateItems
+        super.onDestroy()
+    }
 
     private fun convertOldDownloads() {
         try {

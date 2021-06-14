@@ -172,19 +172,38 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }*/
 
 
-        val betaThemeButton = findPreference("beta_theme") as SwitchPreference?
-        betaThemeButton?.isVisible = BuildConfig.BETA || betaThemeButton?.isChecked == true
-        betaThemeButton?.setOnPreferenceChangeListener { _, _ ->
+        val betaTheme = findPreference("beta_theme") as SwitchPreference?
+        val purpleTheme = findPreference("purple_theme") as SwitchPreference?
+        val coolMode = findPreference("cool_mode") as SwitchPreference?
+
+        betaTheme?.isVisible = BuildConfig.BETA || betaTheme?.isChecked == true
+        betaTheme?.setOnPreferenceChangeListener { _, newValue ->
+            /*if (newValue == true) {
+                coolMode?.isChecked = false
+                purpleTheme?.isChecked = false
+            }*/
             activity?.recreate()
             return@setOnPreferenceChangeListener true
         }
 
-        val purpleTheme = findPreference("purple_theme") as SwitchPreference?
         purpleTheme?.isVisible = settingsManager!!.getBoolean(
             "auto_update",
             true
         ) && settingsManager!!.getBoolean("beta_mode", true)
-        purpleTheme?.setOnPreferenceChangeListener { _, _ ->
+        purpleTheme?.setOnPreferenceChangeListener { _, newValue ->
+            /*if (newValue == true) {
+                coolMode?.isChecked = false
+                betaTheme?.isChecked = false
+            }*/
+            activity?.recreate()
+            return@setOnPreferenceChangeListener true
+        }
+
+        coolMode?.setOnPreferenceChangeListener { _, newValue ->
+            /*if (newValue == true) {
+                purpleTheme?.isChecked = false
+                betaTheme?.isChecked = false
+            }*/
             activity?.recreate()
             return@setOnPreferenceChangeListener true
         }
@@ -387,12 +406,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
         // EASTER EGG THEME
         val versionButton = findPreference("version") as Preference?
-        val coolMode = findPreference("cool_mode") as SwitchPreference?
         if (coolMode?.isChecked == true) {
             coolMode.isVisible = true
-        }
-        if (BuildConfig.BETA || settingsManager!!.getBoolean("purple_theme", false)) {
-            coolMode?.summary = "Overrides the other themes"
         }
 
         versionButton?.summary = BuildConfig.VERSION_NAME + " Built on " + BuildConfig.BUILDDATE
@@ -404,10 +419,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             easterEggClicks++
             return@setOnPreferenceClickListener true
         }
-        coolMode?.setOnPreferenceChangeListener { _, newValue ->
-            activity?.recreate()
-            return@setOnPreferenceChangeListener true
-        }
+
 
         val forceLandscape = findPreference("force_landscape") as SwitchPreference?
         forceLandscape?.setOnPreferenceChangeListener { _, newValue ->

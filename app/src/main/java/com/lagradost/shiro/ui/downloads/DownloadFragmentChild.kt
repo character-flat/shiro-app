@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
+import com.lagradost.shiro.ui.downloads.DownloadFragment.Companion.downloadsUpdated
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.player.PlayerData
 import com.lagradost.shiro.ui.player.PlayerFragment
@@ -138,6 +139,7 @@ class DownloadFragmentChild : Fragment() {
                             Toast.LENGTH_LONG
                         ).show()
                     }
+                    downloadsUpdated.invoke(true)
                 }
 
                 card.cardRemoveIcon.setOnClickListener {

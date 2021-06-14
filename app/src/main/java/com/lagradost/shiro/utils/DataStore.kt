@@ -19,6 +19,7 @@ const val PLAYBACK_SPEED_KEY: String = "playback_speed" // Last used playback sp
 const val RESIZE_MODE_KEY: String = "resize_mode" // Last used resize mode
 
 const val LEGACY_BOOKMARKS: String = "legacy_bookmarks" // for converting old bookmark system
+
 const val SUBSCRIPTIONS_KEY: String = "subscriptions"
 const val SUBSCRIPTIONS_BOOKMARK_KEY: String = "subscriptions_bookmarked"
 
@@ -32,6 +33,7 @@ const val MAL_REFRESH_TOKEN_KEY: String = "mal_refresh_token" // refresh token
 const val ANILIST_USER_KEY: String = "anilist_user" // user data like profile
 const val MAL_USER_KEY: String = "mal_user" // user data like profile
 
+const val HAS_DISMISSED_SEARCH_INFO: String = "HAS_DISMISSED_SEARCH_INFO" // For the search tutorial
 
 @SuppressLint("StaticFieldLeak")
 object DataStore {

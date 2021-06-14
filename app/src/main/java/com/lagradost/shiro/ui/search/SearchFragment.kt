@@ -17,6 +17,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
@@ -36,6 +37,8 @@ import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.DataStore
+import com.lagradost.shiro.utils.HAS_DISMISSED_SEARCH_INFO
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.getSearchMethods
 import kotlinx.android.synthetic.main.fragment_search.*
@@ -51,6 +54,20 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+
+        if (DataStore.getKey(HAS_DISMISSED_SEARCH_INFO, false) == false) {
+            val builder: AlertDialog.Builder =
+                AlertDialog.Builder(requireActivity(), R.style.AlertDialogCustom)
+            builder.setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+                DataStore.setKey(HAS_DISMISSED_SEARCH_INFO, true)
+            }
+            builder.setMessage("Press the return/search button on your keyboard to search for more than 5 titles.").setTitle("Search info")
+            val dialog = builder.create()
+            dialog.setCanceledOnTouchOutside(false)
+            dialog.setCancelable(false)
+            dialog.show()
+        }
 
         /*if (!isInResults && this.isVisible) {
             activity?.window?.setSoftInputMode(
