@@ -16,9 +16,9 @@ import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
-import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppUtils.fixCardTitle
+import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.onLongCardClick
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.BOOKMARK_KEY
@@ -118,17 +118,19 @@ class ResAdapter(
                 }
                 // ------------------------------------------------
                 itemView.backgroundCard.setOnClickListener {
-                    activity?.supportFragmentManager?.beginTransaction()
-                        ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                        ?.add(R.id.homeRoot, ResultFragment.newInstance(card.slug))
-                        ?.commitAllowingStateLoss()
+                    activity?.loadPage(card.slug)
+
                 }
                 cardView.setOnLongClickListener {
                     if (context.onLongCardClick(card)) toggleHeart(!isBookmarked)
                     return@setOnLongClickListener true
                 }
             } else {
+                itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).start()
                 cardView.setOnLongClickListener {
+                    itemView.scaleY = 0.9f
+                    itemView.scaleX = 0.9f
+                    itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).start()
                     context.onLongCardClick(card)
                     return@setOnLongClickListener true
                 }
@@ -142,10 +144,7 @@ class ResAdapter(
             }
             itemView.imageText.text = fixCardTitle(card.name)
             cardView.setOnClickListener {
-                activity?.supportFragmentManager?.beginTransaction()
-                    ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                    ?.add(R.id.homeRoot, ResultFragment.newInstance(card.slug))
-                    ?.commitAllowingStateLoss()
+                activity?.loadPage(card.slug)
 
 
                 /*MainActivity.loadPage(card)*/

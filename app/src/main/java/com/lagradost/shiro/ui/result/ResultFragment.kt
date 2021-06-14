@@ -80,13 +80,13 @@ import kotlin.concurrent.thread
 
 const val DESCRIPTION_LENGTH1 = 200
 const val SLUG = "slug"
+const val RESULT_FRAGMENT_TAG = "RESULT_FRAGMENT_TAG"
 
 class ResultFragment : Fragment() {
     private var data: ShiroApi.AnimePageData? = null
     private var slug: String? = null
     private var dataOther: ShiroApi.AnimePageData? = null
     private var isDefaultData = true
-
     private var isBookmarked = false
     private var isSubbed: Boolean? = null
 
@@ -147,7 +147,7 @@ class ResultFragment : Fragment() {
             val transition: Transition = ChangeBounds()
             transition.duration = 100
             language_button?.visibility = VISIBLE
-            results_root.findViewById<FrameLayout?>(R.id.language_button_holder)?.visibility = VISIBLE
+            results_root?.findViewById<FrameLayout?>(R.id.language_button_holder)?.visibility = VISIBLE
             results_root?.let {
                 TransitionManager.beginDelayedTransition(it, transition)
             }
@@ -227,13 +227,14 @@ class ResultFragment : Fragment() {
                 }
 
 
-                val textColor = Integer.toHexString(requireActivity().getColorFromAttr(R.attr.textColor))
-                val textColorGrey = Integer.toHexString(requireActivity().getColorFromAttr(R.attr.textColorGray))
+                val textColor = Integer.toHexString(requireActivity().getColorFromAttr(R.attr.textColor)).substring(2)
+                val textColorGrey =
+                    Integer.toHexString(requireActivity().getColorFromAttr(R.attr.textColorGray)).substring(2)
                 if (data.status != null) {
                     // fromHtml is depreciated, but works on android 6 as opposed to the new
                     title_status.text =
                         Html.fromHtml(
-                            "<font color=#${textColor}>Status:</font><font color=#${textColorGrey}> ${data.status}</font>"/*,
+                            "<font color=#${textColorGrey}>Status:</font><font color=#${textColor}> ${data.status}</font>"/*,
                             FROM_HTML_MODE_COMPACT*/
                         )
                 } else {
@@ -243,14 +244,14 @@ class ResultFragment : Fragment() {
                 toggleHeartVisual(isBookmarked)
                 title_episodes.text =
                     Html.fromHtml(
-                        "<font color=#${textColor}>Episodes:</font><font color=#${textColorGrey}> ${data.episodeCount}</font>"/*,
+                        "<font color=#${textColorGrey}>Episodes:</font><font color=#${textColor}> ${data.episodeCount}</font>"/*,
                         FROM_HTML_MODE_COMPACT*/
                     )
 
                 if (data.year != null) {
                     title_year.text =
                         Html.fromHtml(
-                            "<font color=#${textColor}>Year:</font><font color=#${textColorGrey}> ${data.year}</font>"/*,
+                            "<font color=#${textColorGrey}>Year:</font><font color=#${textColor}> ${data.year}</font>"/*,
                             FROM_HTML_MODE_COMPACT*/
                         )
                 } else {
@@ -260,7 +261,7 @@ class ResultFragment : Fragment() {
                 if (data.genres != null) {
                     title_genres.text =
                         Html.fromHtml(
-                            "<font color=#${textColor}>Genres:</font><font color=#${textColorGrey}> ${
+                            "<font color=#${textColorGrey}>Genres:</font><font color=#${textColor}> ${
                                 data.genres.joinToString(
                                     ", "
                                 )
@@ -274,7 +275,7 @@ class ResultFragment : Fragment() {
                 if (data.schedule != null && data.status != "finished") {
                     title_day_of_week.text =
                         Html.fromHtml(
-                            "<font color=#${textColor}>Schedule:</font><font color=#${textColorGrey}> ${
+                            "<font color=#${textColorGrey}>Schedule:</font><font color=#${textColor}> ${
                                 data.schedule
                             }</font>"/*,
                             FROM_HTML_MODE_COMPACT*/

@@ -11,6 +11,7 @@ import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.Color
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.net.Uri
@@ -43,11 +44,14 @@ import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.NextEpisode
 import com.lagradost.shiro.ui.home.CardAdapter
 import com.lagradost.shiro.ui.home.CardContinueAdapter
+import com.lagradost.shiro.ui.home.EXPANDED_HOME_FRAGMENT_TAG
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment
 import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
+import com.lagradost.shiro.ui.player.PLAYER_FRAGMENT_TAG
 import com.lagradost.shiro.ui.player.PlayerActivity.Companion.playerActivity
 import com.lagradost.shiro.ui.player.PlayerData
 import com.lagradost.shiro.ui.player.PlayerFragment
+import com.lagradost.shiro.ui.result.RESULT_FRAGMENT_TAG
 import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.ui.tv.PlayerFragmentTv
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
@@ -58,6 +62,7 @@ import java.net.URL
 import java.net.URLDecoder
 import java.security.MessageDigest
 import kotlin.concurrent.thread
+import kotlin.math.roundToInt
 
 
 object AppUtils {
@@ -116,6 +121,28 @@ object AppUtils {
         } else {
             Toast.makeText(this, card.name, Toast.LENGTH_SHORT).show()
             false
+        }
+    }
+
+    fun adjustAlpha(@ColorInt color: Int, factor: Float): Int {
+        val alpha = (Color.alpha(color) * factor).roundToInt()
+        val red = Color.red(color)
+        val green = Color.green(color)
+        val blue = Color.blue(color)
+        return Color.argb(alpha, red, green, blue)
+    }
+
+    fun FragmentActivity.addFragmentOnlyOnce(location: Int, fragment: Fragment, tag: String) {
+        // Make sure the current transaction finishes first
+
+        this.supportFragmentManager.executePendingTransactions()
+
+        // If there is no fragment yet with this tag...
+        if (this.supportFragmentManager.findFragmentByTag(tag) == null) {
+            this.supportFragmentManager.beginTransaction()
+                .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                .add(location, fragment, tag)
+                .commitAllowingStateLoss()
         }
     }
 
@@ -260,6 +287,7 @@ object AppUtils {
 
         val layoutId = if (tvActivity != null) R.id.home_root_tv else R.id.homeRoot
         textView.setOnClickListener {
+            if (this.supportFragmentManager.findFragmentByTag(EXPANDED_HOME_FRAGMENT_TAG) != null) return@setOnClickListener
             this.supportFragmentManager.beginTransaction()
                 .setCustomAnimations(
                     R.anim.enter_from_right,
@@ -272,7 +300,8 @@ object AppUtils {
                     ExpandedHomeFragment.newInstance(
                         mapper.writeValueAsString(data),
                         textView.text.toString()
-                    )
+                    ),
+                    EXPANDED_HOME_FRAGMENT_TAG
                 )
                 .commitAllowingStateLoss()
         }
@@ -554,22 +583,18 @@ object AppUtils {
             val instance =
                 if (tvActivity != null) PlayerFragmentTv.newInstance(data) else PlayerFragment.newInstance(data)
 
-            supportFragmentManager.beginTransaction()
-                .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                .add(
-                    android.R.id.content, instance
-                )
-                .commit()
+            this.addFragmentOnlyOnce(android.R.id.content, instance, PLAYER_FRAGMENT_TAG)
         }
 
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
     }
 
-    fun FragmentActivity.loadPage(card: ShiroApi.AnimePageData) {
-        supportFragmentManager.beginTransaction()
-            .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-            .add(R.id.homeRoot, ResultFragment.newInstance(card.slug))
-            .commitAllowingStateLoss()
+    fun FragmentActivity.loadPage(slug: String) {
+        this.addFragmentOnlyOnce(
+            R.id.homeRoot,
+            ResultFragment.newInstance(slug),
+            RESULT_FRAGMENT_TAG
+        )
         /*
         activity?.runOnUiThread {
             val _navController = Navigation.findNavController(activity!!, R.id.nav_host_fragment)

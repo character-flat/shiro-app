@@ -16,10 +16,7 @@ import android.graphics.Color
 import android.graphics.drawable.Icon
 import android.media.AudioManager
 import android.net.Uri
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.os.SystemClock
+import android.os.*
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -46,6 +43,7 @@ import com.google.android.exoplayer2.C.TIME_UNSET
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import com.google.android.exoplayer2.ui.TimeBar
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
@@ -93,6 +91,7 @@ const val STATE_PLAYER_PLAYING = "playerOnPlay"
 const val ACTION_MEDIA_CONTROL = "media_control"
 const val EXTRA_CONTROL_TYPE = "control_type"
 const val PLAYBACK_SPEED = "playback_speed"
+const val PLAYER_FRAGMENT_TAG = "PLAYER_FRAGMENT_TAG"
 
 // TITLE AND URL OR CARD MUST BE PROVIDED
 // EPISODE AND SEASON SHOULD START AT 0
@@ -206,7 +205,7 @@ class PlayerFragment : Fragment() {
     // Auto hide
     private var hideAtMs by Delegates.notNull<Long>()
     private val handler = Handler()
-    private val showTimeoutMs = 5000L
+    private val showTimeoutMs = 3000L
     private val hideAction = Runnable { hide() }
 
     //private val linkLoadedEvent = Event<ExtractorLink>()
@@ -788,6 +787,22 @@ class PlayerFragment : Fragment() {
 
             updateLock()
         }
+
+        exo_progress.addListener(object : TimeBar.OnScrubListener {
+            override fun onScrubStart(timeBar: TimeBar, position: Long) {
+                updateHideTime(true)
+            }
+
+            override fun onScrubMove(timeBar: TimeBar, position: Long) {
+                updateHideTime(true)
+            }
+
+            override fun onScrubStop(timeBar: TimeBar, position: Long, canceled: Boolean) {
+                updateHideTime()
+            }
+
+        })
+
         /*
         player_holder.setOnTouchListener(OnTouchListener { v, event -> // ignore all touch events
             !isShowing
@@ -1040,10 +1055,12 @@ class PlayerFragment : Fragment() {
         }
     }
 
-    private fun updateHideTime() {
+    private fun updateHideTime(neverHide: Boolean = false) {
         handler.removeCallbacks(hideAction)
         hideAtMs = SystemClock.uptimeMillis() + showTimeoutMs
-        handler.postDelayed(hideAction, showTimeoutMs)
+        if (!neverHide) {
+            handler.postDelayed(hideAction, showTimeoutMs)
+        }
     }
 
     private fun hideAfterTimeout() {

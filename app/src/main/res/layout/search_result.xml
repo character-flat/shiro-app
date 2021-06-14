@@ -6,6 +6,8 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
         android:background="@drawable/outline_background"
+        android:scaleY="0.9"
+        android:scaleX="0.9"
 
 >
     <androidx.cardview.widget.CardView

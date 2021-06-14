@@ -433,7 +433,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:visibility="gone"
-                        class="com.google.android.gms.cast.framework.media.widget.MiniControllerFragment"
+                        class="com.lagradost.shiro.ui.MyMiniControllerFragment"
                         tools:ignore="FragmentTagUsage"/>
             </LinearLayout>
         </LinearLayout>

@@ -16,6 +16,7 @@ import androidx.transition.ChangeBounds
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.MainActivity
@@ -167,8 +168,9 @@ class HomeFragment : Fragment() {
                         context?.let {
                             GlideApp.with(it)
                                 .load(glideUrlMain)
-                                .transform( PositionedCropTransformation ( 1f, 0f))
-                            .into(main_poster)
+                                .transform(PositionedCropTransformation(1f, 0f))
+                                .transition(DrawableTransitionOptions.withCrossFade(100))
+                                .into(main_poster)
                         }
 
                         main_name.text = randomData.name
@@ -203,7 +205,7 @@ class HomeFragment : Fragment() {
                             return@setOnLongClickListener true
                         }
                         main_info_button.setOnClickListener {
-                            activity?.loadPage(randomData)
+                            activity?.loadPage(randomData.slug)
                         }
                     } else {
                         main_poster_holder.visibility = GONE

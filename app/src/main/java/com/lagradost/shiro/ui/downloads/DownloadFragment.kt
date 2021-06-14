@@ -8,20 +8,26 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
+import com.lagradost.shiro.utils.AppUtils.loadPage
 import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.fragment_download.*
 import java.io.File
+import java.lang.Thread.sleep
 
 class DownloadFragment : Fragment() {
+    private val downloadFragmentTag = "DownloadFragment"
 
     data class EpisodesDownloaded(
         @JsonProperty("count") val count: Int,
@@ -91,10 +97,7 @@ class DownloadFragment : Fragment() {
                         val cardView = inflater.inflate(R.layout.download_card, view.parent as ViewGroup, false)
 
                         cardView.imageView.setOnClickListener {
-                            activity?.supportFragmentManager?.beginTransaction()
-                                ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                                ?.add(R.id.homeRoot, ResultFragment.newInstance(parent.slug))
-                                ?.commitAllowingStateLoss()
+                            activity?.loadPage(parent.slug)
                         }
 
                         cardView.cardTitle.text = parent.title
@@ -107,14 +110,14 @@ class DownloadFragment : Fragment() {
                                 "${childData.count} Episode${(if (childData.count == 1) "" else "s")} | $megaBytes MB"
 
                         cardView.cardBg.setOnClickListener {
-                            activity?.supportFragmentManager?.beginTransaction()
-                                ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                                ?.add(
-                                    R.id.homeRoot, DownloadFragmentChild.newInstance(
-                                        parent.slug
-                                    )
-                                )
-                                ?.commitAllowingStateLoss()
+                            activity?.addFragmentOnlyOnce(
+                                R.id.homeRoot,
+                                DownloadFragmentChild.newInstance(
+                                    parent.slug
+                                ),
+                                downloadFragmentTag
+                            )
+
                             /*MainActivity.activity?.supportFragmentManager?.beginTransaction()
                                 ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                                 ?.replace(

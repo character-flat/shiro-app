@@ -4,7 +4,7 @@
         - Made swipe to seek/change settings consistent (it would usually randomly activate on normal presses)\n
         - Made subscriptions and favorites not refresh the whole home layout\n
     </string>
-    <string name="app_name">Shiro Unofficial</string>
+    <string name="app_name">Shiro</string>
     <string name="title_home">Home</string>
     <string name="title_search">Search</string>
     <string name="title_settings">Settings</string>

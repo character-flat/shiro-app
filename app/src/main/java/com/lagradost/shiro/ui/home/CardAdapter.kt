@@ -15,9 +15,11 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.GlideApp
+import com.lagradost.shiro.ui.result.RESULT_FRAGMENT_TAG
 import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
+import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
 import com.lagradost.shiro.utils.AppUtils.fixCardTitle
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.onLongCardClick
@@ -109,18 +111,19 @@ class CardAdapter(
                 itemView.imageText.text = fixCardTitle(cardInfo.name)
 
                 itemView.home_card_root.setOnLongClickListener {
+                    itemView.scaleY = 0.9f
+                    itemView.scaleX = 0.9f
+                    itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).start()
                     context.onLongCardClick(cardInfo)
                     return@setOnLongClickListener true
                 }
                 itemView.home_card_root.setOnClickListener {
-                    println("SLUG ${cardInfo.slug}")
                     val home = if (tvActivity != null) R.id.home_root_tv else R.id.homeRoot
-                    /*val navController = findNavController(getCurrentActivity()!!, R.id.nav_host_fragment)
-                    navController.navigate(R.id.navigation_results, Bundle().apply { putString("slug", cardInfo.slug) })*/
-                    getCurrentActivity()?.supportFragmentManager?.beginTransaction()
-                        ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                        ?.add(home, ResultFragment.newInstance(cardInfo.slug))
-                        ?.commitAllowingStateLoss()
+                    getCurrentActivity()?.addFragmentOnlyOnce(
+                        home,
+                        ResultFragment.newInstance(cardInfo.slug),
+                        RESULT_FRAGMENT_TAG
+                    )
                 }
             }
         }

@@ -231,14 +231,10 @@
                     >
 
                         <TextView
+                                style="@style/HomeCategoriesText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:text="@string/continue_watching"
-                                android:gravity="center_horizontal"
-                                android:textStyle="bold"
-                                android:textColor="?attr/textColor"
-                                android:textSize="16sp"
-                                android:padding="10dp"
                         >
                         </TextView>
 
@@ -254,6 +250,7 @@
                                     android:orientation="horizontal"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    style="@style/HomeCategoriesResView"
                             >
                             </androidx.recyclerview.widget.RecyclerView>
                         </RelativeLayout>
@@ -268,14 +265,10 @@
                             tools:visibility="visible"
                     >
                         <TextView
+                                style="@style/HomeCategoriesText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:text="@string/subscriptions"
-                                android:gravity="center_horizontal"
-                                android:textStyle="bold"
-                                android:textColor="?attr/textColor"
-                                android:textSize="16sp"
-                                android:padding="10dp"
                                 android:id="@+id/subscribed_text"
                                 app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
                         >
@@ -291,7 +284,9 @@
                                     tools:listitem="@layout/home_card"
                                     android:orientation="horizontal"
                                     android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content">
+                                    android:layout_height="wrap_content"
+                                    style="@style/HomeCategoriesResView"
+                            >
                             </androidx.recyclerview.widget.RecyclerView>
                         </RelativeLayout>
                     </LinearLayout>
@@ -305,14 +300,10 @@
                             tools:visibility="visible"
                     >
                         <TextView
+                                style="@style/HomeCategoriesText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:text="@string/favorites"
-                                android:gravity="center_horizontal"
-                                android:textStyle="bold"
-                                android:textColor="?attr/textColor"
-                                android:textSize="16sp"
-                                android:padding="10dp"
                                 android:id="@+id/favorites_text"
                                 app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
                         >
@@ -328,7 +319,9 @@
                                     tools:listitem="@layout/home_card"
                                     android:orientation="horizontal"
                                     android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content">
+                                    android:layout_height="wrap_content"
+                                    style="@style/HomeCategoriesResView"
+                            >
                             </androidx.recyclerview.widget.RecyclerView>
                         </RelativeLayout>
                     </LinearLayout>
@@ -344,14 +337,10 @@
                                         android:padding="10dp"
                                 >-->
                     <TextView
+                            style="@style/HomeCategoriesText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/trending_anime"
-                            android:gravity="center_horizontal"
-                            android:textStyle="bold"
-                            android:textColor="?attr/textColor"
-                            android:textSize="16sp"
-                            android:padding="10dp"
                             android:id="@+id/trending_text"
                             app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
                     >
@@ -369,18 +358,17 @@
                                 tools:listitem="@layout/home_card"
                                 android:orientation="horizontal"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content">
+                                android:layout_height="wrap_content"
+                                style="@style/HomeCategoriesResView"
+                        >
                         </androidx.recyclerview.widget.RecyclerView>
                     </RelativeLayout>
                     <TextView
+                            style="@style/HomeCategoriesText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:textColor="?attr/textColor"
-                            android:gravity="center_horizontal"
                             android:text="@string/home_recently_updated"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:padding="10dp"
                             android:id="@+id/recently_updated_text"
                             app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
                     >
@@ -397,20 +385,18 @@
                                 tools:listitem="@layout/home_card"
                                 android:orientation="horizontal"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content">
+                                android:layout_height="wrap_content"
+                                style="@style/HomeCategoriesResView"
+                        >
                         </androidx.recyclerview.widget.RecyclerView>
                     </RelativeLayout>
 
 
                     <TextView
+                            style="@style/HomeCategoriesText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="?attr/textColor"
-                            android:gravity="center_horizontal"
                             android:text="@string/home_ongoing"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:padding="10dp"
                             android:id="@+id/ongoing_anime_text"
                             app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
                     >
@@ -427,19 +413,17 @@
                                 tools:listitem="@layout/home_card"
                                 android:orientation="horizontal"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content">
+                                android:layout_height="wrap_content"
+                                style="@style/HomeCategoriesResView"
+                        >
                         </androidx.recyclerview.widget.RecyclerView>
                     </RelativeLayout>
 
                     <TextView
+                            style="@style/HomeCategoriesText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="?attr/textColor"
-                            android:gravity="center_horizontal"
                             android:text="@string/latest_anime"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:padding="10dp"
                             android:id="@+id/latest_anime_text"
                             app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
                     >
@@ -456,44 +440,49 @@
                                 tools:listitem="@layout/home_card"
                                 android:orientation="horizontal"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content">
+                                android:layout_height="wrap_content"
+                                style="@style/HomeCategoriesResView"
+                        >
                         </androidx.recyclerview.widget.RecyclerView>
                     </RelativeLayout>
 
+                    <!--
+                                        <LinearLayout
+                                                android:orientation="vertical"
+                                                android:id="@+id/scheduleRoot"
+                                                android:visibility="gone"
+                                                android:layout_width="match_parent"
+                                                android:layout_height="wrap_content">
 
-                    <LinearLayout
-                            android:orientation="vertical"
-                            android:id="@+id/scheduleRoot"
-                            android:visibility="gone"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
+                                            <TextView
+                                                    android:layout_width="match_parent"
+                                                    android:layout_height="wrap_content"
+                                                    android:textColor="?attr/textColor"
+                                                    android:gravity="center_horizontal"
+                                                    android:text="@string/schedule"
+                                                    android:textSize="16sp"
+                                                    android:textStyle="bold"
+                                                    android:padding="10dp"
+                                            >
+                                            </TextView>
+                                            <RelativeLayout
+                                                    android:layout_width="wrap_content"
+                                                    android:layout_height="250dp"
+                                                    android:layout_marginBottom="20dp"
+                                            >
 
-                        <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:textColor="?attr/textColor"
-                                android:gravity="center_horizontal"
-                                android:text="@string/schedule"
-                                android:textSize="16sp"
-                                android:textStyle="bold"
-                                android:padding="10dp"
-                        >
-                        </TextView>
-                        <RelativeLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="250dp"
-                                android:layout_marginBottom="20dp"
-                        >
-
-                            <androidx.recyclerview.widget.RecyclerView
-                                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                                    android:id="@+id/scheduleScrollView"
-                                    android:orientation="horizontal"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content">
-                            </androidx.recyclerview.widget.RecyclerView>
-                        </RelativeLayout>
-                    </LinearLayout>
+                                                <androidx.recyclerview.widget.RecyclerView
+                                                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                                                        android:id="@+id/scheduleScrollView"
+                                                        android:orientation="horizontal"
+                                                        android:layout_width="wrap_content"
+                                                        android:layout_height="wrap_content"
+                                                        style="@style/HomeCategoriesResView"
+                                                >
+                                                </androidx.recyclerview.widget.RecyclerView>
+                                            </RelativeLayout>
+                                        </LinearLayout>
+                                        -->
 
 
                 </LinearLayout>

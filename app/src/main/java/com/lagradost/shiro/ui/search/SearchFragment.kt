@@ -29,6 +29,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
+import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
@@ -197,8 +198,11 @@ class SearchFragment : Fragment() {
                 // https://stackoverflow.com/questions/12022715/unable-to-show-keyboard-automatically-in-the-searchview
                 view.postDelayed({
                     run {
-                        val imm: InputMethodManager? = requireActivity().getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager?
-                        imm?.showSoftInput(view.findFocus(), 0)
+                        if (!isInResults && !isInPlayer) {
+                            val imm: InputMethodManager? =
+                                requireActivity().getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager?
+                            imm?.showSoftInput(view.findFocus(), 0)
+                        }
                     }
                 }, 200)
             }

@@ -24,6 +24,7 @@ private const val CARD_LIST = "card_list"
 private const val TITLE = "title"
 private const val spanCountLandscape = 6
 private const val spanCountPortrait = 3
+const val EXPANDED_HOME_FRAGMENT_TAG = "EXPANDED_HOME_FRAGMENT_TAG"
 
 class ExpandedHomeFragment : Fragment() {
     private var cardList: List<ShiroApi.CommonAnimePageData?>? = null

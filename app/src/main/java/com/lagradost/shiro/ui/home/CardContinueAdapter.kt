@@ -16,9 +16,12 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.LastEpisodeInfo
+import com.lagradost.shiro.ui.result.RESULT_FRAGMENT_TAG
 import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
+import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
+import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.onLongCardClick
 import com.lagradost.shiro.utils.DataStore
@@ -118,20 +121,17 @@ class CardContinueAdapter(
                 if (cardInfo.id != null && tvActivity == null) {
                     itemView.infoButton.visibility = VISIBLE
                     itemView.infoButton.setOnClickListener {
-                        activity.supportFragmentManager.beginTransaction()
-                            .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                            .add(R.id.homeRoot, ResultFragment.newInstance(cardInfo.id.slug))
-                            .commitAllowingStateLoss()
-
+                        activity.loadPage(cardInfo.id.slug)
                     }
                 } else if (cardInfo.id != null) {
                     // TV INFO BUTTON
                     itemView.infoButton.visibility = GONE
                     itemView.tv_button_info.setOnClickListener {
-                        activity.supportFragmentManager.beginTransaction()
-                            .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                            .add(R.id.home_root_tv, ResultFragment.newInstance(cardInfo.id.slug))
-                            .commitAllowingStateLoss()
+                        activity.addFragmentOnlyOnce(
+                            R.id.home_root_tv,
+                            ResultFragment.newInstance(cardInfo.id.slug),
+                            RESULT_FRAGMENT_TAG
+                        )
                     }
                 }
 
@@ -141,7 +141,12 @@ class CardContinueAdapter(
                         itemView.tv_button_info.requestFocus()
                         itemView.home_card_root.isFocusable = false
                     } else {
-                        cardInfo.id?.let { card -> activity.onLongCardClick(card) }
+                        cardInfo.id?.let { card ->
+                            itemView.scaleY = 0.9f
+                            itemView.scaleX = 0.9f
+                            itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).start()
+                            activity.onLongCardClick(card)
+                        }
                     }
                     return@setOnLongClickListener true
                 }
