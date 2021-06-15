@@ -1,8 +1,8 @@
 <resources>
     <string name="changelog">\n
-        - (hopefully) fixed the crash when loading episode links, please say if you still get those!\n
-        - Made swipe to seek/change settings consistent (it would usually randomly activate on normal presses)\n
-        - Made subscriptions and favorites not refresh the whole home layout\n
+        - Fixed downloads not working sometimes\n
+        - Made brightness slider use system brightness\n
+        - Fixed downloads scrolling the episode list\n
     </string>
     <string name="app_name">Shiro</string>
     <string name="title_home">Home</string>

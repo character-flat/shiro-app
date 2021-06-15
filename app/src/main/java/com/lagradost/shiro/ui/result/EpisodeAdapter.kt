@@ -99,7 +99,7 @@ class EpisodeAdapter(
     class CardViewHolder
     constructor(
         itemView: View, val activity: FragmentActivity, private val resView: View,
-        val data: ShiroApi.AnimePageData, val start: Int, val parentPosition: Int
+        val data: ShiroApi.AnimePageData, val start: Int, private val parentPosition: Int
     ) :
         RecyclerView.ViewHolder(itemView) {
         val card: LinearLayout = itemView.episode_result_root
@@ -169,6 +169,14 @@ class EpisodeAdapter(
                                         sources[0]
                                     )
                                 }
+                            } else {
+                                Toast.makeText(
+                                    activity,
+                                    "Download failed for episode ${episodePos + 1}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                card.cdi.visibility = VISIBLE
+                                card.cdi_loading.visibility = GONE
                             }
                         }
                     }

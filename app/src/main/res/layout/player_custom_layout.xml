@@ -580,12 +580,12 @@
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-    <View android:layout_width="match_parent"
+    <!--<View android:layout_width="match_parent"
           android:layout_height="match_parent"
           android:id="@+id/brightness_overlay"
           android:background="@android:color/black"
           android:alpha="0"
-    />
+    />-->
     <View android:layout_width="match_parent"
           android:layout_height="match_parent"
           android:id="@+id/click_overlay"
@@ -674,7 +674,7 @@
                     android:id="@+id/progressBarRight"
                     android:indeterminate="false"
                     style="@android:style/Widget.Material.ProgressBar.Horizontal"
-                    android:max="100"
+                    android:max="10000"
                     android:layout_marginEnd="40dp"
                     android:layout_gravity="end|center_vertical"
                     android:progress="100"

@@ -25,17 +25,16 @@ class Vidstream(var providersActive: HashSet<String> = HashSet()) {
     // https://gogo-stream.com/streaming.php?id=MTE3NDg5
     //   https://streamani.net/streaming.php?id=MTE3NDg5
     fun getUrl(id: String, isCasting: Boolean = false, callback: (ExtractorLink) -> Unit): Boolean {
+        println("GETTING URLS for $id")
         //val extractedLinksList: MutableList<ExtractorLink> = mutableListOf()
         val normalApis = arrayListOf(Shiro(), MultiQuality())
         try {
-            thread {
-                normalApis.pmap { api ->
-                    if (providersActive.size == 0 || providersActive.contains(api.name)) {
-                        val url = api.getExtractorUrl(id)
-                        val source = api.getUrl(url)
-                        source?.forEach {
-                            callback.invoke(it)
-                        }
+            normalApis.pmap { api ->
+                if (providersActive.size == 0 || providersActive.contains(api.name)) {
+                    val url = api.getExtractorUrl(id)
+                    val source = api.getUrl(url)
+                    source?.forEach {
+                        callback.invoke(it)
                     }
                 }
             }

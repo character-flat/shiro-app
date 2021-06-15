@@ -17,11 +17,14 @@ import android.graphics.drawable.Icon
 import android.media.AudioManager
 import android.net.Uri
 import android.os.*
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.*
 import android.view.ViewGroup
+import android.view.WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+import android.view.WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_OFF
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
@@ -416,6 +419,12 @@ class PlayerFragment : Fragment() {
             HttpsURLConnection.setDefaultSSLSocketFactory(defaultFactory)
         }
 
+        // restoring screen brightness
+        val lp = activity?.window?.attributes
+        lp?.screenBrightness = BRIGHTNESS_OVERRIDE_NONE
+        activity?.window?.attributes = lp
+
+
         super.onDestroy()
         //MainActivity.showSystemUI()
     }
@@ -678,14 +687,27 @@ class PlayerFragment : Fragment() {
                             }
                         } else if (progressBarRightHolder != null) {
                             progressBarRightHolder?.alpha = 1f
-                            val alpha = minOf(
-                                0.95f,
-                                brightness_overlay.alpha + diffY.toFloat() * 0.5f
-                            ) // 0.05f *if (diffY > 0) 1 else -1
-                            brightness_overlay?.alpha = alpha
+                            // https://developer.android.com/reference/android/view/WindowManager.LayoutParams#screenBrightness
+                            val lp = activity?.window?.attributes
+                            val currentBrightness = if (lp?.screenBrightness ?: -1.0f <= 0f) (Settings.System.getInt(
+                                context?.contentResolver,
+                                Settings.System.SCREEN_BRIGHTNESS
+                            ) * (1 / 255).toFloat())
+                            else lp?.screenBrightness!!
 
-                            progressBarRight?.max = 100 * 100
-                            progressBarRight?.progress = ((1f - alpha) * 100 * 100).toInt()
+                            val alpha = minOf(
+                                maxOf(
+                                    0.005f, // BRIGHTNESS_OVERRIDE_OFF doesn't seem to work
+                                    currentBrightness - diffY.toFloat() * 0.5f
+                                ), 1.0f
+                            )// 0.05f *if (diffY > 0) 1 else -1
+                            lp?.screenBrightness = alpha
+                            //println(alpha)
+                            activity?.window?.attributes = lp
+                            //brightness_overlay?.alpha = alpha
+
+                            //progressBarRight?.max = 100 * 100
+                            progressBarRight?.progress = (alpha * 100 * 100).toInt()
 
                             currentY = motionEvent.rawY
                         }

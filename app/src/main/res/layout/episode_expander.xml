@@ -64,6 +64,7 @@
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 android:visibility="gone"
                 tools:visibility="visible"
+                android:nestedScrollingEnabled="false"
                 android:clipToPadding="false"
                 android:descendantFocusability="afterDescendants"
                 android:layout_marginTop="10dp"
