@@ -46,7 +46,7 @@
 
     </LinearLayout>
 
-    <RelativeLayout
+    <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:id="@+id/timeMenu"
@@ -54,20 +54,42 @@
             app:layout_constraintTop_toBottomOf="@+id/topMenuRight"
             app:layout_constraintBottom_toTopOf="@+id/centerMenu"
     >
-        <TextView
+        <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/timeTextLeft"
-                android:gravity="center|start"
-                android:textSize="40sp"
-                android:alpha="0"
-                android:layout_marginStart="100dp"
-                android:shadowColor="@android:color/black"
-                android:shadowRadius="10.0"
-                android:textColor="@android:color/white"
-        >
+                android:layout_height="match_parent">
 
-        </TextView>
+            <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="match_parent"
+                    android:id="@+id/timeTextLeft"
+                    android:gravity="center|left"
+                    android:textSize="40sp"
+                    android:alpha="0"
+                    android:layout_marginLeft="80dp"
+                    android:layout_marginTop="80dp"
+                    android:shadowColor="@android:color/black"
+                    android:shadowRadius="10.0"
+                    android:textColor="@android:color/white"
+            >
+
+            </TextView>
+            <TextView
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:id="@+id/timeTextRight"
+                    android:gravity="center|right"
+                    android:layout_marginRight="80dp"
+                    android:layout_marginTop="80dp"
+                    android:textSize="40sp"
+                    android:shadowColor="@android:color/black"
+                    android:shadowRadius="10.0"
+                    android:textColor="@android:color/white"
+            >
+            </TextView>
+        </LinearLayout>
+
         <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -81,19 +103,7 @@
         >
 
         </TextView>
-        <TextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/timeTextRight"
-                android:gravity="center|end"
-                android:layout_marginEnd="100dp"
-                android:textSize="40sp"
-                android:shadowColor="@android:color/black"
-                android:shadowRadius="10.0"
-                android:textColor="@android:color/white"
-        >
-        </TextView>
-    </RelativeLayout>
+    </FrameLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -211,6 +221,7 @@
                         android:id="@+id/exo_rew_text"
                         android:textColor="@color/white"
                         android:text="@string/player_skip_button_text"
+                        android:layout_marginTop="1dp"
                         android:textSize="15sp"
                         android:layout_gravity="center"
                         android:textFontWeight="900"
@@ -272,6 +283,7 @@
                         android:textColor="@color/white"
                         android:text="@string/player_skip_button_text"
                         android:textSize="15sp"
+                        android:layout_marginTop="1dp"
                         android:layout_gravity="center"
                         android:textFontWeight="900"
                         android:gravity="center"
@@ -677,7 +689,7 @@
                     android:max="10000"
                     android:layout_marginEnd="40dp"
                     android:layout_gravity="end|center_vertical"
-                    android:progress="100"
+                    android:progress="10000"
                     android:progressDrawable="@drawable/progress_drawable_vertical"
             >
 

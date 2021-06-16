@@ -19,6 +19,7 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
+import com.lagradost.shiro.ui.downloads.DownloadFragment.Companion.downloadsUpdated
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
@@ -474,6 +475,7 @@ object DownloadManager {
                 )
 
                 downloadStartEvent.invoke(info.animeData.slug)
+                downloadsUpdated.invoke(true)
 
                 // =================== DOWNLOAD ===================
                 while (true) {

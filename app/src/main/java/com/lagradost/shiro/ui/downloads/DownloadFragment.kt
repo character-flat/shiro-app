@@ -32,105 +32,108 @@ class DownloadFragment : Fragment() {
     )
 
     private fun updateItems(bool: Boolean = true) {
-        downloadRoot.removeAllViews()
-        childMetadataKeys.clear()
-        val inflater = requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        activity?.runOnUiThread {
 
-        val epData = hashMapOf<String, EpisodesDownloaded>()
-        try {
-            val childKeys = getChildren()
-            downloadCenterText.text =
-                if (isDonor) getString(R.string.resultpage1) else getString(R.string.resultpage2)
-            downloadCenterRoot.visibility = if (childKeys.isEmpty()) VISIBLE else GONE
+            downloadRoot.removeAllViews()
+            childMetadataKeys.clear()
+            val inflater = requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
-            for (k in childKeys) {
-                val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(k)
-                if (child != null) {
-                    if (!File(child.videoPath).exists()) { // FILE DOESN'T EXIT
-                        val thumbFile = File(child.thumbPath)
-                        if (thumbFile.exists()) {
-                            thumbFile.delete()
-                        }
-                        DataStore.removeKey(k)
-                    } else {
-                        if (childMetadataKeys.containsKey(child.slug)) {
-                            childMetadataKeys[child.slug]?.add(k)
+            val epData = hashMapOf<String, EpisodesDownloaded>()
+            try {
+                val childKeys = getChildren()
+                downloadCenterText.text =
+                    if (isDonor) getString(R.string.resultpage1) else getString(R.string.resultpage2)
+                downloadCenterRoot.visibility = if (childKeys.isEmpty()) VISIBLE else GONE
+
+                for (k in childKeys) {
+                    val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(k)
+                    if (child != null) {
+                        if (!File(child.videoPath).exists()) { // FILE DOESN'T EXIT
+                            val thumbFile = File(child.thumbPath)
+                            if (thumbFile.exists()) {
+                                thumbFile.delete()
+                            }
+                            DataStore.removeKey(k)
                         } else {
-                            childMetadataKeys[child.slug] = mutableListOf(k)
-                        }
+                            if (childMetadataKeys.containsKey(child.slug)) {
+                                childMetadataKeys[child.slug]?.add(k)
+                            } else {
+                                childMetadataKeys[child.slug] = mutableListOf(k)
+                            }
 
-                        val id = child.slug
-                        println("EpisodeIndex: " + child.episodeIndex)
-                        val isDownloading =
-                            DownloadManager.downloadStatus.containsKey(child.internalId) &&
-                                    DownloadManager.downloadStatus[child.internalId] == DownloadManager.DownloadStatusType.IsDownloading
+                            val id = child.slug
+                            println("EpisodeIndex: " + child.episodeIndex)
+                            val isDownloading =
+                                DownloadManager.downloadStatus.containsKey(child.internalId) &&
+                                        DownloadManager.downloadStatus[child.internalId] == DownloadManager.DownloadStatusType.IsDownloading
 
-                        if (!epData.containsKey(id)) {
-                            epData[id] = EpisodesDownloaded(1, if (isDownloading) 1 else 0, child.maxFileSize)
-                        } else {
-                            val current = epData[id]!!
-                            epData[id] = EpisodesDownloaded(
-                                current.count + 1,
-                                current.countDownloading + (if (isDownloading) 1 else 0),
-                                current.countBytes + child.maxFileSize
-                            )
-                        }
-                    }
-                }
-            }
-
-            val keys = DataStore.getKeys(DOWNLOAD_PARENT_KEY)
-            for (k in keys) {
-                val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(k)
-                if (parent != null) {
-                    if (epData.containsKey(parent.slug)) {
-                        val cardView = inflater.inflate(R.layout.download_card, view?.parent as? ViewGroup, false)
-
-                        cardView.imageView.setOnClickListener {
-                            activity?.loadPage(parent.slug)
-                        }
-
-                        cardView.cardTitle.text = parent.title
-                        cardView.imageView.setImageURI(Uri.parse(parent.coverImagePath))
-
-                        val childData = epData[parent.slug]!!
-                        val megaBytes = DownloadManager.convertBytesToAny(childData.countBytes, 0, 2.0).toInt()
-                        cardView.cardInfo.text =
-                            if (parent.isMovie) "$megaBytes MB" else
-                                "${childData.count} Episode${(if (childData.count == 1) "" else "s")} | $megaBytes MB"
-
-                        cardView.cardBg.setOnClickListener {
-                            activity?.addFragmentOnlyOnce(
-                                R.id.homeRoot,
-                                DownloadFragmentChild.newInstance(
-                                    parent.slug
-                                ),
-                                downloadFragmentTag
-                            )
-
-                            /*MainActivity.activity?.supportFragmentManager?.beginTransaction()
-                                ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                                ?.replace(
-                                    R.id.homeRoot, DownloadFragmentChild(
-                                        parent.anilistId
-                                    )
+                            if (!epData.containsKey(id)) {
+                                epData[id] = EpisodesDownloaded(1, if (isDownloading) 1 else 0, child.maxFileSize)
+                            } else {
+                                val current = epData[id]!!
+                                epData[id] = EpisodesDownloaded(
+                                    current.count + 1,
+                                    current.countDownloading + (if (isDownloading) 1 else 0),
+                                    current.countBytes + child.maxFileSize
                                 )
-                                ?.commitAllowingStateLoss()*/
+                            }
                         }
-
-                        downloadRoot.addView(cardView)
-                    } else {
-                        val coverFile = File(parent.coverImagePath)
-                        if (coverFile.exists()) {
-                            coverFile.delete()
-                        }
-                        DataStore.removeKey(k)
                     }
                 }
+
+                val keys = DataStore.getKeys(DOWNLOAD_PARENT_KEY)
+                for (k in keys) {
+                    val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(k)
+                    if (parent != null) {
+                        if (epData.containsKey(parent.slug)) {
+                            val cardView = inflater.inflate(R.layout.download_card, view?.parent as? ViewGroup, false)
+
+                            cardView.imageView.setOnClickListener {
+                                activity?.loadPage(parent.slug)
+                            }
+
+                            cardView.cardTitle.text = parent.title
+                            cardView.imageView.setImageURI(Uri.parse(parent.coverImagePath))
+
+                            val childData = epData[parent.slug]!!
+                            val megaBytes = DownloadManager.convertBytesToAny(childData.countBytes, 0, 2.0).toInt()
+                            cardView.cardInfo.text =
+                                if (parent.isMovie) "$megaBytes MB" else
+                                    "${childData.count} Episode${(if (childData.count == 1) "" else "s")} | $megaBytes MB"
+
+                            cardView.cardBg.setOnClickListener {
+                                activity?.addFragmentOnlyOnce(
+                                    R.id.homeRoot,
+                                    DownloadFragmentChild.newInstance(
+                                        parent.slug
+                                    ),
+                                    downloadFragmentTag
+                                )
+
+                                /*MainActivity.activity?.supportFragmentManager?.beginTransaction()
+                                    ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                                    ?.replace(
+                                        R.id.homeRoot, DownloadFragmentChild(
+                                            parent.anilistId
+                                        )
+                                    )
+                                    ?.commitAllowingStateLoss()*/
+                            }
+
+                            downloadRoot.addView(cardView)
+                        } else {
+                            val coverFile = File(parent.coverImagePath)
+                            if (coverFile.exists()) {
+                                coverFile.delete()
+                            }
+                            DataStore.removeKey(k)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                println("ERROR LOADING DOWNLOADS:::")
+                e.printStackTrace()
             }
-        } catch (e: Exception) {
-            println("ERROR LOADING DOWNLOADS:::")
-            e.printStackTrace()
         }
     }
 

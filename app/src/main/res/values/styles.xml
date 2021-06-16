@@ -4,7 +4,7 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="android:fontFamily">@font/now_regular</item>
+        <item name="android:fontFamily">@font/poppins_regular</item>
         <!--<item name="android:windowTranslucentStatus">true</item>-->
         <item name="android:navigationBarColor">?attr/darkBar</item>
         <!--<item name="android:statusBarColor">@color/transparent</item>-->
@@ -52,6 +52,8 @@
         <item name="android:colorForeground">?attr/white</item>
         <item name="android:colorControlHighlight">?attr/white</item>
         <item name="alertDialogTheme">@style/AlertDialogCustom</item>
+        <item name="android:includeFontPadding">false</item>
+
 
         <item name="android:colorControlActivated">?attr/colorPrimarySecond</item>
         <item name="android:colorControlNormal">@color/lb_preference_item_primary_text_color_default</item>

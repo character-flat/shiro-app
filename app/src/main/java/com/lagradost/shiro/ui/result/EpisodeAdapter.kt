@@ -29,6 +29,7 @@ import com.google.android.gms.cast.framework.CastState
 import com.google.android.gms.common.images.WebImage
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
+import com.lagradost.shiro.ui.downloads.DownloadFragment.Companion.downloadsUpdated
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
@@ -299,6 +300,7 @@ class EpisodeAdapter(
                                 ).show()
                                 updateIcon(0, child)
                             }
+                            downloadsUpdated.invoke(true)
                         }
 
                         card.cardRemoveIcon.setOnClickListener {

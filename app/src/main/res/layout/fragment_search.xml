@@ -22,6 +22,7 @@
         <androidx.appcompat.widget.SearchView
                 android:animateLayoutChanges="true"
                 android:id="@+id/main_search"
+                android:gravity="top"
                 app:queryBackground="@android:color/transparent"
                 android:iconifiedByDefault="false"
                 android:background="?attr/darkBar"

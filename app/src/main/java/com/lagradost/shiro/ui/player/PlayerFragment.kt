@@ -449,6 +449,7 @@ class PlayerFragment : Fragment() {
         playback_speed_btt.isClickable = isClick
         skip_op.isClickable = isClick
         resize_player.isClickable = isClick
+        //isShowing = isClick
 
         // Clickable doesn't seem to work on com.google.android.exoplayer2.ui.DefaultTimeBar
         exo_progress.isEnabled = !isLocked
@@ -568,7 +569,7 @@ class PlayerFragment : Fragment() {
         fadeAnimation.duration = 100
         fadeAnimation.fillAfter = true
 
-        if (!isLocked) {
+        if (!isLocked || video_holder.alpha != 1.0f || shadow_overlay.alpha != 1.0f) {
             video_holder?.startAnimation(fadeAnimation)
             shadow_overlay?.startAnimation(fadeAnimation)
         }

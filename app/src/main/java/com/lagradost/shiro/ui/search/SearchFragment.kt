@@ -5,18 +5,18 @@ import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.res.ColorStateList
 import android.content.res.Configuration
+import android.media.Image
 import android.os.Bundle
 import android.transition.ChangeBounds
 import android.transition.Transition
 import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.appcompat.widget.SearchView
@@ -54,7 +54,6 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         if (DataStore.getKey(HAS_DISMISSED_SEARCH_INFO, false) == false) {
             val builder: AlertDialog.Builder =
                 AlertDialog.Builder(requireActivity(), R.style.AlertDialogCustom)
@@ -62,7 +61,8 @@ class SearchFragment : Fragment() {
                 dialog.dismiss()
                 DataStore.setKey(HAS_DISMISSED_SEARCH_INFO, true)
             }
-            builder.setMessage("Press the return/search button on your keyboard to search for more than 5 titles.").setTitle("Search info")
+            builder.setMessage("Press the return/search button on your keyboard to search for more than 5 titles.")
+                .setTitle("Search info")
             val dialog = builder.create()
             dialog.setCanceledOnTouchOutside(false)
             dialog.setCancelable(false)
@@ -219,6 +219,7 @@ class SearchFragment : Fragment() {
                             val imm: InputMethodManager? =
                                 requireActivity().getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager?
                             imm?.showSoftInput(view.findFocus(), 0)
+        activity?.findViewById<View>(R.id.search_mag_icon)?.visibility = GONE
                         }
                     }
                 }, 200)
@@ -234,6 +235,7 @@ class SearchFragment : Fragment() {
             main_search.layoutParams = searchParams
         }
         main_search.onActionViewExpanded()
+
         //main_search.findViewById<EditText>(R.id.search_src_text).requestFocus()
     }
 
