@@ -22,7 +22,7 @@
 
 # Proguard configuration for Jackson 2.x
 # Jackson
--keep public class com.lagradost.shiro.AniListApi.**
+-keep public class com.lagradost.shiro.utils.AniListApi.**
 -keep public enum com.lagradost.shiro.AniListApi$AniListStatusType** {
     **[] $VALUES;
     public *;
@@ -71,3 +71,6 @@
 -keepclassmembers class * {
      @com.fasterxml.jackson.annotation.* *;
 }
+
+-keep class com.lagradost.shiro.utils.CastOptionsProvider{ *; }
+-keep class androidx.mediarouter.app.MediaRouteActionProvider { *; }

@@ -34,6 +34,7 @@ import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.transition.Fade
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
@@ -52,6 +53,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.exoplayer2.util.Util
+import com.google.android.exoplayer2.video.VideoSize
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
@@ -186,6 +188,8 @@ class PlayerFragment : Fragment() {
     private var hasPassedVerticalSwipeThreshold = false
     private var cachedVolume = 0f
 
+    private var playerViewModel: PlayerViewModel? = null
+
     private var isCurrentlyPlaying: Boolean = false
     private var playbackSpeed = DataStore.getKey(PLAYBACK_SPEED_KEY, 1f)
 
@@ -197,7 +201,6 @@ class PlayerFragment : Fragment() {
     private val playerResizeEnabled = true//settingsManager!!.getBoolean("player_resize_enabled", false)
     private val doubleTapTime = settingsManager!!.getInt("dobule_tap_time", 10)
     private val fastForwardTime = settingsManager!!.getInt("fast_forward_button_time", 10)
-    private var selectedSource: ExtractorLink? = null
     private var sources: Pair<Int?, List<ExtractorLink>?> = Pair(null, null)
 
     // SSL
@@ -370,14 +373,16 @@ class PlayerFragment : Fragment() {
 
 
     private fun getCurrentUrl(): ExtractorLink? {
-
-        if (data?.url != null) return ExtractorLink("Local", data?.url!!, "", Qualities.Unknown.value)
-        val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
+        if (data?.url != null) return ExtractorLink("Downloaded", data?.url!!, "", Qualities.Unknown.value)
+        val index = maxOf(sources.second?.indexOf(playerViewModel?.selectedSource?.value) ?: -1, 0)
         return sources.second?.getOrNull(index)
     }
 
     private fun getCurrentTitle(): String {
-        if (data?.title != null) return data?.title!!
+        val postTitle = playerViewModel?.videoSize?.value?.let { videoSize ->
+            "\n${videoSize.width}x${videoSize.height}${getCurrentUrl()?.name?.let { " - $it" } ?: ""}"
+        } ?: ""
+        if (data?.title != null) return data?.title!! + postTitle
 
         val isMovie: Boolean = data?.card!!.episodes!!.size == 1 && data?.card?.status == "finished"
         // data?.card!!.cdndata?.seasons.size == 1 && data?.card!!.cdndata?.seasons[0].episodes.size == 1
@@ -385,10 +390,10 @@ class PlayerFragment : Fragment() {
         if (!isMovie) {
             preTitle = "Episode ${data?.episodeIndex!! + 1} · "
         }
-        // Replaces with "" if it's null
-        return preTitle + data?.card?.name
-    }
 
+        // Replaces with "" if it's null
+        return preTitle + data?.card?.name + postTitle
+    }
 
     private fun savePos() {
         if (this::exoPlayer.isInitialized) {
@@ -784,10 +789,18 @@ class PlayerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        playerViewModel!!.videoSize.observe(viewLifecycleOwner) {
+            println("OBNSERVER CHANGE!!!! $it")
+            video_title?.text = getCurrentTitle()
+        }
+
+        playerViewModel!!.selectedSource.observe(viewLifecycleOwner) {
+            playerViewModel?.videoSize?.postValue(null)
+        }
 
         activity?.contentResolver
             ?.registerContentObserver(
-                android.provider.Settings.System.CONTENT_URI, true, volumeObserver
+                Settings.System.CONTENT_URI, true, volumeObserver
             )
 
         MainActivity.onPlayerEvent += ::handlePlayerEvent
@@ -1043,11 +1056,11 @@ class PlayerFragment : Fragment() {
                 val sourcesText = it.map { link -> link.name }
                 val builder = AlertDialog.Builder(requireContext(), R.style.AlertDialogCustom)
                 builder.setTitle("Pick source")
-                val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
+                val index = maxOf(sources.second?.indexOf(playerViewModel?.selectedSource?.value) ?: -1, 0)
                 builder.setSingleChoiceItems(sourcesText.toTypedArray(), index) { _, which ->
                     //val speed = speedsText[which]
                     //Toast.makeText(requireContext(), "$speed selected.", Toast.LENGTH_SHORT).show()
-                    selectedSource = it[which]
+                    playerViewModel?.selectedSource?.postValue(it[which])
                     savePos()
                     releasePlayer()
                     loadAndPlay()
@@ -1123,6 +1136,7 @@ class PlayerFragment : Fragment() {
         alphaAnimation.fillAfter = true
         loading_overlay.startAnimation(alphaAnimation)
         video_go_back_holder.visibility = VISIBLE
+        playerViewModel?.videoSize?.postValue(null)
         isCurrentlyPlaying = false
         if (this::exoPlayer.isInitialized) {
             isPlayerPlaying = exoPlayer.playWhenReady
@@ -1216,7 +1230,7 @@ class PlayerFragment : Fragment() {
                         // removes sources button if downloaded file
                         quickstart_btt?.visibility = GONE
 
-                        if (currentUrl.name == "Local" && data != null) {
+                        if (currentUrl.name == "Downloaded" && data != null) {
                             data?.slug?.let { slug ->
                                 val episodes = getAllDownloadedEpisodes(slug).map { it.key }
 
@@ -1253,7 +1267,7 @@ class PlayerFragment : Fragment() {
                             next_episode_btt?.setOnClickListener {
                                 if (isLoadingNextEpisode) return@setOnClickListener
                                 updateHideTime()
-                                selectedSource = null
+                                playerViewModel?.selectedSource?.postValue(null)
                                 extractorLinks.clear()
                                 isLoadingNextEpisode = true
                                 savePos()
@@ -1332,6 +1346,12 @@ class PlayerFragment : Fragment() {
                                 if (playWhenReady && playbackState == Player.STATE_READY) {
                                     focusRequest?.let { activity?.requestAudioFocus(it) }
                                 }
+                            }
+
+                            override fun onVideoSizeChanged(videoSize: VideoSize) {
+                                playerViewModel?.videoSize?.postValue(videoSize)
+                                println("onVideoSizeChanged ${videoSize.height} ${videoSize.width}")
+                                super.onVideoSizeChanged(videoSize)
                             }
 
                             override fun onPlayerError(error: ExoPlaybackException) {
@@ -1437,6 +1457,7 @@ class PlayerFragment : Fragment() {
         } catch (e: Exception) {
             println("ERROR IN SSL")
         }*/
+        playerViewModel = ViewModelProvider(getCurrentActivity()!!).get(PlayerViewModel::class.java)
         return inflater.inflate(R.layout.player, container, false)
     }
 }

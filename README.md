@@ -1,4 +1,4 @@
-# Shiro app 
+# The official Shiro android app 
 
 **Site**: https://shiro.is/
 

@@ -3,6 +3,7 @@
        xmlns:app="http://schemas.android.com/apk/res-auto" >
      <item
              android:id="@+id/media_route_menu_item"
+             android:icon="@drawable/ic_baseline_cast_24"
              app:actionProviderClass="androidx.mediarouter.app.MediaRouteActionProvider"
              app:showAsAction="always"
              android:title=""/>
