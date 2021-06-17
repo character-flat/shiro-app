@@ -51,6 +51,19 @@ class TvActivity : AppCompatActivity() {
             //theme.applyStyle(R.style.AppTheme, true)
             theme.applyStyle(R.style.Theme_LeanbackCustom, true)
             theme.applyStyle(currentTheme, true)
+            if (settingsManager.getBoolean("cool_mode", false)) {
+                theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
+            } else if (settingsManager.getBoolean("beta_theme", false)) {
+                theme.applyStyle(R.style.OverlayPrimaryColorGreenApple, true)
+            } else if (settingsManager.getBoolean("purple_theme", false) && settingsManager.getBoolean(
+                    "auto_update",
+                    true
+                ) && settingsManager.getBoolean("beta_mode", true)
+            ) {
+                theme.applyStyle(R.style.OverlayPrimaryColorPurple, true)
+            }
+
+
             println("APPLY STYLE")
             // -----------------
         }
@@ -72,8 +85,8 @@ class TvActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         applyThemes()
+        super.onCreate(savedInstanceState)
         /*if (!isTv()) {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)

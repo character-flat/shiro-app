@@ -563,7 +563,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
             CastButtonFactory.setUpMediaRouteButton(activity, mMediaRouteButton)
             val castContext = CastContext.getSharedInstance(requireActivity().applicationContext)
 
-            if (castContext.castState != CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = VISIBLE
+            if (castContext.castState != CastState.NO_DEVICES_AVAILABLE) media_route_button?.visibility = VISIBLE
             castContext.addCastStateListener { state ->
                 if (media_route_button != null) {
                     if (state == CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = GONE else {

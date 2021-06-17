@@ -1,8 +1,7 @@
 <resources>
     <string name="changelog">\n
-        - Fixed downloads not working sometimes\n
-        - Made brightness slider use system brightness\n
-        - Fixed downloads scrolling the episode list\n
+        - Changed font\n
+        -
     </string>
     <string name="app_name">Shiro</string>
     <string name="title_home">Home</string>
