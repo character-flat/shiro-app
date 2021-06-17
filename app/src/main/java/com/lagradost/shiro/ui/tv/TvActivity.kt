@@ -73,6 +73,7 @@ class TvActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        applyThemes()
         /*if (!isTv()) {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
@@ -91,7 +92,6 @@ class TvActivity : AppCompatActivity() {
             runAutoUpdate(this)
         }
 
-        applyThemes()
         setContentView(R.layout.activity_tv)
     }
 

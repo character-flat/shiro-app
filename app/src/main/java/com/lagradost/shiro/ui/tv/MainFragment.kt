@@ -1,5 +1,6 @@
 package com.lagradost.shiro.ui.tv
 
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -20,6 +21,7 @@ import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.onResultsNavigated
 import com.lagradost.shiro.ui.settings.SettingsFragment
+import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.ShiroApi
@@ -57,7 +59,9 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        activity?.let {
+            it.window.setBackgroundDrawable(ColorDrawable(it.getColorFromAttr(R.attr.background)))
+        }
         ShiroApi.onHomeError += ::onHomeErrorCatch
         if (ShiroApi.hasThrownError != -1) {
             onHomeErrorCatch(ShiroApi.hasThrownError == 1)

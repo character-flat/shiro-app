@@ -89,6 +89,9 @@ class PlayerFragmentTv : VideoSupportFragment() {
     private lateinit var playerGlue: MediaPlayerGlue
     private lateinit var exoPlayer: SimpleExoPlayer
 
+    // To prevent watching everything while sleeping
+    private var episodesSinceInteraction = 0
+
     var data: PlayerData? = null
     private var isCurrentlyPlaying: Boolean = false
 
@@ -153,66 +156,73 @@ class PlayerFragmentTv : VideoSupportFragment() {
             //adapter.add(actionClosedCaptions)
         }
 
-        override fun onActionClicked(action: Action) = when (action) {
-            actionRewind -> skipBackward()
-            actionFastForward -> skipForward()
-            actionSkipOp -> skipForward(SKIP_OP_MILLIS)
-            actionNextEpisode -> {
-                if (data?.episodeIndex != null && !isLoadingNextEpisode) {
-                    savePos()
-                    playerGlue.host.hideControlsOverlay(false)
-                    isLoadingNextEpisode = true
-                    data?.episodeIndex = minOf(data?.episodeIndex!! + 1, data?.card?.episodes?.size!! - 1)
-                    selectedSource = null
-                    extractorLinks.clear()
-                    releasePlayer()
-                    loadAndPlay()
-                } else {
+        override fun onActionClicked(action: Action) {
+            episodesSinceInteraction = 0
+            when (action) {
+                actionRewind -> skipBackward()
+                actionFastForward -> skipForward()
+                actionSkipOp -> skipForward(SKIP_OP_MILLIS)
+                actionNextEpisode -> {
+                    if (data?.episodeIndex != null && !isLoadingNextEpisode) {
+                        playNextEpisode()
+                    } else {
+                    }
                 }
-            }
-            actionSources -> {
-                lateinit var dialog: AlertDialog
-                sources.second?.let {
-                    val sourcesText = it.map { link -> link.name }
-                    val builder = AlertDialog.Builder(requireContext(), R.style.AlertDialogCustom)
-                    builder.setTitle("Pick source")
-                    val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
-                    builder.setSingleChoiceItems(sourcesText.toTypedArray(), index) { _, which ->
+                actionSources -> {
+                    lateinit var dialog: AlertDialog
+                    sources.second?.let {
+                        val sourcesText = it.map { link -> link.name }
+                        val builder = AlertDialog.Builder(requireContext(), R.style.AlertDialogCustom)
+                        builder.setTitle("Pick source")
+                        val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
+                        builder.setSingleChoiceItems(sourcesText.toTypedArray(), index) { _, which ->
+                            //val speed = speedsText[which]
+                            //Toast.makeText(requireContext(), "$speed selected.", Toast.LENGTH_SHORT).show()
+                            selectedSource = it[which]
+                            savePos()
+                            releasePlayer()
+                            loadAndPlay()
+
+                            dialog.dismiss()
+                        }
+                        dialog = builder.create()
+                        dialog.show()
+                    }
+                    // Do not remove
+                    Unit
+
+                    /*sources.second?.let {
+                        val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
+                        selectedSource = it[(index + 1) % it.size]
                         //val speed = speedsText[which]
-                        //Toast.makeText(requireContext(), "$speed selected.", Toast.LENGTH_SHORT).show()
-                        selectedSource = it[which]
                         savePos()
                         releasePlayer()
                         loadAndPlay()
-
-                        dialog.dismiss()
                     }
-                    dialog = builder.create()
-                    dialog.show()
-                }
-                // Do not remove
-                Unit
+                    val sourcesTxt =
+                        sources.second!!.mapIndexed { index, extractorLink -> if (extractorLink == selectedSource) "✦ ${extractorLink.name} selected" else extractorLink.name }
+                    Toast.makeText(
+                        requireContext(),
+                        "${sourcesTxt.joinToString(separator = "\n")}",
+                        Toast.LENGTH_SHORT
+                    ).show()*/
 
-                /*sources.second?.let {
-                    val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
-                    selectedSource = it[(index + 1) % it.size]
-                    //val speed = speedsText[which]
-                    savePos()
-                    releasePlayer()
-                    loadAndPlay()
                 }
-                val sourcesTxt =
-                    sources.second!!.mapIndexed { index, extractorLink -> if (extractorLink == selectedSource) "✦ ${extractorLink.name} selected" else extractorLink.name }
-                Toast.makeText(
-                    requireContext(),
-                    "${sourcesTxt.joinToString(separator = "\n")}",
-                    Toast.LENGTH_SHORT
-                ).show()*/
-
+                else -> super.onActionClicked(action)
             }
-            else -> super.onActionClicked(action)
         }
 
+    }
+
+    private fun playNextEpisode() {
+        savePos()
+        playerGlue.host.hideControlsOverlay(false)
+        isLoadingNextEpisode = true
+        data?.episodeIndex = minOf(data?.episodeIndex!! + 1, data?.card?.episodes?.size!! - 1)
+        selectedSource = null
+        extractorLinks.clear()
+        releasePlayer()
+        loadAndPlay()
     }
 
     private fun releasePlayer() {
@@ -328,6 +338,15 @@ class PlayerFragmentTv : VideoSupportFragment() {
                     prepare()
                 }
                 exoPlayer.addListener(object : Player.Listener {
+                    override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+                        // episodesSinceInteraction is to prevent watching while sleeping
+                        println("HEHEHHEHEHEHEH")
+                        if (playbackState == Player.STATE_ENDED && episodesSinceInteraction <= 3 && data?.episodeIndex != null && !isLoadingNextEpisode) {
+                            playNextEpisode()
+                            episodesSinceInteraction++
+                        }
+                    }
+
                     override fun onPlayerError(error: ExoPlaybackException) {
                         // Lets pray this doesn't spam Toasts :)
                         when (error.type) {
@@ -417,6 +436,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
                 // Adds key listeners
                 playerGlue.host.setOnKeyInterceptListener { view, keyCode, event ->
+                    episodesSinceInteraction = 0
                     val playbackProgress = view.findViewById<SeekBar>(R.id.playback_progress)
                     playbackProgress.isFocusable = playerGlue.host.isControlsOverlayVisible
                     // Early exit: if the controls overlay is visible, don't intercept any keys

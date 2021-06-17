@@ -17,6 +17,8 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.KeyEvent
 import android.view.WindowManager
+import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
@@ -44,6 +46,7 @@ import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.AppUtils.shouldShowPIPMode
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.concurrent.thread
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
@@ -224,13 +227,45 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         activity = this
+        val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
+        // ----- Themes ----
+        //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        lightMode = false
+        val currentTheme = when (settingsManager.getString("theme", "Black")) {
+            "Black" -> R.style.AppTheme
+            "Dark" -> {
+                R.style.DarkMode
+            }
+            "Light" -> {
+                lightMode = true
+                R.style.LightMode
+            }
+            else -> R.style.AppTheme
+        }
+
+        theme.applyStyle(currentTheme, true)
+        if (settingsManager.getBoolean("cool_mode", false)) {
+            theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
+        } else if (settingsManager.getBoolean("beta_theme", false)) {
+            theme.applyStyle(R.style.OverlayPrimaryColorGreenApple, true)
+        } else if (settingsManager.getBoolean("purple_theme", false) && settingsManager.getBoolean(
+                "auto_update",
+                true
+            ) && settingsManager.getBoolean("beta_mode", true)
+        ) {
+            theme.applyStyle(R.style.OverlayPrimaryColorPurple, true)
+        }
+
+        // -----------------
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
         DataStore.init(this)
         DownloadManager.init(this)
         init()
 
         //@SuppressLint("HardwareIds")
         //val androidId: String = Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID).md5()
-        val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
         if (settingsManager.getBoolean("force_landscape", false)) {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
         } else {
@@ -261,34 +296,6 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        // ----- Themes ----
-        //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-        lightMode = false
-        val currentTheme = when (settingsManager.getString("theme", "Black")) {
-            "Black" -> R.style.AppTheme
-            "Dark" -> {
-                R.style.DarkMode
-            }
-            "Light" -> {
-                lightMode = true
-                R.style.LightMode
-            }
-            else -> R.style.AppTheme
-        }
-
-        theme.applyStyle(currentTheme, true)
-        if (settingsManager.getBoolean("cool_mode", false)) {
-            theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
-        } else if (settingsManager.getBoolean("beta_theme", false)) {
-            theme.applyStyle(R.style.OverlayPrimaryColorGreenApple, true)
-        } else if (settingsManager.getBoolean("purple_theme", false) && settingsManager.getBoolean(
-                "auto_update",
-                true
-            ) && settingsManager.getBoolean("beta_mode", true)
-        ) {
-            theme.applyStyle(R.style.OverlayPrimaryColorPurple, true)
-        }
-        // -----------------
 
         val statusBarHidden = settingsManager.getBoolean("statusbar_hidden", true)
         statusHeight = changeStatusBarState(statusBarHidden)
@@ -351,9 +358,6 @@ class MainActivity : AppCompatActivity() {
 
         mediaSession!!.isActive = true
 
-        super.onCreate(savedInstanceState)
-
-        setContentView(R.layout.activity_main)
 
         /*val layout = listOf(
             R.id.navigation_home, R.id.navigation_search, /*R.id.navigation_downloads,*/ R.id.navigation_settings
