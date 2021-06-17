@@ -25,14 +25,12 @@ import android.view.View.*
 import android.view.ViewGroup
 import android.view.WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
 import android.view.WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_OFF
-import android.view.animation.AccelerateInterpolator
-import android.view.animation.AlphaAnimation
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
+import android.view.animation.*
 import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.transition.Fade
@@ -81,9 +79,12 @@ import kotlinx.android.synthetic.main.player.*
 import kotlinx.android.synthetic.main.player_custom_layout.*
 import java.io.File
 import java.security.SecureRandom
+import java.util.*
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSession
+import kotlin.collections.ArrayList
+import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.thread
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -213,7 +214,8 @@ class PlayerFragment : Fragment() {
     private val handler = Handler()
     private val showTimeoutMs = 3000L
     private val hideAction = Runnable { hide() }
-
+    private val nextEpisodeAction = Runnable { playNextEpisode() }
+    private var timer: Timer? = null
     //private val linkLoadedEvent = Event<ExtractorLink>()
 
     private val resizeModes = listOf(
@@ -824,9 +826,14 @@ class PlayerFragment : Fragment() {
             updateLock()
         }
 
+        cancel_next.setOnClickListener {
+            cancelNextEpisode()
+        }
+
         exo_progress.addListener(object : TimeBar.OnScrubListener {
             override fun onScrubStart(timeBar: TimeBar, position: Long) {
                 updateHideTime(true)
+                cancelNextEpisode()
             }
 
             override fun onScrubMove(timeBar: TimeBar, position: Long) {
@@ -994,10 +1001,12 @@ class PlayerFragment : Fragment() {
         exo_play.setOnClickListener {
             exoPlayer.play()
             updateHideTime()
+            cancelNextEpisode()
         }
         exo_pause.setOnClickListener {
             exoPlayer.pause()
             updateHideTime()
+            cancelNextEpisode()
         }
         exo_ffwd.setOnClickListener {
             updateHideTime()
@@ -1115,6 +1124,48 @@ class PlayerFragment : Fragment() {
             handler.removeCallbacks(hideAction)
             hideAtMs = TIME_UNSET
         }
+    }
+
+    fun queueNextEpisode() {
+        activity?.let {
+            it.runOnUiThread {
+                val time = 5000L
+                next_episode_overlay.visibility = VISIBLE
+                next_episode_progressbar.progress = 0
+
+                val animation =
+                    ObjectAnimator.ofInt(next_episode_progressbar, "progress", next_episode_progressbar.progress, 100)
+                val animScale =
+                    Settings.Global.getFloat(it.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
+                animation.duration = (time / animScale).toLong()
+                animation.setAutoCancel(true)
+                animation.interpolator = LinearInterpolator()
+                animation.start()
+                handler.postDelayed(nextEpisodeAction, time)
+                var timeLeft = time
+                timer = fixedRateTimer("timer", false, 0L, 1000) {
+                    if (timeLeft < 0) this.cancel()
+                    it.runOnUiThread {
+                        next_episode_time_text?.text = "Next episode in ${(timeLeft / 1000).toInt()}..."
+                        timeLeft -= 1000L
+                    }
+                }
+            }
+        }
+    }
+
+    private fun playNextEpisode() {
+        // Hack
+        activity?.runOnUiThread {
+            next_episode_btt?.performClick()
+        }
+    }
+
+    private fun cancelNextEpisode() {
+        handler.removeCallbacks(nextEpisodeAction)
+        timer?.cancel()
+        next_episode_time_text?.text = ""
+        next_episode_overlay?.visibility = GONE
     }
 
     /*fun show() {
@@ -1238,6 +1289,7 @@ class PlayerFragment : Fragment() {
                                 if (!nextEpisode.isNullOrEmpty()) {
                                     next_episode_btt?.visibility = VISIBLE
                                     next_episode_btt?.setOnClickListener {
+                                        cancelNextEpisode()
                                         if (isLoadingNextEpisode) return@setOnClickListener
                                         updateHideTime()
                                         isLoadingNextEpisode = true
@@ -1265,6 +1317,7 @@ class PlayerFragment : Fragment() {
                         } else if (canPlayNextEpisode()) {
                             next_episode_btt?.visibility = VISIBLE
                             next_episode_btt?.setOnClickListener {
+                                cancelNextEpisode()
                                 if (isLoadingNextEpisode) return@setOnClickListener
                                 updateHideTime()
                                 playerViewModel?.selectedSource?.postValue(null)
@@ -1345,6 +1398,11 @@ class PlayerFragment : Fragment() {
                                 updatePIPModeActions()
                                 if (playWhenReady && playbackState == Player.STATE_READY) {
                                     focusRequest?.let { activity?.requestAudioFocus(it) }
+                                }
+                                if (playbackState == Player.STATE_ENDED && next_episode_btt?.visibility == VISIBLE) {
+                                    queueNextEpisode()
+                                } else {
+                                    cancelNextEpisode()
                                 }
                             }
 
