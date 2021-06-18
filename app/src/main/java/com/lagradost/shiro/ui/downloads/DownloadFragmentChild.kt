@@ -91,7 +91,8 @@ class DownloadFragmentChild : Fragment() {
                     return@forEach
                 }
 
-                val card: View = layoutInflater.inflate(R.layout.episode_result_downloaded, view?.parent as? ViewGroup?, false)
+                val card: View =
+                    layoutInflater.inflate(R.layout.episode_result_downloaded, view?.parent as? ViewGroup?, false)
                 /*if (child.thumbPath != null) {
                     card.imageView.setImageURI(Uri.parse(child.thumbPath))
                 }
@@ -124,9 +125,15 @@ class DownloadFragmentChild : Fragment() {
                 // ================ DOWNLOAD STUFF ================
                 fun deleteFile() {
                     if (file.exists()) {
-                        file.delete()
                         val dir = File(file.absoluteFile.parent)
-                        if (dir.listFiles().isEmpty()) {
+                        if (dir.listFiles() == null) {
+                            activity?.runOnUiThread {
+                                Toast.makeText(context, "Storage permission missing", Toast.LENGTH_LONG).show()
+                            }
+                            return
+                        }
+                        file.delete()
+                        if (dir.listFiles()?.isEmpty() == true) {
                             dir.delete()
                         }
                     }

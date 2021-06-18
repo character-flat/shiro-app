@@ -1,7 +1,9 @@
 <resources>
     <string name="changelog">\n
-        - Changed font\n
-        -
+        - Changed font to Poppins\n
+        - Added autoplay next episode\n
+        - Added video resolution in player\n
+        - More bugfixes\n
     </string>
     <string name="app_name">Shiro</string>
     <string name="title_home">Home</string>

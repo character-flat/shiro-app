@@ -32,7 +32,7 @@ import com.lagradost.shiro.utils.DownloadManager
 import java.io.*
 
 class PlayerActivity : AppCompatActivity() {
-    companion object{
+    companion object {
         var playerActivity: AppCompatActivity? = null
     }
 
@@ -125,11 +125,16 @@ class PlayerActivity : AppCompatActivity() {
         }
 
         val path = getUri(intent.data)!!.path
+        // Because it doesn't get the path when it's downloaded, I have no idea
+        val realPath =
+            if (intent?.data?.path?.contains("/${Environment.DIRECTORY_DOWNLOADS}/Shiro/") == true && path?.length == 0) intent?.data?.path!!.removePrefix(
+                "/file"
+            ) else path
         setContentView(R.layout.activity_player)
 
         val playerData = PlayerData(
-            path,
-            path,
+            realPath,
+            realPath,
             null,
             null,
             null,
@@ -185,11 +190,11 @@ class PlayerActivity : AppCompatActivity() {
                     if (it.moveToFirst()) Uri.fromFile(File(it.getString(columnIndex))) ?: data else data
                 }
                 //uri = MediaUtils.getContentMediaUri(data)
-            /*} else if (data.authority == ctx.getString(R.string.tv_provider_authority)) {
-                println("TV AUTHORITY")
-                //val medialibrary = Medialibrary.getInstance()
-                //val media = medialibrary.getMedia(data.lastPathSegment!!.toLong())
-                uri = null//media.uri*/
+                /*} else if (data.authority == ctx.getString(R.string.tv_provider_authority)) {
+                    println("TV AUTHORITY")
+                    //val medialibrary = Medialibrary.getInstance()
+                    //val media = medialibrary.getMedia(data.lastPathSegment!!.toLong())
+                    uri = null//media.uri*/
             } else {
                 val inputPFD: ParcelFileDescriptor?
                 try {

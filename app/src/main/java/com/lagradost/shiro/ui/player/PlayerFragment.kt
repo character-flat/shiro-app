@@ -204,6 +204,9 @@ class PlayerFragment : Fragment() {
     private val fastForwardTime = settingsManager!!.getInt("fast_forward_button_time", 10)
     private var sources: Pair<Int?, List<ExtractorLink>?> = Pair(null, null)
 
+    // To prevent watching everything while sleeping
+    private var episodesSinceInteraction = 0
+
     // SSL
     private val ignoreSSL = settingsManager?.getBoolean("ignore_ssl", false) == true
     private val defaultVerifier = HttpsURLConnection.getDefaultHostnameVerifier()
@@ -637,7 +640,6 @@ class PlayerFragment : Fragment() {
         }
 
         when (motionEvent.action) {
-
             MotionEvent.ACTION_DOWN -> {
                 recordCoordinates()
             }
@@ -757,6 +759,7 @@ class PlayerFragment : Fragment() {
                 currentX = 0f
                 currentY = 0f
                 val transition: Transition = Fade()
+                episodesSinceInteraction = 0
                 transition.duration = 1000
 
                 TransitionManager.beginDelayedTransition(player_holder, transition)
@@ -828,6 +831,11 @@ class PlayerFragment : Fragment() {
 
         cancel_next.setOnClickListener {
             cancelNextEpisode()
+        }
+
+        // Lazy hack
+        play_next.setOnClickListener {
+            next_episode_btt.performClick()
         }
 
         exo_progress.addListener(object : TimeBar.OnScrubListener {
@@ -1100,7 +1108,8 @@ class PlayerFragment : Fragment() {
         }
     }
 
-    private fun updateHideTime(neverHide: Boolean = false) {
+    private fun updateHideTime(neverHide: Boolean = false, interaction: Boolean = true) {
+        if (interaction) episodesSinceInteraction = 0
         handler.removeCallbacks(hideAction)
         hideAtMs = SystemClock.uptimeMillis() + showTimeoutMs
         if (!neverHide) {
@@ -1127,27 +1136,34 @@ class PlayerFragment : Fragment() {
     }
 
     fun queueNextEpisode() {
-        activity?.let {
-            it.runOnUiThread {
-                val time = 5000L
-                next_episode_overlay.visibility = VISIBLE
-                next_episode_progressbar.progress = 0
+        if (episodesSinceInteraction <= 3) {
+            activity?.let {
+                it.runOnUiThread {
+                    val time = 5000L
+                    next_episode_overlay.visibility = VISIBLE
+                    next_episode_progressbar.progress = 0
 
-                val animation =
-                    ObjectAnimator.ofInt(next_episode_progressbar, "progress", next_episode_progressbar.progress, 100)
-                val animScale =
-                    Settings.Global.getFloat(it.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
-                animation.duration = (time / animScale).toLong()
-                animation.setAutoCancel(true)
-                animation.interpolator = LinearInterpolator()
-                animation.start()
-                handler.postDelayed(nextEpisodeAction, time)
-                var timeLeft = time
-                timer = fixedRateTimer("timer", false, 0L, 1000) {
-                    if (timeLeft < 0) this.cancel()
-                    it.runOnUiThread {
-                        next_episode_time_text?.text = "Next episode in ${(timeLeft / 1000).toInt()}..."
-                        timeLeft -= 1000L
+                    val animation =
+                        ObjectAnimator.ofInt(
+                            next_episode_progressbar,
+                            "progress",
+                            next_episode_progressbar.progress,
+                            100
+                        )
+                    val animScale =
+                        Settings.Global.getFloat(it.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
+                    animation.duration = (time / animScale).toLong()
+                    animation.setAutoCancel(true)
+                    animation.interpolator = LinearInterpolator()
+                    animation.start()
+                    handler.postDelayed(nextEpisodeAction, time)
+                    var timeLeft = time
+                    timer = fixedRateTimer("timer", false, 0L, 1000) {
+                        if (timeLeft < 0) this.cancel()
+                        it.runOnUiThread {
+                            next_episode_time_text?.text = "Next episode in ${(timeLeft / 1000).toInt()}..."
+                            timeLeft -= 1000L
+                        }
                     }
                 }
             }
@@ -1156,6 +1172,7 @@ class PlayerFragment : Fragment() {
 
     private fun playNextEpisode() {
         // Hack
+        episodesSinceInteraction++
         activity?.runOnUiThread {
             next_episode_btt?.performClick()
         }
@@ -1291,7 +1308,7 @@ class PlayerFragment : Fragment() {
                                     next_episode_btt?.setOnClickListener {
                                         cancelNextEpisode()
                                         if (isLoadingNextEpisode) return@setOnClickListener
-                                        updateHideTime()
+                                        updateHideTime(interaction = false)
                                         isLoadingNextEpisode = true
                                         savePos()
                                         val key = getViewKey(
@@ -1319,7 +1336,7 @@ class PlayerFragment : Fragment() {
                             next_episode_btt?.setOnClickListener {
                                 cancelNextEpisode()
                                 if (isLoadingNextEpisode) return@setOnClickListener
-                                updateHideTime()
+                                updateHideTime(interaction = false)
                                 playerViewModel?.selectedSource?.postValue(null)
                                 extractorLinks.clear()
                                 isLoadingNextEpisode = true
