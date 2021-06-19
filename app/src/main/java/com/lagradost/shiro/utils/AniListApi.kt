@@ -12,7 +12,9 @@ import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.utils.AppUtils.openBrowser
 import com.lagradost.shiro.utils.AppUtils.splitQuery
 import com.lagradost.shiro.utils.AppUtils.unixTime
+import com.lagradost.shiro.utils.DataStore.toKotlinObject
 import java.net.URL
+import java.time.Year
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
@@ -123,30 +125,45 @@ class AniListApi {
             return name.lowercase().replace(" ", "").replace("[^a-zA-Z0-9]".toRegex(), "")
         }
 
-        fun getShow(name: String) {
-            val query = """
-            query (${"$"}id: Int, ${"$"}page: Int, ${"$"}search: String, ${"$"}type: MediaType) {
-                Page (page: ${"$"}page, perPage: 10) {
-                    media (id: ${"$"}id, search: ${"$"}search, type: ${"$"}type) {
-                        id
-                        idMal
-                        title {
-                            romaji
+        private fun searchShows(name: String): GetSearchRoot? {
+            try {
+                val query = """
+                query (${"$"}id: Int, ${"$"}page: Int, ${"$"}search: String, ${"$"}type: MediaType) {
+                    Page (page: ${"$"}page, perPage: 10) {
+                        media (id: ${"$"}id, search: ${"$"}search, type: ${"$"}type) {
+                            id
+                            idMal
+                            seasonYear
+                            title {
+                                romaji
+                            }
+                          }
                         }
-                      }
                     }
-                }
-            """
-            val data = mapOf("query" to query, "variables" to mapOf("search" to name, "page" to 1, "type" to "ANIME"))
+                """
+                val data =
+                    mapOf("query" to query, "variables" to mapOf("search" to name, "page" to 1, "type" to "ANIME"))
 
-            println(data)
-            val res = khttp.post(
-                "https://graphql.anilist.co/",
-                //headers = mapOf(),
-                data = data,//(if (vars == null) mapOf("query" to q) else mapOf("query" to q, "variables" to vars))
-                timeout = 5.0 // REASONABLE TIMEOUT
-            ).text.replace("\\", "")
-            println(res)
+                val res = khttp.post(
+                    "https://graphql.anilist.co/",
+                    //headers = mapOf(),
+                    json = data,//(if (vars == null) mapOf("query" to q) else mapOf("query" to q, "variables" to vars))
+                    timeout = 5.0 // REASONABLE TIMEOUT
+                ).text.replace("\\", "")
+                return res.toKotlinObject()
+            } catch (e: Exception) {
+            }
+            return null
+        }
+
+        fun getShowId(name: String, year: Int?): Int? {
+            val shows = searchShows(name.replace("Dubbed", "").replace("Subbed", ""))
+            val filtered = shows?.data?.Page?.media?.filter { (it.seasonYear == year || year == null) }
+
+            filtered?.forEach {
+                if (fixName(it.title.romaji) == fixName(name)) return it.id
+            }
+            return filtered?.firstOrNull()?.id
         }
 
         private fun Activity.postApi(url: String, q: String): String {
@@ -520,10 +537,33 @@ class AniListApi {
     )
 
     data class GetDataData(
-        @JsonProperty("Media") val media: GetDataMedia,
+        @JsonProperty("media") val media: GetDataMedia,
     )
 
     data class GetDataRoot(
         @JsonProperty("data") val data: GetDataData,
+    )
+
+    data class GetSearchTitle(
+        @JsonProperty("romaji") val romaji: String,
+    )
+
+    data class GetSearchMedia(
+        @JsonProperty("id") val id: Int,
+        @JsonProperty("idMal") val idMal: Int?,
+        @JsonProperty("seasonYear") val seasonYear: Int,
+        @JsonProperty("title") val title: GetSearchTitle,
+    )
+
+    data class GetSearchPage(
+        @JsonProperty("Page") val Page: GetSearchData,
+    )
+
+    data class GetSearchData(
+        @JsonProperty("media") val media: List<GetSearchMedia>,
+    )
+
+    data class GetSearchRoot(
+        @JsonProperty("data") val data: GetSearchPage,
     )
 }

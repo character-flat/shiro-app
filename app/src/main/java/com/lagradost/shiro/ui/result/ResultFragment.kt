@@ -38,7 +38,7 @@ import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
-import com.lagradost.shiro.utils.AniListApi.Companion.getShow
+import com.lagradost.shiro.utils.AniListApi.Companion.getShowId
 import com.lagradost.shiro.utils.AppUtils.canPlayNextEpisode
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getLatestSeenEpisode
@@ -183,9 +183,9 @@ class ResultFragment : Fragment() {
                 loading_overlay?.startAnimation(fadeAnimation)
                 loadSeason()
 
-                /*thread {
-                    getShow(data.name)
-                }*/
+                thread {
+                    println("IDDDDDDDDDDDD:: ${getShowId(data.name, data.year?.toInt())}")
+                }
 
                 // Somehow the above animation doesn't trigger sometimes on lower android versions
                 thread {

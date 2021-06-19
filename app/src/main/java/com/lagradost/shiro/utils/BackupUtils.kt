@@ -35,6 +35,7 @@ object BackupUtils {
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + "/Shiro/"
             val date = SimpleDateFormat("yyyy_MM_dd_HH_mm").format(Date(currentTimeMillis()))
             val allDataFile = File(downloadDir + "Shiro_Backup_${date}.xml")
+            allDataFile.parentFile.mkdirs()
 
             val allData = DataStore.getSharedPrefs().all
             val allSettings = DataStore.getDefaultSharedPrefs().all
