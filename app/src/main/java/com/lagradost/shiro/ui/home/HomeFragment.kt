@@ -205,7 +205,7 @@ class HomeFragment : Fragment() {
                             return@setOnLongClickListener true
                         }
                         main_info_button.setOnClickListener {
-                            activity?.loadPage(randomData.slug)
+                            activity?.loadPage(randomData.slug, randomData.name)
                         }
                     } else {
                         main_poster_holder.visibility = GONE

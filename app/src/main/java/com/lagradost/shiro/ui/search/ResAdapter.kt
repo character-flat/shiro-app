@@ -118,7 +118,7 @@ class ResAdapter(
                 }
                 // ------------------------------------------------
                 itemView.backgroundCard.setOnClickListener {
-                    activity?.loadPage(card.slug)
+                    activity?.loadPage(card.slug, card.name)
 
                 }
                 cardView.setOnLongClickListener {
@@ -144,7 +144,7 @@ class ResAdapter(
             }
             itemView.imageText.text = fixCardTitle(card.name)
             cardView.setOnClickListener {
-                activity?.loadPage(card.slug)
+                activity?.loadPage(card.slug, card.name)
 
 
                 /*MainActivity.loadPage(card)*/

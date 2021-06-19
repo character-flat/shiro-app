@@ -89,7 +89,7 @@ class DownloadFragment : Fragment() {
                             val cardView = inflater.inflate(R.layout.download_card, view?.parent as? ViewGroup, false)
 
                             cardView.imageView.setOnClickListener {
-                                activity?.loadPage(parent.slug)
+                                activity?.loadPage(parent.slug, parent.title)
                             }
 
                             cardView.cardTitle.text = parent.title

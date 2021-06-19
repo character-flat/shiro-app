@@ -589,10 +589,10 @@ object AppUtils {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
     }
 
-    fun FragmentActivity.loadPage(slug: String) {
+    fun FragmentActivity.loadPage(slug: String, name: String) {
         this.addFragmentOnlyOnce(
             R.id.homeRoot,
-            ResultFragment.newInstance(slug),
+            ResultFragment.newInstance(slug, name),
             RESULT_FRAGMENT_TAG
         )
         /*

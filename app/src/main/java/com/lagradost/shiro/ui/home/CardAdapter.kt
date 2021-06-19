@@ -121,7 +121,7 @@ class CardAdapter(
                     val home = if (tvActivity != null) R.id.home_root_tv else R.id.homeRoot
                     getCurrentActivity()?.addFragmentOnlyOnce(
                         home,
-                        ResultFragment.newInstance(cardInfo.slug),
+                        ResultFragment.newInstance(cardInfo.slug, cardInfo.name),
                         RESULT_FRAGMENT_TAG
                     )
                 }

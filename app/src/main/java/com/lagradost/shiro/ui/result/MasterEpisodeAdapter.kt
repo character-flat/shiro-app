@@ -19,9 +19,11 @@ import kotlinx.android.synthetic.main.episode_expander.view.*
 
 class MasterEpisodeAdapter(
     val activity: FragmentActivity,
-    var data: ShiroApi.AnimePageData
+    var data: ShiroApi.AnimePageData,
+    var isFiller: HashMap<Int, Boolean>? = null
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     val episodes = data.episodes!!
+
 
     data class MasterEpisode(
         val start: Int,
@@ -40,7 +42,7 @@ class MasterEpisodeAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
             is MasterEpisodeViewHolder -> {
-                holder.bind(items[position], activity, data, position)
+                holder.bind(items[position], activity, data, position, isFiller)
             }
         }
         holder.itemView.setOnClickListener {
@@ -58,8 +60,8 @@ class MasterEpisodeAdapter(
         itemView: View,
     ) :
         RecyclerView.ViewHolder(itemView) {
-        fun bind(item: MasterEpisode, activity: FragmentActivity, data: ShiroApi.AnimePageData, position: Int) {
-            //println("BIND $position")
+        fun bind(item: MasterEpisode, activity: FragmentActivity, data: ShiroApi.AnimePageData, position: Int, fillerList: HashMap<Int, Boolean>? = null,) {
+            println("BIND $position" + "|" + (fillerList?.size ?: "NULLL"))
             itemView.cardTitle.text =
                 if (item.start + 1 == item.end) "Episode ${item.end}"
                 else "Episodes ${item.start + 1} - ${item.end}"
@@ -71,6 +73,7 @@ class MasterEpisodeAdapter(
                 position,
                 item.start,
                 item.end,
+                fillerList,
             )
             itemView.episodes_res_view.adapter = adapter
             (itemView.episodes_res_view.adapter as EpisodeAdapter).notifyDataSetChanged()

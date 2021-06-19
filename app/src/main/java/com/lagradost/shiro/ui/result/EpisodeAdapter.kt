@@ -54,6 +54,7 @@ class EpisodeAdapter(
     private val parentPosition: Int,
     rangeStart: Int? = null,
     rangeStop: Int? = null,
+    private val isFiller: HashMap<Int, Boolean>? = null,
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     val stop = rangeStop ?: data.episodes!!.size
@@ -69,7 +70,8 @@ class EpisodeAdapter(
             resView,
             data,
             start,
-            parentPosition
+            parentPosition,
+            isFiller
         )
     }
 
@@ -100,7 +102,8 @@ class EpisodeAdapter(
     class CardViewHolder
     constructor(
         itemView: View, val activity: FragmentActivity, private val resView: View,
-        val data: ShiroApi.AnimePageData, val start: Int, private val parentPosition: Int
+        val data: ShiroApi.AnimePageData, val start: Int, private val parentPosition: Int,
+        private val isFiller: HashMap<Int, Boolean>? = null,
     ) :
         RecyclerView.ViewHolder(itemView) {
         val card: LinearLayout = itemView.episode_result_root
@@ -227,8 +230,18 @@ class EpisodeAdapter(
                 return@setOnLongClickListener true
             }
 
-            val title = "Episode ${episodePos + 1}"
+            val isCurrentFiller = if (isFiller != null) {
+                if (isFiller.containsKey(episodePos + 1)) {
+                    isFiller[episodePos + 1] ?: false
+                } else false
+            } else false
+
+            val title = "Episode ${episodePos + 1}" + (if (isCurrentFiller) " (Filler)" else "")
             card.cardTitle.text = title
+
+
+
+
             setCardViewState(key, episodePos)
 
             val pro = getViewPosDur(data.slug, episodePos)

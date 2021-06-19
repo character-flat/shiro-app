@@ -80,11 +80,13 @@ import kotlin.concurrent.thread
 
 const val DESCRIPTION_LENGTH1 = 200
 const val SLUG = "slug"
+const val NAME = "name"
 const val RESULT_FRAGMENT_TAG = "RESULT_FRAGMENT_TAG"
 
 class ResultFragment : Fragment() {
     private var data: ShiroApi.AnimePageData? = null
     private var slug: String? = null
+    private var fillerEpisodes: HashMap<Int, Boolean>? = null
     private var dataOther: ShiroApi.AnimePageData? = null
     private var isDefaultData = true
     private var isBookmarked = false
@@ -116,10 +118,11 @@ class ResultFragment : Fragment() {
             return title
         }
 
-        fun newInstance(data: String) =
+        fun newInstance(data: String, name: String) =
             ResultFragment().apply {
                 arguments = Bundle().apply {
                     putString(SLUG, data)
+                    putString(NAME, name)
                 }
             }
     }
@@ -502,6 +505,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
                     MasterEpisodeAdapter(
                         it,
                         data,
+                        fillerEpisodes,
                     )
                 }
                 episodes_res_view.adapter = adapter
@@ -509,6 +513,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
             } else {
                 (episodes_res_view.adapter as MasterEpisodeAdapter).data = data
                 (episodes_res_view.adapter as MasterEpisodeAdapter).items = generateItems(data.episodes!!, data.slug)
+                (episodes_res_view.adapter as MasterEpisodeAdapter).isFiller = fillerEpisodes
                 (episodes_res_view.adapter as MasterEpisodeAdapter).notifyDataSetChanged()
             }
         }
@@ -622,6 +627,23 @@ private fun ToggleViewState(_isViewState: Boolean) {
         }
         title_trailer_btt.alpha = 0f
     */
+        val localName = arguments?.getString(NAME)
+        if (localName != null) {
+            thread {
+                fillerEpisodes = FillerEpisodeCheck.getFillerEpisodes(localName.replace("Dubbed", "").replace("Subbed", ""))
+                activity?.runOnUiThread {
+                    try {
+                        if (episodes_res_view.adapter != null) {
+                            (episodes_res_view.adapter as MasterEpisodeAdapter).isFiller = fillerEpisodes
+                            (episodes_res_view.adapter as MasterEpisodeAdapter).notifyDataSetChanged()
+                        }
+                    } catch (e: java.lang.NullPointerException) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+        }
+
         // SEASON SELECTOR
         onLoadedOther += ::onLoadOtherEvent
         onLoaded += ::onLoadEvent

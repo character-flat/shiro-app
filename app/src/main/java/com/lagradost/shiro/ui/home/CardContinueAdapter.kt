@@ -121,7 +121,7 @@ class CardContinueAdapter(
                 if (cardInfo.id != null && tvActivity == null) {
                     itemView.infoButton.visibility = VISIBLE
                     itemView.infoButton.setOnClickListener {
-                        activity.loadPage(cardInfo.id.slug)
+                        activity.loadPage(cardInfo.id.slug, cardInfo.title)
                     }
                 } else if (cardInfo.id != null) {
                     // TV INFO BUTTON
@@ -129,7 +129,7 @@ class CardContinueAdapter(
                     itemView.tv_button_info.setOnClickListener {
                         activity.addFragmentOnlyOnce(
                             R.id.home_root_tv,
-                            ResultFragment.newInstance(cardInfo.id.slug),
+                            ResultFragment.newInstance(cardInfo.id.slug, cardInfo.title),
                             RESULT_FRAGMENT_TAG
                         )
                     }
