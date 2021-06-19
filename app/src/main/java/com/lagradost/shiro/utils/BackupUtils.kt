@@ -1,7 +1,6 @@
 package com.lagradost.shiro.utils
 
 import android.os.Environment
-import android.provider.ContactsContract
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -16,7 +15,7 @@ import java.util.*
 
 object BackupUtils {
     // Kinda hack, but I couldn't think of a better way
-    data class BackupFile(
+    data class BackupVars(
         @JsonProperty("_Bool") val _Bool: Map<String, Boolean>?,
         @JsonProperty("_Int") val _Int: Map<String, Int>?,
         @JsonProperty("_String") val _String: Map<String, String>?,
@@ -25,30 +24,45 @@ object BackupUtils {
         @JsonProperty("_StringSet") val _StringSet: Map<String, Set<String>?>?,
     )
 
+    data class BackupFile(
+        @JsonProperty("datastore") val datastore: BackupVars,
+        @JsonProperty("settings") val settings: BackupVars
+    )
+
     fun FragmentActivity.backup() {
         if (checkWrite()) {
             val downloadDir =
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + "/Shiro/"
             val date = SimpleDateFormat("yyyy_MM_dd_HH_mm").format(Date(currentTimeMillis()))
-            val allDataFile = File(downloadDir + "Shiro_Backup_ALL_${date}.xml")
+            val allDataFile = File(downloadDir + "Shiro_Backup_${date}.xml")
 
             val allData = DataStore.getSharedPrefs().all
-            val bool = allData.filter { it.value is Boolean } as? Map<String, Boolean>
-            val int = allData.filter { it.value is Int } as? Map<String, Int>
-            val string = allData.filter { it.value is String } as? Map<String, String>
-            val float = allData.filter { it.value is Float } as? Map<String, Float>
-            val long = allData.filter { it.value is Long } as? Map<String, Long>
-            val stringSet = allData.filter { it.value as? Set<String> != null } as? Map<String, Set<String>>
+            val allSettings = DataStore.getDefaultSharedPrefs().all
 
-            val allDataSorted = BackupFile(
-                bool,
-                int,
-                string,
-                float,
-                long,
-                stringSet
+            val allDataSorted = BackupVars(
+                allData.filter { it.value is Boolean } as? Map<String, Boolean>,
+                allData.filter { it.value is Int } as? Map<String, Int>,
+                allData.filter { it.value is String } as? Map<String, String>,
+                allData.filter { it.value is Float } as? Map<String, Float>,
+                allData.filter { it.value is Long } as? Map<String, Long>,
+                allData.filter { it.value as? Set<String> != null } as? Map<String, Set<String>>
             )
-            allDataFile.writeText(mapper.writeValueAsString(allDataSorted))
+
+            val allSettingsSorted = BackupVars(
+                allSettings.filter { it.value is Boolean } as? Map<String, Boolean>,
+                allSettings.filter { it.value is Int } as? Map<String, Int>,
+                allSettings.filter { it.value is String } as? Map<String, String>,
+                allSettings.filter { it.value is Float } as? Map<String, Float>,
+                allSettings.filter { it.value is Long } as? Map<String, Long>,
+                allSettings.filter { it.value as? Set<String> != null } as? Map<String, Set<String>>
+            )
+
+            val backupFile = BackupFile(
+                allDataSorted,
+                allSettingsSorted
+            )
+
+            allDataFile.writeText(mapper.writeValueAsString(backupFile))
 
             /*val customPreferences = File(filesDir.parent + "/shared_prefs/${packageName}_preferences.xml")
             val customPreferencesNew = File(downloadDir + "Shiro_Backup_Data_${date}.xml")
@@ -75,18 +89,40 @@ object BackupUtils {
         }
     }
 
-    private fun <T> restoreMap(map: Map<String, T>?) {
-        map?.forEach {
-            DataStore.setKeyRaw(it.key, it.value)
+    private fun <T> restoreMap(map: Map<String, T>?, isEditingAppSettings: Boolean = false) {
+        val blackList = listOf(
+            "cool_mode",
+            "beta_theme",
+            "purple_theme",
+            "subscribe_to_updates",
+            "subscribe_to_announcements",
+            "subscriptions_bookmarked",
+            "subscriptions",
+            "legacy_bookmarks"
+        )
+        val filterRegex = Regex("""^(${blackList.joinToString(separator = "|") })""")
+        map?.filter { !filterRegex.containsMatchIn(it.key) }?.forEach {
+            DataStore.setKeyRaw(it.key, it.value, isEditingAppSettings)
         }
     }
 
-    fun restore(backupFile: BackupFile) {
-        restoreMap(backupFile._Bool)
-        restoreMap(backupFile._Int)
-        restoreMap(backupFile._String)
-        restoreMap(backupFile._Float)
-        restoreMap(backupFile._Long)
-        restoreMap(backupFile._StringSet)
+    fun restore(backupFile: BackupFile, restoreSettings: Boolean, restoreDataStore: Boolean) {
+        if (restoreSettings) {
+            restoreMap(backupFile.settings._Bool, true)
+            restoreMap(backupFile.settings._Int, true)
+            restoreMap(backupFile.settings._String, true)
+            restoreMap(backupFile.settings._Float, true)
+            restoreMap(backupFile.settings._Long, true)
+            restoreMap(backupFile.settings._StringSet, true)
+        }
+
+        if (restoreDataStore) {
+            restoreMap(backupFile.datastore._Bool)
+            restoreMap(backupFile.datastore._Int)
+            restoreMap(backupFile.datastore._String)
+            restoreMap(backupFile.datastore._Float)
+            restoreMap(backupFile.datastore._Long)
+            restoreMap(backupFile.datastore._StringSet)
+        }
     }
 }

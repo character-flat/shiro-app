@@ -3,6 +3,7 @@ package com.lagradost.shiro.utils
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.preference.PreferenceManager
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -49,6 +50,10 @@ object DataStore {
 
     fun getSharedPrefs(): SharedPreferences {
         return getPreferences(localContext!!)
+    }
+
+    fun getDefaultSharedPrefs(): SharedPreferences{
+        return PreferenceManager.getDefaultSharedPreferences(localContext)
     }
 
     fun init(_context: Context) {
@@ -110,8 +115,8 @@ object DataStore {
     }
 
     // Needed for restore
-    fun <T> setKeyRaw(path: String, value: T) {
-        val editor: SharedPreferences.Editor = getSharedPrefs().edit()
+    fun <T> setKeyRaw(path: String, value: T, isEditingAppSettings: Boolean = false) {
+        val editor: SharedPreferences.Editor = if (isEditingAppSettings) getDefaultSharedPrefs().edit() else getSharedPrefs().edit()
         when (value) {
             is Boolean -> editor.putBoolean(path, value)
             is Int -> editor.putInt(path, value)

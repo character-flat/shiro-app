@@ -87,16 +87,20 @@ class AniListApi {
 
         private fun Activity.checkToken(): Boolean {
             if (unixTime() > DataStore.getKey(
-                    ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, 0L)!!) {
+                    ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, 0L
+                )!!
+            ) {
                 activity?.runOnUiThread {
                     val alertDialog: AlertDialog? = activity?.let {
                         val builder = AlertDialog.Builder(it, R.style.AlertDialogCustom)
                         builder.apply {
-                            setPositiveButton("Login"
+                            setPositiveButton(
+                                "Login"
                             ) { dialog, id ->
                                 authenticateAniList()
                             }
-                            setNegativeButton("Cancel"
+                            setNegativeButton(
+                                "Cancel"
                             ) { dialog, id ->
                                 // User cancelled the dialog
                             }
@@ -113,6 +117,36 @@ class AniListApi {
             } else {
                 return false
             }
+        }
+
+        private fun fixName(name: String): String {
+            return name.lowercase().replace(" ", "").replace("[^a-zA-Z0-9]".toRegex(), "")
+        }
+
+        fun getShow(name: String) {
+            val query = """
+            query (${"$"}id: Int, ${"$"}page: Int, ${"$"}search: String, ${"$"}type: MediaType) {
+                Page (page: ${"$"}page, perPage: 10) {
+                    media (id: ${"$"}id, search: ${"$"}search, type: ${"$"}type) {
+                        id
+                        idMal
+                        title {
+                            romaji
+                        }
+                      }
+                    }
+                }
+            """
+            val data = mapOf("query" to query, "variables" to mapOf("search" to name, "page" to 1, "type" to "ANIME"))
+
+            println(data)
+            val res = khttp.post(
+                "https://graphql.anilist.co/",
+                //headers = mapOf(),
+                data = data,//(if (vars == null) mapOf("query" to q) else mapOf("query" to q, "variables" to vars))
+                timeout = 5.0 // REASONABLE TIMEOUT
+            ).text.replace("\\", "")
+            println(res)
         }
 
         private fun Activity.postApi(url: String, q: String): String {

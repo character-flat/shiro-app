@@ -38,6 +38,7 @@ import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.AniListApi.Companion.getShow
 import com.lagradost.shiro.utils.AppUtils.canPlayNextEpisode
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getLatestSeenEpisode
@@ -181,6 +182,10 @@ class ResultFragment : Fragment() {
                 fadeAnimation.fillAfter = true
                 loading_overlay?.startAnimation(fadeAnimation)
                 loadSeason()
+
+                /*thread {
+                    getShow(data.name)
+                }*/
 
                 // Somehow the above animation doesn't trigger sometimes on lower android versions
                 thread {
@@ -628,7 +633,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
         title_trailer_btt.alpha = 0f
     */
         val localName = arguments?.getString(NAME)
-        if (localName != null) {
+        if (localName != null && settingsManager?.getBoolean("search_for_filler_episodes", true) == true) {
             thread {
                 fillerEpisodes = FillerEpisodeCheck.getFillerEpisodes(localName.replace("Dubbed", "").replace("Subbed", ""))
                 activity?.runOnUiThread {

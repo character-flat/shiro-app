@@ -1,9 +1,7 @@
 <resources>
     <string name="changelog">\n
-        - Changed font to Poppins\n
-        - Added color themes (light mode is still work in progress)\n
-        - Added auto play next episode (will trigger instantly on episode end and only if you\'ve used the remote the within the last 3 episodes)\n
-        - You can now interact with recently seen by long pressing\n
+        - Added filler info\n
+        - Added an option to backup\n
     </string>
     <string name="app_name">Shiro</string>
     <string name="title_home">Home</string>

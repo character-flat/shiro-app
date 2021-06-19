@@ -10,7 +10,7 @@ object FillerEpisodeCheck {
     var list: HashMap<String, String>? = null
 
     private fun fixName(name: String): String {
-        return name.toLowerCase(Locale.ROOT).replace(" ", "").replace("[^a-zA-Z0-9]".toRegex(), "")
+        return name.lowercase().replace(" ", "").replace("[^a-zA-Z0-9]".toRegex(), "")
     }
 
     private fun getFillerList(): Boolean {

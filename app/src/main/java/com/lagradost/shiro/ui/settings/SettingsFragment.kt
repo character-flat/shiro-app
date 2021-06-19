@@ -1,9 +1,6 @@
 package com.lagradost.shiro.ui.settings
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import android.content.Intent
+import android.content.*
 import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
@@ -32,6 +29,7 @@ import com.lagradost.shiro.utils.AppUtils.allApi
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.checkWrite
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.md5
 import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.AppUtils.settingsManager
@@ -43,8 +41,7 @@ import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.DataStore.removeKeys
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import com.lagradost.shiro.utils.MALApi.Companion.authenticateMAL
-import java.io.BufferedInputStream
-import java.io.ByteArrayOutputStream
+import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -64,28 +61,45 @@ class SettingsFragment : PreferenceFragmentCompat() {
         restoreFileSelector = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             activity?.let { activity ->
                 uri?.let {
-                    //try {
-                    val input = activity.contentResolver.openInputStream(uri) ?: return@registerForActivityResult
+                    try {
+                        val input = activity.contentResolver.openInputStream(uri) ?: return@registerForActivityResult
 
-                    /*val bis = BufferedInputStream(input)
-                    val buf = ByteArrayOutputStream()
-                    var result = bis.read()
-                    while (result != -1) {
-                        buf.write(result)
-                        result = bis.read()
-                    }
-                    val fullText = buf.toString("UTF-8")
+                        /*val bis = BufferedInputStream(input)
+                        val buf = ByteArrayOutputStream()
+                        var result = bis.read()
+                        while (result != -1) {
+                            buf.write(result)
+                            result = bis.read()
+                        }
+                        val fullText = buf.toString("UTF-8")
 
-                println(fullText)*/
-                    val restoredValue = mapper.readValue<BackupUtils.BackupFile>(input)
-                    restore(restoredValue)
-                    activity.recreate()
-                    
-                    
+                         println(fullText)*/
+                        val builder = AlertDialog.Builder(activity)
+                        val items = arrayOf("Settings", "Data")
+                        val preselectedItems = booleanArrayOf(true, true)
+                        builder.setTitle("Select what to restore")
+                            .setMultiChoiceItems(
+                                items, preselectedItems
+                            ) { _, which, isChecked ->
+                                preselectedItems[which] = isChecked
+                            }
+                        builder.setPositiveButton("OK") { _, _ ->
+                            val restoredValue = mapper.readValue<BackupUtils.BackupFile>(input)
+                            restore(restoredValue, preselectedItems[0], preselectedItems[1])
+                            requestHome(true)
+                            val intent = Intent(activity, getCurrentActivity()!!::class.java)
+                            startActivity(intent)
+                            activity.finishAffinity()
+                        }
+
+                        builder.setNegativeButton("Cancel") { _, _ ->
+
+                        }
+                        builder.show()
                     } catch (e: Exception) {
                         println(e.stackTrace)
                         Toast.makeText(activity, "Error restoring backup file :(", Toast.LENGTH_LONG).show()
-                    }*/
+                    }
                 }
             }
         }

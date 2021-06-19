@@ -141,6 +141,13 @@
                 app:defaultValue="false"
                 app:summary="If you enable this more sources may work"
         />
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_filter_list_24"
+                app:key="search_for_filler_episodes"
+                android:title="Search and display filler episodes"
+                app:defaultValue="true"
+                app:summary="Using animefillerlist.com"
+        />
         <!--<SeekBarPreference
                 android:icon="@drawable/ic_baseline_access_time_24"
                 android:title="Link loading timeout"

@@ -61,7 +61,7 @@ class MasterEpisodeAdapter(
     ) :
         RecyclerView.ViewHolder(itemView) {
         fun bind(item: MasterEpisode, activity: FragmentActivity, data: ShiroApi.AnimePageData, position: Int, fillerList: HashMap<Int, Boolean>? = null,) {
-            println("BIND $position" + "|" + (fillerList?.size ?: "NULLL"))
+            //println("BIND $position" + "|" + (fillerList?.size ?: "NULLL"))
             itemView.cardTitle.text =
                 if (item.start + 1 == item.end) "Episode ${item.end}"
                 else "Episodes ${item.start + 1} - ${item.end}"
