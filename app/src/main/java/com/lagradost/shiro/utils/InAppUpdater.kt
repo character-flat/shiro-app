@@ -53,7 +53,7 @@ object InAppUpdater {
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
 
 
-    fun FragmentActivity.getAppUpdate(): Update {
+    private fun FragmentActivity.getAppUpdate(): Update {
         try {
             val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
 
@@ -65,9 +65,9 @@ object InAppUpdater {
             val response =
                 mapper.readValue<List<GithubRelease>>(khttp.get(url, headers = headers).text)
 
-            val cleanedResponse = response.filter { (!it.prerelease || isBetaMode) && !it.draft}
+            val cleanedResponse = response.filter { (!it.prerelease || isBetaMode) && !it.draft }
 
-            val versionRegexUniversal = Regex("""(.*?((\d)\.(\d)\.(\d)).*?\.apk)""")
+            //val versionRegexUniversal = Regex("""(.*?((\d)\.(\d)\.(\d)).*?\.apk)""")
             val versionRegex = if (isTv) {
                 Regex("""(.*?((\d)\.(\d)\.(\d))-TV\.apk)""")
             } else {
@@ -81,19 +81,20 @@ object InAppUpdater {
                 releases.sortedWith(compareBy {
                     versionRegex.find(it.name)?.groupValues?.get(2)
                 }).toList().lastOrNull()*/
+
+            fun getReleaseAssetVersion(release: GithubRelease): String? {
+                return release.assets.mapNotNull { versionRegex.find(it.name)?.groupValues?.get(2) }.firstOrNull()
+            }
+
             val found =
                 cleanedResponse.sortedWith(compareBy { release ->
-                    release.assets.filter { it.content_type == "application/vnd.android.package-archive" }
-                        .getOrNull(0)?.name?.let { it1 ->
-                            versionRegexUniversal.find(
-                                it1
-                            )?.groupValues?.get(2)
-                        }
+                    getReleaseAssetVersion(release)
                 }).toList().lastOrNull()
             val foundAsset =
                 found?.assets?.filter { !versionRegex.find(it.name)?.groupValues.isNullOrEmpty() }?.getOrNull(0)
+
             val currentVersion = this.packageName?.let {
-                this.packageManager.getPackageInfo(
+                packageManager.getPackageInfo(
                     it,
                     0
                 )
@@ -116,7 +117,7 @@ object InAppUpdater {
         }
     }
 
-    fun FragmentActivity.downloadUpdate(url: String, localContext: Context): Boolean {
+    private fun FragmentActivity.downloadUpdate(url: String, localContext: Context): Boolean {
         println("DOWNLOAD UPDATE $url")
         var fullResume = false // IF FULL RESUME
         try {

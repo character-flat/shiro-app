@@ -11,11 +11,16 @@ import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.database.Cursor
 import android.graphics.Color
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
+import android.os.ParcelFileDescriptor
+import android.provider.MediaStore
+import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.view.WindowManager
@@ -58,6 +63,7 @@ import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFav
 import com.lagradost.shiro.utils.extractors.Vidstream
+import java.io.*
 import java.net.URL
 import java.net.URLDecoder
 import java.security.MessageDigest
@@ -88,6 +94,96 @@ object AppUtils {
             resources.getDimensionPixelSize(resourceId)
         } else
             0
+    }
+
+    // Copied from https://github.com/videolan/vlc-android/blob/master/application/vlc-android/src/org/videolan/vlc/util/FileUtils.kt
+    fun Context.getUri(data: Uri?): Uri? {
+        var uri = data
+        val ctx = this
+        if (data != null && data.scheme == "content") {
+            // Mail-based apps - download the stream to a temporary file and play it
+            if ("com.fsck.k9.attachmentprovider" == data.host || "gmail-ls" == data.host) {
+                var inputStream: InputStream? = null
+                var os: OutputStream? = null
+                var cursor: Cursor? = null
+                try {
+                    cursor = ctx.contentResolver.query(
+                        data,
+                        arrayOf(MediaStore.MediaColumns.DISPLAY_NAME), null, null, null
+                    )
+                    if (cursor != null && cursor.moveToFirst()) {
+                        val filename = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME))
+                            .replace("/", "")
+                        inputStream = ctx.contentResolver.openInputStream(data)
+                        if (inputStream == null) return data
+                        os = FileOutputStream(Environment.getExternalStorageDirectory().path + "/Download/" + filename)
+                        val buffer = ByteArray(1024)
+                        var bytesRead = inputStream.read(buffer)
+                        while (bytesRead >= 0) {
+                            os.write(buffer, 0, bytesRead)
+                            bytesRead = inputStream.read(buffer)
+                        }
+                        uri =
+                            Uri.fromFile(File(Environment.getExternalStorageDirectory().path + "/Download/" + filename))
+                    }
+                } catch (e: Exception) {
+                    return null
+                } finally {
+                    inputStream?.close()
+                    os?.close()
+                    cursor?.close()
+                }
+            } else if (data.authority == "media") {
+                uri = this.contentResolver.query(
+                    data,
+                    arrayOf(MediaStore.Video.Media.DATA), null, null, null
+                )?.use {
+                    val columnIndex = it.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)
+                    if (it.moveToFirst()) Uri.fromFile(File(it.getString(columnIndex))) ?: data else data
+                }
+                //uri = MediaUtils.getContentMediaUri(data)
+                /*} else if (data.authority == ctx.getString(R.string.tv_provider_authority)) {
+                    println("TV AUTHORITY")
+                    //val medialibrary = Medialibrary.getInstance()
+                    //val media = medialibrary.getMedia(data.lastPathSegment!!.toLong())
+                    uri = null//media.uri*/
+            } else {
+                val inputPFD: ParcelFileDescriptor?
+                try {
+                    inputPFD = ctx.contentResolver.openFileDescriptor(data, "r")
+                    if (inputPFD == null) return data
+                    uri = Uri.parse("fd://" + inputPFD.fd)
+                    //                    Cursor returnCursor =
+                    //                            getContentResolver().query(data, null, null, null, null);
+                    //                    if (returnCursor != null) {
+                    //                        if (returnCursor.getCount() > 0) {
+                    //                            int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    //                            if (nameIndex > -1) {
+                    //                                returnCursor.moveToFirst();
+                    //                                title = returnCursor.getString(nameIndex);
+                    //                            }
+                    //                        }
+                    //                        returnCursor.close();
+                    //                    }
+                } catch (e: FileNotFoundException) {
+                    Log.e("TAG", "${e.message} for $data", e)
+                    return null
+                } catch (e: IllegalArgumentException) {
+                    Log.e("TAG", "${e.message} for $data", e)
+                    return null
+                } catch (e: IllegalStateException) {
+                    Log.e("TAG", "${e.message} for $data", e)
+                    return null
+                } catch (e: NullPointerException) {
+                    Log.e("TAG", "${e.message} for $data", e)
+                    return null
+                } catch (e: SecurityException) {
+                    Log.e("TAG", "${e.message} for $data", e)
+                    return null
+                }
+            }// Media or MMS URI
+        }
+        return uri
     }
 
     private fun toggleHeart(name: String, image: String, slug: String): Boolean {

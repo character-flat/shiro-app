@@ -5,15 +5,19 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.*
 import com.bumptech.glide.Glide
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 import com.lagradost.shiro.BuildConfig
@@ -31,24 +35,62 @@ import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.md5
 import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.BackupUtils.backup
+import com.lagradost.shiro.utils.BackupUtils.restore
+import com.lagradost.shiro.utils.BackupUtils.restorePrompt
 import com.lagradost.shiro.utils.DataStore.getKeys
+import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.DataStore.removeKeys
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import com.lagradost.shiro.utils.MALApi.Companion.authenticateMAL
+import java.io.BufferedInputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
 import kotlin.concurrent.thread
 
 class SettingsFragment : PreferenceFragmentCompat() {
     companion object {
         var isInSettings: Boolean = false
+        var restoreFileSelector: ActivityResultLauncher<String>? = null
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+
         super.onCreateView(inflater, container, savedInstanceState)?.apply {
             activity?.getColorFromAttr(R.attr.background)?.let { setBackgroundColor(it) }
         }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        restoreFileSelector = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            activity?.let { activity ->
+                uri?.let {
+                    //try {
+                    val input = activity.contentResolver.openInputStream(uri) ?: return@registerForActivityResult
+
+                    /*val bis = BufferedInputStream(input)
+                    val buf = ByteArrayOutputStream()
+                    var result = bis.read()
+                    while (result != -1) {
+                        buf.write(result)
+                        result = bis.read()
+                    }
+                    val fullText = buf.toString("UTF-8")
+
+                println(fullText)*/
+                    val restoredValue = mapper.readValue<BackupUtils.BackupFile>(input)
+                    restore(restoredValue)
+                    activity.recreate()
+                    
+                    
+                    } catch (e: Exception) {
+                        println(e.stackTrace)
+                        Toast.makeText(activity, "Error restoring backup file :(", Toast.LENGTH_LONG).show()
+                    }*/
+                }
+            }
+        }
+
+
         val settingsXml = if (tvActivity == null) R.xml.settings else R.xml.settings_tv
         setPreferencesFromResource(settingsXml, rootKey)
 
@@ -131,12 +173,24 @@ class SettingsFragment : PreferenceFragmentCompat() {
             return@setOnPreferenceClickListener true
         }
 
-        val donatorId = findPreference("donator_id") as Preference?
+        val backupButton = findPreference("backup_btt") as Preference?
+        backupButton?.setOnPreferenceClickListener {
+            activity?.backup()
+            return@setOnPreferenceClickListener true
+        }
+
+        val restoreButton = findPreference("restore_btt") as Preference?
+        restoreButton?.setOnPreferenceClickListener {
+            activity?.restorePrompt()
+            return@setOnPreferenceClickListener true
+        }
+
+        val donorId = findPreference("donator_id") as Preference?
         val id: String = Settings.Secure.getString(context?.contentResolver, Settings.Secure.ANDROID_ID)
 
         val encodedString = id.md5()
-        donatorId?.summary = if (isDonor) "Thanks for the donation :D" else encodedString
-        donatorId?.setOnPreferenceClickListener {
+        donorId?.summary = if (isDonor) "Thanks for the donation :D" else encodedString
+        donorId?.setOnPreferenceClickListener {
             val clipboard = context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip: ClipData = ClipData.newPlainText("ID", encodedString)
             clipboard.primaryClip = clip

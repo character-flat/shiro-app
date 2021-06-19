@@ -109,6 +109,20 @@ object DataStore {
         editor.apply()
     }
 
+    // Needed for restore
+    fun <T> setKeyRaw(path: String, value: T) {
+        val editor: SharedPreferences.Editor = getSharedPrefs().edit()
+        when (value) {
+            is Boolean -> editor.putBoolean(path, value)
+            is Int -> editor.putInt(path, value)
+            is String -> editor.putString(path, value)
+            is Float -> editor.putFloat(path, value)
+            is Long -> editor.putLong(path, value)
+            (value as? Set<String> != null) -> editor.putStringSet(path, value as Set<String>)
+        }
+        editor.apply()
+    }
+
     fun <T> setKey(folder: String, path: String, value: T) {
         setKey(
             getFolderName(

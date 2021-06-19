@@ -258,11 +258,11 @@ class MainActivity : AppCompatActivity() {
 
         // -----------------
         super.onCreate(savedInstanceState)
+        DataStore.init(this)
+        init()
         setContentView(R.layout.activity_main)
 
-        DataStore.init(this)
         DownloadManager.init(this)
-        init()
 
         //@SuppressLint("HardwareIds")
         //val androidId: String = Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID).md5()
