@@ -142,23 +142,38 @@ class PlayerFragmentTv : VideoSupportFragment() {
             // Lmao gotta get white icons even in light mode
             actionRewind.icon = ContextCompat.getDrawable(context, R.drawable.netflix_skip_back).apply {
                 this?.mutate()
-                    ?.setColorFilter(ContextCompat.getColor(requireActivity(), R.color.white), PorterDuff.Mode.SRC_IN)
+                    ?.setColorFilter(
+                        ContextCompat.getColor(getCurrentActivity()!!, R.color.white),
+                        PorterDuff.Mode.SRC_IN
+                    )
             }
             actionFastForward.icon = ContextCompat.getDrawable(context, R.drawable.netflix_skip_forward).apply {
                 this?.mutate()
-                    ?.setColorFilter(ContextCompat.getColor(requireActivity(), R.color.white), PorterDuff.Mode.SRC_IN)
+                    ?.setColorFilter(
+                        ContextCompat.getColor(getCurrentActivity()!!, R.color.white),
+                        PorterDuff.Mode.SRC_IN
+                    )
             }
             actionSkipOp.icon = ContextCompat.getDrawable(context, R.drawable.ic_baseline_fast_forward_24).apply {
                 this?.mutate()
-                    ?.setColorFilter(ContextCompat.getColor(requireActivity(), R.color.white), PorterDuff.Mode.SRC_IN)
+                    ?.setColorFilter(
+                        ContextCompat.getColor(getCurrentActivity()!!, R.color.white),
+                        PorterDuff.Mode.SRC_IN
+                    )
             }
             actionNextEpisode.icon = ContextCompat.getDrawable(context, R.drawable.exo_controls_next).apply {
                 this?.mutate()
-                    ?.setColorFilter(ContextCompat.getColor(requireActivity(), R.color.white), PorterDuff.Mode.SRC_IN)
+                    ?.setColorFilter(
+                        ContextCompat.getColor(getCurrentActivity()!!, R.color.white),
+                        PorterDuff.Mode.SRC_IN
+                    )
             }
             actionSources.icon = ContextCompat.getDrawable(context, R.drawable.ic_baseline_playlist_play_24).apply {
                 this?.mutate()
-                    ?.setColorFilter(ContextCompat.getColor(requireActivity(), R.color.white), PorterDuff.Mode.SRC_IN)
+                    ?.setColorFilter(
+                        ContextCompat.getColor(getCurrentActivity()!!, R.color.white),
+                        PorterDuff.Mode.SRC_IN
+                    )
             }
 
             // Append rewind and fast forward actions to our player, keeping the play/pause actions
@@ -192,24 +207,26 @@ class PlayerFragmentTv : VideoSupportFragment() {
                     }
                 }
                 actionSources -> {
-                    lateinit var dialog: AlertDialog
-                    sources.second?.let {
-                        val sourcesText = it.map { link -> link.name }
-                        val builder = AlertDialog.Builder(requireContext(), R.style.AlertDialogCustom)
-                        builder.setTitle("Pick source")
-                        val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
-                        builder.setSingleChoiceItems(sourcesText.toTypedArray(), index) { _, which ->
-                            //val speed = speedsText[which]
-                            //Toast.makeText(requireContext(), "$speed selected.", Toast.LENGTH_SHORT).show()
-                            selectedSource = it[which]
-                            savePos()
-                            releasePlayer()
-                            loadAndPlay()
+                    activity?.let { activity ->
+                        lateinit var dialog: AlertDialog
+                        sources.second?.let {
+                            val sourcesText = it.map { link -> link.name }
+                            val builder = AlertDialog.Builder(activity, R.style.AlertDialogCustom)
+                            builder.setTitle("Pick source")
+                            val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
+                            builder.setSingleChoiceItems(sourcesText.toTypedArray(), index) { _, which ->
+                                //val speed = speedsText[which]
+                                //Toast.makeText(requireContext(), "$speed selected.", Toast.LENGTH_SHORT).show()
+                                selectedSource = it[which]
+                                savePos()
+                                releasePlayer()
+                                loadAndPlay()
 
-                            dialog.dismiss()
+                                dialog.dismiss()
+                            }
+                            dialog = builder.create()
+                            dialog.show()
                         }
-                        dialog = builder.create()
-                        dialog.show()
                     }
                     // Do not remove
                     Unit
@@ -271,47 +288,92 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
     private fun generateGlue() {
         if (this::exoPlayer.isInitialized) {
-            activity?.runOnUiThread {
-                // Links our video player with this Leanback video playback fragment
-                val playerAdapter = LeanbackPlayerAdapter(
-                    requireContext(), exoPlayer, PLAYER_UPDATE_INTERVAL_MILLIS
-                )
-                // Enables pass-through of transport controls to our player instance
-                playerGlue = MediaPlayerGlue(requireContext(), playerAdapter).apply {
-                    host = VideoSupportFragmentGlueHost(this@PlayerFragmentTv)
-                    title = "${data?.card?.name}"
-                    subtitle = "Episode ${data?.episodeIndex!! + 1}"
+            activity?.let { activity ->
+                activity.runOnUiThread {
+                    // Links our video player with this Leanback video playback fragment
+                    val playerAdapter = LeanbackPlayerAdapter(
+                        activity, exoPlayer, PLAYER_UPDATE_INTERVAL_MILLIS
+                    )
+                    // Enables pass-through of transport controls to our player instance
+                    playerGlue = MediaPlayerGlue(activity, playerAdapter).apply {
+                        host = VideoSupportFragmentGlueHost(this@PlayerFragmentTv)
+                        title = "${data?.card?.name}"
+                        subtitle = "Episode ${data?.episodeIndex!! + 1}"
 
-                    // Adds playback state listeners
-                    addPlayerCallback(object : PlaybackGlue.PlayerCallback() {
-                        override fun onPreparedStateChanged(glue: PlaybackGlue?) {
-                            super.onPreparedStateChanged(glue)
-                            if (glue?.isPrepared == true) {
-                                // When playback is ready, skip to last known position
-                                val startingPosition = 0L//metadata.playbackPositionMillis ?: 0
-                                Log.d(TAG, "Setting starting playback position to $startingPosition")
-                                seekTo(startingPosition)
+                        // Adds playback state listeners
+                        addPlayerCallback(object : PlaybackGlue.PlayerCallback() {
+                            override fun onPreparedStateChanged(glue: PlaybackGlue?) {
+                                super.onPreparedStateChanged(glue)
+                                if (glue?.isPrepared == true) {
+                                    // When playback is ready, skip to last known position
+                                    val startingPosition = 0L//metadata.playbackPositionMillis ?: 0
+                                    Log.d(TAG, "Setting starting playback position to $startingPosition")
+                                    seekTo(startingPosition)
+                                }
                             }
+
+                            override fun onPlayCompleted(glue: PlaybackGlue?) {
+                                super.onPlayCompleted(glue)
+
+                                // Don't forget to remove irrelevant content from the continue watching row
+                                //TvLauncherUtils.removeFromWatchNext(requireContext(), args.metadata)
+
+                            }
+                        })
+                        // Begins playback automatically
+                        playWhenPrepared()
+                        savePos()
+
+                        // Adds key listeners
+                        host.setOnKeyInterceptListener { view, keyCode, event ->
+                            episodesSinceInteraction = 0
+                            val playbackProgress = view.findViewById<SeekBar>(R.id.playback_progress)
+                            playbackProgress.isFocusable = playerGlue.host.isControlsOverlayVisible
+                            // Early exit: if the controls overlay is visible, don't intercept any keys
+                            if (playerGlue.host.isControlsOverlayVisible && !playbackProgress.isFocused) return@setOnKeyInterceptListener false
+
+                            //  This workaround is necessary for navigation library to work with
+                            //  Leanback's [PlaybackSupportFragment]
+                            if (!playerGlue.host.isControlsOverlayVisible &&
+                                keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_DOWN
+                            ) {
+                                /*val navController = Navigation.findNavController(
+                                        requireActivity(), R.id.fragment_container)
+                                navController.currentDestination?.id?.let { navController.popBackStack(it, true) }*/
+                                savePos()
+                                activity.onBackPressed()
+                                return@setOnKeyInterceptListener true
+                            }
+
+                            // Skips ahead when user presses DPAD_RIGHT
+                            if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && event.action == KeyEvent.ACTION_DOWN) {
+                                playerGlue.skipForward()
+                                if (!playbackProgress.isFocused) {
+                                    preventControlsOverlay(playerGlue)
+                                    playbackProgress.isFocusable = false
+                                }
+                                return@setOnKeyInterceptListener true
+                            }
+
+                            // Rewinds when user presses DPAD_LEFT
+                            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && event.action == KeyEvent.ACTION_DOWN) {
+                                playerGlue.skipBackward()
+                                if (!playbackProgress.isFocused) {
+                                    preventControlsOverlay(playerGlue)
+                                    playbackProgress.isFocusable = false
+                                }
+                                return@setOnKeyInterceptListener true
+                            }
+
+                            false
                         }
-
-                        override fun onPlayCompleted(glue: PlaybackGlue?) {
-                            super.onPlayCompleted(glue)
-
-                            // Don't forget to remove irrelevant content from the continue watching row
-                            //TvLauncherUtils.removeFromWatchNext(requireContext(), args.metadata)
-
-                        }
-                    })
-                    // Begins playback automatically
-                    playWhenPrepared()
-                    savePos()
-
-                    // Displays the current item's metadata
-                    //setMetadata(metadata)
-                }
-                // Setup the fragment adapter with our player glue presenter
-                adapter = ArrayObjectAdapter(playerGlue.playbackRowPresenter).apply {
-                    add(playerGlue.controlsRow)
+                        // Displays the current item's metadata
+                        //setMetadata(metadata)
+                    }
+                    // Setup the fragment adapter with our player glue presenter
+                    adapter = ArrayObjectAdapter(playerGlue.playbackRowPresenter).apply {
+                        add(playerGlue.controlsRow)
+                    }
                 }
             }
         }
@@ -357,7 +419,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
                         currentUrl.referer.let { dataSource.setRequestProperty("Referer", it) }
                         dataSource
                     } else {
-                        DefaultDataSourceFactory(requireContext(), USER_AGENT).createDataSource()
+                        DefaultDataSourceFactory(getCurrentActivity()!!, USER_AGENT).createDataSource()
                     }
                 }
             }
@@ -372,20 +434,19 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
 
             val mediaItem = mediaItemBuilder.build()
-            val exoPlayerBuilder = if (context != null) {
-                val trackSelector = DefaultTrackSelector(requireContext())
+            val exoPlayerBuilder = context?.let {
+                val trackSelector = DefaultTrackSelector(it)
                 // Disable subtitles
-                trackSelector.parameters = DefaultTrackSelector.ParametersBuilder(requireContext())
+                trackSelector.parameters = DefaultTrackSelector.ParametersBuilder(it)
                     .setRendererDisabled(C.TRACK_TYPE_VIDEO, true)
                     .setRendererDisabled(C.TRACK_TYPE_TEXT, true)
                     .setDisabledTextTrackSelectionFlags(C.TRACK_TYPE_TEXT)
                     .clearSelectionOverrides()
                     .build()
-                SimpleExoPlayer.Builder(requireContext())
+                SimpleExoPlayer.Builder(it)
                     .setTrackSelector(trackSelector)
-            } else {
-                SimpleExoPlayer.Builder(getCurrentActivity()!!)
-            }
+            } ?: SimpleExoPlayer.Builder(getCurrentActivity()!!)
+
 
             exoPlayerBuilder.setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
 
@@ -462,49 +523,6 @@ class PlayerFragmentTv : VideoSupportFragment() {
                 // can be triggered by things outside of our app, for example via Google Assistant
 
 
-                // Adds key listeners
-                playerGlue.host.setOnKeyInterceptListener { view, keyCode, event ->
-                    episodesSinceInteraction = 0
-                    val playbackProgress = view.findViewById<SeekBar>(R.id.playback_progress)
-                    playbackProgress.isFocusable = playerGlue.host.isControlsOverlayVisible
-                    // Early exit: if the controls overlay is visible, don't intercept any keys
-                    if (playerGlue.host.isControlsOverlayVisible && !playbackProgress.isFocused) return@setOnKeyInterceptListener false
-
-                    //  This workaround is necessary for navigation library to work with
-                    //  Leanback's [PlaybackSupportFragment]
-                    if (!playerGlue.host.isControlsOverlayVisible &&
-                        keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_DOWN
-                    ) {
-                        /*val navController = Navigation.findNavController(
-                                requireActivity(), R.id.fragment_container)
-                        navController.currentDestination?.id?.let { navController.popBackStack(it, true) }*/
-                        savePos()
-                        activity?.onBackPressed()
-                        return@setOnKeyInterceptListener true
-                    }
-
-                    // Skips ahead when user presses DPAD_RIGHT
-                    if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && event.action == KeyEvent.ACTION_DOWN) {
-                        playerGlue.skipForward()
-                        if (!playbackProgress.isFocused) {
-                            preventControlsOverlay(playerGlue)
-                            playbackProgress.isFocusable = false
-                        }
-                        return@setOnKeyInterceptListener true
-                    }
-
-                    // Rewinds when user presses DPAD_LEFT
-                    if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && event.action == KeyEvent.ACTION_DOWN) {
-                        playerGlue.skipBackward()
-                        if (!playbackProgress.isFocused) {
-                            preventControlsOverlay(playerGlue)
-                            playbackProgress.isFocusable = false
-                        }
-                        return@setOnKeyInterceptListener true
-                    }
-
-                    false
-                }
             }
         }
         isLoadingNextEpisode = false
@@ -579,7 +597,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
         //playbackPosition = activity?.intent?.getSerializableExtra(DetailsActivityTV.PLAYERPOS) as? Long ?: 0L
         //data = mapper.readValue<ShiroApi.AnimePageData>(dataString!!)
-        mediaSession = MediaSessionCompat(requireContext(), getString(R.string.app_name))
+        mediaSession = MediaSessionCompat(getCurrentActivity()!!, getString(R.string.app_name))
         mediaSessionConnector = MediaSessionConnector(mediaSession)
     }
 
