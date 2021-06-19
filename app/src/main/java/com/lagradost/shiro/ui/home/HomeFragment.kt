@@ -141,7 +141,7 @@ class HomeFragment : Fragment() {
             val random: ShiroApi.AnimePage? = randomPage ?: getRandomAnimePage()
             cachedHome?.random = random
             val randomData = random?.data
-            // Hack, assuming all dubbed shows has a normal equivalent
+            // Hack, assuming all dubbed shows have a normal equivalent
             if (hideDubbed && randomData != null) {
                 randomData.slug = randomData.slug.removeSuffix("-dubbed")
                 randomData.name = randomData.name.removeSuffix("Dubbed")
