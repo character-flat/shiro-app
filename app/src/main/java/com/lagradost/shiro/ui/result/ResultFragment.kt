@@ -1,8 +1,10 @@
 package com.lagradost.shiro.ui.result
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Html
 import android.transition.ChangeBounds
@@ -14,10 +16,11 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
-import android.widget.FrameLayout
-import android.widget.Toast
+import android.widget.*
+import android.widget.AbsListView.CHOICE_MODE_SINGLE
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.mediarouter.app.MediaRouteButton
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
@@ -25,6 +28,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 import com.lagradost.shiro.R
@@ -36,18 +40,28 @@ import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedVi
 import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
+import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.AniListApi.Companion.getDataAboutId
 import com.lagradost.shiro.utils.AniListApi.Companion.getShowId
+import com.lagradost.shiro.utils.AniListApi.Companion.postDataAboutId
+import com.lagradost.shiro.utils.AniListApi.Companion.secondsToReadable
 import com.lagradost.shiro.utils.AppUtils.canPlayNextEpisode
+import com.lagradost.shiro.utils.AppUtils.expandTouchArea
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getLatestSeenEpisode
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.hideKeyboard
 import com.lagradost.shiro.utils.AppUtils.isCastApiAvailable
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
+import com.lagradost.shiro.utils.AppUtils.observe
+import com.lagradost.shiro.utils.AppUtils.openBrowser
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.MALApi.Companion.malStatusAsString
+import com.lagradost.shiro.utils.MALApi.Companion.setScoreRequest
 import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFav
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
@@ -74,6 +88,8 @@ import kotlinx.android.synthetic.main.fragment_results_new.title_holder
 import kotlinx.android.synthetic.main.fragment_results_new.title_name
 import kotlinx.android.synthetic.main.fragment_results_new.title_status
 import kotlinx.android.synthetic.main.fragment_results_new.title_year
+import kotlinx.android.synthetic.main.number_picker_dialog.*
+import kotlinx.android.synthetic.main.sort_bottom_sheet.*
 import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.thread
@@ -93,11 +109,14 @@ class ResultFragment : Fragment() {
     private var isBookmarked = false
     private var isSubbed: Boolean? = null
 
+    private var hasLoadedAnilist = false
+    private var anilistPage: AniListApi.GetSearchMedia? = null
 
     companion object {
         //var lastSelectedEpisode = 0
         var isInResults: Boolean = false
         var isViewState: Boolean = true
+        var resultViewModel: ResultsViewModel? = null
         val onResultsNavigated = Event<Boolean>()
         fun fixEpTitle(
             _title: String?,
@@ -138,6 +157,7 @@ class ResultFragment : Fragment() {
         // TV has its own overlay
         val layout =
             if (tvActivity == null) (if (useNewLayout) R.layout.fragment_results_new else R.layout.fragment_results) else R.layout.fragment_results_tv
+        resultViewModel = resultViewModel ?: ViewModelProvider(getCurrentActivity()!!).get(ResultsViewModel::class.java)
 
         return inflater.inflate(layout, container, false)
 
@@ -175,6 +195,11 @@ class ResultFragment : Fragment() {
                     activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
                     return@runOnUiThread
                 }
+                if (resultViewModel?.currentAniListId != null) {
+                    thread {
+                        loadGetDataAboutId()
+                    }
+                }
                 val fadeAnimation = AlphaAnimation(1f, 0f)
 
                 fadeAnimation.duration = 300
@@ -184,14 +209,21 @@ class ResultFragment : Fragment() {
                 loadSeason()
 
                 thread {
-                    println("IDDDDDDDDDDDD:: ${getShowId(data.name, data.year?.toInt())}")
+                    if (!hasLoadedAnilist) {
+                        hasLoadedAnilist = true
+                        println("GETTING ANILIST PAGE")
+                        anilistPage = getShowId(data.name, data.year?.toInt())
+                        println("LOADED ANILIST ${anilistPage?.id}")
+                        resultViewModel?.currentAniListId?.postValue(anilistPage?.id ?: 0)
+                        resultViewModel?.currentMalId?.postValue(anilistPage?.idMal)
+                    }
                 }
 
                 // Somehow the above animation doesn't trigger sometimes on lower android versions
                 thread {
                     Timer().schedule(500) {
                         activity?.runOnUiThread {
-                            loading_overlay.alpha = 0f
+                            loading_overlay?.alpha = 0f
                         }
                     }
                 }
@@ -223,11 +255,23 @@ class ResultFragment : Fragment() {
                             val pos = getViewPosDur(data.slug, episode.episodeIndex)
                             Toast.makeText(activity, "Playing episode ${next.episodeIndex + 1}", Toast.LENGTH_SHORT)
                                 .show()
-                            activity?.loadPlayer(next.episodeIndex, pos.pos, data)
+                            activity?.loadPlayer(
+                                next.episodeIndex,
+                                pos.pos,
+                                data,
+                                resultViewModel?.currentAniListId?.value,
+                                resultViewModel?.currentMalId?.value
+                            )
                         } else {
                             Toast.makeText(activity, "Playing episode ${episode.episodeIndex + 1}", Toast.LENGTH_SHORT)
                                 .show()
-                            activity?.loadPlayer(episode.episodeIndex, episodePos.pos, data)
+                            activity?.loadPlayer(
+                                episode.episodeIndex,
+                                episodePos.pos,
+                                data,
+                                resultViewModel?.currentAniListId?.value,
+                                resultViewModel?.currentMalId?.value
+                            )
                         }
                     }
                 } else {
@@ -242,7 +286,13 @@ class ResultFragment : Fragment() {
                     // fromHtml is depreciated, but works on android 6 as opposed to the new
                     title_status.text =
                         Html.fromHtml(
-                            "<font color=#${textColorGrey}>Status:</font><font color=#${textColor}> ${data.status}</font>"/*,
+                            "<font color=#${textColorGrey}>Status:</font><font color=#${textColor}> ${
+                                data.status.replaceFirstChar {
+                                    if (it.isLowerCase()) it.titlecase(
+                                        Locale.getDefault()
+                                    ) else it.toString()
+                                }
+                            }</font>"/*,
                             FROM_HTML_MODE_COMPACT*/
                         )
                 } else {
@@ -280,17 +330,7 @@ class ResultFragment : Fragment() {
                     title_genres.visibility = GONE
                 }
 
-                if (data.schedule != null && data.status != "finished") {
-                    title_day_of_week.text =
-                        Html.fromHtml(
-                            "<font color=#${textColorGrey}>Schedule:</font><font color=#${textColor}> ${
-                                data.schedule
-                            }</font>"/*,
-                            FROM_HTML_MODE_COMPACT*/
-                        )
-                } else {
-                    title_day_of_week.visibility = GONE
-                }
+                activity?.displayDate()
 
                 title_name.text = data.name
                 val fullDescription = data.synopsis
@@ -414,6 +454,335 @@ class ResultFragment : Fragment() {
         }
     }
 
+
+    private fun loadGetDataAboutId() {
+        try {
+            activity?.let { activity ->
+                val hasAniList = DataStore.getKey<String>(
+                    ANILIST_TOKEN_KEY,
+                    ANILIST_ACCOUNT_ID,
+                    null
+                ) != null
+                val hasMAL = DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+
+                val malHolder =
+                    if (hasMAL) resultViewModel?.currentMalId?.value?.let { MALApi.getDataAboutId(it) } else null
+                val holder = if (hasAniList && malHolder == null) resultViewModel?.currentAniListId?.value?.let {
+                    activity.getDataAboutId(
+                        it
+                    )
+                } else null
+                //setAllMalData()
+                //MALApi.allTitles.get(currentMalId)
+
+                if (holder != null || malHolder != null) {
+                    class CardAniListInfo {
+                        // Sets to watching if anything is done
+                        fun typeGetter(): AniListApi.Companion.AniListStatusType {
+                            return if (malHolder != null) {
+                                var type =
+                                    AniListApi.fromIntToAnimeStatus(malStatusAsString.indexOf(malHolder.my_list_status?.status))
+                                type =
+                                    if (type.value == MALApi.Companion.MalStatusType.None.value) AniListApi.Companion.AniListStatusType.Watching else type
+                                type
+                            } else {
+                                val type =
+                                    if (holder?.type == AniListApi.Companion.AniListStatusType.None) AniListApi.Companion.AniListStatusType.Watching else holder?.type
+                                AniListApi.fromIntToAnimeStatus(type?.value ?: 0)
+                            }
+                        }
+
+                        var type = typeGetter()
+                            set(value) {
+                                //field = value
+                                println("Changed type")
+                                field = AniListApi.fromIntToAnimeStatus(this.typeValue)
+                                activity.runOnUiThread {
+                                    status_text.text = field.name
+                                }
+                            }
+
+                        // This is helper class to type.value because setter on type.value isn't working.
+                        var typeValue = type.value
+                            set(value) {
+                                field = value
+                                // Invoke setter
+                                // println("Invoked setter")
+                                this::type.setter.call(type)
+                            }
+                        var progress =
+                            malHolder?.my_list_status?.num_episodes_watched ?: holder?.progress ?: 0
+                            set(value) {
+                                field = maxOf(0, minOf(value, episodes))
+                                getCurrentActivity()!!.runOnUiThread {
+                                    aniList_progressbar.progress = field * 100 / episodes
+                                    anilist_progress_txt.text = "${field}/${episodes}"
+                                    status_text.text = type.name
+                                }
+                                getCurrentActivity()!!.runOnUiThread {
+                                    if (progress == episodes && typeValue != AniListApi.Companion.AniListStatusType.Completed.value) {
+                                        Toast.makeText(
+                                            activity,
+                                            "All episodes seen, marking as Completed",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                        typeValue = AniListApi.Companion.AniListStatusType.Completed.value
+                                    }
+                                    if (progress != episodes && typeValue == AniListApi.Companion.AniListStatusType.Completed.value) {
+                                        Toast.makeText(
+                                            activity,
+                                            "Marking as Watching",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                        typeValue = AniListApi.Companion.AniListStatusType.Watching.value
+                                    }
+                                }
+                                /*if (field == holder.episodes) {
+                                    this.type.value = AniListStatusType.Completed.value
+                                } else if (field != holder.episodes && this.type.value == AniListStatusType.Completed.value) {
+                                    this.type.value = AniListStatusType.Watching.value
+                                }*/
+                            }
+                        var score = malHolder?.my_list_status?.score ?: holder?.score ?: 0
+                            set(value) {
+                                field = value
+                                activity.runOnUiThread {
+                                    rating_text.text = if (value == 0) "Rate" else value.toString()
+                                    status_text.text = type.name
+                                }
+                            }
+                        var episodes = malHolder?.num_episodes ?: holder!!.episodes
+
+                        fun syncData() {
+                            thread {
+                                val anilistPost =
+                                    if (hasAniList) resultViewModel?.currentAniListId?.value?.let {
+                                        activity?.postDataAboutId(
+                                            it,
+                                            type,
+                                            score,
+                                            progress
+                                        )
+                                    } else true
+                                val malPost = if (hasMAL)
+                                    resultViewModel?.currentMalId?.value?.let {
+                                        setScoreRequest(
+                                            it,
+                                            MALApi.fromIntToAnimeStatus(type.value),
+                                            score,
+                                            progress
+                                        )
+                                    } else true
+                                if (!anilistPost!! || malPost?.not() == true) {
+                                    activity.runOnUiThread {
+                                        Toast.makeText(
+                                            activity,
+                                            "Error updating episode progress",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    val info = CardAniListInfo()
+                    info.episodes = maxOf(
+                        info.episodes,
+                        data?.episodes?.size ?: 1
+                    ) // TO REMOVE DIVIDE BY 0 ERROR
+                    activity.runOnUiThread {
+                        val transition: Transition = ChangeBounds()
+                        transition.duration = 100 // DURATION OF ANIMATION IN MS
+                        //sync_title.visibility = VISIBLE
+                        anilist_holder?.visibility = VISIBLE
+                        aniList_progressbar?.progress = info.progress * 100 / info.episodes
+                        anilist_progress_txt?.text = "${info.progress}/${info.episodes}"
+                        anilist_btt_holder?.visibility = VISIBLE
+                        status_text?.text =
+                            if (info.type.value == AniListApi.Companion.AniListStatusType.None.value) "Status" else info.type.name
+                        rating_text?.text = if (info.score == 0) "Rate" else info.score.toString()
+                        title_holder?.let { TransitionManager.beginDelayedTransition(it, transition) }
+
+                        edit_episodes_btt?.setOnClickListener {
+                            val dialog = Dialog(activity, R.style.AlertDialogCustom)
+                            //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                            dialog.setTitle("Select episodes seen")
+                            dialog.setContentView(R.layout.number_picker_dialog)
+
+                            dialog.number_picker_episode_text.setText(info.progress.toString())
+
+                            dialog.number_picker_episode_up.setOnClickListener {
+                                val number = if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
+                                ) 1 else minOf(
+                                    dialog.number_picker_episode_text.text.toString().toInt() + 1,
+                                    info.episodes
+                                )
+                                dialog.number_picker_episode_text.setText(number.toString())
+                            }
+                            dialog.number_picker_episode_down.setOnClickListener {
+                                val number = if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
+                                ) 0 else maxOf(dialog.number_picker_episode_text.text.toString().toInt() - 1, 0)
+                                dialog.number_picker_episode_text.setText(number.toString())
+                            }
+                            dialog.episode_progress_btt.setOnClickListener {
+                                thread {
+                                    val progress =
+                                        if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
+                                        ) 0 else minOf(
+                                            dialog.number_picker_episode_text.text.toString().toInt(),
+                                            info.episodes
+                                        )
+                                    // Applying progress after is needed
+                                    info.progress = progress
+                                    info.syncData()
+                                    dialog.dismiss()
+                                }
+                            }
+                            dialog.show()
+                        }
+
+                        // Expands touch hitbox
+                        expandTouchArea(rating_btt_holder, rating_btt, 30.toPx)
+                        expandTouchArea(status_btt_holder, status_btt, 30.toPx)
+                        expandTouchArea(title_anilist_holder, title_anilist, 30.toPx)
+
+                        rating_btt?.setOnClickListener {
+                            val bottomSheetDialog = BottomSheetDialog(activity)
+                            bottomSheetDialog.setContentView(R.layout.sort_bottom_sheet)
+                            val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
+                            val arrayAdapter = ArrayAdapter<String>(activity, R.layout.sort_bottom_single_choice)
+                            val choices = listOf(
+                                "No rating",
+                                "1 - Appalling",
+                                "2 - Horrible",
+                                "3 - Very bad",
+                                "4 - Bad",
+                                "5 - Average",
+                                "6 - Fine",
+                                "7 - Good",
+                                "8 - Very good",
+                                "9 - Great",
+                                "10 - Masterpiece",
+                            )
+                            arrayAdapter.addAll(ArrayList(choices))
+
+                            res.choiceMode = CHOICE_MODE_SINGLE
+                            res.adapter = arrayAdapter
+                            res.setItemChecked(
+                                info.score,
+                                true
+                            )
+                            res.setOnItemClickListener { _, _, position, _ ->
+                                info.score = position
+                                info.syncData()
+                                bottomSheetDialog.dismiss()
+                            }
+                            bottomSheetDialog.main_text.text = "Rating"
+                            bottomSheetDialog.show()
+                        }
+
+                        status_btt?.setOnClickListener {
+                            val bottomSheetDialog = BottomSheetDialog(activity)
+                            bottomSheetDialog.setContentView(R.layout.sort_bottom_sheet)
+                            val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
+                            val arrayAdapter = ArrayAdapter<String>(activity, R.layout.sort_bottom_single_choice)
+                            val choices = listOf(
+                                "Watching",
+                                "Completed",
+                                "Paused",
+                                "Dropped",
+                                "Planning to watch",
+                                "Rewatching",
+                            )
+                            arrayAdapter.addAll(ArrayList(choices))
+
+                            res.choiceMode = CHOICE_MODE_SINGLE
+                            res.adapter = arrayAdapter
+                            res.setItemChecked(
+                                info.typeValue,
+                                true
+                            )
+                            res.setOnItemClickListener { _, _, position, _ ->
+                                info.typeValue = position
+
+                                if (position == AniListApi.Companion.AniListStatusType.Completed.value) {
+                                    info.progress = info.episodes
+                                }
+
+                                info.syncData()
+                                bottomSheetDialog.dismiss()
+                            }
+                            bottomSheetDialog.main_text.text = "Status"
+                            bottomSheetDialog.show()
+                        }
+
+                        title_anilist?.setOnClickListener {
+                            activity.openBrowser("https://anilist.co/anime/${resultViewModel?.currentAniListId?.value}")
+                        }
+
+                        resultViewModel?.currentMalId?.value?.let { currentMalId ->
+                            title_mal_holder?.visibility = VISIBLE
+                            expandTouchArea(title_mal_holder, title_mal, 30.toPx)
+
+                            title_mal?.setOnClickListener {
+                                activity.openBrowser("https://myanimelist.net/anime/${currentMalId}")
+                            }
+                        }
+                        activity.displayDate()
+
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            println("ERROR LOADING ID ${resultViewModel?.currentAniListId?.value}")
+        }
+    }
+
+
+    private fun Context.displayDate() {
+        val textColor = Integer.toHexString(getColorFromAttr(R.attr.textColor)).substring(2)
+        val textColorGrey =
+            Integer.toHexString(getColorFromAttr(R.attr.textColorGray)).substring(2)
+        if (anilistPage?.nextAiringEpisode != null) {
+            anilistPage?.nextAiringEpisode?.let { airingEpisode ->
+                title_day_of_week?.visibility = VISIBLE
+                if (data?.schedule != null) {
+                    data?.schedule?.let {
+                        title_day_of_week?.text =
+                            Html.fromHtml(
+                                "<font color=#${textColorGrey}>Schedule:</font><font color=#${textColor}> ${
+                                    // Capitalize
+                                    it.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+                                } - ${secondsToReadable(airingEpisode.timeUntilAiring, "Now")}</font>"/*,
+                            FROM_HTML_MODE_COMPACT*/
+                            )
+                    }
+                } else {
+                    title_day_of_week?.text =
+                        Html.fromHtml(
+                            "<font color=#${textColorGrey}>Schedule:</font><font color=#${textColor}> ${
+                                secondsToReadable(airingEpisode.timeUntilAiring, "Now")
+                            }</font>"/*,
+                            FROM_HTML_MODE_COMPACT*/
+                        )
+                }
+            }
+        } else if (data?.schedule != null && data?.status != "finished") {
+            title_day_of_week?.text =
+                Html.fromHtml(
+                    "<font color=#${textColorGrey}>Schedule:</font><font color=#${textColor}> ${
+                        // Capitalize
+                        data?.schedule?.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+                    }</font>"/*,
+                            FROM_HTML_MODE_COMPACT*/
+                )
+        } else {
+            title_day_of_week?.visibility = GONE
+        }
+
+    }
+
     private fun initData() {
         slug = data?.slug
         onLoaded.invoke(true)
@@ -510,7 +879,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
                     MasterEpisodeAdapter(
                         it,
                         data,
-                        fillerEpisodes,
+                        fillerEpisodes
                     )
                 }
                 episodes_res_view.adapter = adapter
@@ -527,6 +896,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
     override fun onDestroy() {
         super.onDestroy()
         isInResults = false
+        hasLoadedAnilist = false
         onResultsNavigated.invoke(false)
         onPlayerNavigated -= ::handleVideoPlayerNavigation
         DownloadManager.downloadStartEvent -= ::onDownloadStarted
@@ -582,6 +952,12 @@ private fun ToggleViewState(_isViewState: Boolean) {
                 }
             }
         }
+
+        observe(resultViewModel!!.currentAniListId) {
+            thread {
+                loadGetDataAboutId()
+            }
+        }
         //isViewState = false
 
         results_root.setPadding(0, MainActivity.statusHeight, 0, 0)
@@ -635,7 +1011,8 @@ private fun ToggleViewState(_isViewState: Boolean) {
         val localName = arguments?.getString(NAME)
         if (localName != null && settingsManager?.getBoolean("search_for_filler_episodes", true) == true) {
             thread {
-                fillerEpisodes = FillerEpisodeCheck.getFillerEpisodes(localName.replace("Dubbed", "").replace("Subbed", ""))
+                fillerEpisodes =
+                    FillerEpisodeCheck.getFillerEpisodes(localName.replace("Dubbed", "").replace("Subbed", ""))
                 activity?.runOnUiThread {
                     try {
                         if (episodes_res_view.adapter != null) {

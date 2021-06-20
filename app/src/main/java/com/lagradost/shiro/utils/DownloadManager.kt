@@ -103,6 +103,9 @@ object DownloadManager {
         //val card: FastAniApi.Card?,
         @JsonProperty("episodeIndex") val episodeIndex: Int,
         @JsonProperty("animeData") val animeData: ShiroApi.AnimePageData,
+
+        @JsonProperty("anilistID") val anilistID: Int? = null,
+        @JsonProperty("malID") val malID: Int? = null,
     )
 
     enum class DownloadType {
@@ -130,6 +133,9 @@ object DownloadManager {
         @JsonProperty("coverImagePath") val coverImagePath: String,
         @JsonProperty("isMovie") val isMovie: Boolean,
         @JsonProperty("slug") val slug: String,
+
+        @JsonProperty("anilistID") val anilistID: Int? = null,
+        @JsonProperty("malID") val malID: Int? = null,
     )
 
     // Glue for invoke()
@@ -470,7 +476,9 @@ object DownloadManager {
                         info.animeData.name,
                         mainPosterPath,
                         isMovie,
-                        info.animeData.slug
+                        info.animeData.slug,
+                        info.anilistID,
+                        info.malID
                     )
                 )
 

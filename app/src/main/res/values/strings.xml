@@ -16,8 +16,8 @@
     <string name="bookmark_btt_hint">Toggle Bookmark</string>
     <string name="viewstate_btt">Mark episodes seen</string>
     <string name="viewstate_btt_hint">Toggle Viewstate</string>
-    <string name="anilist_btt">Open Anilist</string>
-    <string name="anilist_btt_hint">Open Anilist</string>
+    <string name="anilist_btt">Anilist</string>
+    <string name="anilist_btt_hint">Anilist</string>
     <string name="home_recently_updated">Recently Updated</string>
     <string name="home_background_content_description">Background</string>
     <string name="resultpage1">Download something to make it show up here</string>

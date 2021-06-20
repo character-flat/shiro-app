@@ -40,7 +40,7 @@ class AniListApi {
             None(-1)
         }
 
-        private fun fromIntToAnimeStatus(inp: Int): AniListStatusType {//= AniListStatusType.values().first { it.value == inp }
+        fun fromIntToAnimeStatus(inp: Int): AniListStatusType {//= AniListStatusType.values().first { it.value == inp }
             return when (inp) {
                 -1 -> AniListStatusType.None
                 0 -> AniListStatusType.Watching
@@ -137,6 +137,10 @@ class AniListApi {
                             title {
                                 romaji
                             }
+                            nextAiringEpisode {
+                                timeUntilAiring
+                                episode
+                            }
                           }
                         }
                     }
@@ -156,14 +160,26 @@ class AniListApi {
             return null
         }
 
-        fun getShowId(name: String, year: Int?): Int? {
-            val shows = searchShows(name.replace("Dubbed", "").replace("Subbed", ""))
+        fun getShowId(name: String, year: Int?): GetSearchMedia? {
+            // Strips these from the name
+            val blackList = listOf(
+                "Dubbed",
+                "Subbed",
+                "(TV)",
+                "(Uncensored)",
+                "(Censored)",
+                "(\\d+)" // year
+            )
+            val blackListRegex =
+                Regex(""" (${blackList.joinToString(separator = "|").replace("(", "\\(").replace(")", "\\)")})""")
+            //println("NAME $name NEW NAME ${name.replace(blackListRegex, "")}")
+            val shows = searchShows(name.replace(blackListRegex, ""))
             val filtered = shows?.data?.Page?.media?.filter { (it.seasonYear == year || year == null) }
 
             filtered?.forEach {
-                if (fixName(it.title.romaji) == fixName(name)) return it.id
+                if (fixName(it.title.romaji) == fixName(name)) return it
             }
-            return filtered?.firstOrNull()?.id
+            return filtered?.firstOrNull()
         }
 
         private fun Activity.postApi(url: String, q: String): String {
@@ -192,7 +208,7 @@ class AniListApi {
         }
 
         fun Activity.getDataAboutId(id: Int): AniListTitleHolder? {
-            val q: String =
+            val q =
                 """query (${'$'}id: Int = $id) { # Define which variables will be used in the query (id)
                 Media (id: ${'$'}id, type: ANIME) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
                     id
@@ -218,7 +234,7 @@ class AniListApi {
                     return null
                 }
 
-                val main = d.data.media
+                val main = d.data.Media
                 if (main.mediaListEntry != null) {
                     println(main.mediaListEntry.status)
                     println(aniListStatusString)
@@ -229,7 +245,7 @@ class AniListApi {
                         progress = main.mediaListEntry.progress,
                         episodes = main.episodes,
                         score = main.mediaListEntry.score,
-                        type = fromIntToAnimeStatus(aniListStatusString.indexOf(main.mediaListEntry.status))
+                        type = fromIntToAnimeStatus(aniListStatusString.indexOf(main.mediaListEntry.status)),
                     )
                 } else {
                     return AniListTitleHolder(
@@ -238,7 +254,7 @@ class AniListApi {
                         progress = 0,
                         episodes = main.episodes,
                         score = 0,
-                        type = AniListStatusType.None
+                        type = AniListStatusType.None,
                     )
                 }
             } catch (e: java.lang.Exception) {
@@ -249,7 +265,7 @@ class AniListApi {
         }
 
         fun Activity.toggleLike(id: Int): Boolean {
-            val q: String = """mutation (${'$'}animeId: Int = $id) {
+            val q = """mutation (${'$'}animeId: Int = $id) {
 				ToggleFavourite (animeId: ${'$'}animeId) {
 					anime {
 						nodes {
@@ -266,7 +282,7 @@ class AniListApi {
         }
 
         fun Activity.postDataAboutId(id: Int, type: AniListStatusType, score: Int, progress: Int): Boolean {
-            val q: String =
+            val q =
                 """mutation (${'$'}id: Int = $id, ${'$'}status: MediaListStatus = ${aniListStatusString[type.value]}, ${'$'}scoreRaw: Int = ${score * 10}, ${'$'}progress: Int = $progress) {
                 SaveMediaListEntry (mediaId: ${'$'}id, status: ${'$'}status, scoreRaw: ${'$'}scoreRaw, progress: ${'$'}progress) {
                     id
@@ -282,7 +298,7 @@ class AniListApi {
         }
 
         private fun Activity.getUser(setSettings: Boolean = true): AniListUser? {
-            val q: String = """
+            val q = """
 				{
   					Viewer {
     					id
@@ -537,7 +553,7 @@ class AniListApi {
     )
 
     data class GetDataData(
-        @JsonProperty("media") val media: GetDataMedia,
+        @JsonProperty("Media") val Media: GetDataMedia,
     )
 
     data class GetDataRoot(
@@ -553,6 +569,7 @@ class AniListApi {
         @JsonProperty("idMal") val idMal: Int?,
         @JsonProperty("seasonYear") val seasonYear: Int,
         @JsonProperty("title") val title: GetSearchTitle,
+        @JsonProperty("nextAiringEpisode") val nextAiringEpisode: SeasonNextAiringEpisode?,
     )
 
     data class GetSearchPage(

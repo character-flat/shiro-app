@@ -30,6 +30,7 @@ import com.google.android.gms.common.images.WebImage
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.downloads.DownloadFragment.Companion.downloadsUpdated
+import com.lagradost.shiro.ui.result.ResultFragment.Companion.resultViewModel
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
@@ -71,7 +72,7 @@ class EpisodeAdapter(
             data,
             start,
             parentPosition,
-            isFiller
+            isFiller,
         )
     }
 
@@ -103,10 +104,17 @@ class EpisodeAdapter(
     constructor(
         itemView: View, val activity: FragmentActivity, private val resView: View,
         val data: ShiroApi.AnimePageData, val start: Int, private val parentPosition: Int,
-        private val isFiller: HashMap<Int, Boolean>? = null,
+        private val isFiller: HashMap<Int, Boolean>? = null
     ) :
         RecyclerView.ViewHolder(itemView) {
         val card: LinearLayout = itemView.episode_result_root
+
+        companion object {
+            val anilistID: Int?
+                get() = resultViewModel?.currentAniListId?.value
+            val malID: Int?
+                get() = resultViewModel?.currentMalId?.value
+        }
 
         // Downloads is only updated when re-bound!
         fun bind(position: Int) {
@@ -156,6 +164,8 @@ class EpisodeAdapter(
                                             DownloadManager.DownloadInfo(
                                                 episodePos,
                                                 data,
+                                                anilistID,
+                                                malID
                                             ),
                                             sources[which]
                                         )
@@ -169,6 +179,8 @@ class EpisodeAdapter(
                                         DownloadManager.DownloadInfo(
                                             episodePos,
                                             data,
+                                            anilistID,
+                                            malID
                                         ),
                                         sources[0]
                                     )
@@ -205,12 +217,12 @@ class EpisodeAdapter(
                         castEpisode(data, episodePos)
                     } else {
                         thread {
-                            activity.loadPlayer(episodePos, 0L, data)
+                            activity.loadPlayer(episodePos, 0L, data, anilistID, malID)
                         }
                     }
                 } else {
                     thread {
-                        activity.loadPlayer(episodePos, 0L, data)
+                        activity.loadPlayer(episodePos, 0L, data, anilistID, malID)
                     }
                 }
             }
@@ -347,7 +359,9 @@ class EpisodeAdapter(
                         fun getDownload(): DownloadManager.DownloadInfo {
                             return DownloadManager.DownloadInfo(
                                 child.episodeIndex,
-                                data
+                                data,
+                                anilistID,
+                                malID
                             )
                         }
 

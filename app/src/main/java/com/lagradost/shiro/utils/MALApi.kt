@@ -184,7 +184,7 @@ class MALApi {
             }
         }
 
-        private val malStatusAsString = arrayOf("watching", "completed", "on_hold", "dropped", "plan_to_watch")
+        val malStatusAsString = arrayOf("watching", "completed", "on_hold", "dropped", "plan_to_watch")
 
         enum class MalStatusType(var value: Int) {
             Watching(0),

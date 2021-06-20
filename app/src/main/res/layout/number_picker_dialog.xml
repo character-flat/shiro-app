@@ -5,6 +5,7 @@
         android:gravity="center"
         android:orientation="vertical"
         android:padding="20dp"
+        android:background="?attr/background"
 
 >
     <LinearLayout
@@ -47,7 +48,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/number_picker_set_progress"
-            android:textColor="?attr/textColor"
+            android:textColor="@color/textColor"
+            android:backgroundTint="?attr/colorPrimary"
             android:id="@+id/episode_progress_btt"
     >
 

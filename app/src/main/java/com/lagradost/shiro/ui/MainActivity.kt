@@ -63,7 +63,10 @@ data class LastEpisodeInfo(
     @JsonProperty("dur") val dur: Long,
     @JsonProperty("seenAt") val seenAt: Long,
     @JsonProperty("id") val id: ShiroApi.AnimePageData?,
+
+    // Old, is actually used for slugs
     @JsonProperty("aniListId") val aniListId: String,
+
     @JsonProperty("episodeIndex") val episodeIndex: Int,
     @JsonProperty("seasonIndex") val seasonIndex: Int,
     @JsonProperty("isMovie") val isMovie: Boolean,
@@ -71,6 +74,9 @@ data class LastEpisodeInfo(
     @JsonProperty("coverImage") val coverImage: String,
     @JsonProperty("title") val title: String,
     @JsonProperty("bannerImage") val bannerImage: String,
+
+    @JsonProperty("anilistID") val anilistID: Int? = null,
+    @JsonProperty("malID") val malID: Int? = null,
 )
 
 data class NextEpisode(
@@ -124,11 +130,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        println("BACK PRESSED!!!! $isInResults $isInPlayer $isInExpandedView")
-        if (isInResults || isInPlayer || isInExpandedView) {
-            popCurrentPage(isInPlayer, isInExpandedView, isInResults)
-        } else {
-            super.onBackPressed()
+        try {
+            println("BACK PRESSED!!!! $isInResults $isInPlayer $isInExpandedView")
+            if (isInResults || isInPlayer || isInExpandedView) {
+                popCurrentPage(isInPlayer, isInExpandedView, isInResults)
+            } else {
+                super.onBackPressed()
+            }
+        // java.lang.IllegalStateException: FragmentManager is already executing transactions
+        } catch (e: Exception) {
         }
     }
 

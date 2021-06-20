@@ -112,7 +112,9 @@ class DownloadFragmentChild : Fragment() {
                             0,
                             null,
                             null,
-                            slug!!
+                            slug!!,
+                            parent?.anilistID,
+                            parent?.malID
                         )
                     )
                 }
@@ -205,7 +207,9 @@ class DownloadFragmentChild : Fragment() {
                 fun getDownload(): DownloadManager.DownloadInfo {
                     return DownloadManager.DownloadInfo(
                         child.episodeIndex,
-                        child.animeData
+                        child.animeData,
+                        parent?.anilistID,
+                        parent?.malID
                     )
                 }
 

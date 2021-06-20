@@ -23,11 +23,19 @@
                 android:title="Hide all dubbed shows"
                 app:defaultValue="true"
         />
-        <SwitchPreference
+        <!--<SwitchPreference
                 android:icon="@drawable/outlined_heart"
                 app:key="hold_to_favorite"
                 android:title="Hold to favorite"
                 app:defaultValue="false"
+        />-->
+        <ListPreference
+                android:title="Hold behavior"
+                app:key="hold_behavior"
+                android:icon="@drawable/ic_baseline_touch_app_24"
+                app:useSimpleSummaryProvider="true"
+                android:entries="@array/LongClickOptions"
+                android:entryValues="@array/LongClickOptions"
         />
         <SwitchPreference
                 android:icon="@drawable/ic_baseline_storage_24"
@@ -243,6 +251,17 @@
                 app:seekBarIncrement="5"
         >
         </SeekBarPreference>
+        <SeekBarPreference
+                android:icon="@drawable/ic_baseline_cloud_done_24"
+                android:title="Completed percentage"
+                android:summary="Percentage of video watched to sync as seen. 0 disables the feature"
+                android:defaultValue="80"
+                android:max="100"
+                android:key="completed_percentage"
+                app:showSeekBarValue="true"
+                app:seekBarIncrement="5"
+        >
+        </SeekBarPreference>
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -267,7 +286,7 @@
         />
     </PreferenceCategory>
     <PreferenceCategory
-            app:isPreferenceVisible="false"
+            app:isPreferenceVisible="true"
             android:key="accounts"
             android:title="Accounts"
     >
@@ -283,7 +302,8 @@
         />
         <Preference
                 android:title="Donor ID"
-                app:key="donator_id"
+                app:key="donor_id"
+                app:isPreferenceVisible="false"
                 android:icon="@drawable/ic_baseline_perm_identity_24"
         />
     </PreferenceCategory>

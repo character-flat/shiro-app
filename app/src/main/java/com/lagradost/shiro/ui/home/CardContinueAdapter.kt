@@ -152,7 +152,7 @@ class CardContinueAdapter(
                 }
                 itemView.home_card_root.setOnClickListener {
                     cardInfo.id?.let { data ->
-                        activity.loadPlayer(cardInfo.episodeIndex, cardInfo.pos, data)
+                        activity.loadPlayer(cardInfo.episodeIndex, cardInfo.pos, data, cardInfo.anilistID, cardInfo.malID)
                     }
                 }
                 if (tvActivity != null) {

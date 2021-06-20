@@ -20,7 +20,7 @@ import kotlinx.android.synthetic.main.episode_expander.view.*
 class MasterEpisodeAdapter(
     val activity: FragmentActivity,
     var data: ShiroApi.AnimePageData,
-    var isFiller: HashMap<Int, Boolean>? = null
+    var isFiller: HashMap<Int, Boolean>? = null,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     val episodes = data.episodes!!
 
@@ -35,14 +35,17 @@ class MasterEpisodeAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return MasterEpisodeViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.episode_expander, parent, false)
+            LayoutInflater.from(parent.context).inflate(R.layout.episode_expander, parent, false),
+            activity,
+            data,
+            isFiller
         )
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
             is MasterEpisodeViewHolder -> {
-                holder.bind(items[position], activity, data, position, isFiller)
+                holder.bind(items[position], position)
             }
         }
         holder.itemView.setOnClickListener {
@@ -58,9 +61,15 @@ class MasterEpisodeAdapter(
     class MasterEpisodeViewHolder
     constructor(
         itemView: View,
+        val activity: FragmentActivity,
+        val data: ShiroApi.AnimePageData,
+        private val fillerList: HashMap<Int, Boolean>? = null,
     ) :
         RecyclerView.ViewHolder(itemView) {
-        fun bind(item: MasterEpisode, activity: FragmentActivity, data: ShiroApi.AnimePageData, position: Int, fillerList: HashMap<Int, Boolean>? = null,) {
+        fun bind(
+            item: MasterEpisode,
+            position: Int,
+        ) {
             //println("BIND $position" + "|" + (fillerList?.size ?: "NULLL"))
             itemView.cardTitle.text =
                 if (item.start + 1 == item.end) "Episode ${item.end}"

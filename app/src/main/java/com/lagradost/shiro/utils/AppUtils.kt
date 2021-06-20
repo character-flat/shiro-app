@@ -13,6 +13,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.database.Cursor
 import android.graphics.Color
+import android.graphics.Rect
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.net.Uri
@@ -22,6 +23,7 @@ import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.util.Log
 import android.util.TypedValue
+import android.view.TouchDelegate
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
@@ -41,6 +43,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.ktx.messaging
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.EpisodePosDurInfo
@@ -62,6 +66,7 @@ import com.lagradost.shiro.ui.tv.PlayerFragmentTv
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFav
+import com.lagradost.shiro.utils.ShiroApi.Companion.getSubbed
 import com.lagradost.shiro.utils.extractors.Vidstream
 import java.io.*
 import java.net.URL
@@ -94,6 +99,18 @@ object AppUtils {
             resources.getDimensionPixelSize(resourceId)
         } else
             0
+    }
+
+    fun expandTouchArea(bigView: View?, smallView: View?, extraPadding: Int) {
+        bigView?.post {
+            val rect = Rect()
+            smallView?.getHitRect(rect)
+            rect.top -= extraPadding
+            rect.left -= extraPadding
+            rect.right += extraPadding
+            rect.bottom += extraPadding
+            bigView.touchDelegate = TouchDelegate(rect, smallView)
+        }
     }
 
     // Copied from https://github.com/videolan/vlc-android/blob/master/application/vlc-android/src/org/videolan/vlc/util/FileUtils.kt
@@ -209,16 +226,70 @@ object AppUtils {
     }
 
     fun Context.onLongCardClick(card: ShiroApi.CommonAnimePage): Boolean {
-        return if (settingsManager?.getBoolean("hold_to_favorite", false) == true) {
+        val selected = settingsManager?.getString("hold_behavior", "Show Toast")
+        if (selected  == "Subscribe" || selected == "Favorite and Subscribe"){
+            subscribeToShow(card)
+        }
+        if (selected == "Show Toast") {
+            Toast.makeText(this, card.name, Toast.LENGTH_SHORT).show()
+        }
+        if (selected == "Favorite" || selected == "Favorite and Subscribe") {
             val isBookmarked = toggleHeart(card.name, card.image, card.slug)
             val prefix = if (isBookmarked) "Added" else "Removed"
             Toast.makeText(this, "$prefix ${card.name}", Toast.LENGTH_SHORT).show()
-            true
+            return isBookmarked
+        }
+        return false
+    }
+
+    // TODO USE THIS IN RESULT_FRAGMENT
+    private fun subscribeToShow(data: ShiroApi.CommonAnimePage) {
+        val subbedBookmark = DataStore.getKey<BookmarkedTitle>(SUBSCRIPTIONS_BOOKMARK_KEY, data.slug, null)
+        val isSubbedOld = DataStore.getKey(SUBSCRIPTIONS_KEY, data.slug, false)!!
+        val isSubbed = isSubbedOld || subbedBookmark != null
+
+        if (isSubbed) {
+            Firebase.messaging.unsubscribeFromTopic(data.slug)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        DataStore.removeKey(SUBSCRIPTIONS_BOOKMARK_KEY, data.slug)
+                        DataStore.removeKey(SUBSCRIPTIONS_KEY, data.slug)
+                    }
+                    var msg = "Unsubscribed to ${data.name}"//getString(R.string.msg_subscribed)
+                    if (!task.isSuccessful) {
+                        msg = "Unsubscribing failed :("//getString(R.string.msg_subscribe_failed)
+                    }
+                    thread {
+                        homeViewModel!!.subscribed.postValue(getSubbed())
+                    }
+                    //Log.d(TAG, msg)
+                    Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                }
         } else {
-            Toast.makeText(this, card.name, Toast.LENGTH_SHORT).show()
-            false
+            Firebase.messaging.subscribeToTopic(data.slug)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        DataStore.setKey(
+                            SUBSCRIPTIONS_BOOKMARK_KEY, data.slug, BookmarkedTitle(
+                                data.name,
+                                data.image,
+                                data.slug
+                            )
+                        )
+                    }
+                    var msg = "Subscribed to ${data.name}"//getString(R.string.msg_subscribed)
+                    if (!task.isSuccessful) {
+                        msg = "Subscription failed :("//getString(R.string.msg_subscribe_failed)
+                    }
+                    thread {
+                        homeViewModel!!.subscribed.postValue(getSubbed())
+                    }
+                    //Log.d(TAG, msg)
+                    Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                }
         }
     }
+
 
     fun adjustAlpha(@ColorInt color: Int, factor: Float): Int {
         val alpha = (Color.alpha(color) * factor).roundToInt()
@@ -512,6 +583,8 @@ object AppUtils {
                     card.image,
                     card.name,
                     card.banner.toString(),
+                    data.anilistID,
+                    data.malID
                 )
             )
 
@@ -562,50 +635,52 @@ object AppUtils {
     }
 
     fun FragmentActivity.popCurrentPage(isInPlayer: Boolean, isInExpandedView: Boolean, isInResults: Boolean) {
-        println("POPP")
-
-        val currentFragment = supportFragmentManager.fragments.lastOrNull {
-            it.isVisible
-        }
-
-
-        if (tvActivity == null) {
-            requestedOrientation = if (settingsManager?.getBoolean("force_landscape", false) == true) {
-                ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
-            } else {
-                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        println("POPPED CURRENT FRAGMENT")
+        //supportFragmentManager.executePendingTransactions()
+        thread {
+            val currentFragment = supportFragmentManager.fragments.lastOrNull {
+                it.isVisible
             }
-        }
 
-        if (currentFragment == null) {
-            //this.onBackPressed()
-            return
-        }
 
-        // No fucked animations leaving the player :)
-        when {
-            isInPlayer -> {
-                supportFragmentManager.beginTransaction()
-                    //.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                    .remove(currentFragment)
-                    .commitAllowingStateLoss()
+            if (tvActivity == null) {
+                requestedOrientation = if (settingsManager?.getBoolean("force_landscape", false) == true) {
+                    ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+                } else {
+                    ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                }
             }
-            isInExpandedView && !isInResults -> {
-                supportFragmentManager.beginTransaction()
-                    .setCustomAnimations(
-                        R.anim.enter_from_right,
-                        R.anim.exit_to_right,
-                        R.anim.pop_enter,
-                        R.anim.pop_exit
-                    )
-                    .remove(currentFragment)
-                    .commitAllowingStateLoss()
+
+            if (currentFragment == null) {
+                //this.onBackPressed()
+                return@thread
             }
-            else -> {
-                supportFragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                    .remove(currentFragment)
-                    .commitAllowingStateLoss()
+
+            // No fucked animations leaving the player :)
+            when {
+                isInPlayer -> {
+                    supportFragmentManager.beginTransaction()
+                        //.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                        .remove(currentFragment)
+                        .commitAllowingStateLoss()
+                }
+                isInExpandedView && !isInResults -> {
+                    supportFragmentManager.beginTransaction()
+                        .setCustomAnimations(
+                            R.anim.enter_from_right,
+                            R.anim.exit_to_right,
+                            R.anim.pop_enter,
+                            R.anim.pop_exit
+                        )
+                        .remove(currentFragment)
+                        .commitAllowingStateLoss()
+                }
+                else -> {
+                    supportFragmentManager.beginTransaction()
+                        .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                        .remove(currentFragment)
+                        .commitAllowingStateLoss()
+                }
             }
         }
     }
@@ -654,7 +729,13 @@ object AppUtils {
         liveData.observe(this) { it?.let { t -> action(t) } }
     }
 
-    fun FragmentActivity.loadPlayer(episodeIndex: Int, startAt: Long, card: ShiroApi.AnimePageData) {
+    fun FragmentActivity.loadPlayer(
+        episodeIndex: Int,
+        startAt: Long,
+        card: ShiroApi.AnimePageData,
+        anilistID: Int? = null,
+        malID: Int? = null
+    ) {
         loadPlayer(
             PlayerData(
                 null, null,
@@ -662,7 +743,9 @@ object AppUtils {
                 0,
                 card,
                 startAt,
-                card.slug
+                card.slug,
+                anilistID,
+                malID
             )
         )
     }

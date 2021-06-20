@@ -16,7 +16,10 @@ import android.graphics.Color
 import android.graphics.drawable.Icon
 import android.media.AudioManager
 import android.net.Uri
-import android.os.*
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
 import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -24,13 +27,11 @@ import android.view.View
 import android.view.View.*
 import android.view.ViewGroup
 import android.view.WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
-import android.view.WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_OFF
 import android.view.animation.*
 import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AlertDialog
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.transition.Fade
@@ -61,6 +62,8 @@ import com.lagradost.shiro.ui.player.PlayerActivity.Companion.playerActivity
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.AniListApi.Companion.getDataAboutId
+import com.lagradost.shiro.utils.AniListApi.Companion.postDataAboutId
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getViewKey
@@ -72,6 +75,8 @@ import com.lagradost.shiro.utils.AppUtils.requestAudioFocus
 import com.lagradost.shiro.utils.AppUtils.setViewPosDur
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.AppUtils.showSystemUI
+import com.lagradost.shiro.utils.MALApi.Companion.malStatusAsString
+import com.lagradost.shiro.utils.MALApi.Companion.setScoreRequest
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 import com.lagradost.shiro.utils.ShiroApi.Companion.fmod
 import com.lagradost.shiro.utils.ShiroApi.Companion.loadLinks
@@ -83,7 +88,6 @@ import java.util.*
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSession
-import kotlin.collections.ArrayList
 import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.thread
 import kotlin.math.abs
@@ -104,12 +108,14 @@ const val PLAYER_FRAGMENT_TAG = "PLAYER_FRAGMENT_TAG"
 data class PlayerData(
     @JsonProperty("title") var title: String?,
     @JsonProperty("url") var url: String?,
-
     @JsonProperty("episodeIndex") var episodeIndex: Int?,
     @JsonProperty("seasonIndex") var seasonIndex: Int?,
     @JsonProperty("card") val card: ShiroApi.AnimePageData?,
     @JsonProperty("startAt") val startAt: Long?,
     @JsonProperty("slug") val slug: String,
+
+    @JsonProperty("anilistID") val anilistID: Int? = null,
+    @JsonProperty("malID") val malID: Int? = null,
 )
 
 enum class PlayerEventType(val value: Int) {
@@ -204,6 +210,8 @@ class PlayerFragment : Fragment() {
     private val fastForwardTime = settingsManager!!.getInt("fast_forward_button_time", 10)
     private var sources: Pair<Int?, List<ExtractorLink>?> = Pair(null, null)
 
+    private var lastSyncedEpisode = -1
+
     // To prevent watching everything while sleeping
     private var episodesSinceInteraction = 0
 
@@ -218,6 +226,8 @@ class PlayerFragment : Fragment() {
     private val showTimeoutMs = 3000L
     private val hideAction = Runnable { hide() }
     private val nextEpisodeAction = Runnable { playNextEpisode() }
+    private val checkProgressAction = Runnable { checkProgress() }
+
     private var timer: Timer? = null
     //private val linkLoadedEvent = Event<ExtractorLink>()
 
@@ -433,6 +443,7 @@ class PlayerFragment : Fragment() {
         val lp = activity?.window?.attributes
         lp?.screenBrightness = BRIGHTNESS_OVERRIDE_NONE
         activity?.window?.attributes = lp
+        handler.removeCallbacks(checkProgressAction)
 
 
         super.onDestroy()
@@ -1233,8 +1244,105 @@ class PlayerFragment : Fragment() {
         }
     }
 
+    private fun checkProgress() {
+        val time = 5000L
+
+        // Disabled if it's 0
+        val setPercentage: Float = settingsManager!!.getInt("completed_percentage", 80).toFloat() / 100
+        if (this::exoPlayer.isInitialized && setPercentage != 0.0f) {
+            val currentPercentage = exoPlayer.currentPosition.toFloat() / exoPlayer.duration.toFloat()
+            if (currentPercentage > setPercentage && lastSyncedEpisode < data?.episodeIndex!!) {
+                lastSyncedEpisode = data?.episodeIndex!!
+                thread {
+                    updateProgress()
+                }
+            } else {
+                if (data?.anilistID != null || data?.malID != null) handler.postDelayed(
+                    checkProgressAction,
+                    time
+                )
+            }
+        } else if (data?.anilistID != null || data?.malID != null && setPercentage != 0.0f) {
+            handler.postDelayed(
+                checkProgressAction,
+                time
+            )
+        }
+    }
+
+
+    private fun updateProgress() {
+        val hasAniList = DataStore.getKey<String>(
+            ANILIST_TOKEN_KEY,
+            ANILIST_ACCOUNT_ID,
+            null
+        ) != null
+        val hasMAL = DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+
+        val malHolder = if (hasMAL) data?.malID?.let { MALApi.getDataAboutId(it) } else null
+        val holder = if (hasAniList && malHolder == null) data?.anilistID?.let {
+            activity?.getDataAboutId(
+                it
+            )
+        } else null
+
+        val progress = malHolder?.my_list_status?.num_episodes_watched ?: holder?.progress ?: 0
+        val score = malHolder?.my_list_status?.score ?: holder?.score ?: 0
+        val type = if (malHolder != null) {
+            var type =
+                AniListApi.fromIntToAnimeStatus(malStatusAsString.indexOf(malHolder.my_list_status?.status))
+            type =
+                if (type.value == MALApi.Companion.MalStatusType.None.value) AniListApi.Companion.AniListStatusType.Watching else type
+            type
+        } else {
+            val type =
+                if (holder?.type == AniListApi.Companion.AniListStatusType.None) AniListApi.Companion.AniListStatusType.Watching else holder?.type
+            AniListApi.fromIntToAnimeStatus(type?.value ?: 0)
+        }
+
+        if (progress < data?.episodeIndex!! + 1) {
+            val anilistPost =
+                if (hasAniList) data?.anilistID?.let {
+                    activity?.postDataAboutId(
+                        it,
+                        type,
+                        score,
+                        data?.episodeIndex!! + 1
+                    )
+                } ?: false else true
+            val malPost = if (hasMAL)
+                data?.malID?.let {
+                    setScoreRequest(
+                        it,
+                        MALApi.fromIntToAnimeStatus(type.value),
+                        score,
+                        data?.episodeIndex!! + 1
+                    )
+                } ?: false else true
+            if (!anilistPost || malPost.not()) {
+                getCurrentActivity()!!.runOnUiThread {
+                    Toast.makeText(
+                        getCurrentActivity()!!,
+                        "Error updating episode progress",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            } else {
+                getCurrentActivity()!!.runOnUiThread {
+                    Toast.makeText(
+                        getCurrentActivity()!!,
+                        "Marked episode as seen",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     private fun initPlayer(inputUrl: ExtractorLink? = null) {
+        println("ANILIST IDDDDDDDDDDD ${data?.anilistID} MAL IDDDD ${data?.malID}")
+
         isCurrentlyPlaying = true
         view?.setOnTouchListener { _, _ ->
             println("OVERRIDDEN TOUCH")
@@ -1306,6 +1414,7 @@ class PlayerFragment : Fragment() {
                                 if (!nextEpisode.isNullOrEmpty()) {
                                     next_episode_btt?.visibility = VISIBLE
                                     next_episode_btt?.setOnClickListener {
+                                        handler.removeCallbacks(checkProgressAction)
                                         cancelNextEpisode()
                                         if (isLoadingNextEpisode) return@setOnClickListener
                                         updateHideTime(interaction = false)
@@ -1320,6 +1429,7 @@ class PlayerFragment : Fragment() {
 
                                         releasePlayer()
                                         loadAndPlay()
+                                        handler.postDelayed(checkProgressAction, 5000L)
 
                                         data!!.title =
                                             "Episode ${nextEpisode[0]!!.episodeIndex + 1} · ${nextEpisode[0]!!.videoTitle}"
@@ -1334,6 +1444,7 @@ class PlayerFragment : Fragment() {
                         } else if (canPlayNextEpisode()) {
                             next_episode_btt?.visibility = VISIBLE
                             next_episode_btt?.setOnClickListener {
+                                handler.removeCallbacks(checkProgressAction)
                                 cancelNextEpisode()
                                 if (isLoadingNextEpisode) return@setOnClickListener
                                 updateHideTime(interaction = false)
@@ -1354,6 +1465,7 @@ class PlayerFragment : Fragment() {
                                 data?.episodeIndex = data!!.episodeIndex!! + 1
                                 releasePlayer()
                                 loadAndPlay()
+                                handler.postDelayed(checkProgressAction, 5000L)
                             }
                         }
                         // this to make the button visible in the editor
@@ -1361,7 +1473,8 @@ class PlayerFragment : Fragment() {
                             next_episode_btt?.visibility = GONE
                         }
 
-                        val mimeType = if (currentUrl.isM3u8) MimeTypes.APPLICATION_M3U8 else MimeTypes.APPLICATION_MP4
+                        val mimeType =
+                            if (currentUrl.isM3u8) MimeTypes.APPLICATION_M3U8 else MimeTypes.APPLICATION_MP4
                         val mediaItemBuilder = MediaItem.Builder()
                             //Replace needed for android 6.0.0  https://github.com/google/ExoPlayer/issues/5983
                             .setMimeType(mimeType)
@@ -1493,6 +1606,8 @@ class PlayerFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        handler.postDelayed(checkProgressAction, 5000L)
+
         // When restarting activity the rotation is ensured :)
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
         onPlayerNavigated.invoke(true)
