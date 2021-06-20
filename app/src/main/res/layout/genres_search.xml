@@ -4,7 +4,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:background="?attr/darkBar"
+        android:background="@null"
         android:layout_height="match_parent">
     <androidx.cardview.widget.CardView
             app:cardCornerRadius="10dp"
@@ -44,7 +44,7 @@
                     android:textSize="15sp"
                     app:cornerRadius="5dp"
                     app:strokeWidth="2dp"
-                    android:textColor="?attr/textColor"
+                    android:textColor="@color/white"
                     app:strokeColor="?attr/colorPrimaryDark"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     app:rippleColor="?attr/colorPrimary"
@@ -60,6 +60,8 @@
             android:layout_height="wrap_content"
             android:backgroundTint="?attr/darkBar"
             android:background="?attr/darkBar"
+            android:layout_marginTop="-10dp"
+            android:paddingTop="10dp"
     >
         <com.lagradost.shiro.ui.search.MyFlowLayout
                 android:id="@+id/search_tags"

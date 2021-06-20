@@ -903,6 +903,9 @@ private fun ToggleViewState(_isViewState: Boolean) {
         isInResults = false
         hasLoadedAnilist = false
         onResultsNavigated.invoke(false)
+        resultViewModel?.currentAniListId?.postValue(null)
+        resultViewModel?.currentMalId?.postValue(null)
+
         onPlayerNavigated -= ::handleVideoPlayerNavigation
         DownloadManager.downloadStartEvent -= ::onDownloadStarted
         onLoadedOther -= ::onLoadOtherEvent

@@ -75,8 +75,8 @@ data class LastEpisodeInfo(
     @JsonProperty("title") val title: String,
     @JsonProperty("bannerImage") val bannerImage: String,
 
-    @JsonProperty("anilistID") val anilistID: Int? = null,
-    @JsonProperty("malID") val malID: Int? = null,
+    @JsonProperty("anilistID") val anilistID: Int?,
+    @JsonProperty("malID") val malID: Int?,
 )
 
 data class NextEpisode(

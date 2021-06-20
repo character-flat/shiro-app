@@ -54,6 +54,7 @@
         <item name="android:colorControlHighlight">?attr/white</item>
         <item name="alertDialogTheme">@style/AlertDialogCustom</item>
         <item name="android:includeFontPadding">false</item>
+        <item name="bottomSheetDialogTheme">@style/AppBottomSheetDialogTheme</item>
 
         <item name="android:colorControlActivated">?attr/colorPrimarySecond</item>
         <item name="android:colorControlNormal">@color/lb_preference_item_primary_text_color_default</item>
@@ -62,6 +63,17 @@
     <style name="Widget.App.BottomNavigationView" parent="Widget.Design.BottomNavigationView">
         <item name="materialThemeOverlay">@style/NavigationView</item>
     </style>
+
+    <style name="AppBottomSheetDialogTheme"
+           parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/AppModalStyle</item>
+    </style>
+
+    <style name="AppModalStyle"
+           parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/rounded_dialog</item>
+    </style>
+
 
     <style name="NavigationView" parent="Theme.MaterialComponents.Light">
         <item name="colorPrimary">?attr/textColor</item>
