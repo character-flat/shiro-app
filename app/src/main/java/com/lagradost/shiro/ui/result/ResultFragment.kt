@@ -363,7 +363,7 @@ class ResultFragment : Fragment() {
 
                     val drawable =
                         if (isSubbed) R.drawable.ic_baseline_notifications_active_24 else R.drawable.ic_baseline_notifications_none_24
-                    subscribe_image.setImageResource(drawable)
+                    subscribe_image?.setImageResource(drawable)
                     subscribe_holder?.setOnClickListener {
                         val subbedBookmark = DataStore.getKey<BookmarkedTitle>(SUBSCRIPTIONS_BOOKMARK_KEY, slug, null)
                         val isSubbedOld = DataStore.getKey(SUBSCRIPTIONS_KEY, slug, false)!!
@@ -373,7 +373,7 @@ class ResultFragment : Fragment() {
                             Firebase.messaging.unsubscribeFromTopic(slug)
                                 .addOnCompleteListener { task ->
                                     if (task.isSuccessful) {
-                                        subscribe_image.setImageResource(R.drawable.ic_baseline_notifications_none_24)
+                                        subscribe_image?.setImageResource(R.drawable.ic_baseline_notifications_none_24)
                                         DataStore.removeKey(SUBSCRIPTIONS_BOOKMARK_KEY, slug)
                                         DataStore.removeKey(SUBSCRIPTIONS_KEY, slug)
                                     }
@@ -382,7 +382,7 @@ class ResultFragment : Fragment() {
                                         msg = "Unsubscribing failed :("//getString(R.string.msg_subscribe_failed)
                                     }
                                     thread {
-                                        homeViewModel!!.subscribed.postValue(getSubbed())
+                                        homeViewModel?.subscribed?.postValue(getSubbed())
                                     }
                                     //Log.d(TAG, msg)
                                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
@@ -391,7 +391,7 @@ class ResultFragment : Fragment() {
                             Firebase.messaging.subscribeToTopic(slug)
                                 .addOnCompleteListener { task ->
                                     if (task.isSuccessful) {
-                                        subscribe_image.setImageResource(R.drawable.ic_baseline_notifications_active_24)
+                                        subscribe_image?.setImageResource(R.drawable.ic_baseline_notifications_active_24)
                                         DataStore.setKey(
                                             SUBSCRIPTIONS_BOOKMARK_KEY, slug, BookmarkedTitle(
                                                 data.name,
@@ -405,7 +405,7 @@ class ResultFragment : Fragment() {
                                         msg = "Subscription failed :("//getString(R.string.msg_subscribe_failed)
                                     }
                                     thread {
-                                        homeViewModel!!.subscribed.postValue(getSubbed())
+                                        homeViewModel?.subscribed?.postValue(getSubbed())
                                     }
                                     //Log.d(TAG, msg)
                                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
@@ -828,9 +828,9 @@ private fun ToggleViewState(_isViewState: Boolean) {
 
     private fun toggleHeartVisual(_isBookmarked: Boolean) {
         if (_isBookmarked) {
-            title_bookmark.setImageResource(R.drawable.filled_heart)
+            title_bookmark?.setImageResource(R.drawable.filled_heart)
         } else {
-            title_bookmark.setImageResource(R.drawable.outlined_heart)
+            title_bookmark?.setImageResource(R.drawable.outlined_heart)
         }
     }
 
