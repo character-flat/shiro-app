@@ -209,11 +209,16 @@ class ResultFragment : Fragment() {
                 loadSeason()
 
                 thread {
-                    if (!hasLoadedAnilist) {
+                    val hasAniList = DataStore.getKey<String>(
+                        ANILIST_TOKEN_KEY,
+                        ANILIST_ACCOUNT_ID,
+                        null
+                    ) != null
+                    val hasMAL = DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+
+                    if (!hasLoadedAnilist && (hasAniList || hasMAL)) {
                         hasLoadedAnilist = true
-                        println("GETTING ANILIST PAGE")
                         anilistPage = getShowId(data.name, data.year?.toInt())
-                        println("LOADED ANILIST ${anilistPage?.id}")
                         resultViewModel?.currentAniListId?.postValue(anilistPage?.id ?: 0)
                         resultViewModel?.currentMalId?.postValue(anilistPage?.idMal)
                     }

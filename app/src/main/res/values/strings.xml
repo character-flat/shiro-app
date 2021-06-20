@@ -1,6 +1,8 @@
 <resources>
     <string name="changelog">\n
+        - Added mal/anilist sync!\n
         - Added filler info\n
+        - Added hold to subscribe\n
         - Added an option to backup\n
     </string>
     <string name="app_name">Shiro</string>
