@@ -115,8 +115,8 @@ class MainActivity : AppCompatActivity() {
         if (intent != null) {
             val dataString = intent.dataString
             if (dataString != null && dataString != "") {
-                println("GOT fastaniapp auth$dataString")
-                if (dataString.contains("fastaniapp")) {
+                println("GOT shiroapp auth$dataString")
+                if (dataString.contains("shiroapp")) {
                     if (dataString.contains("/anilistlogin")) {
                         authenticateLogin(dataString)
                     } else if (dataString.contains("/mallogin")) {
@@ -447,8 +447,8 @@ class MainActivity : AppCompatActivity() {
         if (data != null) {
             val dataString = data.toString()
             if (dataString != "") {
-                println("GOT fastaniapp auth awake: $dataString")
-                if (dataString.contains("fastaniapp")) {
+                println("GOT shiroapp auth awake: $dataString")
+                if (dataString.contains("shiroapp")) {
                     if (dataString.contains("/anilistlogin")) {
                         authenticateLogin(dataString)
                     } else if (dataString.contains("/mallogin")) {

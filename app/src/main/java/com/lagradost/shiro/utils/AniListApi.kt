@@ -68,7 +68,7 @@ class AniListApi {
         fun Activity.authenticateLogin(data: String) {
             try {
                 val sanitizer =
-                    splitQuery(URL(data.replace("fastaniapp", "https").replace("/#", "?"))) // FIX ERROR
+                    splitQuery(URL(data.replace("shiroapp", "https").replace("/#", "?"))) // FIX ERROR
                 val token = sanitizer["access_token"]!!
                 val expiresIn = sanitizer["expires_in"]!!
                 println("DATA: $token|$expiresIn")

@@ -45,7 +45,7 @@ class MALApi {
         fun authenticateLogin(data: String) {
             try {
                 val sanitizer =
-                    splitQuery(URL(data.replace("fastaniapp", "https").replace("/#", "?"))) // FIX ERROR
+                    splitQuery(URL(data.replace("shiroapp", "https").replace("/#", "?"))) // FIX ERROR
                 val state = sanitizer["state"]!!
                 if (state == "RequestID$requestId") {
                     val currentCode = sanitizer["code"]!!
