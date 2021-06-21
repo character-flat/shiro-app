@@ -759,10 +759,10 @@ class PlayerFragment : Fragment() {
                             "${convertTimeToString((isMovingStartTime + skipTime) / 1000.0)} [${(if (abs(skipTime) < 1000) "" else (if (skipTime > 0) "+" else "-"))}${
                                 convertTimeToString(abs(skipTime / 1000.0))
                             }]"
-                        timeText.alpha = 1f
-                        timeText.text = timeString
+                        timeText?.alpha = 1f
+                        timeText?.text = timeString
                     } else {
-                        timeText.alpha = 0f
+                        timeText?.alpha = 0f
                     }
                 }
             }
@@ -773,7 +773,9 @@ class PlayerFragment : Fragment() {
                 episodesSinceInteraction = 0
                 transition.duration = 1000
 
-                TransitionManager.beginDelayedTransition(player_holder, transition)
+                player_holder?.let {
+                    TransitionManager.beginDelayedTransition(it, transition)
+                }
 
                 if (abs(skipTime) > 3000 && !preventHorizontalSwipe && swipeEnabled) {
                     exoPlayer.seekTo(maxOf(minOf(skipTime + isMovingStartTime, exoPlayer.duration), 0))
@@ -784,12 +786,12 @@ class PlayerFragment : Fragment() {
                 prevDiffX = 0.0
                 skipTime = 0
 
-                timeText.animate().alpha(0f).setDuration(200)
-                    .setInterpolator(AccelerateInterpolator()).start()
-                progressBarRightHolder.animate().alpha(0f).setDuration(200)
-                    .setInterpolator(AccelerateInterpolator()).start()
-                progressBarLeftHolder.animate().alpha(0f).setDuration(200)
-                    .setInterpolator(AccelerateInterpolator()).start()
+                timeText?.animate()?.alpha(0f)?.setDuration(200)
+                    ?.setInterpolator(AccelerateInterpolator())?.start()
+                progressBarRightHolder?.animate()?.alpha(0f)?.setDuration(200)
+                    ?.setInterpolator(AccelerateInterpolator())?.start()
+                progressBarLeftHolder?.animate()?.alpha(0f)?.setDuration(200)
+                    ?.setInterpolator(AccelerateInterpolator())?.start()
                 //val fadeAnimation = AlphaAnimation(1f, 0f)
                 //fadeAnimation.duration = 100
                 //fadeAnimation.fillAfter = true
@@ -1300,7 +1302,7 @@ class PlayerFragment : Fragment() {
             AniListApi.fromIntToAnimeStatus(type?.value ?: 0)
         }
 
-        if (progress < data?.episodeIndex!! + 1) {
+        if (progress < data?.episodeIndex!! + 1 && holder ?: malHolder != null) {
             val anilistPost =
                 if (hasAniList) data?.anilistID?.let {
                     activity?.postDataAboutId(
@@ -1647,7 +1649,7 @@ class PlayerFragment : Fragment() {
         } catch (e: Exception) {
             println("ERROR IN SSL")
         }*/
-        playerViewModel = ViewModelProvider(getCurrentActivity()!!).get(PlayerViewModel::class.java)
+        playerViewModel = playerViewModel ?: ViewModelProvider(getCurrentActivity()!!).get(PlayerViewModel::class.java)
         return inflater.inflate(R.layout.player, container, false)
     }
 }

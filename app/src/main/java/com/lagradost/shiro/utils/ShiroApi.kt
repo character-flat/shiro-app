@@ -469,7 +469,7 @@ class ShiroApi {
             return res
         }
 
-        private var currentToken: Token? = null
+        var currentToken: Token? = null
         var currentHeaders: MutableMap<String, String>? = null
         var onHomeFetched = Event<ShiroHomePage?>()
         var onSearchFetched = Event<AllSearchMethodsData?>()

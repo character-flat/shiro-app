@@ -37,6 +37,7 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.getRandomAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import kotlinx.android.synthetic.main.download_card.*
 import kotlinx.android.synthetic.main.fragment_home.*
+import java.lang.Thread.sleep
 import kotlin.concurrent.thread
 
 //const val MAXIMUM_FADE = 0.3f
@@ -123,15 +124,12 @@ class HomeFragment : Fragment() {
                 recentlySeenRoot.visibility = GONE
             }
             TransitionManager.beginDelayedTransition(main_scroll, transition)
-            main_load.alpha = 0f
-            main_scroll.alpha = 1f
+            main_load?.alpha = 0f
+            main_scroll?.alpha = 1f
 
-            // This somehow crashes, hope this null check helps ¯\_(ツ)_/¯
-            if (main_reload_data_btt != null) {
-                main_reload_data_btt.alpha = 0f
-                main_reload_data_btt.isClickable = false
-            }
-            main_layout.setPadding(0, MainActivity.statusHeight, 0, 0)
+            main_reload_data_btt?.alpha = 0f
+            main_reload_data_btt?.isClickable = false
+            main_layout?.setPadding(0, MainActivity.statusHeight, 0, 0)
         }
     }
 
@@ -230,9 +228,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun onHomeErrorCatch(fullRe: Boolean) {
-        // Null check because somehow this can crash
         activity?.runOnUiThread {
-            // ?. because it somehow crashes anyways without it for one person
             if (main_reload_data_btt != null) {
                 main_reload_data_btt?.alpha = 1f
                 main_load?.alpha = 0f
@@ -310,7 +306,7 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        main_scroll.alpha = 0f
+        main_scroll?.alpha = 0f
         ShiroApi.onHomeError += ::onHomeErrorCatch
         if (ShiroApi.hasThrownError != -1) {
             onHomeErrorCatch(ShiroApi.hasThrownError == 1)
@@ -323,9 +319,18 @@ class HomeFragment : Fragment() {
                 homeLoaded(it.value)
             }
         }
+
+        // failsafe for resuming
+        thread {
+            sleep(10000)
+            if ((ShiroApi.currentToken == null || homeViewModel?.apiData?.value == null) && main_reload_data_btt?.alpha != 1f) {
+                ShiroApi.init()
+            }
+        }
+
         // This gets overwritten when data is loaded
-        home_swipe_refresh.setOnRefreshListener {
-            home_swipe_refresh.isRefreshing = false
+        home_swipe_refresh?.setOnRefreshListener {
+            home_swipe_refresh?.isRefreshing = false
         }
 
         // CAUSES CRASH ON 6.0.0

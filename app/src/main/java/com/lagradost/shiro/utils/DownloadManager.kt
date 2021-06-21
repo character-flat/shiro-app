@@ -134,8 +134,8 @@ object DownloadManager {
         @JsonProperty("isMovie") val isMovie: Boolean,
         @JsonProperty("slug") val slug: String,
 
-        @JsonProperty("anilistID") val anilistID: Int? = null,
-        @JsonProperty("malID") val malID: Int? = null,
+        @JsonProperty("anilistID") val anilistID: Int?,
+        @JsonProperty("malID") val malID: Int?,
     )
 
     // Glue for invoke()
