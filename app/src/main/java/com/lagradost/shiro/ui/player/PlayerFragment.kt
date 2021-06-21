@@ -60,6 +60,7 @@ import com.lagradost.shiro.ui.downloads.DownloadFragmentChild.Companion.getAllDo
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.player.PlayerActivity.Companion.playerActivity
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
+import com.lagradost.shiro.ui.result.ResultFragment.Companion.resultViewModel
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.getDataAboutId
@@ -198,7 +199,7 @@ class PlayerFragment : Fragment() {
     private var playerViewModel: PlayerViewModel? = null
 
     private var isCurrentlyPlaying: Boolean = false
-    private var playbackSpeed = DataStore.getKey(PLAYBACK_SPEED_KEY, 1f)
+    private var playbackSpeed: Float? = DataStore.getKey(PLAYBACK_SPEED_KEY, 1f)
 
     private val swipeEnabled = settingsManager!!.getBoolean("swipe_enabled", true)
     private val swipeVerticalEnabled = settingsManager!!.getBoolean("swipe_vertical_enabled", true)
@@ -1302,14 +1303,16 @@ class PlayerFragment : Fragment() {
             AniListApi.fromIntToAnimeStatus(type?.value ?: 0)
         }
 
-        if (progress < data?.episodeIndex!! + 1 && holder ?: malHolder != null) {
+        val currentEpisodeProgress = data?.episodeIndex!! + 1
+
+        if (progress < currentEpisodeProgress && holder ?: malHolder != null) {
             val anilistPost =
                 if (hasAniList) data?.anilistID?.let {
                     activity?.postDataAboutId(
                         it,
                         type,
                         score,
-                        data?.episodeIndex!! + 1
+                        currentEpisodeProgress
                     )
                 } ?: false else true
             val malPost = if (hasMAL)
@@ -1318,7 +1321,7 @@ class PlayerFragment : Fragment() {
                         it,
                         MALApi.fromIntToAnimeStatus(type.value),
                         score,
-                        data?.episodeIndex!! + 1
+                        currentEpisodeProgress
                     )
                 } ?: false else true
             if (!anilistPost || malPost.not()) {
@@ -1330,6 +1333,7 @@ class PlayerFragment : Fragment() {
                     ).show()
                 }
             } else {
+                resultViewModel?.visibleEpisodeProgress?.postValue(currentEpisodeProgress)
                 getCurrentActivity()!!.runOnUiThread {
                     Toast.makeText(
                         getCurrentActivity()!!,
@@ -1611,7 +1615,11 @@ class PlayerFragment : Fragment() {
         handler.postDelayed(checkProgressAction, 5000L)
 
         // When restarting activity the rotation is ensured :)
-        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+        if (settingsManager?.getBoolean("allow_player_rotation", false) == true) {
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER
+        } else {
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+        }
         onPlayerNavigated.invoke(true)
 
         if (Util.SDK_INT <= 23) {

@@ -56,7 +56,7 @@ class SearchFragment : Fragment() {
 
         if (DataStore.getKey(HAS_DISMISSED_SEARCH_INFO, false) == false) {
             val builder: AlertDialog.Builder =
-                AlertDialog.Builder(requireActivity(), R.style.AlertDialogCustom)
+                AlertDialog.Builder(getCurrentActivity()!!, R.style.AlertDialogCustom)
             builder.setPositiveButton("OK") { dialog, _ ->
                 dialog.dismiss()
                 DataStore.setKey(HAS_DISMISSED_SEARCH_INFO, true)
@@ -99,7 +99,7 @@ class SearchFragment : Fragment() {
 
         search_fab_button.setOnClickListener {
             val tags = searchViewModel!!.searchOptions.value?.genres?.sortedBy { it.name }
-            val bottomSheetDialog = BottomSheetDialog(requireContext())
+            val bottomSheetDialog = BottomSheetDialog(getCurrentActivity()!!)
             bottomSheetDialog.setContentView(R.layout.genres_search)
             val filterButton = bottomSheetDialog.findViewById<MaterialButton>(R.id.filter_button)!!
             val searchTags = bottomSheetDialog.findViewById<MyFlowLayout>(R.id.search_tags)!!
@@ -217,7 +217,7 @@ class SearchFragment : Fragment() {
                     run {
                         if (!isInResults && !isInPlayer) {
                             val imm: InputMethodManager? =
-                                requireActivity().getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager?
+                                activity?.getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager?
                             imm?.showSoftInput(view.findFocus(), 0)
         activity?.findViewById<View>(R.id.search_mag_icon)?.visibility = GONE
                         }
@@ -275,7 +275,7 @@ class SearchFragment : Fragment() {
                 val newGenres = searchViewModel!!.selectedGenres.value?.filter { genre -> genre != tag }
                 searchViewModel!!.selectedGenres.postValue(newGenres)
                 view.backgroundTintList =
-                    ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.transparent))
+                    ColorStateList.valueOf(ContextCompat.getColor(getCurrentActivity()!!, R.color.transparent))
                 /*view.setTextColor(
                     it.getColorFromAttr(R.attr.colorAccent)
                 )*/

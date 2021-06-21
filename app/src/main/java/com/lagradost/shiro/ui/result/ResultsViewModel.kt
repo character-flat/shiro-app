@@ -8,4 +8,5 @@ import com.lagradost.shiro.utils.ShiroApi
 class ResultsViewModel : ViewModel() {
     var currentAniListId = MutableLiveData<Int?>()
     var currentMalId = MutableLiveData<Int?>()
+    val visibleEpisodeProgress = MutableLiveData<Int?>()
 }

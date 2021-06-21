@@ -43,6 +43,7 @@ import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.AniListApi.Companion.fromIntToAnimeStatus
 import com.lagradost.shiro.utils.AniListApi.Companion.getDataAboutId
 import com.lagradost.shiro.utils.AniListApi.Companion.getShowId
 import com.lagradost.shiro.utils.AniListApi.Companion.postDataAboutId
@@ -487,12 +488,13 @@ class ResultFragment : Fragment() {
                             return if (malHolder != null) {
                                 var type =
                                     AniListApi.fromIntToAnimeStatus(malStatusAsString.indexOf(malHolder.my_list_status?.status))
-                                type =
-                                    if (type.value == MALApi.Companion.MalStatusType.None.value) AniListApi.Companion.AniListStatusType.Watching else type
+                                /*type =
+                                    if (type.value == MALApi.Companion.MalStatusType.None.value) AniListApi.Companion.AniListStatusType.Watching else type*/
                                 type
                             } else {
-                                val type =
-                                    if (holder?.type == AniListApi.Companion.AniListStatusType.None) AniListApi.Companion.AniListStatusType.Watching else holder?.type
+                                val type = holder?.type
+                                /*val type =
+                                    if (holder?.type == AniListApi.Companion.AniListStatusType.None) AniListApi.Companion.AniListStatusType.Watching else holder?.type*/
                                 AniListApi.fromIntToAnimeStatus(type?.value ?: 0)
                             }
                         }
@@ -501,9 +503,9 @@ class ResultFragment : Fragment() {
                             set(value) {
                                 //field = value
                                 println("Changed type")
-                                field = AniListApi.fromIntToAnimeStatus(this.typeValue)
+                                field = fromIntToAnimeStatus(this.typeValue)
                                 activity.runOnUiThread {
-                                    status_text.text = field.name
+                                    status_text?.text = field.name
                                 }
                             }
 
@@ -524,23 +526,25 @@ class ResultFragment : Fragment() {
                                     anilist_progress_txt.text = "${field}/${episodes}"
                                     status_text.text = type.name
                                 }
-                                getCurrentActivity()!!.runOnUiThread {
-                                    if (progress == episodes && typeValue != AniListApi.Companion.AniListStatusType.Completed.value) {
+                                if (progress == episodes && typeValue != AniListApi.Companion.AniListStatusType.Completed.value) {
+                                    activity.runOnUiThread {
                                         Toast.makeText(
                                             activity,
                                             "All episodes seen, marking as Completed",
                                             Toast.LENGTH_LONG
                                         ).show()
-                                        typeValue = AniListApi.Companion.AniListStatusType.Completed.value
                                     }
-                                    if (progress != episodes && typeValue == AniListApi.Companion.AniListStatusType.Completed.value) {
+                                    typeValue = AniListApi.Companion.AniListStatusType.Completed.value
+                                }
+                                if (progress != episodes && typeValue == AniListApi.Companion.AniListStatusType.Completed.value) {
+                                    activity.runOnUiThread {
                                         Toast.makeText(
                                             activity,
                                             "Marking as Watching",
                                             Toast.LENGTH_LONG
                                         ).show()
-                                        typeValue = AniListApi.Companion.AniListStatusType.Watching.value
                                     }
+                                    typeValue = AniListApi.Companion.AniListStatusType.Watching.value
                                 }
                                 /*if (field == holder.episodes) {
                                     this.type.value = AniListStatusType.Completed.value
@@ -562,9 +566,9 @@ class ResultFragment : Fragment() {
                             thread {
                                 val anilistPost =
                                     if (hasAniList) resultViewModel?.currentAniListId?.value?.let {
-                                        activity?.postDataAboutId(
+                                        activity.postDataAboutId(
                                             it,
-                                            type,
+                                            fromIntToAnimeStatus(typeValue),
                                             score,
                                             progress
                                         )
@@ -573,7 +577,7 @@ class ResultFragment : Fragment() {
                                     resultViewModel?.currentMalId?.value?.let {
                                         setScoreRequest(
                                             it,
-                                            MALApi.fromIntToAnimeStatus(type.value),
+                                            MALApi.fromIntToAnimeStatus(typeValue),
                                             score,
                                             progress
                                         )
@@ -603,6 +607,16 @@ class ResultFragment : Fragment() {
                         anilist_holder?.visibility = VISIBLE
                         aniList_progressbar?.progress = info.progress * 100 / info.episodes
                         anilist_progress_txt?.text = "${info.progress}/${info.episodes}"
+
+                        resultViewModel?.let { viewModel ->
+                            observe(viewModel.visibleEpisodeProgress) {
+                                it?.let {
+                                    aniList_progressbar?.progress = it * 100 / info.episodes
+                                    anilist_progress_txt?.text = "${it}/${info.episodes}"
+                                }
+                            }
+                        }
+
                         anilist_btt_holder?.visibility = VISIBLE
                         status_text?.text =
                             if (info.type.value == AniListApi.Companion.AniListStatusType.None.value) "Status" else info.type.name
@@ -905,6 +919,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
         onResultsNavigated.invoke(false)
         resultViewModel?.currentAniListId?.postValue(null)
         resultViewModel?.currentMalId?.postValue(null)
+        resultViewModel?.visibleEpisodeProgress?.postValue(null)
 
         onPlayerNavigated -= ::handleVideoPlayerNavigation
         DownloadManager.downloadStartEvent -= ::onDownloadStarted
@@ -960,12 +975,13 @@ private fun ToggleViewState(_isViewState: Boolean) {
                 }
             }
         }
-
         observe(resultViewModel!!.currentAniListId) {
             thread {
                 loadGetDataAboutId()
             }
         }
+
+
         //isViewState = false
 
         results_root.setPadding(0, MainActivity.statusHeight, 0, 0)

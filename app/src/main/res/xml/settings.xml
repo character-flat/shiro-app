@@ -175,7 +175,6 @@
             android:title="Player"
             app:isPreferenceVisible="true"
     >
-
         <SwitchPreference
                 android:icon="@drawable/ic_baseline_picture_in_picture_alt_24"
                 app:key="pip_enabled"
@@ -262,6 +261,13 @@
                 app:seekBarIncrement="5"
         >
         </SeekBarPreference>
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_screen_rotation_24"
+                app:key="allow_player_rotation"
+                android:title="Allow player rotation"
+                android:summary="Cursed"
+                app:defaultValue="false"
+        />
     </PreferenceCategory>
 
     <PreferenceCategory
