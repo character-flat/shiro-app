@@ -34,6 +34,7 @@ import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.preference.PreferenceManager
 import androidx.transition.Fade
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
@@ -201,6 +202,7 @@ class PlayerFragment : Fragment() {
     private var isCurrentlyPlaying: Boolean = false
     private var playbackSpeed: Float? = DataStore.getKey(PLAYBACK_SPEED_KEY, 1f)
 
+    private val settingsManager = PreferenceManager.getDefaultSharedPreferences(getCurrentActivity()!!)
     private val swipeEnabled = settingsManager!!.getBoolean("swipe_enabled", true)
     private val swipeVerticalEnabled = settingsManager!!.getBoolean("swipe_vertical_enabled", true)
     private val skipOpEnabled = true//settingsManager!!.getBoolean("skip_op_enabled", false)
@@ -237,7 +239,7 @@ class PlayerFragment : Fragment() {
         AspectRatioFrameLayout.RESIZE_MODE_FILL,
         AspectRatioFrameLayout.RESIZE_MODE_ZOOM,
     )
-    private var resizeMode = DataStore.getKey(RESIZE_MODE_KEY, 0)
+    private var resizeMode = DataStore.getKey(RESIZE_MODE_KEY, 0) ?: 0
 
     // Made getters because this can change if user is in a split view for example
     private val width: Int
@@ -873,15 +875,15 @@ class PlayerFragment : Fragment() {
             !isShowing
         })*/
         //println("RESIZE $resizeMode")
-        player_view.resizeMode = resizeModes[resizeMode!!]
+        player_view?.resizeMode = resizeModes[resizeMode]
         if (playerResizeEnabled) {
             resize_player.visibility = VISIBLE
             resize_player.setOnClickListener {
                 updateHideTime()
-                resizeMode = (resizeMode!! + 1).fmod(resizeModes.size)
+                resizeMode = (resizeMode + 1).fmod(resizeModes.size)
                 //println("RESIZE $resizeMode")
                 DataStore.setKey(RESIZE_MODE_KEY, resizeMode)
-                player_view.resizeMode = resizeModes[resizeMode!!]
+                player_view.resizeMode = resizeModes[resizeMode]
                 //exoPlayer.videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
             }
         } else {
@@ -1620,7 +1622,12 @@ class PlayerFragment : Fragment() {
         } else {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
         }
+
         onPlayerNavigated.invoke(true)
+
+        // https://github.com/Blatzar/shiro-app/issues/48
+        timeTextLeft?.alpha = 0f
+        timeTextRight?.alpha = 0f
 
         if (Util.SDK_INT <= 23) {
             loadAndPlay()
