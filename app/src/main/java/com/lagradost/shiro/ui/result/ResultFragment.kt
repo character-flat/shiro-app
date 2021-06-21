@@ -63,10 +63,13 @@ import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.MALApi.Companion.malStatusAsString
 import com.lagradost.shiro.utils.MALApi.Companion.setScoreRequest
+import com.lagradost.shiro.utils.ShiroApi.Companion.currentToken
 import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFav
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.getSubbed
+import com.lagradost.shiro.utils.ShiroApi.Companion.onHomeFetched
+import com.lagradost.shiro.utils.ShiroApi.Companion.onTokenFetched
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.fragment_results.*
 import kotlinx.android.synthetic.main.fragment_results_new.bookmark_holder
@@ -819,16 +822,29 @@ class ResultFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        println("Attached result fragment")
-        arguments?.getString(SLUG)?.let {
+        arguments?.getString(SLUG)?.let { slug ->
             thread {
-                data = getAnimePage(it)?.data
-                initData()
+                if (currentToken != null) {
+                    data = getAnimePage(slug)?.data
+                    initData()
+                } else {
+                    onTokenFetched += ::loadDataWhenTokenIsLoaded
+                }
             }
         }
 
 
         //isMovie = data!!.episodes == 1 && data!!.status == "FINISHED"
+    }
+
+    private fun loadDataWhenTokenIsLoaded(bool: Boolean) {
+        arguments?.getString(SLUG)?.let { slug ->
+            thread {
+                data = getAnimePage(slug)?.data
+                initData()
+            }
+        }
+        onTokenFetched -= ::loadDataWhenTokenIsLoaded
     }
 /*
 private fun ToggleViewState(_isViewState: Boolean) {
@@ -980,8 +996,6 @@ private fun ToggleViewState(_isViewState: Boolean) {
                 loadGetDataAboutId()
             }
         }
-
-
         //isViewState = false
 
         results_root.setPadding(0, MainActivity.statusHeight, 0, 0)
@@ -1050,7 +1064,6 @@ private fun ToggleViewState(_isViewState: Boolean) {
             }
         }
 
-        // SEASON SELECTOR
         onLoadedOther += ::onLoadOtherEvent
         onLoaded += ::onLoadEvent
     }

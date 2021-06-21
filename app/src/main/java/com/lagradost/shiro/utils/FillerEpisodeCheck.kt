@@ -22,6 +22,9 @@ object FillerEpisodeCheck {
             val localList = HashMap<String, String>()
             for (i in localHTMLList) {
                 val name = i.text()
+
+                if (name.lowercase().contains("manga only")) continue
+
                 val href = i.attr("href")
                 if (name.isNullOrEmpty() || href.isNullOrEmpty()) {
                     continue

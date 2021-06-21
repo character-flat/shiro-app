@@ -472,6 +472,7 @@ class ShiroApi {
         var currentToken: Token? = null
         var currentHeaders: MutableMap<String, String>? = null
         var onHomeFetched = Event<ShiroHomePage?>()
+        var onTokenFetched = Event<Boolean>()
         var onSearchFetched = Event<AllSearchMethodsData?>()
         var onHomeError = Event<Boolean>() // TRUE IF FULL RELOAD OF TOKEN, FALSE IF JUST HOME
         var hasThrownError = -1
@@ -486,6 +487,7 @@ class ShiroApi {
                 currentToken?.cookies?.forEach {
                     currentHeaders?.set("Cookie", it.key + "=" + it.value.substring(0, it.value.indexOf(';')) + ";")
                 }
+                onTokenFetched.invoke(true)
 
                 requestHome()
             } else {

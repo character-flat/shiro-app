@@ -311,6 +311,7 @@ class HomeFragment : Fragment() {
         if (ShiroApi.hasThrownError != -1) {
             onHomeErrorCatch(ShiroApi.hasThrownError == 1)
         }
+
         homeViewModel!!.apiData.let {
             it.observe(viewLifecycleOwner) { homePage ->
                 homeLoaded(homePage)
@@ -320,12 +321,9 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // failsafe for resuming
-        thread {
-            sleep(10000)
-            if ((ShiroApi.currentToken == null || homeViewModel?.apiData?.value == null) && main_reload_data_btt?.alpha != 1f) {
-                ShiroApi.init()
-            }
+        // When the home is gotten but home fragment isn't started
+        if (homeViewModel?.apiData?.value == null && cachedHome != null){
+            homeLoaded(cachedHome)
         }
 
         // This gets overwritten when data is loaded
