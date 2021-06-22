@@ -58,6 +58,7 @@
 
         <item name="android:colorControlActivated">?attr/colorPrimarySecond</item>
         <item name="android:colorControlNormal">@color/lb_preference_item_primary_text_color_default</item>
+        <item name="android:windowTranslucentNavigation">false</item>
     </style>
 
     <style name="Widget.App.BottomNavigationView" parent="Widget.Design.BottomNavigationView">

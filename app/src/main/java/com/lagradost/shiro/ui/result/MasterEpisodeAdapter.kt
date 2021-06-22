@@ -37,7 +37,6 @@ class MasterEpisodeAdapter(
         return MasterEpisodeViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.episode_expander, parent, false),
             activity,
-            data,
             isFiller
         )
     }
@@ -45,7 +44,7 @@ class MasterEpisodeAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
             is MasterEpisodeViewHolder -> {
-                holder.bind(items[position], position)
+                holder.bind(items[position], position, data)
             }
         }
         holder.itemView.setOnClickListener {
@@ -62,14 +61,14 @@ class MasterEpisodeAdapter(
     constructor(
         itemView: View,
         val activity: FragmentActivity,
-        val data: ShiroApi.AnimePageData,
         private val fillerList: HashMap<Int, Boolean>? = null,
     ) :
         RecyclerView.ViewHolder(itemView) {
         fun bind(
             item: MasterEpisode,
             position: Int,
-        ) {
+            data: ShiroApi.AnimePageData,
+            ) {
             //println("BIND $position" + "|" + (fillerList?.size ?: "NULLL"))
             itemView.cardTitle.text =
                 if (item.start + 1 == item.end) "Episode ${item.end}"

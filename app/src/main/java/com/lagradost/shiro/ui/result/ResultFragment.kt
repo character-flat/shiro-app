@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
-import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Html
 import android.transition.ChangeBounds
@@ -68,9 +67,9 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFav
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.getSubbed
-import com.lagradost.shiro.utils.ShiroApi.Companion.onHomeFetched
 import com.lagradost.shiro.utils.ShiroApi.Companion.onTokenFetched
 import jp.wasabeef.glide.transformations.BlurTransformation
+import kotlinx.android.synthetic.main.bottom_sheet.*
 import kotlinx.android.synthetic.main.fragment_results.*
 import kotlinx.android.synthetic.main.fragment_results_new.bookmark_holder
 import kotlinx.android.synthetic.main.fragment_results_new.episodes_res_view
@@ -93,7 +92,6 @@ import kotlinx.android.synthetic.main.fragment_results_new.title_name
 import kotlinx.android.synthetic.main.fragment_results_new.title_status
 import kotlinx.android.synthetic.main.fragment_results_new.title_year
 import kotlinx.android.synthetic.main.number_picker_dialog.*
-import kotlinx.android.synthetic.main.sort_bottom_sheet.*
 import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.thread
@@ -529,6 +527,9 @@ class ResultFragment : Fragment() {
                                     anilist_progress_txt.text = "${field}/${episodes}"
                                     status_text.text = type.name
                                 }
+                                if (typeValue == AniListApi.Companion.AniListStatusType.None.value) {
+                                    typeValue = AniListApi.Companion.AniListStatusType.Watching.value
+                                }
                                 if (progress == episodes && typeValue != AniListApi.Companion.AniListStatusType.Completed.value) {
                                     activity.runOnUiThread {
                                         Toast.makeText(
@@ -558,6 +559,9 @@ class ResultFragment : Fragment() {
                         var score = malHolder?.my_list_status?.score ?: holder?.score ?: 0
                             set(value) {
                                 field = value
+                                if (typeValue == AniListApi.Companion.AniListStatusType.None.value) {
+                                    typeValue = AniListApi.Companion.AniListStatusType.Watching.value
+                                }
                                 activity.runOnUiThread {
                                     rating_text.text = if (value == 0) "Rate" else value.toString()
                                     status_text.text = type.name
@@ -671,9 +675,9 @@ class ResultFragment : Fragment() {
 
                         rating_btt?.setOnClickListener {
                             val bottomSheetDialog = BottomSheetDialog(activity)
-                            bottomSheetDialog.setContentView(R.layout.sort_bottom_sheet)
+                            bottomSheetDialog.setContentView(R.layout.bottom_sheet)
                             val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
-                            val arrayAdapter = ArrayAdapter<String>(activity, R.layout.sort_bottom_single_choice)
+                            val arrayAdapter = ArrayAdapter<String>(activity, R.layout.bottom_single_choice)
                             val choices = listOf(
                                 "No rating",
                                 "1 - Appalling",
@@ -706,9 +710,9 @@ class ResultFragment : Fragment() {
 
                         status_btt?.setOnClickListener {
                             val bottomSheetDialog = BottomSheetDialog(activity)
-                            bottomSheetDialog.setContentView(R.layout.sort_bottom_sheet)
+                            bottomSheetDialog.setContentView(R.layout.bottom_sheet)
                             val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
-                            val arrayAdapter = ArrayAdapter<String>(activity, R.layout.sort_bottom_single_choice)
+                            val arrayAdapter = ArrayAdapter<String>(activity, R.layout.bottom_single_choice)
                             val choices = listOf(
                                 "Watching",
                                 "Completed",

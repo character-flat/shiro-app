@@ -282,8 +282,14 @@ class AniListApi {
         }
 
         fun Activity.postDataAboutId(id: Int, type: AniListStatusType, score: Int, progress: Int): Boolean {
-            val q =
-                """mutation (${'$'}id: Int = $id, ${'$'}status: MediaListStatus = ${aniListStatusString[type.value]}, ${'$'}scoreRaw: Int = ${score * 10}, ${'$'}progress: Int = $progress) {
+            try {
+                val q =
+                    """mutation (${'$'}id: Int = $id, ${'$'}status: MediaListStatus = ${
+                        aniListStatusString[maxOf(
+                            0,
+                            type.value
+                        )]
+                    }, ${'$'}scoreRaw: Int = ${score * 10}, ${'$'}progress: Int = $progress) {
                 SaveMediaListEntry (mediaId: ${'$'}id, status: ${'$'}status, scoreRaw: ${'$'}scoreRaw, progress: ${'$'}progress) {
                     id
                     status
@@ -291,10 +297,12 @@ class AniListApi {
                     score
                 }
                 }"""
-
-            val data = postApi("https://graphql.anilist.co", q)
-            println("POST:$data")
-            return data != ""
+                val data = postApi("https://graphql.anilist.co", q)
+                println("POST:$data")
+                return data != ""
+            } catch (e: Exception) {
+                return false
+            }
         }
 
         private fun Activity.getUser(setSettings: Boolean = true): AniListUser? {

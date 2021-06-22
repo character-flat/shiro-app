@@ -251,9 +251,6 @@ class EpisodeAdapter(
             val title = "Episode ${episodePos + 1}" + (if (isCurrentFiller) " (Filler)" else "")
             card.cardTitle.text = title
 
-
-
-
             setCardViewState(key, episodePos)
 
             val pro = getViewPosDur(data.slug, episodePos)

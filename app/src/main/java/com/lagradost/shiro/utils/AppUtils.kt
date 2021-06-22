@@ -93,7 +93,7 @@ object AppUtils {
         return uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
     }
 
-    private fun Activity.getStatusBarHeight(): Int {
+    fun Activity.getStatusBarHeight(): Int {
         val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
         return if (resourceId > 0) {
             resources.getDimensionPixelSize(resourceId)
@@ -226,29 +226,31 @@ object AppUtils {
     }
 
     fun Context.onLongCardClick(card: ShiroApi.CommonAnimePage): Boolean {
+        var isBookmarked: Boolean? = null
         val selected = settingsManager?.getString("hold_behavior", "Show Toast")
-        if (selected  == "Subscribe" || selected == "Favorite and Subscribe"){
-            subscribeToShow(card)
+
+        if (selected == "Favorite" || selected == "Favorite and Subscribe") {
+            isBookmarked = toggleHeart(card.name, card.image, card.slug)
+            val prefix = if (isBookmarked) "Added" else "Removed"
+            Toast.makeText(this, "$prefix ${card.name}", Toast.LENGTH_SHORT).show()
+        }
+        if (selected == "Subscribe" || selected == "Favorite and Subscribe") {
+            subscribeToShow(card/*, isBookmarked*/)
         }
         if (selected == "Show Toast") {
             Toast.makeText(this, card.name, Toast.LENGTH_SHORT).show()
         }
-        if (selected == "Favorite" || selected == "Favorite and Subscribe") {
-            val isBookmarked = toggleHeart(card.name, card.image, card.slug)
-            val prefix = if (isBookmarked) "Added" else "Removed"
-            Toast.makeText(this, "$prefix ${card.name}", Toast.LENGTH_SHORT).show()
-            return isBookmarked
-        }
-        return false
+        return isBookmarked ?: false
     }
 
     // TODO USE THIS IN RESULT_FRAGMENT
-    private fun subscribeToShow(data: ShiroApi.CommonAnimePage) {
+    private fun subscribeToShow(data: ShiroApi.CommonAnimePage/*, isBookmarked: Boolean? = null*/) {
+        // isBookmarked
         val subbedBookmark = DataStore.getKey<BookmarkedTitle>(SUBSCRIPTIONS_BOOKMARK_KEY, data.slug, null)
         val isSubbedOld = DataStore.getKey(SUBSCRIPTIONS_KEY, data.slug, false)!!
         val isSubbed = isSubbedOld || subbedBookmark != null
 
-        if (isSubbed) {
+        if (isSubbed /*&& !(isBookmarked ?: !isSubbed)*/) {
             Firebase.messaging.unsubscribeFromTopic(data.slug)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
@@ -265,7 +267,7 @@ object AppUtils {
                     //Log.d(TAG, msg)
                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
                 }
-        } else {
+        } else /*if (!isSubbed && (isBookmarked ?: !isSubbed))*/{
             Firebase.messaging.subscribeToTopic(data.slug)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
@@ -302,11 +304,11 @@ object AppUtils {
     fun FragmentActivity.addFragmentOnlyOnce(location: Int, fragment: Fragment, tag: String) {
         // Make sure the current transaction finishes first
 
-        this.supportFragmentManager.executePendingTransactions()
+        supportFragmentManager.executePendingTransactions()
 
         // If there is no fragment yet with this tag...
-        if (this.supportFragmentManager.findFragmentByTag(tag) == null) {
-            this.supportFragmentManager.beginTransaction()
+        if (supportFragmentManager.findFragmentByTag(tag) == null) {
+            supportFragmentManager.beginTransaction()
                 .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 .add(location, fragment, tag)
                 .commitAllowingStateLoss()
@@ -384,7 +386,7 @@ object AppUtils {
             0
         } else {
             window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-            this.getStatusBarHeight()
+            getStatusBarHeight()
         }
     }
 

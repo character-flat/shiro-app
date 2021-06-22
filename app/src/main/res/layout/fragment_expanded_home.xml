@@ -9,6 +9,7 @@
               android:clickable="true"
               android:focusable="true"
 >
+    <View android:layout_width="wrap_content" android:layout_height="0dp" android:id="@+id/top_padding_expanded_home"/>
     <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

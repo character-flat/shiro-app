@@ -1,8 +1,8 @@
 <resources>
     <string name="changelog">\n
-        - Fixed setting watch status\n
-        - Made anime info page update episode count\n
-        - Crash fixes\n
+        - Fixed crash when setting sync rating/progress\n
+        - Fixed navbar/statusbar overlaying stuff for some devices\n
+        - Fixed switching to dub/sub not working anymore\n
     </string>
     <string name="app_name">Shiro</string>
     <string name="title_home">Home</string>

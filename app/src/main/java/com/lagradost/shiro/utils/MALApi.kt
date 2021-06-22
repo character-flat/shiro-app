@@ -216,7 +216,7 @@ class MALApi {
         ): Boolean {
             val res = setScoreRequest(
                 id,
-                if (status == null) null else malStatusAsString[status.value],
+                if (status == null) null else malStatusAsString[maxOf(0, status.value)],
                 score,
                 num_watched_episodes
             )

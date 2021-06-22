@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.ScaleAnimation
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.core.view.updateMargins
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
@@ -21,6 +22,8 @@ import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
+import com.lagradost.shiro.utils.AppUtils.expandTouchArea
+import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.onLongCardClick
@@ -32,6 +35,7 @@ import kotlinx.android.synthetic.main.home_card.view.home_card_root
 import kotlinx.android.synthetic.main.home_card.view.imageText
 import kotlinx.android.synthetic.main.home_card.view.imageView
 import kotlinx.android.synthetic.main.home_card_recently_seen.view.*
+import kotlin.coroutines.coroutineContext
 
 
 class CardContinueAdapter(
@@ -123,6 +127,10 @@ class CardContinueAdapter(
                     itemView.infoButton.setOnClickListener {
                         activity.loadPage(cardInfo.id.slug, cardInfo.title)
                     }
+                    itemView.infoButton.setOnLongClickListener {
+                        Toast.makeText(activity, cardInfo.title, Toast.LENGTH_LONG).show()
+                        return@setOnLongClickListener true
+                    }
                 } else if (cardInfo.id != null) {
                     // TV INFO BUTTON
                     itemView.infoButton.visibility = GONE
@@ -152,7 +160,13 @@ class CardContinueAdapter(
                 }
                 itemView.home_card_root.setOnClickListener {
                     cardInfo.id?.let { data ->
-                        activity.loadPlayer(cardInfo.episodeIndex, cardInfo.pos, data, cardInfo.anilistID, cardInfo.malID)
+                        activity.loadPlayer(
+                            cardInfo.episodeIndex,
+                            cardInfo.pos,
+                            data,
+                            cardInfo.anilistID,
+                            cardInfo.malID
+                        )
                     }
                 }
                 if (tvActivity != null) {

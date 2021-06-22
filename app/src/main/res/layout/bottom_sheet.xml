@@ -29,7 +29,7 @@
             android:paddingTop="10dp"
             android:id="@+id/sort_click"
             android:background="?attr/darkBar"
-            tools:listitem="@layout/sort_bottom_single_choice"
+            tools:listitem="@layout/bottom_single_choice"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
     </ListView>

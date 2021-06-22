@@ -7,6 +7,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.view.setMargins
@@ -24,6 +25,7 @@ import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppUtils.displayCardData
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getNextEpisode
+import com.lagradost.shiro.utils.AppUtils.getStatusBarHeight
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.observe
@@ -34,6 +36,7 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.cachedHome
 import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.getRandomAnimePage
+import com.lagradost.shiro.utils.ShiroApi.Companion.hasThrownError
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import kotlinx.android.synthetic.main.download_card.*
 import kotlinx.android.synthetic.main.fragment_home.*
@@ -60,7 +63,6 @@ class HomeFragment : Fragment() {
 
     private fun homeLoaded(data: ShiroApi.ShiroHomePage?) {
         activity?.runOnUiThread {
-
             /*trending_anime_scroll_view.removeAllViews()
             recentlySeenScrollView.removeAllViews()
             recently_updated_scroll_view.removeAllViews()
@@ -308,8 +310,9 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         main_scroll?.alpha = 0f
         ShiroApi.onHomeError += ::onHomeErrorCatch
-        if (ShiroApi.hasThrownError != -1) {
-            onHomeErrorCatch(ShiroApi.hasThrownError == 1)
+        println("ERRORSS ENCOUNTERED $hasThrownError")
+        if (hasThrownError != -1) {
+            onHomeErrorCatch(hasThrownError == 1)
         }
 
         homeViewModel!!.apiData.let {
@@ -322,7 +325,7 @@ class HomeFragment : Fragment() {
         }
 
         // When the home is gotten but home fragment isn't started
-        if (homeViewModel?.apiData?.value == null && cachedHome != null){
+        if (homeViewModel?.apiData?.value == null && cachedHome != null) {
             homeLoaded(cachedHome)
         }
 
