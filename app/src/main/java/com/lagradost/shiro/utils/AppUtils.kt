@@ -101,6 +101,26 @@ object AppUtils {
             0
     }
 
+    // Guarantee slug is dubbed or not
+    fun ShiroApi.AnimePageData.dubbify(turnDubbed: Boolean): ShiroApi.AnimePageData {
+        return this.apply {
+            slug = if (turnDubbed) {
+                slug.removeSuffix("-dubbed") + "-dubbed"
+            } else {
+                slug.removeSuffix("-dubbed")
+            }
+        }
+    }
+
+    // Guarantee slug is dubbed or not
+    fun String.dubbify(turnDubbed: Boolean): String {
+        return if (turnDubbed) {
+            this.removeSuffix("-dubbed") + "-dubbed"
+        } else {
+            this.removeSuffix("-dubbed")
+        }
+    }
+
     fun expandTouchArea(bigView: View?, smallView: View?, extraPadding: Int) {
         bigView?.post {
             val rect = Rect()
@@ -267,7 +287,7 @@ object AppUtils {
                     //Log.d(TAG, msg)
                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
                 }
-        } else /*if (!isSubbed && (isBookmarked ?: !isSubbed))*/{
+        } else /*if (!isSubbed && (isBookmarked ?: !isSubbed))*/ {
             Firebase.messaging.subscribeToTopic(data.slug)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
@@ -752,12 +772,12 @@ object AppUtils {
         )
     }
 
-    /*fun loadPlayer(pageData: FastAniApi.AnimePageData, episodeIndex: Int, startAt: Long?) {
-        loadPlayer(PlayerData("${pageData.name} - Episode ${episodeIndex + 1}", null, episodeIndex, null, null, startAt, null, true))
-    }
-    fun loadPlayer(title: String?, url: String, startAt: Long?) {
-        loadPlayer(PlayerData(title, url, null, null, null, startAt, null))
-    }*/
+/*fun loadPlayer(pageData: FastAniApi.AnimePageData, episodeIndex: Int, startAt: Long?) {
+    loadPlayer(PlayerData("${pageData.name} - Episode ${episodeIndex + 1}", null, episodeIndex, null, null, startAt, null, true))
+}
+fun loadPlayer(title: String?, url: String, startAt: Long?) {
+    loadPlayer(PlayerData(title, url, null, null, null, startAt, null))
+}*/
 
     fun FragmentActivity.loadPlayer(data: PlayerData) {
         this.runOnUiThread {
@@ -782,7 +802,7 @@ object AppUtils {
             _navController?.navigateUp()
             _navController?.navigate(R.layout.fragment_results,null,null)
         }
-*/
+    */
         // NavigationUI.navigateUp(navController!!,R.layout.fragment_results)
     }
 

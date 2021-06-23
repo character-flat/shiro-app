@@ -193,7 +193,7 @@ class DownloadFragmentChild : Fragment() {
                 card.cardTitleExtra.text = "$localBytesTotal / $megaBytesTotal MB"
 
                 fun updateIcon(megabytes: Int) {
-                    if (megabytes + 3 >= megaBytesTotal) {
+                    if (megabytes + 0.1 >= megaBytesTotal) {
                         card.progressBar.visibility = GONE
                         card.cardPauseIcon.visibility = GONE
                         card.cardRemoveIcon.visibility = View.VISIBLE

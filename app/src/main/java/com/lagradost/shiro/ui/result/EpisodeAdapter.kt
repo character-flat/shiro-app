@@ -33,6 +33,7 @@ import com.lagradost.shiro.ui.downloads.DownloadFragment.Companion.downloadsUpda
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.resultViewModel
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.AppUtils.dubbify
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getLatestSeenEpisode
 import com.lagradost.shiro.utils.AppUtils.getViewKey
@@ -251,7 +252,7 @@ class EpisodeAdapter(
             val title = "Episode ${episodePos + 1}" + (if (isCurrentFiller) " (Filler)" else "")
             card.cardTitle.text = title
 
-            setCardViewState(key, episodePos)
+            setCardViewState(episodePos)
 
             val pro = getViewPosDur(data.slug, episodePos)
             //println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
@@ -278,7 +279,7 @@ class EpisodeAdapter(
                     card.cardRemoveIcon.visibility = GONE
                 } else {
                     card.cdi.visibility = GONE
-                    if (megabytes + 3 >= megaBytesTotal) {
+                    if (megabytes + 0.1 >= megaBytesTotal) {
                         card.progressBar.visibility = GONE
                         card.cardPauseIcon.visibility = GONE
                         card.cardRemoveIcon.visibility = VISIBLE
@@ -467,9 +468,15 @@ class EpisodeAdapter(
             }
         }
 
-        private fun setCardViewState(key: String, episodePos: Int) {
-            if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
-                val last = getLatestSeenEpisode(data)
+        private fun setCardViewState(episodePos: Int) {
+
+            val keyNormal = getViewKey(data.slug.dubbify(false), episodePos)
+            val keyDubbed = getViewKey(data.slug.dubbify(false), episodePos)
+            if (DataStore.containsKey(VIEWSTATE_KEY, keyNormal) || DataStore.containsKey(VIEWSTATE_KEY, keyDubbed)) {
+                val lastNormal = getLatestSeenEpisode(data.dubbify(false))
+                val lastDubbed = getLatestSeenEpisode(data.dubbify(true))
+                val last = if (lastDubbed.episodeIndex > lastNormal.episodeIndex) lastDubbed else lastNormal
+
                 if (last.isFound && last.episodeIndex == episodePos) {
                     activity.let {
                         card.cardBg.setCardBackgroundColor(

@@ -154,16 +154,17 @@ dependencies {
 
     // leanback-tab is an add-on that provides customized TabLayout to be used as the top navigation bar.
     implementation "androidx.leanback:leanback-tab:1.1.0-beta01"
+
+    // Js eval
     // https://mvnrepository.com/artifact/org.mozilla/rhino
     //implementation group: 'org.mozilla', name: 'rhino', version: '1.7.6'
 
     implementation "androidx.recyclerview:recyclerview:1.2.1"
 
-
-    // Import the BoM for the Firebase platform
+    // Notifications
     implementation platform('com.google.firebase:firebase-bom:28.1.0')
-
-    // Declare the dependencies for the Firebase Cloud Messaging and Analytics libraries
-    // When using the BoM, you don't specify versions in Firebase library dependencies
     implementation 'com.google.firebase:firebase-messaging-ktx'
+
+    // Double tap
+    implementation 'com.github.vkay94:DoubleTapPlayerView:1.0.2'
 }

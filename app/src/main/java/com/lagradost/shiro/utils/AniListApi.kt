@@ -545,7 +545,7 @@ class AniListApi {
         @JsonProperty("progress") val progress: Int,
         @JsonProperty("episodes") val episodes: Int,
         @JsonProperty("score") val score: Int,
-        @JsonProperty("type") val type: AniListStatusType,
+        @JsonProperty("type") val type: AniListApi.Companion.AniListStatusType,
     )
 
     data class GetDataMediaListEntry(

@@ -12,6 +12,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.database.ContentObserver
+import android.gesture.GestureOverlayView
 import android.graphics.Color
 import android.graphics.drawable.Icon
 import android.media.AudioManager
@@ -21,17 +22,15 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.provider.Settings
-import android.view.LayoutInflater
-import android.view.MotionEvent
-import android.view.View
+import android.view.*
 import android.view.View.*
-import android.view.ViewGroup
 import android.view.WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
 import android.view.animation.*
 import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
@@ -42,6 +41,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.github.vkay94.dtpv.youtube.YouTubeOverlay
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.C.TIME_UNSET
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
@@ -176,7 +176,7 @@ class PlayerFragment : Fragment() {
         }
     }
 
-    private var isLocked = false
+    var isLocked = false
     private var isShowing = true
     private lateinit var exoPlayer: SimpleExoPlayer
 
@@ -206,7 +206,7 @@ class PlayerFragment : Fragment() {
     private val swipeEnabled = settingsManager!!.getBoolean("swipe_enabled", true)
     private val swipeVerticalEnabled = settingsManager!!.getBoolean("swipe_vertical_enabled", true)
     private val skipOpEnabled = true//settingsManager!!.getBoolean("skip_op_enabled", false)
-    private val doubleTapEnabled = settingsManager!!.getBoolean("double_tap_enabled", false)
+    val doubleTapEnabled = settingsManager!!.getBoolean("double_tap_enabled", false)
     private val playBackSpeedEnabled = true//settingsManager!!.getBoolean("playback_speed_enabled", false)
     private val playerResizeEnabled = true//settingsManager!!.getBoolean("player_resize_enabled", false)
     private val doubleTapTime = settingsManager!!.getInt("dobule_tap_time", 10)
@@ -242,88 +242,22 @@ class PlayerFragment : Fragment() {
     private var resizeMode = DataStore.getKey(RESIZE_MODE_KEY, 0) ?: 0
 
     // Made getters because this can change if user is in a split view for example
-    private val width: Int
+    val width: Int
         get() {
             //Resources.getSystem().displayMetrics.heightPixels
-            return player_view.width
+            return player_view?.width ?: 0
         }
 
     private val height: Int
         get() {
             //Resources.getSystem().displayMetrics.widthPixels
-            return player_view.height
+            return player_view?.height ?: 0
         }
 
     private var prevDiffX = 0.0
 
     // Prevent clicking next episode button multiple times
     private var isLoadingNextEpisode = false
-
-    abstract class DoubleClickListener(private val ctx: PlayerFragment) : OnTouchListener {
-        // The time in which the second tap should be done in order to qualify as
-        // a double click
-
-        private var doubleClickQualificationSpanInMillis: Long = 300L
-        private var timestampLastClick: Long = 0
-        private var clicksLeft = 0
-        private var clicksRight = 0
-        private var fingerLeftScreen = true
-        abstract fun onDoubleClickRight(clicks: Int)
-        abstract fun onDoubleClickLeft(clicks: Int)
-        abstract fun onSingleClick()
-        abstract fun onMotionEvent(event: MotionEvent)
-
-        override fun onTouch(v: View, event: MotionEvent): Boolean {
-            thread {
-                activity?.runOnUiThread {
-                    onMotionEvent(event)
-                }
-
-                if (event.action == MotionEvent.ACTION_UP) {
-                    fingerLeftScreen = true
-                }
-                if (event.action == MotionEvent.ACTION_DOWN) {
-                    fingerLeftScreen = false
-
-                    if (ctx.doubleTapEnabled && !ctx.isLocked) {
-                        timestampLastClick = SystemClock.elapsedRealtime()
-                        Thread.sleep(doubleClickQualificationSpanInMillis)
-                        if ((SystemClock.elapsedRealtime() - timestampLastClick) < doubleClickQualificationSpanInMillis) {
-                            if (event.rawX >= ctx.width / 2) {
-                                //println("${event.rawX} ${ctx.width}")
-                                clicksRight++
-                                activity?.runOnUiThread {
-                                    onDoubleClickRight(clicksRight)
-                                }
-                            } else {
-                                clicksLeft++
-                                activity?.runOnUiThread {
-                                    onDoubleClickLeft(clicksLeft)
-                                }
-                            }
-                        } else if (clicksLeft == 0 && clicksRight == 0 && fingerLeftScreen) {
-                            activity?.runOnUiThread {
-                                onSingleClick()
-                            }
-                        } else {
-                            clicksLeft = 0
-                            clicksRight = 0
-                        }
-                    } else {
-                        Thread.sleep(100L)
-                        if (fingerLeftScreen) {
-                            activity?.runOnUiThread {
-                                onSingleClick()
-                            }
-                        }
-                    }
-                }
-            }
-            return true
-        }
-
-
-    }
 
     private fun canPlayNextEpisode(): Boolean {
         if (data?.card == null || data?.seasonIndex == null || data?.episodeIndex == null) {
@@ -456,12 +390,12 @@ class PlayerFragment : Fragment() {
     private fun updateLock() {
         video_locked_img.setImageResource(if (isLocked) R.drawable.video_locked else R.drawable.video_unlocked)
         video_locked_img.setColorFilter(
-            if (isLocked && activity != null) requireActivity().getColorFromAttr(R.attr.colorPrimary)
+            if (isLocked && activity != null) getCurrentActivity()!!.getColorFromAttr(R.attr.colorPrimary)
             else Color.WHITE
         )
 
         val isClick = !isLocked
-        println("UPDATED LOCK $isClick")
+        //println("UPDATED LOCK $isClick")
         exo_play.isClickable = isClick
         exo_pause.isClickable = isClick
         exo_ffwd.isClickable = isClick
@@ -473,6 +407,7 @@ class PlayerFragment : Fragment() {
         playback_speed_btt.isClickable = isClick
         skip_op.isClickable = isClick
         resize_player.isClickable = isClick
+        sources_btt.isClickable = isClick
         //isShowing = isClick
 
         // Clickable doesn't seem to work on com.google.android.exoplayer2.ui.DefaultTimeBar
@@ -569,23 +504,22 @@ class PlayerFragment : Fragment() {
             hideAfterTimeout()
         }
 
-        click_overlay?.visibility = if (isShowing) GONE else VISIBLE
+        //click_overlay?.visibility = if (isShowing) GONE else VISIBLE
 
         // bottom_player_bar
         //bottom_player_bar.y += if (isShowing) (-200).toPx else 0
 
-        val titleMove = if (isShowing) 0f else -200.toPx.toFloat()
+        val titleMove = if (isShowing) 0f else -50.toPx.toFloat()
         ObjectAnimator.ofFloat(video_title, "translationY", titleMove).apply {
             duration = 200
             start()
         }
 
-        val playerBarMove = if (isShowing) 0f else 200.toPx.toFloat()
+        val playerBarMove = if (isShowing) 0f else 50.toPx.toFloat()
         ObjectAnimator.ofFloat(bottom_player_bar, "translationY", playerBarMove).apply {
             duration = 200
             start()
         }
-
 
         val fadeTo = if (isShowing) 1f else 0f
         val fadeAnimation = AlphaAnimation(1f - fadeTo, fadeTo)
@@ -593,11 +527,14 @@ class PlayerFragment : Fragment() {
         fadeAnimation.duration = 100
         fadeAnimation.fillAfter = true
 
+        // Making this animate can cause strange glitches if tapped when animating
+        video_lock_holder?.isVisible = isShowing
+
+        //video_lock_holder?.startAnimation(fadeAnimation)
         if (!isLocked || video_holder.alpha != 1.0f || shadow_overlay.alpha != 1.0f) {
             video_holder?.startAnimation(fadeAnimation)
             shadow_overlay?.startAnimation(fadeAnimation)
         }
-        video_lock_holder?.startAnimation(fadeAnimation)
     }
 
     private fun handleAudioFocusEvent(event: Boolean) {
@@ -640,7 +577,7 @@ class PlayerFragment : Fragment() {
         )
     }
 
-    fun handleMotionEvent(motionEvent: MotionEvent) {
+    private fun handleMotionEvent(motionEvent: MotionEvent) {
         // No swiping on unloaded
         // https://exoplayer.dev/doc/reference/constant-values.html
         if (isLocked || exoPlayer.duration == TIME_UNSET || (!swipeEnabled && !swipeVerticalEnabled)) return
@@ -844,7 +781,6 @@ class PlayerFragment : Fragment() {
 
             updateLock()
         }
-
         cancel_next.setOnClickListener {
             cancelNextEpisode()
         }
@@ -892,76 +828,93 @@ class PlayerFragment : Fragment() {
         quickstart_btt.setOnClickListener {
             initPlayerIfPossible()
         }
-        class Listener : PlayerFragment.DoubleClickListener(this) {
+
+
+        class Listener : DoubleTapGestureListener(this) {
             // Declaring a seekAnimation here will cause a bug
 
             override fun onDoubleClickRight(clicks: Int) {
                 if (!isLocked) {
-                    val seekAnimation = AlphaAnimation(1f, 0f)
-                    seekAnimation.duration = 1200
-                    seekAnimation.fillAfter = true
-                    seekTime(doubleTapTime * 1000L)
-                    timeTextRight?.text = "+ ${convertTimeToString((clicks * doubleTapTime).toDouble())}"
-                    timeTextRight?.alpha = 1f
-                    timeTextRight?.startAnimation(seekAnimation)
+                    activity?.runOnUiThread {
+                        val seekAnimation = AlphaAnimation(1f, 0f)
+                        seekAnimation.duration = 1200
+                        seekAnimation.fillAfter = true
+                        seekTime(doubleTapTime * 1000L)
+                        timeTextRight?.text = "+ ${convertTimeToString((clicks * doubleTapTime).toDouble())}"
+                        timeTextRight?.alpha = 1f
+                        timeTextRight?.startAnimation(seekAnimation)
+                    }
                 }
             }
 
             override fun onDoubleClickLeft(clicks: Int) {
                 if (!isLocked) {
-                    val seekAnimation = AlphaAnimation(1f, 0f)
-                    seekAnimation.duration = 1200
-                    seekAnimation.fillAfter = true
-                    seekTime(doubleTapTime * -1000L)
-                    timeTextLeft?.text = "- ${convertTimeToString((clicks * doubleTapTime).toDouble())}"
-                    timeTextLeft?.alpha = 1f
-                    timeTextLeft?.startAnimation(seekAnimation)
+                    activity?.runOnUiThread {
+                        val seekAnimation = AlphaAnimation(1f, 0f)
+                        seekAnimation.duration = 1200
+                        seekAnimation.fillAfter = true
+                        seekTime(doubleTapTime * -1000L)
+                        timeTextLeft?.text = "- ${convertTimeToString((clicks * doubleTapTime).toDouble())}"
+                        timeTextLeft?.alpha = 1f
+                        timeTextLeft?.startAnimation(seekAnimation)
+                    }
                 }
             }
 
             override fun onSingleClick() {
-                onClickChange()
+                activity?.runOnUiThread {
+                    onClickChange()
+                }
                 activity?.hideSystemUI()
             }
-
-            override fun onMotionEvent(event: MotionEvent) {
-                handleMotionEvent(event)
-            }
         }
 
-        click_overlay.setOnTouchListener(
-            Listener()
-        )
+        val detector = GestureDetector(this.context, Listener())
+        val detectorListener = OnTouchListener { _, event ->
+            handleMotionEvent(event)
+            detector.onTouchEvent(event)
+            return@OnTouchListener true
+        }
+
 
         player_holder.setOnTouchListener(
-            Listener()
+            detectorListener
         )
+        /*
+        click_overlay.setOnTouchListener(
+            detectorListener
+        )
+        player_holder.setOnClickListener { }*/
 
-        player_holder.setOnClickListener {
-            onClickChange()
-            /*if(!isShowing) {
-                video_holder.postDelayed({
-                    video_holder.setVisibility(View.INVISIBLE);
-                    video_lock_holder.setVisibility(View.INVISIBLE);
-                }, 100);
-            }*/
+        /*player_holder.setOnTouchListener(
+            Listener()
+        )*/
 
-            //isClickable WILL CAUSE UI BUG
-            /*  exo_play.isClickable = isShowing
+        // player_holder.setOnClickListener {
+        //onClickChange()
+        /*if(!isShowing) {
+            video_holder.postDelayed({
+                video_holder.setVisibility(View.INVISIBLE);
+                video_lock_holder.setVisibility(View.INVISIBLE);
+            }, 100);
+        }*/
 
-              exo_pause.isClickable = isShowing
-              //exo_pause.isFocusable = isShowing
-              exo_ffwd.isClickable = isShowing
-              //exo_ffwd.isFocusable = isShowing
-              exo_prev.isClickable = isShowing
-              //exo_prev.isFocusable = isShowing
-              video_lock.isClickable = isShowing
-              //video_lock.isFocusable = isShowing
-              video_go_back.isClickable = isShowing
-              //video_go_back.isFocusable = isShowing
-              exo_progress.isClickable = isShowing*/
-            //  exo_progress.isFocusable = isShowing
-        }
+        //isClickable WILL CAUSE UI BUG
+        /*  exo_play.isClickable = isShowing
+
+          exo_pause.isClickable = isShowing
+          //exo_pause.isFocusable = isShowing
+          exo_ffwd.isClickable = isShowing
+          //exo_ffwd.isFocusable = isShowing
+          exo_prev.isClickable = isShowing
+          //exo_prev.isFocusable = isShowing
+          video_lock.isClickable = isShowing
+          //video_lock.isFocusable = isShowing
+          video_go_back.isClickable = isShowing
+          //video_go_back.isFocusable = isShowing
+          exo_progress.isClickable = isShowing*/
+        //  exo_progress.isFocusable = isShowing
+        // }
 
         isInPlayer = true
         retainInstance = true // OTHERWISE IT WILL CAUSE A CRASH
@@ -1326,7 +1279,7 @@ class PlayerFragment : Fragment() {
                         currentEpisodeProgress
                     )
                 } ?: false else true
-            if (!anilistPost || malPost.not()) {
+            if (!anilistPost || !malPost) {
                 getCurrentActivity()!!.runOnUiThread {
                     Toast.makeText(
                         getCurrentActivity()!!,
@@ -1349,8 +1302,6 @@ class PlayerFragment : Fragment() {
 
     @SuppressLint("ClickableViewAccessibility")
     private fun initPlayer(inputUrl: ExtractorLink? = null) {
-        println("ANILIST IDDDDDDDDDDD ${data?.anilistID} MAL IDDDD ${data?.malID}")
-
         isCurrentlyPlaying = true
         view?.setOnTouchListener { _, _ ->
             println("OVERRIDDEN TOUCH")

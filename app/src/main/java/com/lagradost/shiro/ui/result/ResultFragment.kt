@@ -48,6 +48,7 @@ import com.lagradost.shiro.utils.AniListApi.Companion.getShowId
 import com.lagradost.shiro.utils.AniListApi.Companion.postDataAboutId
 import com.lagradost.shiro.utils.AniListApi.Companion.secondsToReadable
 import com.lagradost.shiro.utils.AppUtils.canPlayNextEpisode
+import com.lagradost.shiro.utils.AppUtils.dubbify
 import com.lagradost.shiro.utils.AppUtils.expandTouchArea
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
@@ -255,11 +256,15 @@ class ResultFragment : Fragment() {
                 if (data.episodes?.isNotEmpty() == true) {
                     next_episode_btt.visibility = VISIBLE
                     next_episode_btt.setOnClickListener {
-                        val episode = getLatestSeenEpisode(data)
-                        val episodePos = getViewPosDur(data.slug, episode.episodeIndex)
-                        val next = canPlayNextEpisode(data, episode.episodeIndex)
+                        val lastNormal = getLatestSeenEpisode(data.dubbify(false))
+                        val lastDubbed = getLatestSeenEpisode(data.dubbify(true))
+                        val isEpisodeDubbed = lastDubbed.episodeIndex > lastNormal.episodeIndex
+                        val episode = if (isEpisodeDubbed) lastDubbed else lastNormal
+
+                        val episodePos = getViewPosDur(data.slug.dubbify(isEpisodeDubbed), episode.episodeIndex)
+                        val next = canPlayNextEpisode(data.dubbify(isEpisodeDubbed), episode.episodeIndex)
                         if (next.isFound && episodePos.viewstate) {
-                            val pos = getViewPosDur(data.slug, episode.episodeIndex)
+                            val pos = getViewPosDur(data.slug.dubbify(isEpisodeDubbed), episode.episodeIndex)
                             Toast.makeText(activity, "Playing episode ${next.episodeIndex + 1}", Toast.LENGTH_SHORT)
                                 .show()
                             activity?.loadPlayer(
@@ -472,13 +477,13 @@ class ResultFragment : Fragment() {
                 ) != null
                 val hasMAL = DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
 
-                val malHolder =
-                    if (hasMAL) resultViewModel?.currentMalId?.value?.let { MALApi.getDataAboutId(it) } else null
-                val holder = if (hasAniList && malHolder == null) resultViewModel?.currentAniListId?.value?.let {
+                val holder = if (hasAniList) resultViewModel?.currentAniListId?.value?.let {
                     activity.getDataAboutId(
                         it
                     )
                 } else null
+                val malHolder =
+                    if (hasMAL && holder == null) resultViewModel?.currentMalId?.value?.let { MALApi.getDataAboutId(it) } else null
                 //setAllMalData()
                 //MALApi.allTitles.get(currentMalId)
 
@@ -486,9 +491,14 @@ class ResultFragment : Fragment() {
                     class CardAniListInfo {
                         // Sets to watching if anything is done
                         fun typeGetter(): AniListApi.Companion.AniListStatusType {
-                            return if (malHolder != null) {
-                                var type =
-                                    AniListApi.fromIntToAnimeStatus(malStatusAsString.indexOf(malHolder.my_list_status?.status))
+                            return if (holder != null) {
+                                fromIntToAnimeStatus(holder.type.value)
+                            } else {
+                                fromIntToAnimeStatus(malStatusAsString.indexOf(malHolder?.my_list_status?.status ?: 0))
+                            }
+                            /*return if (malHolder != null) {
+                                val type =
+                                    fromIntToAnimeStatus(malStatusAsString.indexOf(malHolder.my_list_status?.status))
                                 /*type =
                                     if (type.value == MALApi.Companion.MalStatusType.None.value) AniListApi.Companion.AniListStatusType.Watching else type*/
                                 type
@@ -496,8 +506,8 @@ class ResultFragment : Fragment() {
                                 val type = holder?.type
                                 /*val type =
                                     if (holder?.type == AniListApi.Companion.AniListStatusType.None) AniListApi.Companion.AniListStatusType.Watching else holder?.type*/
-                                AniListApi.fromIntToAnimeStatus(type?.value ?: 0)
-                            }
+                                fromIntToAnimeStatus(type?.value ?: 0)
+                            }*/
                         }
 
                         var type = typeGetter()
@@ -519,7 +529,7 @@ class ResultFragment : Fragment() {
                                 this::type.setter.call(type)
                             }
                         var progress =
-                            malHolder?.my_list_status?.num_episodes_watched ?: holder?.progress ?: 0
+                            holder?.progress ?: malHolder?.my_list_status?.num_episodes_watched ?: 0
                             set(value) {
                                 field = maxOf(0, minOf(value, episodes))
                                 getCurrentActivity()!!.runOnUiThread {
@@ -556,7 +566,7 @@ class ResultFragment : Fragment() {
                                     this.type.value = AniListStatusType.Watching.value
                                 }*/
                             }
-                        var score = malHolder?.my_list_status?.score ?: holder?.score ?: 0
+                        var score = holder?.score ?: malHolder?.my_list_status?.score ?: 0
                             set(value) {
                                 field = value
                                 if (typeValue == AniListApi.Companion.AniListStatusType.None.value) {
@@ -567,7 +577,7 @@ class ResultFragment : Fragment() {
                                     status_text.text = type.name
                                 }
                             }
-                        var episodes = malHolder?.num_episodes ?: holder!!.episodes
+                        var episodes = holder?.episodes ?: malHolder?.num_episodes ?: 1
 
                         fun syncData() {
                             thread {
@@ -719,8 +729,12 @@ class ResultFragment : Fragment() {
                                 "Paused",
                                 "Dropped",
                                 "Planning to watch",
-                                "Rewatching",
+                                "Rewatching"
+                            ).subList(
+                                // Rewatching doesn't exist on MAL
+                                0, if (hasAniList) 6 else 5
                             )
+
                             arrayAdapter.addAll(ArrayList(choices))
 
                             res.choiceMode = CHOICE_MODE_SINGLE

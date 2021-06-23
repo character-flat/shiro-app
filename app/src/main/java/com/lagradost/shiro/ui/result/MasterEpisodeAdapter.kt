@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.google.common.math.IntMath.mod
 import com.lagradost.shiro.R
+import com.lagradost.shiro.utils.AppUtils.dubbify
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getViewKey
 import com.lagradost.shiro.utils.DataStore
@@ -23,7 +24,6 @@ class MasterEpisodeAdapter(
     var isFiller: HashMap<Int, Boolean>? = null,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     val episodes = data.episodes!!
-
 
     data class MasterEpisode(
         val start: Int,
@@ -68,7 +68,7 @@ class MasterEpisodeAdapter(
             item: MasterEpisode,
             position: Int,
             data: ShiroApi.AnimePageData,
-            ) {
+        ) {
             //println("BIND $position" + "|" + (fillerList?.size ?: "NULLL"))
             itemView.cardTitle.text =
                 if (item.start + 1 == item.end) "Episode ${item.end}"
@@ -95,8 +95,9 @@ class MasterEpisodeAdapter(
 
             var isSeen = false
             for (episode in item.start..item.end) {
-                val key = getViewKey(data.slug, episode)
-                if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
+                val key = getViewKey(data.slug.dubbify(false), episode)
+                val keyDubbed = getViewKey(data.slug.dubbify(true), episode)
+                if (DataStore.containsKey(VIEWSTATE_KEY, key) || DataStore.containsKey(VIEWSTATE_KEY, keyDubbed)) {
                     isSeen = true
                 }
             }
