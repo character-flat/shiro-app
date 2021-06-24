@@ -224,6 +224,17 @@
                 app:defaultValue="false"
         />-->
         <SeekBarPreference
+                android:icon="@drawable/ic_baseline_cloud_done_24"
+                android:title="Completed percentage"
+                android:summary="Percentage of video watched to sync as seen. 0 disables the feature"
+                android:defaultValue="80"
+                android:max="100"
+                android:key="completed_percentage"
+                app:showSeekBarValue="true"
+                app:seekBarIncrement="5"
+        >
+        </SeekBarPreference>
+        <SeekBarPreference
                 android:icon="@drawable/ic_baseline_access_time_24"
                 android:title="Fast forward skip time"
                 android:defaultValue="10"
@@ -250,17 +261,6 @@
                 app:seekBarIncrement="5"
         >
         </SeekBarPreference>
-        <SeekBarPreference
-                android:icon="@drawable/ic_baseline_cloud_done_24"
-                android:title="Completed percentage"
-                android:summary="Percentage of video watched to sync as seen. 0 disables the feature"
-                android:defaultValue="80"
-                android:max="100"
-                android:key="completed_percentage"
-                app:showSeekBarValue="true"
-                app:seekBarIncrement="5"
-        >
-        </SeekBarPreference>
         <SwitchPreference
                 android:icon="@drawable/ic_baseline_screen_rotation_24"
                 app:key="allow_player_rotation"
@@ -277,7 +277,7 @@
         <SwitchPreference
                 android:icon="@drawable/ic_baseline_history_24"
                 android:key="save_history"
-                android:title="Save watch history"
+                android:title="Save and sync watch history"
                 app:defaultValue="true"
         />
         <Preference

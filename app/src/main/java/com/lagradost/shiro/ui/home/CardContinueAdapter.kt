@@ -196,7 +196,7 @@ class CardContinueAdapter(
                     }
                     itemView.video_progress.progress = progress
                 } else {
-                    itemView.video_progress.alpha = 0f
+                    itemView.video_progress?.alpha = 0f
                 }
             }
         }

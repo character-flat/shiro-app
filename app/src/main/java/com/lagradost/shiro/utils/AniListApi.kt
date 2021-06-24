@@ -71,7 +71,6 @@ class AniListApi {
                     splitQuery(URL(data.replace("shiroapp", "https").replace("/#", "?"))) // FIX ERROR
                 val token = sanitizer["access_token"]!!
                 val expiresIn = sanitizer["expires_in"]!!
-                println("DATA: $token|$expiresIn")
 
                 val endTime = unixTime() + expiresIn.toLong()
 
@@ -236,9 +235,6 @@ class AniListApi {
 
                 val main = d.data.Media
                 if (main.mediaListEntry != null) {
-                    println(main.mediaListEntry.status)
-                    println(aniListStatusString)
-                    println(aniListStatusString.indexOf(main.mediaListEntry.status))
                     return AniListTitleHolder(
                         id = id,
                         isFavourite = main.isFavourite,

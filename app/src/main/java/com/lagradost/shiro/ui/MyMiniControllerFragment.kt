@@ -19,7 +19,7 @@ class MyMiniControllerFragment : MiniControllerFragment() {
             val progressBar: ProgressBar = view.findViewById(R.id.progressBar)
             val containerAll: LinearLayout = view.findViewById(R.id.container_all)
 
-            containerAll.getChildAt(0).alpha = 0f // REMOVE GRADIENT
+            containerAll.getChildAt(0)?.alpha = 0f // REMOVE GRADIENT
 
             context?.let { ctx ->
                 progressBar.setBackgroundColor(adjustAlpha(ctx.getColorFromAttr(R.attr.colorPrimary), 0.35f))

@@ -97,7 +97,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                         }
                         builder.show()
                     } catch (e: Exception) {
-                        println(e.stackTrace)
+                        println(e.printStackTrace())
                         Toast.makeText(activity, "Error restoring backup file :(", Toast.LENGTH_LONG).show()
                     }
                 }
@@ -174,7 +174,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
         val clearCache = findPreference("clear_cache") as Preference?
         clearCache?.setOnPreferenceClickListener {
-            val glide = Glide.get(requireContext())
+            val glide = Glide.get(getCurrentActivity()!!)
             glide.clearMemory()
             thread {
                 glide.clearDiskCache()
@@ -209,7 +209,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             val clip: ClipData = ClipData.newPlainText("ID", encodedString)
             clipboard.primaryClip = clip
             Toast.makeText(
-                requireContext(),
+                getCurrentActivity()!!,
                 "Copied donor ID, give this to the devs to enable donor mode (if you have donated)",
                 Toast.LENGTH_LONG
             ).show()
@@ -372,7 +372,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         checkUpdates?.setOnPreferenceClickListener {
             thread {
                 if (context != null && activity != null) {
-                    val updateSuccess = requireActivity().runAutoUpdate(requireContext(), false)
+                    val updateSuccess = requireActivity().runAutoUpdate(getCurrentActivity()!!, false)
                     if (!updateSuccess) {
                         activity?.runOnUiThread {
                             Toast.makeText(activity, "No updates found :(", Toast.LENGTH_SHORT).show()

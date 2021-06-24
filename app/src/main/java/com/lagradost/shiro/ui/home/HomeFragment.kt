@@ -319,7 +319,7 @@ class HomeFragment : Fragment() {
             it.observe(viewLifecycleOwner) { homePage ->
                 homeLoaded(homePage)
             }
-            if (it.value != null && main_load.alpha == 1.0f) {
+            if (it.value != null && main_load?.alpha == 1.0f) {
                 homeLoaded(it.value)
             }
         }

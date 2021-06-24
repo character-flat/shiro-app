@@ -32,7 +32,7 @@ class StreamSB : ExtractorApi() {
         val extractedLinksList: MutableList<ExtractorLink> = mutableListOf()
         val newUrl = url.replace("sbplay.org/embed-", "sbplay.org/play/").removeSuffix(".html")
         try {
-            with(khttp.get(newUrl)) {
+            with(khttp.get(newUrl, timeout = 10.0)) {
                 getAndUnpack(this.text)?.let {
                     sourceRegex.findAll(it).forEach { sourceMatch ->
                         val extractedUrl = sourceMatch.groupValues[1]
@@ -57,7 +57,7 @@ class StreamSB : ExtractorApi() {
                 }
             }
         } catch (e: Exception) {
-            println(e)
+            println(e.printStackTrace())
         }
         return extractedLinksList
     }

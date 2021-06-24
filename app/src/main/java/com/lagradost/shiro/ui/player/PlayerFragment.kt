@@ -297,7 +297,6 @@ class PlayerFragment : Fragment() {
     }
 
     private fun linkLoaded(link: ExtractorLink) {
-
         val safeLinks = extractorLinks
         extractorLinks.add(link)
         println(extractorLinks.map { it.name })
@@ -357,6 +356,7 @@ class PlayerFragment : Fragment() {
                         && data?.episodeIndex != null) || data?.card != null)
                 && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0
             ) {
+                println("SETTING VIEW POS DUR ${data!!.slug}")
                 setViewPosDur(data!!, exoPlayer.currentPosition, exoPlayer.duration)
             }
         }
@@ -436,7 +436,7 @@ class PlayerFragment : Fragment() {
         MainActivity.isInPIPMode = isInPictureInPictureMode
         if (isInPictureInPictureMode) {
             // Hide the full-screen UI (controls, etc.) while in picture-in-picture mode.
-            player_holder.alpha = 0f
+            player_holder?.alpha = 0f
             receiver = object : BroadcastReceiver() {
                 override fun onReceive(
                     context: Context,
@@ -456,7 +456,7 @@ class PlayerFragment : Fragment() {
             updatePIPModeActions()
         } else {
             // Restore the full-screen UI.
-            player_holder.alpha = 1f
+            player_holder?.alpha = 1f
             receiver?.let {
                 activity?.unregisterReceiver(it)
             }
@@ -757,7 +757,6 @@ class PlayerFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         playerViewModel!!.videoSize.observe(viewLifecycleOwner) {
-            println("OBNSERVER CHANGE!!!! $it")
             video_title?.text = getCurrentTitle()
         }
 
@@ -1112,7 +1111,7 @@ class PlayerFragment : Fragment() {
             // Lmao kind bad
             val speedsText = arrayOf("0.5x", "0.75x", "1x", "1.25x", "1.5x", "1.75x", "2x")
             val speedsNumbers = arrayOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f)
-            val builder = AlertDialog.Builder(requireContext(), R.style.AlertDialogCustom)
+            val builder = AlertDialog.Builder(getCurrentActivity()!!, R.style.AlertDialogCustom)
             builder.setTitle("Pick playback speed")
 
             builder.setSingleChoiceItems(speedsText, speedsNumbers.indexOf(playbackSpeed)) { _, which ->
@@ -1137,7 +1136,7 @@ class PlayerFragment : Fragment() {
             lateinit var dialog: AlertDialog
             sources.second?.let {
                 val sourcesText = it.map { link -> link.name }
-                val builder = AlertDialog.Builder(requireContext(), R.style.AlertDialogCustom)
+                val builder = AlertDialog.Builder(getCurrentActivity()!!, R.style.AlertDialogCustom)
                 builder.setTitle("Pick source")
                 val index = maxOf(sources.second?.indexOf(playerViewModel?.selectedSource?.value) ?: -1, 0)
                 builder.setSingleChoiceItems(sourcesText.toTypedArray(), index) { _, which ->
@@ -1304,7 +1303,9 @@ class PlayerFragment : Fragment() {
 
         // Disabled if it's 0
         val setPercentage: Float = settingsManager!!.getInt("completed_percentage", 80).toFloat() / 100
-        if (this::exoPlayer.isInitialized && setPercentage != 0.0f) {
+        val saveHistory: Boolean = settingsManager.getBoolean("save_history", true)
+
+        if (this::exoPlayer.isInitialized && setPercentage != 0.0f && saveHistory) {
             val currentPercentage = exoPlayer.currentPosition.toFloat() / exoPlayer.duration.toFloat()
             if (currentPercentage > setPercentage && lastSyncedEpisode < data?.episodeIndex!!) {
                 lastSyncedEpisode = data?.episodeIndex!!
@@ -1317,7 +1318,7 @@ class PlayerFragment : Fragment() {
                     time
                 )
             }
-        } else if (data?.anilistID != null || data?.malID != null && setPercentage != 0.0f) {
+        } else if (data?.anilistID != null || data?.malID != null && setPercentage != 0.0f && saveHistory) {
             handler.postDelayed(
                 checkProgressAction,
                 time
@@ -1438,7 +1439,7 @@ class PlayerFragment : Fragment() {
                                     dataSource.setRequestProperty("Referer", currentUrl.referer)
                                     dataSource
                                 } else {
-                                    DefaultDataSourceFactory(requireContext(), USER_AGENT).createDataSource()
+                                    DefaultDataSourceFactory(getCurrentActivity()!!, USER_AGENT).createDataSource()
                                 }
                             }
                         }
@@ -1542,9 +1543,9 @@ class PlayerFragment : Fragment() {
                         }
 
                         val mediaItem = mediaItemBuilder.build()
-                        val trackSelector = DefaultTrackSelector(requireContext())
+                        val trackSelector = DefaultTrackSelector(getCurrentActivity()!!)
                         // Disable subtitles
-                        trackSelector.parameters = DefaultTrackSelector.ParametersBuilder(requireContext())
+                        trackSelector.parameters = DefaultTrackSelector.ParametersBuilder(getCurrentActivity()!!)
                             .setRendererDisabled(C.TRACK_TYPE_VIDEO, true)
                             .setRendererDisabled(C.TRACK_TYPE_TEXT, true)
                             .setDisabledTextTrackSelectionFlags(C.TRACK_TYPE_TEXT)
@@ -1552,7 +1553,7 @@ class PlayerFragment : Fragment() {
                             .build()
 
                         val exoPlayerBuilder =
-                            SimpleExoPlayer.Builder(this.requireContext())
+                            SimpleExoPlayer.Builder(getCurrentActivity()!!)
                                 .setTrackSelector(trackSelector)
 
                         exoPlayerBuilder.setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))

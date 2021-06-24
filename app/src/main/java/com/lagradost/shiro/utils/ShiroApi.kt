@@ -33,6 +33,7 @@ class ShiroApi {
         @JsonProperty("_id") val _id: String,
         @JsonProperty("slug") override val slug: String,
         @JsonProperty("name") override val name: String,
+        @JsonProperty("english") override val english: String?,
     ) : CommonAnimePage
 
     data class ShiroHomePageData(
@@ -111,6 +112,7 @@ class ShiroApi {
         @JsonProperty("episodes") var episodes: List<ShiroEpisodes>?,
         @JsonProperty("status") val status: String?,
         @JsonProperty("schedule") val schedule: String?,
+        @JsonProperty("english") override val english: String?,
     ) : CommonAnimePage
 
     data class AnimePage(
@@ -123,12 +125,14 @@ class ShiroApi {
         @JsonProperty("name") override val name: String,
         @JsonProperty("image") override val image: String,
         @JsonProperty("slug") override val slug: String,
+        @JsonProperty("english") override val english: String? = null,
     ) : CommonAnimePage
 
     interface CommonAnimePage {
         val name: String
         val image: String
         val slug: String
+        val english: String?
     }
 
     data class AllSearchMethods(
@@ -177,7 +181,7 @@ class ShiroApi {
                     token
                 )
             } catch (e: Exception) {
-                println(e)
+                println(e.printStackTrace())
                 return null
             }
         }

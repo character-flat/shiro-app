@@ -63,8 +63,6 @@ class TvActivity : AppCompatActivity() {
                 theme.applyStyle(R.style.OverlayPrimaryColorPurple, true)
             }
 
-
-            println("APPLY STYLE")
             // -----------------
         }
 

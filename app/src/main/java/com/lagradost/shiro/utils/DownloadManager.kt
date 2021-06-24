@@ -243,7 +243,7 @@ object DownloadManager {
                 try {
                     rFile.createNewFile()
                 } catch (e: Exception) {
-                    println(e)
+                    println(e.printStackTrace())
                     e.printStackTrace()
                     activity?.runOnUiThread {
                         Toast.makeText(localContext!!, "Permission error downloading poster", Toast.LENGTH_SHORT).show()
@@ -406,7 +406,7 @@ object DownloadManager {
                         }
                     }
                 } catch (e: Exception) {
-                    println(e)
+                    println(e.printStackTrace())
                     activity?.runOnUiThread {
                         Toast.makeText(localContext!!, "Permission error", Toast.LENGTH_SHORT).show()
                     }

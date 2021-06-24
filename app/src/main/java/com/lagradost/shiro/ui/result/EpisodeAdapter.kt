@@ -232,7 +232,11 @@ class EpisodeAdapter(
                 val keyNormal = getViewKey(data.slug.dubbify(false), episodePos)
                 val keyDubbed = getViewKey(data.slug.dubbify(true), episodePos)
 
-                if (DataStore.containsKey(VIEWSTATE_KEY, keyNormal) || DataStore.containsKey(VIEWSTATE_KEY, keyDubbed)) {
+                if (DataStore.containsKey(VIEWSTATE_KEY, keyNormal) || DataStore.containsKey(
+                        VIEWSTATE_KEY,
+                        keyDubbed
+                    )
+                ) {
                     DataStore.removeKey(VIEWSTATE_KEY, keyNormal)
                     DataStore.removeKey(VIEWSTATE_KEY, keyDubbed)
                 } else {

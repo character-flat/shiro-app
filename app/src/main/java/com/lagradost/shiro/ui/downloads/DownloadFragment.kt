@@ -36,7 +36,7 @@ class DownloadFragment : Fragment() {
 
             downloadRoot.removeAllViews()
             childMetadataKeys.clear()
-            val inflater = requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+            val inflater = activity?.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
             val epData = hashMapOf<String, EpisodesDownloaded>()
             try {

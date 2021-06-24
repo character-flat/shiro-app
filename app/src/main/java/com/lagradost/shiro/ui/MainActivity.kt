@@ -89,7 +89,8 @@ data class NextEpisode(
 data class BookmarkedTitle(
     @JsonProperty("name") override val name: String,
     @JsonProperty("image") override val image: String,
-    @JsonProperty("slug") override val slug: String
+    @JsonProperty("slug") override val slug: String,
+    @JsonProperty("english") override val english: String? = null
 ) : ShiroApi.CommonAnimePage
 
 class MainActivity : AppCompatActivity() {

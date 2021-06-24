@@ -103,7 +103,7 @@ object AppUtils {
 
     // Guarantee slug is dubbed or not
     fun ShiroApi.AnimePageData.dubbify(turnDubbed: Boolean): ShiroApi.AnimePageData {
-        return this.apply {
+        return this.copy().apply {
             slug = if (turnDubbed) {
                 slug.removeSuffix("-dubbed") + "-dubbed"
             } else {
@@ -438,7 +438,7 @@ object AppUtils {
     }
 
     fun getLatestSeenEpisode(data: ShiroApi.AnimePageData): NextEpisode {
-        for (i in (data.episodes?.size ?: 0) downTo 0) {
+        for (i in (data.episodes?.size?.minus(1) ?: 0) downTo 0) {
             val firstPos = getViewPosDur(data.slug, i)
             if (firstPos.viewstate) {
                 return NextEpisode(true, i, 0)

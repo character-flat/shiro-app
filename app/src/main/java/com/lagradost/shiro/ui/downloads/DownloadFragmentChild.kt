@@ -25,6 +25,7 @@ import com.lagradost.shiro.ui.result.ResultFragment.Companion.fixEpTitle
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isViewState
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getViewKey
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
@@ -306,22 +307,22 @@ class DownloadFragmentChild : Fragment() {
                 // ================ REGULAR ================
                 if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
                     card.cardBg.setCardBackgroundColor(
-                        requireContext().getColorFromAttr(
+                        getCurrentActivity()!!.getColorFromAttr(
                             R.attr.colorPrimaryMegaDark
                         )
                     )
                     card.cardTitle.setTextColor(
-                        ContextCompat.getColor(requireContext(), R.color.textColor)
+                        ContextCompat.getColor(getCurrentActivity()!!, R.color.textColor)
                     )
                     card.cardTitleExtra.setTextColor(
-                        ContextCompat.getColor(requireContext(), R.color.textColor)
+                        ContextCompat.getColor(getCurrentActivity()!!, R.color.textColor)
                     )
                 } else {
                     card.cardTitle.setTextColor(
-                        requireContext().getColorFromAttr(R.attr.textColor)
+                       getCurrentActivity()!!.getColorFromAttr(R.attr.textColor)
                     )
                     card.cardTitleExtra.setTextColor(
-                        requireContext().getColorFromAttr(R.attr.textColor)
+                        getCurrentActivity()!!.getColorFromAttr(R.attr.textColor)
                     )
                 }
 
@@ -335,7 +336,7 @@ class DownloadFragmentChild : Fragment() {
                     }
                     card.video_progress.progress = progress
                 } else {
-                    card.video_progress.alpha = 0f
+                    card.video_progress?.alpha = 0f
                 }
                 downloadRootChild.addView(card)
                 downloadRootChild.invalidate()

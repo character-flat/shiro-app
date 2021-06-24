@@ -4,15 +4,20 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
+import android.widget.AbsListView.CHOICE_MODE_SINGLE
+import android.widget.ArrayAdapter
 import android.widget.ImageView
+import android.widget.ListView
 import androidx.appcompat.app.AlertDialog
 import com.google.android.gms.cast.MediaStatus.REPEAT_MODE_REPEAT_SINGLE
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastSession
 import com.google.android.gms.cast.framework.media.uicontroller.UIController
 import com.google.android.gms.cast.framework.media.widget.ExpandedControllerActivity
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.lagradost.shiro.R
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import kotlinx.android.synthetic.main.bottom_sheet.*
 import org.json.JSONObject
 
 class SkipOpController(val view: ImageView) : UIController() {
@@ -25,14 +30,12 @@ class SkipOpController(val view: ImageView) : UIController() {
 }
 
 class SelectSourceController(val view: ImageView) : UIController() {
-
     init {
         view.setImageResource(R.drawable.ic_baseline_playlist_play_24)
         view.setOnClickListener {
             //remoteMediaClient.mediaQueue.itemCount
             //println(remoteMediaClient.mediaInfo.customData)
             //remoteMediaClient.queueJumpToItem()
-            lateinit var dialog: AlertDialog
             val items = mutableListOf<Pair<Int, String>>()
             for (i in 0 until remoteMediaClient.mediaQueue.itemCount) {
                 (remoteMediaClient.mediaQueue.getItemAtIndex(i)?.media?.customData?.get("data") as? String)?.let { name ->
@@ -41,26 +44,31 @@ class SelectSourceController(val view: ImageView) : UIController() {
                     )
                 }
             }
-
             if (items.isNotEmpty()) {
-                val builder = AlertDialog.Builder(view.context, R.style.AlertDialogCustom)
-                builder.setTitle("Pick source")
+                val bottomSheetDialog = BottomSheetDialog(view.context)
+                bottomSheetDialog.setContentView(R.layout.bottom_sheet)
+                val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
+                val arrayAdapter = ArrayAdapter<String>(view.context, R.layout.bottom_single_choice)
+                arrayAdapter.addAll(ArrayList(items.map { it.second }))
 
-                builder.setSingleChoiceItems(
-                    items.map { it.second }.toTypedArray(),
-                    remoteMediaClient.currentItem.itemId - 1
-                ) { _, which ->
+                res.choiceMode = CHOICE_MODE_SINGLE
+                res.adapter = arrayAdapter
+                res.setItemChecked(
+                    (remoteMediaClient.currentItem?.itemId ?: 0) - 1,
+                    true
+                )
+                res.setOnItemClickListener { _, _, position, _ ->
                     println(
                         remoteMediaClient.queueJumpToItem(
-                            items[which].first,
+                            items[position].first,
                             remoteMediaClient.approximateStreamPosition,
                             null
                         )
                     )
-                    dialog.dismiss()
+                    bottomSheetDialog.dismiss()
                 }
-                dialog = builder.create()
-                dialog.show()
+                bottomSheetDialog.main_text.text = "Pick source"
+                bottomSheetDialog.show()
             }
         }
     }

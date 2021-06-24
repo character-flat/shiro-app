@@ -31,15 +31,12 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ui.BookmarkedTitle
-import com.lagradost.shiro.ui.GlideApp
+import com.lagradost.shiro.ui.*
 import com.lagradost.shiro.ui.GlideOptions.bitmapTransform
-import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
-import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.fromIntToAnimeStatus
@@ -258,13 +255,13 @@ class ResultFragment : Fragment() {
                     next_episode_btt.setOnClickListener {
                         val lastNormal = getLatestSeenEpisode(data.dubbify(false))
                         val lastDubbed = getLatestSeenEpisode(data.dubbify(true))
-                        val isEpisodeDubbed = lastDubbed.episodeIndex > lastNormal.episodeIndex
+                        val isEpisodeDubbed = lastDubbed.episodeIndex >= lastNormal.episodeIndex
                         val episode = if (isEpisodeDubbed) lastDubbed else lastNormal
 
-                        val episodePos = getViewPosDur(data.slug.dubbify(isEpisodeDubbed), episode.episodeIndex)
-                        val next = canPlayNextEpisode(data.dubbify(isEpisodeDubbed), episode.episodeIndex)
+                        val episodePos = getViewPosDur(data.slug, episode.episodeIndex)
+                        val next = canPlayNextEpisode(data, episode.episodeIndex)
                         if (next.isFound && episodePos.viewstate) {
-                            val pos = getViewPosDur(data.slug.dubbify(isEpisodeDubbed), episode.episodeIndex)
+                            val pos = getViewPosDur(data.slug, episode.episodeIndex)
                             Toast.makeText(activity, "Playing episode ${next.episodeIndex + 1}", Toast.LENGTH_SHORT)
                                 .show()
                             activity?.loadPlayer(
@@ -361,7 +358,7 @@ class ResultFragment : Fragment() {
                 }
 
 
-                slug?.let { slug ->
+                data.slug.let { slug ->
                     if (title_subscribe_holder == null) return@let
                     title_subscribe_holder?.visibility = VISIBLE
                     val subbedBookmark = DataStore.getKey<BookmarkedTitle>(SUBSCRIPTIONS_BOOKMARK_KEY, slug, null)

@@ -3,6 +3,8 @@ package com.lagradost.shiro.ui.search
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.ImageView
@@ -142,7 +144,15 @@ class ResAdapter(
                     coverHeight
                 )
             }
+
             itemView.imageText.text = fixCardTitle(card.name)
+            if (card.english != null) {
+                itemView.imageSubText.visibility = VISIBLE
+                itemView.imageSubText.text = fixCardTitle(card.english!!)
+            } else {
+                itemView.imageSubText.visibility = GONE
+            }
+
             cardView.setOnClickListener {
                 activity?.loadPage(card.slug, card.name)
 
