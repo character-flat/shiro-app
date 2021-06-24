@@ -30,7 +30,10 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AlertDialog
+import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
@@ -41,7 +44,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.github.vkay94.dtpv.youtube.YouTubeOverlay
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.C.TIME_UNSET
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
@@ -75,7 +77,6 @@ import com.lagradost.shiro.utils.AppUtils.hideSystemUI
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.requestAudioFocus
 import com.lagradost.shiro.utils.AppUtils.setViewPosDur
-import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.AppUtils.showSystemUI
 import com.lagradost.shiro.utils.MALApi.Companion.malStatusAsString
 import com.lagradost.shiro.utils.MALApi.Companion.setScoreRequest
@@ -84,6 +85,7 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.fmod
 import com.lagradost.shiro.utils.ShiroApi.Companion.loadLinks
 import kotlinx.android.synthetic.main.player.*
 import kotlinx.android.synthetic.main.player_custom_layout.*
+import kotlinx.android.synthetic.main.yt_overlay.*
 import java.io.File
 import java.security.SecureRandom
 import java.util.*
@@ -231,6 +233,7 @@ class PlayerFragment : Fragment() {
     private val nextEpisodeAction = Runnable { playNextEpisode() }
     private val checkProgressAction = Runnable { checkProgress() }
 
+    //private val restoreLockClickable = Runnable { video_lock?.isClickable = true }
     private var timer: Timer? = null
     //private val linkLoadedEvent = Event<ExtractorLink>()
 
@@ -394,24 +397,8 @@ class PlayerFragment : Fragment() {
             else Color.WHITE
         )
 
-        val isClick = !isLocked
+        setIsClickable(!isLocked)
         //println("UPDATED LOCK $isClick")
-        exo_play.isClickable = isClick
-        exo_pause.isClickable = isClick
-        exo_ffwd.isClickable = isClick
-        exo_rew.isClickable = isClick
-        exo_prev.isClickable = isClick
-        video_go_back.isClickable = isClick
-        //exo_progress.isClickable = isClick
-        next_episode_btt.isClickable = isClick
-        playback_speed_btt.isClickable = isClick
-        skip_op.isClickable = isClick
-        resize_player.isClickable = isClick
-        sources_btt.isClickable = isClick
-        //isShowing = isClick
-
-        // Clickable doesn't seem to work on com.google.android.exoplayer2.ui.DefaultTimeBar
-        exo_progress.isEnabled = !isLocked
 
         val fadeTo = if (!isLocked) 1f else 0f
         val fadeAnimation = AlphaAnimation(1f - fadeTo, fadeTo)
@@ -420,6 +407,27 @@ class PlayerFragment : Fragment() {
         fadeAnimation.fillAfter = true
 
         shadow_overlay.startAnimation(fadeAnimation)
+    }
+
+    private fun setIsClickable(isClickable: Boolean) {
+        activity?.runOnUiThread {
+            exo_play?.isClickable = isClickable
+            exo_pause?.isClickable = isClickable
+            exo_ffwd?.isClickable = isClickable
+            exo_rew?.isClickable = isClickable
+            exo_prev?.isClickable = isClickable
+            video_go_back?.isClickable = isClickable
+            next_episode_btt?.isClickable = isClickable
+            playback_speed_btt?.isClickable = isClickable
+            skip_op?.isClickable = isClickable
+            resize_player?.isClickable = isClickable
+            sources_btt?.isClickable = isClickable
+
+            // Clickable doesn't seem to work on com.google.android.exoplayer2.ui.DefaultTimeBar
+            //exo_progress.isClickable = isClick
+            exo_progress?.isEnabled = isClickable
+
+        }
     }
 
 
@@ -503,34 +511,35 @@ class PlayerFragment : Fragment() {
         if (isShowing) {
             hideAfterTimeout()
         }
-
-        //click_overlay?.visibility = if (isShowing) GONE else VISIBLE
-
-        // bottom_player_bar
-        //bottom_player_bar.y += if (isShowing) (-200).toPx else 0
+        setIsClickable(isShowing && !isLocked)
 
         val titleMove = if (isShowing) 0f else -50.toPx.toFloat()
-        ObjectAnimator.ofFloat(video_title, "translationY", titleMove).apply {
-            duration = 200
-            start()
+        video_title?.let {
+            ObjectAnimator.ofFloat(it, "translationY", titleMove).apply {
+                duration = 200
+                start()
+            }
         }
-
         val playerBarMove = if (isShowing) 0f else 50.toPx.toFloat()
-        ObjectAnimator.ofFloat(bottom_player_bar, "translationY", playerBarMove).apply {
-            duration = 200
-            start()
+        bottom_player_bar?.let {
+            ObjectAnimator.ofFloat(it, "translationY", playerBarMove).apply {
+                duration = 200
+                start()
+            }
         }
 
         val fadeTo = if (isShowing) 1f else 0f
         val fadeAnimation = AlphaAnimation(1f - fadeTo, fadeTo)
 
-        fadeAnimation.duration = 100
+        val time = 100L
+        fadeAnimation.duration = time
         fadeAnimation.fillAfter = true
 
-        // Making this animate can cause strange glitches if tapped when animating
-        video_lock_holder?.isVisible = isShowing
+        video_lock_holder?.startAnimation(fadeAnimation)
+        // To prevent UI bug when clicking twice when animating
+        video_lock?.isClickable = isShowing
+        //handler.postDelayed(restoreLockClickable, time + 50L)
 
-        //video_lock_holder?.startAnimation(fadeAnimation)
         if (!isLocked || video_holder.alpha != 1.0f || shadow_overlay.alpha != 1.0f) {
             video_holder?.startAnimation(fadeAnimation)
             shadow_overlay?.startAnimation(fadeAnimation)
@@ -831,32 +840,120 @@ class PlayerFragment : Fragment() {
 
 
         class Listener : DoubleTapGestureListener(this) {
-            // Declaring a seekAnimation here will cause a bug
+            val rootLayout = root_constraint_layout
+            val secondsView = seconds_view
+            val circleClipTapView = circle_clip_tap_view
 
-            override fun onDoubleClickRight(clicks: Int) {
+            /**
+             * Shamelessly ripped from https://github.com/vkay94/DoubleTapPlayerView
+             * because i couldn't figure out how to add it with all the other custom logic
+             */
+            init {
+                // Initialize UI components
+                secondsView.isForward = true
+                changeConstraints(true)
+
+                circleClipTapView.arcSize =
+                    getCurrentActivity()!!.resources.getDimensionPixelSize(R.dimen.dtpv_yt_arc_size).toFloat()
+                circleClipTapView.circleColor =
+                    ContextCompat.getColor(getCurrentActivity()!!, R.color.dtpv_yt_tap_circle_color)
+                circleClipTapView.circleBackgroundColor =
+                    ContextCompat.getColor(getCurrentActivity()!!, R.color.dtpv_yt_background_circle_color)
+                circleClipTapView.animationDuration = 500
+                secondsView.cycleDuration = 600
+                TextViewCompat.setTextAppearance(secondsView.textView, R.style.YTOSecondsTextAppearance)
+
+                circleClipTapView?.performAtEnd = {
+                    val seekAnimation = AlphaAnimation(1f, 0f)
+                    seekAnimation.duration = 200
+                    seekAnimation.fillAfter = true
+                    circleClipTapView?.alpha = 1f
+                    circleClipTapView?.startAnimation(seekAnimation)
+                    secondsView?.visibility = INVISIBLE
+                    secondsView?.seconds = 0
+                    secondsView?.stop()
+                }
+
+            }
+
+            private fun forwarding() {
+                secondsView.seconds += doubleTapTime
+                seekTime(doubleTapTime * 1000L)
+            }
+
+            private fun rewinding() {
+                secondsView.seconds += doubleTapTime
+                seekTime(doubleTapTime * -1000L)
+            }
+
+            private fun changeConstraints(forward: Boolean) {
+                val constraintSet = ConstraintSet()
+                with(constraintSet) {
+                    clone(rootLayout)
+                    if (forward) {
+                        clear(secondsView.id, ConstraintSet.START)
+                        connect(
+                            secondsView.id, ConstraintSet.END,
+                            ConstraintSet.PARENT_ID, ConstraintSet.END
+                        )
+                    } else {
+                        clear(secondsView.id, ConstraintSet.END)
+                        connect(
+                            secondsView.id, ConstraintSet.START,
+                            ConstraintSet.PARENT_ID, ConstraintSet.START
+                        )
+                    }
+                    secondsView.start()
+                    applyTo(rootLayout)
+                }
+            }
+
+
+            override fun onDoubleClickRight(clicks: Int, posX: Float, posY: Float) {
                 if (!isLocked) {
                     activity?.runOnUiThread {
-                        val seekAnimation = AlphaAnimation(1f, 0f)
-                        seekAnimation.duration = 1200
-                        seekAnimation.fillAfter = true
-                        seekTime(doubleTapTime * 1000L)
-                        timeTextRight?.text = "+ ${convertTimeToString((clicks * doubleTapTime).toDouble())}"
-                        timeTextRight?.alpha = 1f
-                        timeTextRight?.startAnimation(seekAnimation)
+                        secondsView.visibility = VISIBLE
+                        secondsView.start()
+                        // First time tap or switched
+                        if (!secondsView.isForward) {
+                            changeConstraints(true)
+                            secondsView.apply {
+                                isForward = true
+                                seconds = 0
+                            }
+                        }
+
+                        // Cancel ripple and start new without triggering overlay disappearance
+                        // (resetting instead of ending)
+                        circleClipTapView.resetAnimation {
+                            circleClipTapView.updatePosition(posX, posY)
+                        }
+                        forwarding()
                     }
                 }
             }
 
-            override fun onDoubleClickLeft(clicks: Int) {
+            override fun onDoubleClickLeft(clicks: Int, posX: Float, posY: Float) {
                 if (!isLocked) {
                     activity?.runOnUiThread {
-                        val seekAnimation = AlphaAnimation(1f, 0f)
-                        seekAnimation.duration = 1200
-                        seekAnimation.fillAfter = true
-                        seekTime(doubleTapTime * -1000L)
-                        timeTextLeft?.text = "- ${convertTimeToString((clicks * doubleTapTime).toDouble())}"
-                        timeTextLeft?.alpha = 1f
-                        timeTextLeft?.startAnimation(seekAnimation)
+                        secondsView.visibility = VISIBLE
+                        secondsView.start()
+
+                        // First time tap or switched
+                        if (secondsView.isForward) {
+                            changeConstraints(false)
+                            secondsView.apply {
+                                isForward = false
+                                seconds = 0
+                            }
+                        }
+
+                        // Cancel ripple and start new without triggering overlay disappearance
+                        // (resetting instead of ending)
+                        circleClipTapView.resetAnimation {
+                            circleClipTapView.updatePosition(posX, posY)
+                        }
+                        rewinding()
                     }
                 }
             }

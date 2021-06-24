@@ -17,6 +17,7 @@
     <LinearLayout android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:gravity="end"
+                  android:animateLayoutChanges="false"
                   android:id="@+id/video_lock_holder"
     >
         <FrameLayout
@@ -697,6 +698,9 @@
             </ProgressBar>
         </RelativeLayout>
     </LinearLayout>
+
+    <include layout="@layout/yt_overlay"/>
+
     <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"

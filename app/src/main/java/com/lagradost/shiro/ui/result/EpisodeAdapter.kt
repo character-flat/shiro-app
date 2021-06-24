@@ -229,8 +229,12 @@ class EpisodeAdapter(
             }
 
             card.episode_result_root.setOnLongClickListener {
-                if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
-                    DataStore.removeKey(VIEWSTATE_KEY, key)
+                val keyNormal = getViewKey(data.slug.dubbify(false), episodePos)
+                val keyDubbed = getViewKey(data.slug.dubbify(true), episodePos)
+
+                if (DataStore.containsKey(VIEWSTATE_KEY, keyNormal) || DataStore.containsKey(VIEWSTATE_KEY, keyDubbed)) {
+                    DataStore.removeKey(VIEWSTATE_KEY, keyNormal)
+                    DataStore.removeKey(VIEWSTATE_KEY, keyDubbed)
                 } else {
                     DataStore.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
                 }
@@ -469,9 +473,8 @@ class EpisodeAdapter(
         }
 
         private fun setCardViewState(episodePos: Int) {
-
             val keyNormal = getViewKey(data.slug.dubbify(false), episodePos)
-            val keyDubbed = getViewKey(data.slug.dubbify(false), episodePos)
+            val keyDubbed = getViewKey(data.slug.dubbify(true), episodePos)
             if (DataStore.containsKey(VIEWSTATE_KEY, keyNormal) || DataStore.containsKey(VIEWSTATE_KEY, keyDubbed)) {
                 val lastNormal = getLatestSeenEpisode(data.dubbify(false))
                 val lastDubbed = getLatestSeenEpisode(data.dubbify(true))

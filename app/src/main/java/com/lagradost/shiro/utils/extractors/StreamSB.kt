@@ -7,7 +7,7 @@ import com.lagradost.shiro.utils.getAndUnpack
 
 class StreamSB : ExtractorApi() {
     override val name: String = "StreamSB"
-    override val mainUrl: String = "https://sbembed.com"
+    override val mainUrl: String = "https://sbplay.org"
     private val sourceRegex = Regex("""sources:[\W\w]*?file:\s*"(.*?)"""")
 
     //private val m3u8Regex = Regex(""".*?(\d*).m3u8""")
@@ -30,7 +30,7 @@ class StreamSB : ExtractorApi() {
     // 	https://sbembed.com/embed-ns50b0cukf9j.html   ->   https://sbvideo.net/play/ns50b0cukf9j
     override fun getUrl(url: String, referer: String?): List<ExtractorLink> {
         val extractedLinksList: MutableList<ExtractorLink> = mutableListOf()
-        val newUrl = url.replace("sbembed.com/embed-", "sbvideo.net/play/").removeSuffix(".html")
+        val newUrl = url.replace("sbplay.org/embed-", "sbplay.org/play/").removeSuffix(".html")
         try {
             with(khttp.get(newUrl)) {
                 getAndUnpack(this.text)?.let {

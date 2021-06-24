@@ -6,8 +6,8 @@ import android.view.MotionEvent
 
 abstract class DoubleTapGestureListener(private val ctx: PlayerFragment) :
     GestureDetector.SimpleOnGestureListener() {
-    abstract fun onDoubleClickRight(clicks: Int)
-    abstract fun onDoubleClickLeft(clicks: Int)
+    abstract fun onDoubleClickRight(clicks: Int, posX: Float, posY: Float)
+    abstract fun onDoubleClickLeft(clicks: Int, posX: Float, posY: Float)
     abstract fun onSingleClick()
 
     private var clicksLeft = 0
@@ -53,10 +53,10 @@ abstract class DoubleTapGestureListener(private val ctx: PlayerFragment) :
             if (event.rawX >= ctx.width / 2) {
                 //println("${event.rawX} ${ctx.width}")
                 clicksRight++
-                onDoubleClickRight(clicksRight)
+                onDoubleClickRight(clicksRight, event.rawX, event.rawY)
             } else {
                 clicksLeft++
-                onDoubleClickLeft(clicksLeft)
+                onDoubleClickLeft(clicksLeft, event.rawX, event.rawY)
             }
         }
     }
