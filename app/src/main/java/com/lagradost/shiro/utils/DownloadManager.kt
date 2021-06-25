@@ -5,11 +5,13 @@ import android.app.IntentService
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -27,6 +29,7 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import java.io.*
 import java.net.URL
 import java.net.URLConnection
+import java.nio.file.Files
 import java.util.*
 import kotlin.concurrent.thread
 import kotlin.math.pow
@@ -70,7 +73,7 @@ object DownloadManager {
     val downloadDeleteEvent = Event<Int>()
     val downloadStartEvent = Event<String>()
 
-    //val usingScopedStorage = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+    val usingScopedStorage = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
     private const val txt = "Not authorized."
     fun init(_context: Context) {
         localContext = _context
@@ -154,7 +157,7 @@ object DownloadManager {
         @JsonProperty("thumbPath") val thumbPath: String?,
         @JsonProperty("videoPath") val videoPath: String,
 
-        @JsonProperty("videoTitle") val videoTitle: String?,
+        @JsonProperty("videoTitle") val videoTitle: String,
         @JsonProperty("episodeIndex") val episodeIndex: Int,
 
         @JsonProperty("downloadAt") val downloadAt: Long,
@@ -170,7 +173,7 @@ object DownloadManager {
         @JsonProperty("thumbPath") val thumbPath: String?,
         @JsonProperty("videoPath") val videoPath: String,
 
-        @JsonProperty("videoTitle") val videoTitle: String?,
+        @JsonProperty("videoTitle") val videoTitle: String,
         @JsonProperty("episodeIndex") val episodeIndex: Int,
 
         @JsonProperty("downloadAt") val downloadAt: Long,
@@ -315,6 +318,7 @@ object DownloadManager {
         }
 
         thread {
+            println("STARTING DOWNLOAD $link")
             var fullResume = false // IF FULL RESUME
 
             try {
@@ -328,21 +332,21 @@ object DownloadManager {
                 }
 
                 val basePath =
-                    if (useExternalStorage) Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                    else activity?.filesDir
-
+                    when {
+                        useExternalStorage && usingScopedStorage -> localContext!!.filesDir
+                        useExternalStorage -> Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                        else -> activity?.filesDir
+                    }
                 // =================== DOWNLOAD POSTERS AND SETUP PATH ===================
-                val path = basePath.toString() +
-                        "/Shiro/" +
-                        censorFilename(mainTitle) +
-                        if (isMovie)
-                            ".mp4"
-                        else
-                            "/" + censorFilename("E${info.episodeIndex + 1} $title") + ".mp4"
 
-
-                //val name =
-                //    if (isMovie) censorFilename(mainTitle) + ".mp4" else censorFilename("E${info.episodeIndex + 1} $title") + ".mp4"
+                val path: String =
+                    basePath.toString() +
+                            "/Shiro/" +
+                            censorFilename(mainTitle) +
+                            if (isMovie)
+                                ".mp4"
+                            else
+                                "/" + censorFilename("E${info.episodeIndex + 1} $title") + ".mp4"
 
                 val posterPath = path/*.replace("/Anime/", "/Posters/")*/.replace(".mp4", ".jpg")
                 //downloadPoster(posterPath, getFullUrlCdn(info.animeData.image))
@@ -356,13 +360,13 @@ object DownloadManager {
 
                 // =================== MAKE DIRS ===================
                 val rFile = File(path)
-                /*if (!usingScopedStorage) {
-                }*/
+                //if (!(usingScopedStorage && useExternalStorage)) {
                 try {
                     rFile.parentFile.mkdirs()
                 } catch (_ex: Exception) {
                     println("FAILED:::$_ex")
                 }
+                //}
 
                 val _url = URL(link.url)
 
@@ -374,11 +378,13 @@ object DownloadManager {
 
                 // =================== STORAGE ===================
                 var fos: FileOutputStream? = null
-                /*if (usingScopedStorage) {
+                /*if (usingScopedStorage && useExternalStorage) {
+                var scopedUri: Uri? = null
                     val resolver = localContext?.contentResolver
                     val values = ContentValues()
                     values.put(MediaStore.MediaColumns.DISPLAY_NAME, name)
                     values.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
+                    values.put(MediaStore.MediaColumns.IS_PENDING, true)
                     if (isMovie) {
                         values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + "/Shiro/")
                     } else {
@@ -387,12 +393,13 @@ object DownloadManager {
                             Environment.DIRECTORY_MOVIES + "/Shiro/" + censorFilename(mainTitle)
                         )
                     }
-                    val uri = resolver?.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)!!
+                    scopedUri = resolver?.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)!!
+                    // println("FFFFFFFFFFFFFFFFFFFFFF ${resolver.openFileDescriptor(uri, "r").use { it?.statSize ?: 0 }}")
                     if (resumeIntent) {
-                        bytesRead = resolver.openFileDescriptor(uri, "r").use { it?.statSize ?: 0 }
-                        connection.setRequestProperty("Range", "bytes=" + rFile.length() + "-")
+                        bytesRead = resolver.openFileDescriptor(scopedUri, "r").use { it?.statSize ?: 0 }
+                        connection.setRequestProperty("Range", "bytes=${bytesRead.toInt()}-")
                     }
-                    fos = resolver.openOutputStream(uri) as FileOutputStream?
+                    fos = resolver.openOutputStream(scopedUri) as FileOutputStream?
                 } else {*/
                 try {
                     if (!rFile.exists()) {
@@ -530,7 +537,7 @@ object DownloadManager {
 
                                     info
                                 )
-                                child.let { DownloadEventAndChild(DownloadEvent(id, bytesRead), it) }.let {
+                                DownloadEventAndChild(DownloadEvent(id, bytesRead), child).let {
                                     downloadEvent.invoke(
                                         it
                                     )
@@ -567,7 +574,7 @@ object DownloadManager {
                     }
                 } else {
                     showNot(bytesRead, bytesTotal, 0, DownloadType.IsDone, info)
-                    child.let { DownloadEventAndChild(DownloadEvent(id, bytesRead), it) }.let {
+                    DownloadEventAndChild(DownloadEvent(id, bytesRead), child).let {
                         downloadEvent.invoke(
                             it
                         )
@@ -577,9 +584,21 @@ object DownloadManager {
                 output.flush()
                 output.close()
                 input.close()
+
+                // If using scoped storage move the files after download because resume stuff would fuck up otherwise
+                if (usingScopedStorage && useExternalStorage) {
+                    moveToExternalStorage(child)
+                }
+
+                /*if (scopedUri != null) {
+                    val resolver = localContext?.contentResolver
+                    val values =  ContentValues ()
+                    values.put(MediaStore.Images.ImageColumns.IS_PENDING, false)
+                    resolver?.update(scopedUri, values, null, null)
+                }*/
                 downloadStatus.remove(id)
             } catch (_ex: Exception) {
-                println("FATAL EX DOWNLOADING:::$_ex")
+                println("FATAL EX DOWNLOADING:::${_ex.printStackTrace()}")
             } finally {
                 if (downloadStatus.containsKey(id)) {
                     downloadStatus.remove(id)
@@ -589,6 +608,64 @@ object DownloadManager {
                 }
             }
         }
+    }
+
+    fun moveToExternalStorage(metadata: DownloadFileMetadata): Boolean {
+        try {
+            val id = (metadata.animeData.slug + "E${metadata.episodeIndex}").hashCode()
+            val isMovie: Boolean =
+                metadata.animeData.episodes?.size ?: 0 == 1 && metadata.animeData.status == "finished"
+
+            val name = metadata.videoPath.split("/").last()
+            val dir = if (isMovie) "/Shiro/" else "/Shiro/" + censorFilename(metadata.videoTitle) + "/"
+            val rFile = File(metadata.videoPath)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val resolver = localContext?.contentResolver
+                val values = ContentValues()
+                values.put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
+                values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + dir)
+
+                val scopedUri = resolver?.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)!!
+                val fos = resolver.openOutputStream(scopedUri) as? FileOutputStream?
+                fos?.let {
+                    Files.copy(rFile.toPath(), it)
+                    val child = metadata.copy(
+                        videoPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)
+                            .toString() + dir + name
+                    )
+                    DataStore.setKey(
+                        DOWNLOAD_CHILD_KEY,
+                        id.toString(), // MUST HAVE ID TO NOT OVERRIDE
+                        child
+                    )
+                    rFile.delete()
+                    return true
+                }
+            } else {
+                val basePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                val path: String =
+                    basePath.toString() + dir + name
+                val newFile = File(path)
+                newFile.mkdirs()
+                rFile.copyTo(newFile)
+
+                val child = metadata.copy(
+                    videoPath = path
+                )
+                DataStore.setKey(
+                    DOWNLOAD_CHILD_KEY,
+                    id.toString(), // MUST HAVE ID TO NOT OVERRIDE
+                    child
+                )
+                rFile.delete()
+                return true
+            }
+        } catch (e: Exception) {
+            println("CRASH IN MOVING TO EXTERNAL STORAGE ${e.printStackTrace()}")
+        }
+        return false
     }
 
     private fun showNot(
@@ -685,7 +762,7 @@ object DownloadManager {
         }
 
         if ((type == DownloadType.IsDownloading || type == DownloadType.IsPaused) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val actionTypes: MutableList<DownloadActionType> = ArrayList()
+            val actionTypes: MutableList<DownloadManager.DownloadActionType> = ArrayList()
             // INIT
             if (type == DownloadType.IsDownloading) {
                 actionTypes.add(DownloadActionType.Pause)

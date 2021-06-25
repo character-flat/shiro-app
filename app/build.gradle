@@ -6,7 +6,7 @@ apply plugin: 'com.google.gms.google-services'
 
 android {
     //noinspection GradleCompatible
-    compileSdkVersion 28
+    compileSdkVersion 30
     buildToolsVersion "30.0.3"
     android.defaultConfig.vectorDrawables.useSupportLibrary = true
 

@@ -104,13 +104,13 @@ object AppUtils {
 
     // Guarantee slug is dubbed or not
     fun ShiroApi.AnimePageData.dubbify(turnDubbed: Boolean): ShiroApi.AnimePageData {
-        return this.copy().apply {
+        return this.copy(
             slug = if (turnDubbed) {
                 slug.removeSuffix("-dubbed") + "-dubbed"
             } else {
                 slug.removeSuffix("-dubbed")
             }
-        }
+        )
     }
 
     // Guarantee slug is dubbed or not

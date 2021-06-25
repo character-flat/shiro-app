@@ -39,6 +39,7 @@ import com.lagradost.shiro.utils.BackupUtils.restorePrompt
 import com.lagradost.shiro.utils.DataStore.getKeys
 import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.DataStore.removeKeys
+import com.lagradost.shiro.utils.DownloadManager.usingScopedStorage
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import com.lagradost.shiro.utils.MALApi.Companion.authenticateMAL
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
@@ -207,7 +208,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         donorId?.setOnPreferenceClickListener {
             val clipboard = context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip: ClipData = ClipData.newPlainText("ID", encodedString)
-            clipboard.primaryClip = clip
+            //clipboard.primaryClip = clip
+
             Toast.makeText(
                 getCurrentActivity()!!,
                 "Copied donor ID, give this to the devs to enable donor mode (if you have donated)",
@@ -458,11 +460,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
 
         val useExternalStorage = findPreference("use_external_storage") as SwitchPreference?
-        //useExternalStorage.summaryOff = ""
-        /*useExternalStorage?.summaryOn =
+        useExternalStorage?.summaryOff = ""
+        useExternalStorage?.summaryOn =
             if (usingScopedStorage)
                 "Files downloaded to Movies/Shiro"
-            else "Files downloaded to Download/Shiro"*/
+            else "Files downloaded to Download/Shiro"
 
         useExternalStorage?.setOnPreferenceChangeListener { _, newValue ->
             if (newValue == true) {

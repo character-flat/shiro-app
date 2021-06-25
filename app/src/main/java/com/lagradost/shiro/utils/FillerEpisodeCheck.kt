@@ -54,7 +54,20 @@ object FillerEpisodeCheck {
         try {
             if (!getFillerList()) return null
             val localList = list ?: return null
-            val realQuery = fixName(query)
+
+            // Strips these from the name
+            val blackList = listOf(
+                "Dubbed",
+                "Subbed",
+                "(TV)",
+                "(Uncensored)",
+                "(Censored)",
+                "(\\d+)" // year
+            )
+            val blackListRegex =
+                Regex(""" (${blackList.joinToString(separator = "|").replace("(", "\\(").replace(")", "\\)")})""")
+
+            val realQuery = fixName(query.replace(blackListRegex, ""))
             if (!localList.containsKey(realQuery)) return null
             val href = localList[realQuery]?.replace(MAIN_URL, "") ?: return null // JUST IN CASE
             val result = khttp.get("$MAIN_URL$href")

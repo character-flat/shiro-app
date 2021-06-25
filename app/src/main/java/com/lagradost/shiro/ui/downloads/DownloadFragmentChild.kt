@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.GONE
+import android.view.View.*
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.PopupMenu
@@ -24,17 +24,17 @@ import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.fixEpTitle
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isViewState
+import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.AppUtils.checkWrite
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getViewKey
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
+import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.AppUtils.settingsManager
-import com.lagradost.shiro.utils.DOWNLOAD_PARENT_KEY
-import com.lagradost.shiro.utils.DataStore
-import com.lagradost.shiro.utils.DownloadManager
-import com.lagradost.shiro.utils.VIEWSTATE_KEY
+import com.lagradost.shiro.utils.DownloadManager.moveToExternalStorage
 import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
 import kotlinx.android.synthetic.main.fragment_download_child.*
 import java.io.File
@@ -100,6 +100,61 @@ class DownloadFragmentChild : Fragment() {
 
 
                 */
+
+                fun showMoveButton() {
+                    if (child.videoPath.startsWith(getCurrentActivity()!!.filesDir.toString())) {
+                        card.switch_storage_button.visibility = VISIBLE
+                        card.switch_storage_button.setOnClickListener { switchStorageButton ->
+                            activity?.let { activity ->
+                                if (!activity.checkWrite()) {
+                                    Toast.makeText(
+                                        activity,
+                                        "Accept storage permissions to move to external storage",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                    activity.requestRW()
+                                    return@setOnClickListener
+                                }
+                                val builder = AlertDialog.Builder(activity, R.style.AlertDialogCustom)
+                                builder.apply {
+                                    setPositiveButton(
+                                        "OK"
+                                    ) { _, _ ->
+                                        val result = moveToExternalStorage(child)
+                                        if (result) {
+                                            Toast.makeText(
+                                                activity,
+                                                "Moved ${child.videoTitle} to external storage",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            switchStorageButton.visibility = INVISIBLE
+                                        } else {
+                                            Toast.makeText(
+                                                activity,
+                                                "Failed to move to external storage",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+
+                                    }
+                                    setNegativeButton(
+                                        "Cancel"
+                                    ) { _, _ ->
+                                        // User cancelled the dialog
+                                    }
+                                }
+                                builder.setTitle("Move to external storage")
+                                // Create the AlertDialog
+                                builder.create()
+                                builder.show()
+                            }
+                        }
+                    } else {
+                        card.switch_storage_button.visibility = INVISIBLE
+                    }
+                }
+
+
                 val key = getViewKey(slug!!, child.episodeIndex)
                 card.cardBg.setOnClickListener {
                     if (save) {
@@ -201,11 +256,12 @@ class DownloadFragmentChild : Fragment() {
                     if (megabytes + 0.1 >= megaBytesTotal) {
                         card.progressBar.visibility = GONE
                         card.cardPauseIcon.visibility = GONE
-                        card.cardRemoveIcon.visibility = View.VISIBLE
+                        card.cardRemoveIcon.visibility = VISIBLE
+                        showMoveButton()
                     } else {
-                        card.progressBar.visibility = View.VISIBLE
+                        card.progressBar.visibility = VISIBLE
                         card.cardRemoveIcon.visibility = GONE
-                        card.cardPauseIcon.visibility = View.VISIBLE
+                        card.cardPauseIcon.visibility = VISIBLE
                     }
                 }
 
@@ -301,7 +357,8 @@ class DownloadFragmentChild : Fragment() {
                 DownloadManager.downloadEvent += {
                     activity?.runOnUiThread {
                         if (it.downloadEvent.id == child.internalId) {
-                            val megaBytes = DownloadManager.convertBytesToAny(it.downloadEvent.bytes, 0, 2.0).toInt()
+                            val megaBytes =
+                                DownloadManager.convertBytesToAny(it.downloadEvent.bytes, 0, 2.0).toInt()
                             card.cardTitleExtra.text = "$megaBytes / $megaBytesTotal MB"
                             card.progressBar.progress = maxOf(minOf(megaBytes * 100 / megaBytesTotal, 100), 0)
                             updateIcon(megaBytes)

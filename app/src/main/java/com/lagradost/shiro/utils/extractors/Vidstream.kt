@@ -30,6 +30,7 @@ class Vidstream(var providersActive: HashSet<String> = HashSet()) {
         val normalApis = arrayListOf(Shiro(), MultiQuality())
         try {
             normalApis.pmap { api ->
+                println("GETTING URL FOR ${api.mainUrl}")
                 if (providersActive.size == 0 || providersActive.contains(api.name)) {
                     val url = api.getExtractorUrl(id)
                     val source = api.getUrl(url)
@@ -55,6 +56,7 @@ class Vidstream(var providersActive: HashSet<String> = HashSet()) {
                         ))
                     }.pmap { api ->
                         if (link.startsWith(api.mainUrl)) {
+                            println("GETTING URL FOR ${api.mainUrl}")
                             val extractedLinks = api.getUrl(link, url)
                             if (extractedLinks?.isNotEmpty() == true) {
                                 extractedLinks.forEach {
@@ -65,6 +67,7 @@ class Vidstream(var providersActive: HashSet<String> = HashSet()) {
                     }
                 }
             }
+            println("RETURNED URLS")
             return true
         } catch (e: Exception) {
             return false

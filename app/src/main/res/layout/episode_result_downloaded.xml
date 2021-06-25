@@ -72,18 +72,30 @@
                     android:id="@+id/cardTitleExtra"
                     android:layout_width="100dp"
                     android:layout_height="match_parent"
-                    android:layout_marginEnd="50dp"
                     android:gravity="center"
                     android:textSize="12sp"
                     tools:text="125 / 200 MB"
                     android:textColor="@color/textColorGray"
-                    android:layout_alignParentEnd="true"
+                    android:layout_toStartOf="@+id/switch_storage_button"
             >
             </TextView>
+            <ImageView
+                    android:id="@+id/switch_storage_button"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="60dp"
+                    android:visibility="invisible"
+                    tools:visibility="visible"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_baseline_drive_file_move_24"
+                    android:layout_centerVertical="true"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+            >
+
+            </ImageView>
         </RelativeLayout>
 
         <ProgressBar
-
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:id="@+id/progressBar"

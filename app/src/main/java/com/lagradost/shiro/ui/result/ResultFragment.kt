@@ -1067,7 +1067,7 @@ private fun ToggleViewState(_isViewState: Boolean) {
         if (localName != null && settingsManager?.getBoolean("search_for_filler_episodes", true) == true) {
             thread {
                 fillerEpisodes =
-                    FillerEpisodeCheck.getFillerEpisodes(localName.replace("Dubbed", "").replace("Subbed", ""))
+                    FillerEpisodeCheck.getFillerEpisodes(localName)
                 activity?.runOnUiThread {
                     try {
                         if (episodes_res_view.adapter != null) {
