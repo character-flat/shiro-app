@@ -166,7 +166,8 @@ class EpisodeAdapter(
                                                 episodePos,
                                                 data,
                                                 anilistID,
-                                                malID
+                                                malID,
+                                                isFiller
                                             ),
                                             sources[which]
                                         )
@@ -181,7 +182,8 @@ class EpisodeAdapter(
                                             episodePos,
                                             data,
                                             anilistID,
-                                            malID
+                                            malID,
+                                            isFiller
                                         ),
                                         sources[0]
                                     )
@@ -218,12 +220,12 @@ class EpisodeAdapter(
                         castEpisode(data, episodePos)
                     } else {
                         thread {
-                            activity.loadPlayer(episodePos, 0L, data, anilistID, malID)
+                            activity.loadPlayer(episodePos, 0L, data, anilistID, malID, isFiller)
                         }
                     }
                 } else {
                     thread {
-                        activity.loadPlayer(episodePos, 0L, data, anilistID, malID)
+                        activity.loadPlayer(episodePos, 0L, data, anilistID, malID, isFiller)
                     }
                 }
             }
@@ -367,7 +369,8 @@ class EpisodeAdapter(
                                 child.episodeIndex,
                                 data,
                                 anilistID,
-                                malID
+                                malID,
+                                isFiller
                             )
                         }
 

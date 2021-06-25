@@ -1,8 +1,9 @@
 <resources>
     <string name="changelog">\n
-        - Fixed crash when setting sync rating/progress\n
-        - Fixed navbar/statusbar overlaying stuff for some devices\n
-        - Fixed switching to dub/sub not working anymore\n
+        - Reworked double tap to be like yt (also removed unintentional 100ms delay even if you had it disabled)\n
+        - Made fillers show up in player and downloads\n
+        - Fixed streamSB\n
+        - Fixed crashes when entering player on older devices (hopefully)\n
     </string>
     <string name="app_name">Shiro</string>
     <string name="title_home">Home</string>

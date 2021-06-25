@@ -115,7 +115,8 @@ class DownloadFragmentChild : Fragment() {
                             null,
                             slug!!,
                             parent?.anilistID,
-                            parent?.malID
+                            parent?.malID,
+                            parent?.fillerEpisodes
                         )
                     )
                 }
@@ -188,7 +189,10 @@ class DownloadFragmentChild : Fragment() {
                     return@setOnLongClickListener true
                 }
 
-                card.cardTitle.text = title
+                val fillerInfo =
+                    if (parent?.fillerEpisodes?.get(child.episodeIndex + 1) == true) " (Filler) " else ""
+
+                card.cardTitle.text = title + fillerInfo
                 val megaBytesTotal = DownloadManager.convertBytesToAny(child.maxFileSize, 0, 2.0).toInt()
                 val localBytesTotal = maxOf(DownloadManager.convertBytesToAny(file.length(), 0, 2.0).toInt(), 1)
                 card.cardTitleExtra.text = "$localBytesTotal / $megaBytesTotal MB"
@@ -210,7 +214,8 @@ class DownloadFragmentChild : Fragment() {
                         child.episodeIndex,
                         child.animeData,
                         parent?.anilistID,
-                        parent?.malID
+                        parent?.malID,
+                        parent?.fillerEpisodes
                     )
                 }
 
@@ -319,7 +324,7 @@ class DownloadFragmentChild : Fragment() {
                     )
                 } else {
                     card.cardTitle.setTextColor(
-                       getCurrentActivity()!!.getColorFromAttr(R.attr.textColor)
+                        getCurrentActivity()!!.getColorFromAttr(R.attr.textColor)
                     )
                     card.cardTitleExtra.setTextColor(
                         getCurrentActivity()!!.getColorFromAttr(R.attr.textColor)

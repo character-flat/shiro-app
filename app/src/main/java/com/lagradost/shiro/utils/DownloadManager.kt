@@ -106,6 +106,7 @@ object DownloadManager {
 
         @JsonProperty("anilistID") val anilistID: Int? = null,
         @JsonProperty("malID") val malID: Int? = null,
+        @JsonProperty("fillerEpisodes") val fillerEpisodes: HashMap<Int, Boolean>? = null
     )
 
     enum class DownloadType {
@@ -136,6 +137,7 @@ object DownloadManager {
 
         @JsonProperty("anilistID") val anilistID: Int?,
         @JsonProperty("malID") val malID: Int?,
+        @JsonProperty("fillerEpisodes") val fillerEpisodes: HashMap<Int, Boolean>?
     )
 
     // Glue for invoke()
@@ -478,7 +480,8 @@ object DownloadManager {
                         isMovie,
                         info.animeData.slug,
                         info.anilistID,
-                        info.malID
+                        info.malID,
+                        info.fillerEpisodes
                     )
                 )
 

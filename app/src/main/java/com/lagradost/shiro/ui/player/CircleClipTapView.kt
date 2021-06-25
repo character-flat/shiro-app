@@ -9,7 +9,7 @@ import android.graphics.Path
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
-import com.github.vkay94.dtpv.R
+import com.lagradost.shiro.R
 
 /**
  * View class

@@ -50,6 +50,7 @@ import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.EpisodePosDurInfo
 import com.lagradost.shiro.ui.LastEpisodeInfo
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
+import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.ui.NextEpisode
 import com.lagradost.shiro.ui.home.CardAdapter
 import com.lagradost.shiro.ui.home.CardContinueAdapter
@@ -606,7 +607,8 @@ object AppUtils {
                     card.name,
                     card.banner.toString(),
                     data.anilistID,
-                    data.malID
+                    data.malID,
+                    data.fillerEpisodes
                 )
             )
 
@@ -756,7 +758,8 @@ object AppUtils {
         startAt: Long,
         card: ShiroApi.AnimePageData,
         anilistID: Int? = null,
-        malID: Int? = null
+        malID: Int? = null,
+        fillerEpisodes: HashMap<Int, Boolean>? = null
     ) {
         loadPlayer(
             PlayerData(
@@ -767,7 +770,8 @@ object AppUtils {
                 startAt,
                 card.slug,
                 anilistID,
-                malID
+                malID,
+                fillerEpisodes
             )
         )
     }
@@ -780,9 +784,10 @@ fun loadPlayer(title: String?, url: String, startAt: Long?) {
 }*/
 
     fun FragmentActivity.loadPlayer(data: PlayerData) {
-        this.runOnUiThread {
+        runOnUiThread {
+            masterViewModel?.playerData?.value = data
             val instance =
-                if (tvActivity != null) PlayerFragmentTv.newInstance(data) else PlayerFragment.newInstance(data)
+                if (tvActivity != null) PlayerFragmentTv.newInstance() else PlayerFragment.newInstance()//.newInstance(data)
 
             this.addFragmentOnlyOnce(android.R.id.content, instance, PLAYER_FRAGMENT_TAG)
         }

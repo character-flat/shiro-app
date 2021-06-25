@@ -21,6 +21,7 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
@@ -33,6 +34,7 @@ import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedVi
 import com.lagradost.shiro.ui.player.PlayerEventType
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
+import com.lagradost.shiro.ui.result.ResultsViewModel
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
 import com.lagradost.shiro.utils.AniListApi.Companion.initGetUser
@@ -77,6 +79,8 @@ data class LastEpisodeInfo(
 
     @JsonProperty("anilistID") val anilistID: Int?,
     @JsonProperty("malID") val malID: Int?,
+
+    @JsonProperty("fillerEpisodes") val fillerEpisodes: HashMap<Int, Boolean>?
 )
 
 data class NextEpisode(
@@ -109,6 +113,8 @@ class MainActivity : AppCompatActivity() {
 
         var lightMode = false
         var focusRequest: AudioFocusRequest? = null
+
+        var masterViewModel: MasterViewModel? = null
     }
 
     // AUTH FOR LOGIN
@@ -138,7 +144,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 super.onBackPressed()
             }
-        // java.lang.IllegalStateException: FragmentManager is already executing transactions
+            // java.lang.IllegalStateException: FragmentManager is already executing transactions
         } catch (e: Exception) {
         }
     }
@@ -238,6 +244,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         activity = this
+        // used for PlayerData to prevent crashes
+        masterViewModel = masterViewModel ?: ViewModelProvider(this).get(MasterViewModel::class.java)
+
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
         // ----- Themes ----
         //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)

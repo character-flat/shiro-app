@@ -166,5 +166,5 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging-ktx'
 
     // Double tap
-    implementation 'com.github.vkay94:DoubleTapPlayerView:1.0.2'
+    // implementation 'com.github.vkay94:DoubleTapPlayerView:1.0.2'
 }

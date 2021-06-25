@@ -50,7 +50,9 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.MimeTypes
 import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.ui.player.PlayerData
+import com.lagradost.shiro.ui.player.PlayerFragment
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.player.SSLTrustManager
 import com.lagradost.shiro.ui.tv.MainFragment.Companion.hasBeenInPlayer
@@ -59,6 +61,7 @@ import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.setViewPosDur
 import com.lagradost.shiro.utils.DataStore.mapper
+import com.lagradost.shiro.utils.DataStore.toKotlinObject
 import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
@@ -697,8 +700,9 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+
         arguments?.getString(DATA)?.let {
-            data = mapper.readValue(it, PlayerData::class.java)
+            data = it.toKotlinObject()
         }
     }
 
@@ -721,6 +725,15 @@ class PlayerFragmentTv : VideoSupportFragment() {
                 arguments = Bundle().apply {
                     //println(data)
                     putString(DATA, mapper.writeValueAsString(data))
+                }
+            }
+
+        fun newInstance() =
+            PlayerFragment().apply {
+                arguments = Bundle().apply {
+                    masterViewModel?.playerData?.value?.let {
+                        putString("data", mapper.writeValueAsString(it))
+                    }
                 }
             }
     }

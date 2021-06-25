@@ -24,6 +24,7 @@ import androidx.mediarouter.app.MediaRouteButton
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.bumptech.glide.request.RequestOptions.bitmapTransform
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
@@ -32,7 +33,6 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.*
-import com.lagradost.shiro.ui.GlideOptions.bitmapTransform
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
@@ -269,7 +269,8 @@ class ResultFragment : Fragment() {
                                 pos.pos,
                                 data,
                                 resultViewModel?.currentAniListId?.value,
-                                resultViewModel?.currentMalId?.value
+                                resultViewModel?.currentMalId?.value,
+                                fillerEpisodes
                             )
                         } else {
                             Toast.makeText(activity, "Playing episode ${episode.episodeIndex + 1}", Toast.LENGTH_SHORT)
@@ -279,7 +280,8 @@ class ResultFragment : Fragment() {
                                 episodePos.pos,
                                 data,
                                 resultViewModel?.currentAniListId?.value,
-                                resultViewModel?.currentMalId?.value
+                                resultViewModel?.currentMalId?.value,
+                                fillerEpisodes
                             )
                         }
                     }

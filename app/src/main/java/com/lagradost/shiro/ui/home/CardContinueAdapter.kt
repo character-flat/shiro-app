@@ -165,7 +165,8 @@ class CardContinueAdapter(
                             cardInfo.pos,
                             data,
                             cardInfo.anilistID,
-                            cardInfo.malID
+                            cardInfo.malID,
+                            cardInfo.fillerEpisodes
                         )
                     }
                 }

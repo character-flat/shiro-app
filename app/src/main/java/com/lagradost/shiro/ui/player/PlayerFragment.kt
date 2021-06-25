@@ -59,6 +59,7 @@ import com.google.android.exoplayer2.video.VideoSize
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
+import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.ui.downloads.DownloadFragmentChild.Companion.getAllDownloadedEpisodes
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.player.PlayerActivity.Companion.playerActivity
@@ -78,6 +79,7 @@ import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.requestAudioFocus
 import com.lagradost.shiro.utils.AppUtils.setViewPosDur
 import com.lagradost.shiro.utils.AppUtils.showSystemUI
+import com.lagradost.shiro.utils.DataStore.toKotlinObject
 import com.lagradost.shiro.utils.MALApi.Companion.malStatusAsString
 import com.lagradost.shiro.utils.MALApi.Companion.setScoreRequest
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
@@ -120,6 +122,7 @@ data class PlayerData(
 
     @JsonProperty("anilistID") val anilistID: Int? = null,
     @JsonProperty("malID") val malID: Int? = null,
+    @JsonProperty("fillerEpisodes") val fillerEpisodes: HashMap<Int, Boolean>? = null
 )
 
 enum class PlayerEventType(val value: Int) {
@@ -168,13 +171,23 @@ class PlayerFragment : Fragment() {
                     putString("data", mapper.writeValueAsString(data))
                 }
             }
+
+        fun newInstance() =
+            PlayerFragment().apply {
+                arguments = Bundle().apply {
+                    masterViewModel?.playerData?.value?.let {
+                        putString("data", mapper.writeValueAsString(it))
+                    }
+                }
+            }
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onAttach(context: Context) {
         super.onAttach(context)
+
         arguments?.getString("data")?.let {
-            data = mapper.readValue(it, PlayerData::class.java)
+            data = it.toKotlinObject()
         }
     }
 
@@ -336,7 +349,9 @@ class PlayerFragment : Fragment() {
         val postTitle = playerViewModel?.videoSize?.value?.let { videoSize ->
             "\n${videoSize.width}x${videoSize.height}${getCurrentUrl()?.name?.let { " - $it" } ?: ""}"
         } ?: ""
-        if (data?.title != null) return data?.title!! + postTitle
+        val fillerInfo =
+            if (data?.fillerEpisodes?.get((data?.episodeIndex ?: -1) + 1) == true) " (Filler) " else ""
+        if (data?.title != null) return data?.title!! + fillerInfo + postTitle
 
         val isMovie: Boolean = data?.card!!.episodes!!.size == 1 && data?.card?.status == "finished"
         // data?.card!!.cdndata?.seasons.size == 1 && data?.card!!.cdndata?.seasons[0].episodes.size == 1
@@ -346,7 +361,7 @@ class PlayerFragment : Fragment() {
         }
 
         // Replaces with "" if it's null
-        return preTitle + data?.card?.name + postTitle
+        return preTitle + data?.card?.name + fillerInfo + postTitle
     }
 
     private fun savePos() {
