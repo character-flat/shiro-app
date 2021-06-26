@@ -15,12 +15,16 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
-import android.widget.*
 import android.widget.AbsListView.CHOICE_MODE_SINGLE
+import android.widget.ArrayAdapter
+import android.widget.FrameLayout
+import android.widget.ListView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.mediarouter.app.MediaRouteButton
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -32,11 +36,14 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ui.*
+import com.lagradost.shiro.ui.BookmarkedTitle
+import com.lagradost.shiro.ui.GlideApp
+import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
+import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.fromIntToAnimeStatus
@@ -239,14 +246,19 @@ class ResultFragment : Fragment() {
                     )
 
                 context?.let {
+                    val settingsManager = PreferenceManager.getDefaultSharedPreferences(it)
+                    val savingData = settingsManager.getBoolean("data_saving", false)
+
                     GlideApp.with(it)
                         .load(glideUrl)
                         .transition(DrawableTransitionOptions.withCrossFade(200))
+                        .onlyRetrieveFromCache(savingData)
                         .into(title_background)
                     GlideApp.with(it)
                         .load(glideUrl)
                         .transition(DrawableTransitionOptions.withCrossFade(200))
                         .apply(bitmapTransform(BlurTransformation(100, 3)))
+                        .onlyRetrieveFromCache(savingData)
                         .into(result_poster_blur)
                 }
 
@@ -828,9 +840,14 @@ class ResultFragment : Fragment() {
         isSubbed = slug?.endsWith("-dubbed")?.not()
 
         dataOther = if (isSubbed == true) {
-            data?.let { it1 -> getAnimePage(it1.slug + "-dubbed")?.data }
+            // Manual override for naruto shippuden
+            data?.let { it1 -> getAnimePage(it1.slug.replace("shippuden", "shippuuden") + "-dubbed")?.data }
         } else {
-            data?.let { it1 -> getAnimePage(it1.slug.substring(0, it1.slug.length - 7))?.data }
+            data?.let { it1 ->
+                getAnimePage(
+                    it1.slug.replace("shippuuden", "shippuden").removeSuffix("-dubbed")
+                )?.data
+            }
         }
         if (dataOther != null) {
             onLoadedOther.invoke(true)

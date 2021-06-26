@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -145,27 +146,28 @@ class ResAdapter(
                 )
             }
 
-            itemView.imageText.text = fixCardTitle(card.name)
+            itemView.imageText?.text = fixCardTitle(card.name)
             if (card.english != null) {
-                itemView.imageSubText.visibility = VISIBLE
-                itemView.imageSubText.text = fixCardTitle(card.english!!)
+                itemView.imageSubText?.visibility = VISIBLE
+                itemView.imageSubText?.text = fixCardTitle(card.english!!)
             } else {
-                itemView.imageSubText.visibility = GONE
+                itemView.imageSubText?.visibility = GONE
             }
 
             cardView.setOnClickListener {
                 activity?.loadPage(card.slug, card.name)
-
-
                 /*MainActivity.loadPage(card)*/
             }
 
             val glideUrl =
                 GlideUrl(getFullUrlCdn(card.image)) { ShiroApi.currentHeaders }
             context.let {
+                val settingsManager = PreferenceManager.getDefaultSharedPreferences(it)
+                val savingData = settingsManager.getBoolean("data_saving", false)
                 GlideApp.with(it)
                     .load(glideUrl)
                     .transition(DrawableTransitionOptions.withCrossFade(100))
+                    .onlyRetrieveFromCache(savingData)
                     .into(cardView)
             }
 

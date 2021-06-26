@@ -1,6 +1,7 @@
 package com.lagradost.shiro.ui.downloads
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -38,6 +39,7 @@ import com.lagradost.shiro.utils.DownloadManager.moveToExternalStorage
 import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
 import kotlinx.android.synthetic.main.fragment_download_child.*
 import java.io.File
+import kotlin.concurrent.thread
 
 const val SLUG = "slug"
 
@@ -120,22 +122,25 @@ class DownloadFragmentChild : Fragment() {
                                     setPositiveButton(
                                         "OK"
                                     ) { _, _ ->
-                                        val result = moveToExternalStorage(child)
-                                        if (result) {
-                                            Toast.makeText(
-                                                activity,
-                                                "Moved ${child.videoTitle} to external storage",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            switchStorageButton.visibility = INVISIBLE
-                                        } else {
-                                            Toast.makeText(
-                                                activity,
-                                                "Failed to move to external storage",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
+                                        thread {
+                                            val result = moveToExternalStorage(child)
+                                            activity.runOnUiThread {
+                                                if (result) {
+                                                    Toast.makeText(
+                                                        activity,
+                                                        "Moved ${child.videoTitle} to external storage",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                    switchStorageButton?.visibility = INVISIBLE
+                                                } else {
+                                                    Toast.makeText(
+                                                        activity,
+                                                        "Failed to move to external storage",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                            }
                                         }
-
                                     }
                                     setNegativeButton(
                                         "Cancel"

@@ -57,6 +57,13 @@
                 app:defaultValue="false"
                 android:icon="@drawable/ic_baseline_notifications_active_24"
         />
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_data_saver_on_24"
+                app:key="data_saving"
+                android:title="Data Saver"
+                android:summary="Only loads images from cache"
+                app:defaultValue="false"
+        />
         <SwitchPreference android:key="acra.disable"
                           android:icon="@drawable/ic_baseline_bug_report_24"
                           android:title="@string/pref_disable_acra"

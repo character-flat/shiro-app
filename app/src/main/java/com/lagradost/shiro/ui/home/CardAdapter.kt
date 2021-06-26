@@ -10,6 +10,7 @@ import android.view.animation.Animation
 import android.view.animation.ScaleAnimation
 import androidx.core.view.updateMargins
 import androidx.fragment.app.FragmentActivity
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -102,9 +103,13 @@ class CardAdapter(
                     GlideUrl(getFullUrlCdn(cardInfo.image))
                 //  activity?.runOnUiThread {
                 context.let {
+                    val settingsManager = PreferenceManager.getDefaultSharedPreferences(it)
+                    val savingData = settingsManager.getBoolean("data_saving", false)
+
                     GlideApp.with(it)
                         .load(glideUrl)
                         .transition(DrawableTransitionOptions.withCrossFade(100))
+                        .onlyRetrieveFromCache(savingData)
                         .into(card.imageView)
                 }
                 itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).start()

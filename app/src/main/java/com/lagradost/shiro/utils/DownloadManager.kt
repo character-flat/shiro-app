@@ -5,19 +5,17 @@ import android.app.IntentService
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Environment
-import android.provider.MediaStore
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.bumptech.glide.Glide
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
@@ -29,7 +27,6 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import java.io.*
 import java.net.URL
 import java.net.URLConnection
-import java.nio.file.Files
 import java.util.*
 import kotlin.concurrent.thread
 import kotlin.math.pow
@@ -60,7 +57,7 @@ class DownloadService : IntentService("DownloadService") {
     }
 }
 
-// TODO fix this and in DataStorea
+// TODO fix this and in DataStore
 @SuppressLint("StaticFieldLeak")
 object DownloadManager {
     private var localContext: Context? = null
@@ -212,7 +209,7 @@ object DownloadManager {
             return cachedBitmaps[url]
         }
 
-        val bitmap = Glide.with(localContext!!)
+        val bitmap = GlideApp.with(localContext!!)
             .asBitmap()
             .load(url).into(1080, 720) // Width and height
             .get()
@@ -333,7 +330,7 @@ object DownloadManager {
 
                 val basePath =
                     when {
-                        useExternalStorage && usingScopedStorage -> localContext!!.filesDir
+                        //useExternalStorage && usingScopedStorage -> localContext!!.filesDir
                         useExternalStorage -> Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                         else -> activity?.filesDir
                     }
@@ -586,9 +583,9 @@ object DownloadManager {
                 input.close()
 
                 // If using scoped storage move the files after download because resume stuff would fuck up otherwise
-                if (usingScopedStorage && useExternalStorage) {
+                /*if (usingScopedStorage && useExternalStorage) {
                     moveToExternalStorage(child)
-                }
+                }*/
 
                 /*if (scopedUri != null) {
                     val resolver = localContext?.contentResolver
@@ -620,14 +617,17 @@ object DownloadManager {
             val dir = if (isMovie) "/Shiro/" else "/Shiro/" + censorFilename(metadata.videoTitle) + "/"
             val rFile = File(metadata.videoPath)
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                val resolver = localContext?.contentResolver
+            /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val resolver = getCurrentActivity()!!.contentResolver
                 val values = ContentValues()
                 values.put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+                values.put(MediaStore.MediaColumns.TITLE, name)
                 values.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
                 values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + dir)
 
-                val scopedUri = resolver?.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)!!
+                val scopedUri = resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
+
+
                 val fos = resolver.openOutputStream(scopedUri) as? FileOutputStream?
                 fos?.let {
                     Files.copy(rFile.toPath(), it)
@@ -643,25 +643,25 @@ object DownloadManager {
                     rFile.delete()
                     return true
                 }
-            } else {
-                val basePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                val path: String =
-                    basePath.toString() + dir + name
-                val newFile = File(path)
-                newFile.mkdirs()
-                rFile.copyTo(newFile)
+            } else {*/
+            val basePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val path: String =
+                basePath.toString() + dir + name
+            val newFile = File(path)
+            newFile.mkdirs()
+            rFile.copyTo(newFile, overwrite = true)
 
-                val child = metadata.copy(
-                    videoPath = path
-                )
-                DataStore.setKey(
-                    DOWNLOAD_CHILD_KEY,
-                    id.toString(), // MUST HAVE ID TO NOT OVERRIDE
-                    child
-                )
-                rFile.delete()
-                return true
-            }
+            val child = metadata.copy(
+                videoPath = path
+            )
+            DataStore.setKey(
+                DOWNLOAD_CHILD_KEY,
+                id.toString(), // MUST HAVE ID TO NOT OVERRIDE
+                child
+            )
+            rFile.delete()
+            return true
+            //}
         } catch (e: Exception) {
             println("CRASH IN MOVING TO EXTERNAL STORAGE ${e.printStackTrace()}")
         }
@@ -672,8 +672,8 @@ object DownloadManager {
         progress: Long,
         total: Long,
         progressPerSec: Long,
-        type: DownloadType,
-        info: DownloadInfo
+        type: DownloadManager.DownloadType,
+        info: DownloadManager.DownloadInfo
     ) {
         val isMovie: Boolean = info.animeData.episodes?.size ?: 0 == 1 && info.animeData.status == "finished"
 
@@ -693,7 +693,7 @@ object DownloadManager {
             title = "Episode " + info.episodeIndex + 1
         }
         var body = ""
-        if (type == DownloadType.IsDownloading || type == DownloadType.IsPaused || type == DownloadType.IsFailed) {
+        if (type == DownloadManager.DownloadType.IsDownloading || type == DownloadManager.DownloadType.IsPaused || type == DownloadManager.DownloadType.IsFailed) {
             if (!isMovie) {
                 body += "E${info.episodeIndex + 1} - ${title}\n"
             }
@@ -709,26 +709,26 @@ object DownloadManager {
         val builder = NotificationCompat.Builder(localContext!!, CHANNEL_ID)
             .setSmallIcon(
                 when (type) {
-                    DownloadType.IsDone -> R.drawable.rddone
-                    DownloadType.IsDownloading -> R.drawable.rdload
-                    DownloadType.IsPaused -> R.drawable.rdpause
-                    DownloadType.IsFailed -> R.drawable.rderror
-                    DownloadType.IsStopped -> R.drawable.rderror
+                    DownloadManager.DownloadType.IsDone -> R.drawable.rddone
+                    DownloadManager.DownloadType.IsDownloading -> R.drawable.rdload
+                    DownloadManager.DownloadType.IsPaused -> R.drawable.rdpause
+                    DownloadManager.DownloadType.IsFailed -> R.drawable.rderror
+                    DownloadManager.DownloadType.IsStopped -> R.drawable.rderror
                 }
             )
             .setContentTitle(
                 when (type) {
-                    DownloadType.IsDone -> "Download Done"
-                    DownloadType.IsDownloading -> "${info.animeData.name} - ${
+                    DownloadManager.DownloadType.IsDone -> "Download Done"
+                    DownloadManager.DownloadType.IsDownloading -> "${info.animeData.name} - ${
                         convertBytesToAny(
                             progressPerSec,
                             2,
                             2.0
                         )
                     } MB/s"
-                    DownloadType.IsPaused -> "${info.animeData.name} - Paused"
-                    DownloadType.IsFailed -> "Download Failed"
-                    DownloadType.IsStopped -> "Download Stopped"
+                    DownloadManager.DownloadType.IsPaused -> "${info.animeData.name} - Paused"
+                    DownloadManager.DownloadType.IsFailed -> "Download Failed"
+                    DownloadManager.DownloadType.IsStopped -> "Download Stopped"
                 }
             )
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -740,7 +740,7 @@ object DownloadManager {
             .setOnlyAlertOnce(true)
             .setColor(localContext!!.getColorFromAttr(R.attr.colorAccent))
 
-        if (type == DownloadType.IsDownloading) {
+        if (type == DownloadManager.DownloadType.IsDownloading) {
             builder.setProgress(100, progressPro, false)
         }
 
@@ -761,17 +761,17 @@ object DownloadManager {
             builder.setContentText(body)
         }
 
-        if ((type == DownloadType.IsDownloading || type == DownloadType.IsPaused) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if ((type == DownloadManager.DownloadType.IsDownloading || type == DownloadManager.DownloadType.IsPaused) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val actionTypes: MutableList<DownloadManager.DownloadActionType> = ArrayList()
             // INIT
-            if (type == DownloadType.IsDownloading) {
-                actionTypes.add(DownloadActionType.Pause)
-                actionTypes.add(DownloadActionType.Stop)
+            if (type == DownloadManager.DownloadType.IsDownloading) {
+                actionTypes.add(DownloadManager.DownloadActionType.Pause)
+                actionTypes.add(DownloadManager.DownloadActionType.Stop)
             }
 
-            if (type == DownloadType.IsPaused) {
-                actionTypes.add(DownloadActionType.Resume)
-                actionTypes.add(DownloadActionType.Stop)
+            if (type == DownloadManager.DownloadType.IsPaused) {
+                actionTypes.add(DownloadManager.DownloadActionType.Resume)
+                actionTypes.add(DownloadManager.DownloadActionType.Stop)
             }
 
             // ADD ACTIONS

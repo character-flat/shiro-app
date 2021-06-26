@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.view.updateMargins
 import androidx.fragment.app.FragmentActivity
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -22,8 +23,6 @@ import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
-import com.lagradost.shiro.utils.AppUtils.expandTouchArea
-import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.onLongCardClick
@@ -35,7 +34,6 @@ import kotlinx.android.synthetic.main.home_card.view.home_card_root
 import kotlinx.android.synthetic.main.home_card.view.imageText
 import kotlinx.android.synthetic.main.home_card.view.imageView
 import kotlinx.android.synthetic.main.home_card_recently_seen.view.*
-import kotlin.coroutines.coroutineContext
 
 
 class CardContinueAdapter(
@@ -114,9 +112,13 @@ class CardContinueAdapter(
                     GlideUrl(cardInfo.id?.let { getFullUrlCdn(it.image) })
                 //  activity?.runOnUiThread {
 
+                val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
+                val savingData = settingsManager.getBoolean("data_saving", false)
+
                 GlideApp.with(activity)
                     .load(glideUrl)
                     .transition(DrawableTransitionOptions.withCrossFade(100))
+                    .onlyRetrieveFromCache(savingData)
                     .into(card.imageView)
 
                 itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).start()

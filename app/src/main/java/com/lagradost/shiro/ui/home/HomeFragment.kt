@@ -7,12 +7,12 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.preference.PreferenceManager
 import androidx.transition.ChangeBounds
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
@@ -25,7 +25,6 @@ import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppUtils.displayCardData
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getNextEpisode
-import com.lagradost.shiro.utils.AppUtils.getStatusBarHeight
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.observe
@@ -40,7 +39,6 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.hasThrownError
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import kotlinx.android.synthetic.main.download_card.*
 import kotlinx.android.synthetic.main.fragment_home.*
-import java.lang.Thread.sleep
 import kotlin.concurrent.thread
 
 //const val MAXIMUM_FADE = 0.3f
@@ -166,10 +164,13 @@ class HomeFragment : Fragment() {
                         val glideUrlMain =
                             GlideUrl(getFullUrlCdn(randomData.image)) { ShiroApi.currentHeaders }
                         context?.let {
+                            val settingsManager = PreferenceManager.getDefaultSharedPreferences(it)
+                            val savingData = settingsManager.getBoolean("data_saving", false)
                             GlideApp.with(it)
                                 .load(glideUrlMain)
                                 .transform(PositionedCropTransformation(1f, 0f))
                                 .transition(DrawableTransitionOptions.withCrossFade(100))
+                                .onlyRetrieveFromCache(savingData)
                                 .into(main_poster)
                         }
 

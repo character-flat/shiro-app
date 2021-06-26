@@ -2,8 +2,10 @@
     <string name="changelog">\n
         - Reworked double tap to be like yt (also removed unintentional 100ms delay even if you had it disabled)\n
         - Made fillers show up in player and downloads\n
+        - Added move to external storage button in downloads\n
         - Fixed streamSB\n
         - Fixed crashes when entering player on older devices (hopefully)\n
+        - Added data saving mode\n
     </string>
     <string name="app_name">Shiro</string>
     <string name="title_home">Home</string>

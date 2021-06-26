@@ -19,8 +19,8 @@ android {
         minSdkVersion 21
         targetSdkVersion 30
         // Don't forget to update versionCode too :)
-        versionCode 22
-        versionName "2.4.2"
+        versionCode 23
+        versionName "2.4.3"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -65,7 +65,7 @@ android {
             productFlavors.tv.signingConfig signingConfigs.release
             productFlavors.phone.signingConfig signingConfigs.release
             versionNameSuffix '-Beta'
-            debuggable false
+            debuggable true
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'

@@ -1,6 +1,9 @@
 package com.lagradost.shiro.ui.settings
 
-import android.content.*
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
@@ -39,7 +42,6 @@ import com.lagradost.shiro.utils.BackupUtils.restorePrompt
 import com.lagradost.shiro.utils.DataStore.getKeys
 import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.DataStore.removeKeys
-import com.lagradost.shiro.utils.DownloadManager.usingScopedStorage
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import com.lagradost.shiro.utils.MALApi.Companion.authenticateMAL
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
@@ -460,11 +462,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
 
         val useExternalStorage = findPreference("use_external_storage") as SwitchPreference?
-        useExternalStorage?.summaryOff = ""
+        /*useExternalStorage?.summaryOff = ""
         useExternalStorage?.summaryOn =
             if (usingScopedStorage)
                 "Files downloaded to Movies/Shiro"
-            else "Files downloaded to Download/Shiro"
+            else "Files downloaded to Download/Shiro"*/
 
         useExternalStorage?.setOnPreferenceChangeListener { _, newValue ->
             if (newValue == true) {
