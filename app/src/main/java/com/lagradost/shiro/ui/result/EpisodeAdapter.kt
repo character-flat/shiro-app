@@ -213,6 +213,7 @@ class EpisodeAdapter(
             }
 
             itemView.episode_result_root.setOnClickListener {
+                println("DATA ${data.slug}")
                 if (activity.isCastApiAvailable()) {
                     val castContext = CastContext.getSharedInstance(activity.applicationContext)
                     println("SSTATE: " + castContext.castState + "<<")

@@ -25,6 +25,13 @@
                 android:summaryOff="Some ISPs block vidstream\nUsing gogo-stream.com"
                 app:defaultValue="false"
         />
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_filter_list_24"
+                app:key="search_for_filler_episodes"
+                android:title="Search and display filler episodes"
+                app:defaultValue="true"
+                app:summary="Using animefillerlist.com"
+        />
         <!--<SeekBarPreference
                 android:icon="@drawable/ic_baseline_access_time_24"
                 android:title="Fast forward skip time"
@@ -132,6 +139,28 @@
                 android:title="Changelog"
                 app:key="changelog"
                 android:icon="@drawable/ic_baseline_notes_24"
+        />
+    </PreferenceCategory>
+    <PreferenceCategory
+            app:isPreferenceVisible="true"
+            android:key="accounts"
+            android:title="Accounts"
+    >
+        <Preference
+                android:title="Anilist account"
+                app:key="anilist_setting_btt"
+                android:icon="@drawable/ic_anilist_icon"
+        />
+        <Preference
+                android:title="MAL account"
+                app:key="mal_setting_btt"
+                android:icon="@drawable/mal_logo"
+        />
+        <Preference
+                android:title="Donor ID"
+                app:key="donor_id"
+                app:isPreferenceVisible="false"
+                android:icon="@drawable/ic_baseline_perm_identity_24"
         />
     </PreferenceCategory>
     <PreferenceCategory

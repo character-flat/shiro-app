@@ -122,7 +122,6 @@ class MainActivity : AppCompatActivity() {
         if (intent != null) {
             val dataString = intent.dataString
             if (dataString != null && dataString != "") {
-                println("GOT shiroapp auth$dataString")
                 if (dataString.contains("shiroapp")) {
                     if (dataString.contains("/anilistlogin")) {
                         authenticateLogin(dataString)

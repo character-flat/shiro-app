@@ -12,7 +12,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.database.ContentObserver
-import android.gesture.GestureOverlayView
 import android.graphics.Color
 import android.graphics.drawable.Icon
 import android.media.AudioManager
@@ -32,7 +31,6 @@ import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -873,16 +871,18 @@ class PlayerFragment : Fragment() {
                     ContextCompat.getColor(getCurrentActivity()!!, R.color.dtpv_yt_tap_circle_color)
                 circleClipTapView.circleBackgroundColor =
                     ContextCompat.getColor(getCurrentActivity()!!, R.color.dtpv_yt_background_circle_color)
-                circleClipTapView.animationDuration = 500
-                secondsView.cycleDuration = 600
+                circleClipTapView.animationDuration = 650
+                secondsView.cycleDuration = 750
                 TextViewCompat.setTextAppearance(secondsView.textView, R.style.YTOSecondsTextAppearance)
 
                 circleClipTapView?.performAtEnd = {
-                    val seekAnimation = AlphaAnimation(1f, 0f)
+                    /*val seekAnimation = AlphaAnimation(1f, 0f)
                     seekAnimation.duration = 200
                     seekAnimation.fillAfter = true
                     circleClipTapView?.alpha = 1f
-                    circleClipTapView?.startAnimation(seekAnimation)
+                    circleClipTapView?.startAnimation(seekAnimation)*/
+                    circleClipTapView?.animate()?.alpha(0f)?.setDuration(200)
+                        ?.setInterpolator(AccelerateInterpolator())?.start()
                     secondsView?.visibility = INVISIBLE
                     secondsView?.seconds = 0
                     secondsView?.stop()
@@ -926,8 +926,9 @@ class PlayerFragment : Fragment() {
             override fun onDoubleClickRight(clicks: Int, posX: Float, posY: Float) {
                 if (!isLocked) {
                     activity?.runOnUiThread {
-                        secondsView.visibility = VISIBLE
-                        secondsView.start()
+                        circleClipTapView?.alpha = 1f
+                        secondsView?.visibility = VISIBLE
+                        secondsView?.start()
                         // First time tap or switched
                         if (!secondsView.isForward) {
                             changeConstraints(true)
@@ -950,6 +951,7 @@ class PlayerFragment : Fragment() {
             override fun onDoubleClickLeft(clicks: Int, posX: Float, posY: Float) {
                 if (!isLocked) {
                     activity?.runOnUiThread {
+                        circleClipTapView?.alpha = 1f
                         secondsView.visibility = VISIBLE
                         secondsView.start()
 

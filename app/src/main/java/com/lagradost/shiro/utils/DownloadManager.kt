@@ -618,32 +618,35 @@ object DownloadManager {
             val rFile = File(metadata.videoPath)
 
             /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                val resolver = getCurrentActivity()!!.contentResolver
-                val values = ContentValues()
-                values.put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-                values.put(MediaStore.MediaColumns.TITLE, name)
-                values.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
-                values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + dir)
+     val resolver = getCurrentActivity()!!.contentResolver
+     val values = ContentValues()
+     values.put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+     values.put(MediaStore.MediaColumns.TITLE, name)
+     values.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
+     values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + dir)
 
-                val scopedUri = resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
+     val scopedUri = resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
 
-
-                val fos = resolver.openOutputStream(scopedUri) as? FileOutputStream?
-                fos?.let {
-                    Files.copy(rFile.toPath(), it)
-                    val child = metadata.copy(
-                        videoPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)
-                            .toString() + dir + name
-                    )
-                    DataStore.setKey(
-                        DOWNLOAD_CHILD_KEY,
-                        id.toString(), // MUST HAVE ID TO NOT OVERRIDE
-                        child
-                    )
-                    rFile.delete()
-                    return true
-                }
-            } else {*/
+     //val fos = resolver.openOutputStream(scopedUri) as? FileOutputStream?
+if (scopedUri != null) {
+         resolver.openOutputStream(scopedUri).use {
+             Files.copy(rFile.toPath(), it)
+             val child = metadata.copy(
+                 videoPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)
+                     .toString() + dir + name
+             )
+             DataStore.setKey(
+                 DOWNLOAD_CHILD_KEY,
+                 id.toString(), // MUST HAVE ID TO NOT OVERRIDE
+                 child
+             )
+             rFile.delete()
+             return true
+         }
+     }
+     //fos?.let {
+     }
+ } else {*/
             val basePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
             val path: String =
                 basePath.toString() + dir + name
@@ -672,8 +675,8 @@ object DownloadManager {
         progress: Long,
         total: Long,
         progressPerSec: Long,
-        type: DownloadManager.DownloadType,
-        info: DownloadManager.DownloadInfo
+        type: DownloadType,
+        info: DownloadInfo
     ) {
         val isMovie: Boolean = info.animeData.episodes?.size ?: 0 == 1 && info.animeData.status == "finished"
 
@@ -693,7 +696,7 @@ object DownloadManager {
             title = "Episode " + info.episodeIndex + 1
         }
         var body = ""
-        if (type == DownloadManager.DownloadType.IsDownloading || type == DownloadManager.DownloadType.IsPaused || type == DownloadManager.DownloadType.IsFailed) {
+        if (type == DownloadType.IsDownloading || type == DownloadType.IsPaused || type == DownloadType.IsFailed) {
             if (!isMovie) {
                 body += "E${info.episodeIndex + 1} - ${title}\n"
             }
@@ -709,26 +712,26 @@ object DownloadManager {
         val builder = NotificationCompat.Builder(localContext!!, CHANNEL_ID)
             .setSmallIcon(
                 when (type) {
-                    DownloadManager.DownloadType.IsDone -> R.drawable.rddone
-                    DownloadManager.DownloadType.IsDownloading -> R.drawable.rdload
-                    DownloadManager.DownloadType.IsPaused -> R.drawable.rdpause
-                    DownloadManager.DownloadType.IsFailed -> R.drawable.rderror
-                    DownloadManager.DownloadType.IsStopped -> R.drawable.rderror
+                    DownloadType.IsDone -> R.drawable.rddone
+                    DownloadType.IsDownloading -> R.drawable.rdload
+                    DownloadType.IsPaused -> R.drawable.rdpause
+                    DownloadType.IsFailed -> R.drawable.rderror
+                    DownloadType.IsStopped -> R.drawable.rderror
                 }
             )
             .setContentTitle(
                 when (type) {
-                    DownloadManager.DownloadType.IsDone -> "Download Done"
-                    DownloadManager.DownloadType.IsDownloading -> "${info.animeData.name} - ${
+                    DownloadType.IsDone -> "Download Done"
+                    DownloadType.IsDownloading -> "${info.animeData.name} - ${
                         convertBytesToAny(
                             progressPerSec,
                             2,
                             2.0
                         )
                     } MB/s"
-                    DownloadManager.DownloadType.IsPaused -> "${info.animeData.name} - Paused"
-                    DownloadManager.DownloadType.IsFailed -> "Download Failed"
-                    DownloadManager.DownloadType.IsStopped -> "Download Stopped"
+                    DownloadType.IsPaused -> "${info.animeData.name} - Paused"
+                    DownloadType.IsFailed -> "Download Failed"
+                    DownloadType.IsStopped -> "Download Stopped"
                 }
             )
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -740,7 +743,7 @@ object DownloadManager {
             .setOnlyAlertOnce(true)
             .setColor(localContext!!.getColorFromAttr(R.attr.colorAccent))
 
-        if (type == DownloadManager.DownloadType.IsDownloading) {
+        if (type == DownloadType.IsDownloading) {
             builder.setProgress(100, progressPro, false)
         }
 
@@ -761,15 +764,15 @@ object DownloadManager {
             builder.setContentText(body)
         }
 
-        if ((type == DownloadManager.DownloadType.IsDownloading || type == DownloadManager.DownloadType.IsPaused) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if ((type == DownloadType.IsDownloading || type == DownloadType.IsPaused) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val actionTypes: MutableList<DownloadManager.DownloadActionType> = ArrayList()
             // INIT
-            if (type == DownloadManager.DownloadType.IsDownloading) {
+            if (type == DownloadType.IsDownloading) {
                 actionTypes.add(DownloadManager.DownloadActionType.Pause)
                 actionTypes.add(DownloadManager.DownloadActionType.Stop)
             }
 
-            if (type == DownloadManager.DownloadType.IsPaused) {
+            if (type == DownloadType.IsPaused) {
                 actionTypes.add(DownloadManager.DownloadActionType.Resume)
                 actionTypes.add(DownloadManager.DownloadActionType.Stop)
             }
@@ -780,9 +783,9 @@ object DownloadManager {
 
                 _resultIntent.putExtra(
                     "type", when (i) {
-                        DownloadActionType.Resume -> "resume"
-                        DownloadActionType.Pause -> "pause"
-                        DownloadActionType.Stop -> "stop"
+                        DownloadManager.DownloadActionType.Resume -> "resume"
+                        DownloadManager.DownloadActionType.Pause -> "pause"
+                        DownloadManager.DownloadActionType.Stop -> "stop"
                     }
                 )
 
@@ -796,9 +799,9 @@ object DownloadManager {
                 builder.addAction(
                     NotificationCompat.Action(
                         when (i) {
-                            DownloadActionType.Resume -> R.drawable.rdload
-                            DownloadActionType.Pause -> R.drawable.rdpause
-                            DownloadActionType.Stop -> R.drawable.rderror
+                            DownloadManager.DownloadActionType.Resume -> R.drawable.rdload
+                            DownloadManager.DownloadActionType.Pause -> R.drawable.rdpause
+                            DownloadManager.DownloadActionType.Stop -> R.drawable.rderror
                         }, when (i) {
                             DownloadActionType.Resume -> "Resume"
                             DownloadActionType.Pause -> "Pause"

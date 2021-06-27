@@ -61,6 +61,7 @@
                     tools:visibility="visible"
                     android:id="@+id/tv_menu_bar"
             >
+                <!--
                 <ImageView
                         android:layout_width="50dp"
                         android:layout_height="50dp"
@@ -69,6 +70,7 @@
                         android:id="@+id/shiro_logo"
                 >
                 </ImageView>
+                -->
 
                 <!--<com.google.android.material.button.MaterialButton
                         android:layout_width="wrap_content"

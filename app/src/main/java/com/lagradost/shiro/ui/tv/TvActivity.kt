@@ -1,5 +1,6 @@
 package com.lagradost.shiro.ui.tv
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.FocusFinder
 import android.view.KeyEvent
@@ -12,11 +13,14 @@ import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedVi
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.settings.SettingsFragment.Companion.isInSettings
 import com.lagradost.shiro.ui.tv.PlayerFragmentTv.Companion.isInPlayer
+import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
 import com.lagradost.shiro.utils.AppUtils.init
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
+import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.DownloadManager
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
+import com.lagradost.shiro.utils.MALApi
 import com.lagradost.shiro.utils.ShiroApi
 import kotlinx.android.synthetic.main.activity_tv.*
 import kotlinx.android.synthetic.main.fragment_main_tv.*
@@ -34,9 +38,8 @@ class TvActivity : AppCompatActivity() {
             // ----- Themes ----
             //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             //theme.applyStyle(R.style.AppTheme, true)
-            val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
 
-            val currentTheme = when (settingsManager.getString("theme", "Black")) {
+            val currentTheme = when (settingsManager!!.getString("theme", "Black")) {
                 "Black" -> R.style.AppTheme
                 "Dark" -> R.style.DarkMode
                 "Light" -> R.style.LightMode
@@ -51,14 +54,14 @@ class TvActivity : AppCompatActivity() {
             //theme.applyStyle(R.style.AppTheme, true)
             theme.applyStyle(R.style.Theme_LeanbackCustom, true)
             theme.applyStyle(currentTheme, true)
-            if (settingsManager.getBoolean("cool_mode", false)) {
+            if (settingsManager!!.getBoolean("cool_mode", false)) {
                 theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
-            } else if (settingsManager.getBoolean("beta_theme", false)) {
+            } else if (settingsManager!!.getBoolean("beta_theme", false)) {
                 theme.applyStyle(R.style.OverlayPrimaryColorGreenApple, true)
-            } else if (settingsManager.getBoolean("purple_theme", false) && settingsManager.getBoolean(
+            } else if (settingsManager!!.getBoolean("purple_theme", false) && settingsManager!!.getBoolean(
                     "auto_update",
                     true
-                ) && settingsManager.getBoolean("beta_mode", true)
+                ) && settingsManager!!.getBoolean("beta_mode", true)
             ) {
                 theme.applyStyle(R.style.OverlayPrimaryColorPurple, true)
             }
@@ -83,6 +86,9 @@ class TvActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        DataStore.init(this)
+        settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
+
         applyThemes()
         super.onCreate(savedInstanceState)
         /*if (!isTv()) {
@@ -93,7 +99,6 @@ class TvActivity : AppCompatActivity() {
         }*/
         // ------ Init -----
         tvActivity = this
-        DataStore.init(this)
         DownloadManager.init(this)
         init()
         thread {
@@ -137,4 +142,24 @@ class TvActivity : AppCompatActivity() {
         init()
 
     }
+
+
+    // AUTH FOR LOGIN
+    override fun onNewIntent(intent: Intent?) {
+        if (intent != null) {
+            val dataString = intent.dataString
+            if (dataString != null && dataString != "") {
+                if (dataString.contains("shiroapp")) {
+                    if (dataString.contains("/anilistlogin")) {
+                        authenticateLogin(dataString)
+                    } else if (dataString.contains("/mallogin")) {
+                        MALApi.authenticateLogin(dataString)
+                    }
+                }
+            }
+        }
+
+        super.onNewIntent(intent)
+    }
+
 }

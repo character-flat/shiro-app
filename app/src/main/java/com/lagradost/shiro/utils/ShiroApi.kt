@@ -246,7 +246,8 @@ class ShiroApi {
             return try {
                 val response = khttp.get(url, timeout = 120.0)
                 val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
-                mapped.data.episodes = mapped.data.episodes?.distinctBy { it.episode_number }
+                mapped.data.episodes =
+                    mapped.data.episodes?.distinctBy { it.episode_number }?.sortedBy { it.episode_number }
                 if (mapped.status == "Found")
                     mapped
                 else null
