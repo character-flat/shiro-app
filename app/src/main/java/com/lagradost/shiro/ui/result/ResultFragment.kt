@@ -15,8 +15,11 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
-import android.widget.*
 import android.widget.AbsListView.CHOICE_MODE_SINGLE
+import android.widget.ArrayAdapter
+import android.widget.FrameLayout
+import android.widget.ListView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -94,6 +97,8 @@ import kotlinx.android.synthetic.main.fragment_results_new.title_name
 import kotlinx.android.synthetic.main.fragment_results_new.title_status
 import kotlinx.android.synthetic.main.fragment_results_new.title_year
 import kotlinx.android.synthetic.main.number_picker_dialog.*
+import kotlinx.android.synthetic.main.number_picker_dialog.episode_progress_btt
+import kotlinx.android.synthetic.main.number_picker_dialog_tv.*
 import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.thread
@@ -649,34 +654,49 @@ class ResultFragment : Fragment() {
                         title_holder?.let { TransitionManager.beginDelayedTransition(it, transition) }
 
                         edit_episodes_btt?.setOnClickListener {
+                            val dialog = Dialog(activity, R.style.AlertDialogCustom)
+                            dialog.setTitle("Select episodes seen")
                             if (tvActivity != null) {
-                                val numberPicker =
-                                    NumberPicker(activity/*, obtainStyledAttributes(activity, R.style.AlertDialogCustom)*/)
-                                numberPicker.minValue = 0
-                                numberPicker.maxValue = info.episodes
-                                val builder = AlertDialog.Builder(activity)
-                                builder.setTitle("Select episodes seen")
-
-                                builder.setPositiveButton("OK") { dialog, which ->
-                                    info.progress = which
-                                    info.syncData()
-                                    dialog.dismiss()
-                                }
-
-                                builder.setNegativeButton("Cancel") { dialog, _ ->
-                                    dialog.dismiss()
-                                }
-                                builder.setView(numberPicker)
-                                builder.show()
-
-                            } else {
-                                val dialog = Dialog(activity, R.style.AlertDialogCustom)
                                 //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                                dialog.setTitle("Select episodes seen")
+                                dialog.setContentView(R.layout.number_picker_dialog_tv)
+                                dialog.current_progress?.text = info.progress.toString()
+
+                                fun getProgress(): Int {
+                                    return dialog.current_progress?.text?.toString()?.toInt() ?: info.progress
+                                }
+
+                                fun setProgress(diff: Int) {
+                                    val progress = minOf(maxOf(getProgress() + diff, 0), info.episodes)
+                                    dialog.current_progress?.text = progress.toString()
+                                }
+
+                                if (info.episodes > 100) {
+                                    dialog.progress_plus_100.visibility = VISIBLE
+                                    dialog.progress_minus_100.visibility = VISIBLE
+                                    dialog.progress_plus_100.setOnClickListener { setProgress(100) }
+                                    dialog.progress_minus_100.setOnClickListener { setProgress(-100) }
+                                } else {
+                                    dialog.progress_plus_100.visibility = GONE
+                                    dialog.progress_minus_100.visibility = GONE
+                                }
+                                dialog.progress_plus_10.setOnClickListener { setProgress(10) }
+                                dialog.progress_minus_10.setOnClickListener { setProgress(-10) }
+                                dialog.progress_plus_1.setOnClickListener { setProgress(1) }
+                                dialog.progress_minus_1.setOnClickListener { setProgress(-1) }
+
+                                dialog.episode_progress_btt.setOnClickListener {
+                                    thread {
+                                        // Applying progress after is needed
+                                        info.progress = getProgress()
+                                        info.syncData()
+                                        dialog.dismiss()
+                                    }
+                                }
+                                dialog.show()
+                            } else {
+                                //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
                                 dialog.setContentView(R.layout.number_picker_dialog)
-
                                 dialog.number_picker_episode_text.setText(info.progress.toString())
-
                                 dialog.number_picker_episode_up.setOnClickListener {
                                     val number =
                                         if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null

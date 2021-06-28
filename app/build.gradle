@@ -167,4 +167,6 @@ dependencies {
 
     // Double tap
     // implementation 'com.github.vkay94:DoubleTapPlayerView:1.0.2'
+
+    implementation 'com.michaelmuenzer.android:ScrollableNumberPicker:0.2.2'
 }
