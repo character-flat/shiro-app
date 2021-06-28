@@ -30,6 +30,7 @@
             android:theme="@style/AppTheme"
     >
         <activity
+                android:launchMode="singleTop"
                 tools:node="merge"
                 android:name=".ui.MainActivity"
                 android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation"

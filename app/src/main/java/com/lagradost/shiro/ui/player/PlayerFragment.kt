@@ -29,7 +29,6 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AlertDialog
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
@@ -83,6 +82,7 @@ import com.lagradost.shiro.utils.MALApi.Companion.setScoreRequest
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 import com.lagradost.shiro.utils.ShiroApi.Companion.fmod
 import com.lagradost.shiro.utils.ShiroApi.Companion.loadLinks
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.player.*
 import kotlinx.android.synthetic.main.player_custom_layout.*
 import kotlinx.android.synthetic.main.yt_overlay.*
@@ -461,6 +461,7 @@ class PlayerFragment : Fragment() {
                     handlePlayerEvent(intent.getIntExtra(EXTRA_CONTROL_TYPE, 0))
                 }
             }
+            nav_view?.visibility = GONE
             val filter = IntentFilter()
             filter.addAction(
                 ACTION_MEDIA_CONTROL
@@ -473,6 +474,7 @@ class PlayerFragment : Fragment() {
             receiver?.let {
                 activity?.unregisterReceiver(it)
             }
+            nav_view?.visibility = VISIBLE
             activity?.hideSystemUI()
             this.view?.let { activity?.hideKeyboard(it) }
         }
@@ -856,14 +858,9 @@ class PlayerFragment : Fragment() {
             val secondsView = seconds_view
             val circleClipTapView = circle_clip_tap_view
 
-            /**
-             * Shamelessly ripped from https://github.com/vkay94/DoubleTapPlayerView
-             * because i couldn't figure out how to add it with all the other custom logic
-             */
             init {
-                // Initialize UI components
                 secondsView.isForward = true
-                changeConstraints(true)
+                secondsView.changeConstraints(true, rootLayout, secondsView)
 
                 circleClipTapView.arcSize =
                     getCurrentActivity()!!.resources.getDimensionPixelSize(R.dimen.dtpv_yt_arc_size).toFloat()
@@ -900,28 +897,6 @@ class PlayerFragment : Fragment() {
                 seekTime(doubleTapTime * -1000L)
             }
 
-            private fun changeConstraints(forward: Boolean) {
-                val constraintSet = ConstraintSet()
-                with(constraintSet) {
-                    clone(rootLayout)
-                    if (forward) {
-                        clear(secondsView.id, ConstraintSet.START)
-                        connect(
-                            secondsView.id, ConstraintSet.END,
-                            ConstraintSet.PARENT_ID, ConstraintSet.END
-                        )
-                    } else {
-                        clear(secondsView.id, ConstraintSet.END)
-                        connect(
-                            secondsView.id, ConstraintSet.START,
-                            ConstraintSet.PARENT_ID, ConstraintSet.START
-                        )
-                    }
-                    secondsView.start()
-                    applyTo(rootLayout)
-                }
-            }
-
 
             override fun onDoubleClickRight(clicks: Int, posX: Float, posY: Float) {
                 if (!isLocked) {
@@ -931,7 +906,7 @@ class PlayerFragment : Fragment() {
                         secondsView?.start()
                         // First time tap or switched
                         if (!secondsView.isForward) {
-                            changeConstraints(true)
+                            secondsView.changeConstraints(true, rootLayout, secondsView)
                             secondsView.apply {
                                 isForward = true
                                 seconds = 0
@@ -957,7 +932,7 @@ class PlayerFragment : Fragment() {
 
                         // First time tap or switched
                         if (secondsView.isForward) {
-                            changeConstraints(false)
+                            secondsView.changeConstraints(false, rootLayout, secondsView)
                             secondsView.apply {
                                 isForward = false
                                 seconds = 0

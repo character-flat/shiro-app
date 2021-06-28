@@ -66,4 +66,10 @@
     <color name="colorPrimaryPurple">#6200EA</color>
     <color name="colorPrimaryGreen">#00BFA5</color>
     <color name="colorPrimaryGreenApple">#48E484</color>
+    <color name="colorPrimaryPink">#E02A6B</color>
+    <color name="colorPrimaryOrange">#FF6D00</color>
+    <color name="colorPrimaryLime">#AEEA00</color>
+    <color name="colorPrimaryYellow">#FFD900</color>
+    <color name="colorPrimaryLightBlue">#42CEF5</color>
+    <!--<color name="colorPrimaryLightBlue">#BD5353</color>-->
 </resources>

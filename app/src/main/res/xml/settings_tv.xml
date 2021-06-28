@@ -41,20 +41,13 @@
                 app:seekBarIncrement="5"
         >
         </SeekBarPreference>-->
-        <SwitchPreference
+        <ListPreference
+                android:title="Accent color"
+                app:key="accent_color"
                 android:icon="@drawable/ic_baseline_format_paint_24"
-                app:key="purple_theme"
-                android:title="Purple theme"
-                app:defaultValue="false"
-                app:isPreferenceVisible="false"
-                app:summary="As a thanks for staying up to date :)"
-        />
-        <SwitchPreference
-                android:icon="@drawable/ic_baseline_format_paint_24"
-                app:key="beta_theme"
-                android:title="Beta theme"
-                app:defaultValue="false"
-                app:isPreferenceVisible="false"
+                app:useSimpleSummaryProvider="true"
+                android:entries="@array/AccentColors"
+                android:entryValues="@array/AccentColors"
         />
         <ListPreference
                 app:key="theme"
@@ -111,13 +104,6 @@
                 app:title="Version"
         />
         <SwitchPreference
-                app:key="cool_mode"
-                android:title="Cool mode"
-                app:defaultValue="false"
-                app:isPreferenceVisible="false"
-                android:icon="@drawable/ic_baseline_warning_24"
-        />
-        <SwitchPreference
                 app:key="auto_update"
                 android:title="Show app updates"
                 app:defaultValue="true"
@@ -167,7 +153,6 @@
             android:key="info"
             android:title="Info"
     >
-
         <Preference
                 android:icon="@drawable/ic_baseline_payment_24"
                 android:title="Donate to Shiro.is"
@@ -195,7 +180,6 @@
                     android:data="https://discord.gg/shiro"/>
 
         </Preference>
-
         <Preference
                 android:title="Github"
                 android:icon="@drawable/ic_github_logo"
@@ -204,6 +188,13 @@
             <intent android:action="android.intent.action.VIEW"
                     android:data="https://github.com/Blatzar/shiro-app/"/>
 
+        </Preference>
+        <Preference
+                android:title="Light novel app by the same devs"
+                android:icon="@drawable/quick_novel_icon"
+                app:summary="https://github.com/LagradOst/QuickNovel">
+            <intent android:action="android.intent.action.VIEW"
+                    android:data="https://github.com/LagradOst/QuickNovel"/>
         </Preference>
         <Preference
                 android:title="Developers (to complain to)"

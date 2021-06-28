@@ -7,6 +7,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:background="?attr/background"
         android:id="@+id/results_root"
+        android:animateLayoutChanges="false"
 >
     <ImageView
             android:layout_width="match_parent"
@@ -27,16 +28,19 @@
                 android:backgroundTint="@color/grayBackground"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="4dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp"
-                android:layout_marginBottom="-10dp"
+
         >
             <RelativeLayout
                     android:background="?attr/background"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
+                    android:paddingTop="10dp"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="10dp"
+                    android:elevation="1dp"
+                    android:clipChildren="false"
             >
                 <!--
                 Moved back button to overlay!
@@ -76,12 +80,13 @@
                     />
                 </FrameLayout>
 
-                <FrameLayout android:layout_width="wrap_content"
-                             android:layout_height="wrap_content"
-                             android:id="@+id/language_button_holder"
-                             android:visibility="gone"
-                             tools:visibility="visible"
-                             android:layout_toStartOf="@+id/title_play_holder"
+                <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/language_button_holder"
+                        android:visibility="gone"
+                        tools:visibility="visible"
+                        android:layout_toStartOf="@+id/title_play_holder"
                 >
                     <ImageView
                             android:layout_width="30dp"
@@ -90,7 +95,7 @@
                             android:background="@color/transparent"
                             android:src="@drawable/ic_baseline_language_24"
                             android:layout_gravity="center"
-                            android:contentDescription="@string/bookmark_btt_hint"/>
+                            android:contentDescription="Switch language"/>
                     <ImageView
                             android:layout_width="50dp"
                             android:layout_height="50dp"
@@ -99,22 +104,24 @@
                             android:clickable="true"
                             android:id="@+id/language_button"
                             android:nextFocusRight="@id/next_episode_btt"
-                            android:background="@drawable/video_tap_button">
+                            android:background="?attr/selectableItemBackgroundBorderless">
                     </ImageView>
                 </FrameLayout>
-                <FrameLayout android:layout_width="wrap_content"
-                             android:layout_height="wrap_content"
-                             android:id="@+id/title_play_holder"
-                             android:layout_toStartOf="@+id/title_bookmark_holder"
+                <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/title_play_holder"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
+                        android:layout_toStartOf="@+id/title_bookmark_holder"
                 >
                     <ImageView
                             android:layout_width="30dp"
                             android:layout_height="30dp"
-                            android:elevation="10dp"
                             android:background="@color/transparent"
                             android:src="@drawable/netflix_play"
                             android:layout_gravity="center"
-                            android:contentDescription="@string/bookmark_btt_hint"
+                            android:contentDescription="Play next episode"
                             app:tint="?attr/white"/>
                     <ImageView
                             android:layout_width="50dp"
@@ -123,25 +130,29 @@
                             android:focusable="true"
                             android:clickable="true"
                             android:id="@+id/next_episode_btt"
-                            android:background="@drawable/video_tap_button">
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                    >
                     </ImageView>
                 </FrameLayout>
 
-                <FrameLayout android:layout_width="wrap_content"
-                             android:layout_height="wrap_content"
-                             android:layout_alignParentEnd="true"
-                             android:id="@+id/title_bookmark_holder"
-                             android:background="@color/transparent"
+
+                <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/title_bookmark_holder"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
+                        android:layout_alignParentEnd="true"
                 >
                     <ImageView
                             android:id="@+id/title_bookmark"
                             android:layout_width="30dp"
                             android:layout_height="30dp"
-                            android:elevation="10dp"
-                            android:background="@color/transparent"
                             android:src="@drawable/outlined_heart"
+                            android:background="@color/transparent"
                             android:layout_gravity="center"
-                            android:contentDescription="@string/bookmark_btt_hint"/>
+                            android:contentDescription="@string/bookmark_btt_hint"
+                    />
                     <ImageView
                             android:layout_width="50dp"
                             android:layout_height="50dp"
@@ -149,12 +160,13 @@
                             android:focusable="true"
                             android:clickable="true"
                             android:id="@+id/bookmark_holder"
-                            android:background="@drawable/video_tap_button">
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                    >
                     </ImageView>
                 </FrameLayout>
             </RelativeLayout>
             <androidx.core.widget.NestedScrollView
-                    android:layout_marginTop="50dp"
+                    android:layout_marginTop="70dp"
                     android:background="?attr/background"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -263,24 +275,7 @@
                         </LinearLayout>
                     </LinearLayout>
 
-                    <LinearLayout
-                            android:id="@+id/description_holder"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
 
-                        <com.google.android.material.textview.MaterialTextView
-                                android:background="@drawable/outline_background"
-                                android:layout_margin="10dp"
-                                android:id="@+id/title_descript"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:textColor="?attr/textColor"
-                                android:nextFocusUp="@id/bookmark_holder"
-                                tools:text="The orphans at Grace Field House have only ever known peace. Their home is nice, their bellies stay full, and their caretaker, Mom, loves them very much. But their world turns upside down when the smartest children of the bunch—Emma, Ray, and Norman—learn what horror awaits them on adoption day. Now, their cultivated wit may be their only chance of survival. (Source: Funimation)"
-                        >
-
-                        </com.google.android.material.textview.MaterialTextView>
-                    </LinearLayout>
                     <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -357,7 +352,7 @@
                                     android:id="@+id/rating_btt_holder"
                             >
                                 <ImageView
-                                        android:background="?android:attr/selectableItemBackgroundBorderless"
+                                        android:background="?attr/selectableItemBackgroundBorderless"
                                         android:id="@+id/rating_btt"
                                         android:layout_width="30dp"
                                         android:layout_height="30dp"
@@ -384,7 +379,7 @@
                                     android:id="@+id/status_btt_holder"
                             >
                                 <ImageView
-                                        android:background="?android:attr/selectableItemBackgroundBorderless"
+                                        android:background="?attr/selectableItemBackgroundBorderless"
                                         android:id="@+id/status_btt"
                                         android:layout_width="30dp"
                                         android:layout_height="30dp"
@@ -412,7 +407,7 @@
                             >
 
                                 <ImageView
-                                        android:background="?android:attr/selectableItemBackgroundBorderless"
+                                        android:background="?attr/selectableItemBackgroundBorderless"
                                         android:id="@+id/title_anilist"
                                         android:layout_width="30dp"
                                         android:layout_height="30dp"
@@ -440,7 +435,7 @@
                                     tools:visibility="visible"
                             >
                                 <ImageView
-                                        android:background="?android:attr/selectableItemBackgroundBorderless"
+                                        android:background="?attr/selectableItemBackgroundBorderless"
                                         android:id="@+id/title_mal"
                                         android:layout_width="30dp"
                                         android:layout_height="30dp"
@@ -458,7 +453,22 @@
                             </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
+                    <LinearLayout
+                            android:id="@+id/description_holder"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
 
+                        <com.google.android.material.textview.MaterialTextView
+                                android:background="@drawable/outline_background"
+                                android:layout_margin="10dp"
+                                android:id="@+id/title_descript"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textColor="?attr/textColor"
+                                android:nextFocusUp="@id/rating_btt"
+                                tools:text="The orphans at Grace Field House have only ever known peace. Their home is nice, their bellies stay full, and their caretaker, Mom, loves them very much. But their world turns upside down when the smartest children of the bunch—Emma, Ray, and Norman—learn what horror awaits them on adoption day. Now, their cultivated wit may be their only chance of survival. (Source: Funimation)"
+                        />
+                    </LinearLayout>
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                             android:layout_width="match_parent"
@@ -467,8 +477,6 @@
                             android:layout_marginBottom="5dp"
                             android:id="@+id/episodes_text_holder"
                     >
-
-
                         <androidx.cardview.widget.CardView
                                 android:backgroundTint="?attr/textColorGray"
                                 app:layout_constraintStart_toStartOf="parent"
@@ -591,7 +599,7 @@
                 android:focusable="true"
                 android:clickable="true"
                 android:nextFocusRight="@id/share_holder"
-                android:background="@drawable/video_tap_button">
+                android:background="?attr/selectableItemBackgroundBorderless">
         </ImageView>
     </FrameLayout>
 

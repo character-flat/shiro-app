@@ -99,7 +99,8 @@ object BackupUtils {
             "subscribe_to_announcements",
             "subscriptions_bookmarked",
             "subscriptions",
-            "legacy_bookmarks"
+            "legacy_bookmarks",
+            "pink_theme"
         )
         val filterRegex = Regex("""^(${blackList.joinToString(separator = "|") })""")
         map?.filter { !filterRegex.containsMatchIn(it.key) }?.forEach {

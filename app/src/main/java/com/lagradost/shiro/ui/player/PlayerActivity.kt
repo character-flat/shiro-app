@@ -1,17 +1,12 @@
 package com.lagradost.shiro.ui.player
 
 import android.content.pm.PackageManager
-import android.database.Cursor
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.os.ParcelFileDescriptor
-import android.provider.MediaStore
-import android.util.Log
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -21,6 +16,7 @@ import com.lagradost.shiro.ui.MainActivity.Companion.canShowPipMode
 import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
 import com.lagradost.shiro.ui.MainActivity.Companion.onAudioFocusEvent
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
+import com.lagradost.shiro.utils.AppUtils
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.checkWrite
 import com.lagradost.shiro.utils.AppUtils.getUri
@@ -30,7 +26,6 @@ import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.DownloadManager
-import java.io.*
 
 class PlayerActivity : AppCompatActivity() {
     companion object {
@@ -86,16 +81,8 @@ class PlayerActivity : AppCompatActivity() {
         }
 
         theme.applyStyle(currentTheme, true)
-        if (settingsManager.getBoolean("cool_mode", false)) {
-            theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
-        } else if (settingsManager.getBoolean("beta_theme", false)) {
-            theme.applyStyle(R.style.OverlayPrimaryColorGreenApple, true)
-        } else if (settingsManager.getBoolean("purple_theme", false) && settingsManager.getBoolean(
-                "auto_update",
-                true
-            ) && settingsManager.getBoolean("beta_mode", true)
-        ) {
-            theme.applyStyle(R.style.OverlayPrimaryColorPurple, true)
+        AppUtils.getTheme()?.let {
+            theme.applyStyle(it, true)
         }
         // -----------------
 

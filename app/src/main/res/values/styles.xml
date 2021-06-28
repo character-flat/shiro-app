@@ -152,54 +152,6 @@
     </style>
     -->
 
-    <style name="OverlayPrimaryColorBlue">
-        <item name="colorPrimaryMegaDark">#191F43</item>
-        <item name="colorPrimary">@color/colorPrimaryBlue</item>
-        <item name="colorPrimaryDark">#4855A2</item>
-        <item name="colorPrimaryDarker">#363E74</item>
-        <item name="colorAccent">#5A6BCB</item>
-        <item name="colorOnPrimary">#5A6BCB</item>
-        <item name="colorPrimarySecond">#5664B7</item>
-        <!-- Needed for leanback fuckery -->
-        <item name="android:colorAccent">@color/colorPrimaryBlue</item>
-    </style>
-
-
-    <style name="OverlayPrimaryColorPurple">
-        <item name="colorPrimaryMegaDark">#210648</item>
-        <item name="colorPrimary">@color/colorPrimaryPurple</item>
-        <item name="colorPrimaryDark">#4704A3</item>
-        <item name="colorPrimaryDarker">#39097D</item>
-        <item name="colorAccent">#7125DB</item>
-        <item name="colorOnPrimary">#7125DB</item>
-        <item name="colorPrimarySecond">#6200EA</item>
-        <item name="android:colorAccent">@color/colorPrimaryPurple</item>
-    </style>
-
-    <style name="OverlayPrimaryColorGreen">
-        <item name="colorPrimaryMegaDark">#003029</item>
-        <item name="colorPrimary">@color/colorPrimaryGreen</item>
-        <item name="colorPrimaryDark">#007363</item>
-        <item name="colorPrimaryDarker">#004F44</item>
-        <item name="colorAccent">#39C1AE</item>
-        <item name="colorOnPrimary">#39C1AE</item>
-        <item name="colorPrimarySecond">#00BFA5</item>
-        <item name="android:colorAccent">@color/colorPrimaryGreen</item>
-
-    </style>
-
-    <style name="OverlayPrimaryColorGreenApple">
-        <item name="colorPrimaryMegaDark">#0F2F1B</item>
-        <item name="colorPrimary">@color/colorPrimaryGreenApple</item>
-        <item name="colorPrimaryDark">#319B5A</item>
-        <item name="colorPrimaryDarker">#267845</item>
-        <item name="colorAccent">#51C57E</item>
-        <item name="colorOnPrimary">#51C57E</item>
-        <item name="colorPrimarySecond">#48E484</item>
-        <item name="android:colorAccent">@color/colorPrimaryGreenApple</item>
-
-    </style>
-
     <style name="LightMode" parent="AppTheme">
         <item name="darkBar">@color/lightDarkBar</item>
         <item name="darkBarLight">@color/lightDarkBarLight</item>

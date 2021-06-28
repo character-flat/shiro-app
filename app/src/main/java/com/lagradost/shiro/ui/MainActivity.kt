@@ -17,13 +17,10 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.KeyEvent
 import android.view.WindowManager
-import android.widget.FrameLayout
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
-import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
@@ -34,7 +31,6 @@ import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedVi
 import com.lagradost.shiro.ui.player.PlayerEventType
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
-import com.lagradost.shiro.ui.result.ResultsViewModel
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
 import com.lagradost.shiro.utils.AniListApi.Companion.initGetUser
@@ -48,7 +44,6 @@ import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.AppUtils.shouldShowPIPMode
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.concurrent.thread
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
@@ -198,7 +193,6 @@ class MainActivity : AppCompatActivity() {
     private val callbacks = object : MediaSessionCompat.Callback() {
         override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
             if (mediaButtonEvent != null) {
-
                 val event = mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT) as? KeyEvent
                 println("EVENT: " + event?.keyCode)
                 when (event?.keyCode) {
@@ -263,16 +257,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         theme.applyStyle(currentTheme, true)
-        if (settingsManager.getBoolean("cool_mode", false)) {
-            theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
-        } else if (settingsManager.getBoolean("beta_theme", false)) {
-            theme.applyStyle(R.style.OverlayPrimaryColorGreenApple, true)
-        } else if (settingsManager.getBoolean("purple_theme", false) && settingsManager.getBoolean(
-                "auto_update",
-                true
-            ) && settingsManager.getBoolean("beta_mode", true)
-        ) {
-            theme.applyStyle(R.style.OverlayPrimaryColorPurple, true)
+        AppUtils.getTheme()?.let {
+            theme.applyStyle(it, true)
         }
 
         // -----------------

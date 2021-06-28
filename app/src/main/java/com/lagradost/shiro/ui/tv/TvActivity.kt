@@ -7,21 +7,21 @@ import android.view.KeyEvent
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
+import com.lagradost.shiro.ui.MasterViewModel
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.settings.SettingsFragment.Companion.isInSettings
 import com.lagradost.shiro.ui.tv.PlayerFragmentTv.Companion.isInPlayer
+import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
 import com.lagradost.shiro.utils.AppUtils.init
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
-import com.lagradost.shiro.utils.DataStore
-import com.lagradost.shiro.utils.DownloadManager
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
-import com.lagradost.shiro.utils.MALApi
-import com.lagradost.shiro.utils.ShiroApi
 import kotlinx.android.synthetic.main.activity_tv.*
 import kotlinx.android.synthetic.main.fragment_main_tv.*
 import kotlin.concurrent.thread
@@ -54,18 +54,9 @@ class TvActivity : AppCompatActivity() {
             //theme.applyStyle(R.style.AppTheme, true)
             theme.applyStyle(R.style.Theme_LeanbackCustom, true)
             theme.applyStyle(currentTheme, true)
-            if (settingsManager!!.getBoolean("cool_mode", false)) {
-                theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
-            } else if (settingsManager!!.getBoolean("beta_theme", false)) {
-                theme.applyStyle(R.style.OverlayPrimaryColorGreenApple, true)
-            } else if (settingsManager!!.getBoolean("purple_theme", false) && settingsManager!!.getBoolean(
-                    "auto_update",
-                    true
-                ) && settingsManager!!.getBoolean("beta_mode", true)
-            ) {
-                theme.applyStyle(R.style.OverlayPrimaryColorPurple, true)
+            AppUtils.getTheme()?.let {
+                theme.applyStyle(it, true)
             }
-
             // -----------------
         }
 
@@ -86,6 +77,7 @@ class TvActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        masterViewModel = masterViewModel ?: ViewModelProvider(this).get(MasterViewModel::class.java)
         DataStore.init(this)
         settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
 

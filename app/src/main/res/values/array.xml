@@ -21,7 +21,32 @@
     <string-array name="ThemesDark">
         <item>Black</item>
         <item>Dark</item>
+        <item>Light</item>
     </string-array>
+
+    <string-array name="AccentColors">
+        <item>Default Red</item>
+        <item>Green</item>
+        <item>Blue</item>
+        <item>Purple</item>
+        <item>Orange</item>
+        <item>Lime</item>
+        <item>Yellow</item>
+        <item>Light Blue</item>
+    </string-array>
+
+    <string-array name="AccentColorsFull">
+        <item>Default Red</item>
+        <item>Green</item>
+        <item>Blue</item>
+        <item>Purple</item>
+        <item>Pink</item>
+        <item>Orange</item>
+        <item>Lime</item>
+        <item>Yellow</item>
+        <item>Light Blue</item>
+    </string-array>
+
     <string-array name="LongClickOptions">
         <item>Show Toast</item>
         <item>Favorite</item>

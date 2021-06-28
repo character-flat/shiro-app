@@ -113,6 +113,21 @@ object AppUtils {
         )
     }
 
+    fun getTheme(): Int? {
+        return when (settingsManager?.getString("accent_color", "red")) {
+            "Default Red" -> null
+            "Blue" -> R.style.OverlayPrimaryColorBlue
+            "Purple" -> R.style.OverlayPrimaryColorPurple
+            "Green" -> R.style.OverlayPrimaryColorGreenApple
+            "Pink" -> R.style.OverlayPrimaryColorPink
+            "Orange" -> R.style.OverlayPrimaryColorOrange
+            "Lime" -> R.style.OverlayPrimaryColorLime
+            "Yellow" -> R.style.OverlayPrimaryColorYellow
+            "Light Blue" -> R.style.OverlayPrimaryColorLightBlue
+            else -> null
+        }
+    }
+
     // Guarantee slug is dubbed or not
     fun String.dubbify(turnDubbed: Boolean): String {
         return if (turnDubbed) {
@@ -248,7 +263,9 @@ object AppUtils {
 
     fun Context.onLongCardClick(card: ShiroApi.CommonAnimePage): Boolean {
         var isBookmarked: Boolean? = null
-        val selected = settingsManager?.getString("hold_behavior", "Show Toast")
+        val selected =
+            if (tvActivity != null && settingsManager?.getBoolean("hold_to_favorite", false) == true) "Favorite"
+            else settingsManager?.getString("hold_behavior", "Show Toast")
 
         if (selected == "Favorite" || selected == "Favorite and Subscribe") {
             isBookmarked = toggleHeart(card.name, card.image, card.slug)

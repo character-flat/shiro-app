@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.LayoutInflater
@@ -24,7 +25,6 @@ import com.lagradost.shiro.BuildConfig
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
-import com.lagradost.shiro.ui.tv.TvActivity
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
@@ -35,7 +35,6 @@ import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.md5
 import com.lagradost.shiro.utils.AppUtils.requestRW
-import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.BackupUtils.backup
 import com.lagradost.shiro.utils.BackupUtils.restore
 import com.lagradost.shiro.utils.BackupUtils.restorePrompt
@@ -119,15 +118,23 @@ class SettingsFragment : PreferenceFragmentCompat() {
             VIEWSTATE_KEY
         ).size
 
-        findPreference<ListPreference>("theme")?.setOnPreferenceChangeListener { preference, newValue ->
-            if (tvActivity != null) {
-                // Crashes on android tv due to styles if this is changed
-                val intent = Intent(requireActivity(), TvActivity::class.java)
-                this.startActivity(intent)
-                requireActivity().finishAffinity()
-            } else {
-                activity?.recreate()
-            }
+        val accentColors = findPreference<ListPreference>("accent_color")
+
+        fun unlockPinkTheme() {
+            accentColors?.entries = getCurrentActivity()!!.resources.getTextArray(R.array.AccentColorsFull)
+            accentColors?.entryValues = getCurrentActivity()!!.resources.getTextArray(R.array.AccentColorsFull)
+        }
+
+        if (DataStore.getKey("pink_theme", false) == true) {
+            unlockPinkTheme()
+        }
+        findPreference<ListPreference>("theme")?.setOnPreferenceChangeListener { _, _ ->
+            activity?.recreate()
+            return@setOnPreferenceChangeListener true
+        }
+
+        accentColors?.setOnPreferenceChangeListener { _, _ ->
+            activity?.recreate()
             return@setOnPreferenceChangeListener true
         }
 
@@ -242,43 +249,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         vidstreamButton.setOnPreferenceChangeListener { _, _ ->
             return@setOnPreferenceChangeListener true
         }*/
-
-
-        val betaTheme = findPreference("beta_theme") as SwitchPreference?
-        val purpleTheme = findPreference("purple_theme") as SwitchPreference?
-        val coolMode = findPreference("cool_mode") as SwitchPreference?
-
-        betaTheme?.isVisible = BuildConfig.BETA || betaTheme?.isChecked == true
-        betaTheme?.setOnPreferenceChangeListener { _, newValue ->
-            /*if (newValue == true) {
-                coolMode?.isChecked = false
-                purpleTheme?.isChecked = false
-            }*/
-            activity?.recreate()
-            return@setOnPreferenceChangeListener true
-        }
-
-        purpleTheme?.isVisible = settingsManager!!.getBoolean(
-            "auto_update",
-            true
-        ) && settingsManager!!.getBoolean("beta_mode", true)
-        purpleTheme?.setOnPreferenceChangeListener { _, newValue ->
-            /*if (newValue == true) {
-                coolMode?.isChecked = false
-                betaTheme?.isChecked = false
-            }*/
-            activity?.recreate()
-            return@setOnPreferenceChangeListener true
-        }
-
-        coolMode?.setOnPreferenceChangeListener { _, newValue ->
-            /*if (newValue == true) {
-                purpleTheme?.isChecked = false
-                betaTheme?.isChecked = false
-            }*/
-            activity?.recreate()
-            return@setOnPreferenceChangeListener true
-        }
 
         val anilistButton = findPreference("anilist_setting_btt") as Preference?
         val isLoggedInAniList = isLoggedIntoAniList()
@@ -478,20 +448,23 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
         // EASTER EGG THEME
         val versionButton = findPreference("version") as Preference?
-        if (coolMode?.isChecked == true) {
-            coolMode.isVisible = true
-        }
 
         versionButton?.summary = BuildConfig.VERSION_NAME + " Built on " + BuildConfig.BUILDDATE
         versionButton?.setOnPreferenceClickListener {
-            if (easterEggClicks == 7 && coolMode?.isChecked == false) {
-                Toast.makeText(context, "Unlocked cool mode", Toast.LENGTH_LONG).show()
-                coolMode.isVisible = true
+            if (easterEggClicks == 7) {
+                if (DataStore.getKey("pink_theme", false) != true) {
+                    Toast.makeText(context, "Unlocked pink theme", Toast.LENGTH_LONG).show()
+                    DataStore.setKey("pink_theme", true)
+                    unlockPinkTheme()
+                }
             }
             easterEggClicks++
             return@setOnPreferenceClickListener true
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            (findPreference("pip_enabled") as Preference?)?.isVisible = true
+        }
 
         val forceLandscape = findPreference("force_landscape") as SwitchPreference?
         forceLandscape?.setOnPreferenceChangeListener { _, newValue ->

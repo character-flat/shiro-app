@@ -1,5 +1,28 @@
 package com.lagradost.shiro.ui.player
 
+/**
+ * MIT License
+ *
+ * Copyright (c) 2019 Viktor Krez
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 import android.animation.ValueAnimator
 import android.content.Context
 import android.util.AttributeSet
@@ -9,6 +32,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import com.lagradost.shiro.R
@@ -21,6 +45,7 @@ import com.lagradost.shiro.R
  *
  * From https://github.com/vkay94/DoubleTapPlayerView/blob/master/doubletapplayerview/src/main/java/com/github/vkay94/dtpv/youtube/views/YouTubeSecondsView.kt
  */
+
 class SecondsView(context: Context, attrs: AttributeSet?) :
     ConstraintLayout(context, attrs) {
 
@@ -177,7 +202,7 @@ class SecondsView(context: Context, attrs: AttributeSet?) :
 
     private inner class CustomValueAnimator(
         start: () -> Unit, update: (value: Float) -> Unit, end: () -> Unit
-    ): ValueAnimator() {
+    ) : ValueAnimator() {
 
         init {
             duration = cycleDuration / 5
@@ -186,6 +211,32 @@ class SecondsView(context: Context, attrs: AttributeSet?) :
             addUpdateListener { update(it.animatedValue as Float) }
             doOnStart { start() }
             doOnEnd { end() }
+        }
+    }
+
+    fun changeConstraints(forward: Boolean, root_constraint_layout: ConstraintLayout?, seconds_view: SecondsView?) {
+        val constraintSet = ConstraintSet()
+        root_constraint_layout?.let { rootLayout ->
+            seconds_view?.let { secondsView ->
+                with(constraintSet) {
+                    clone(rootLayout)
+                    if (forward) {
+                        clear(secondsView.id, ConstraintSet.START)
+                        connect(
+                            secondsView.id, ConstraintSet.END,
+                            ConstraintSet.PARENT_ID, ConstraintSet.END
+                        )
+                    } else {
+                        clear(secondsView.id, ConstraintSet.END)
+                        connect(
+                            secondsView.id, ConstraintSet.START,
+                            ConstraintSet.PARENT_ID, ConstraintSet.START
+                        )
+                    }
+                    secondsView.start()
+                    applyTo(rootLayout)
+                }
+            }
         }
     }
 }

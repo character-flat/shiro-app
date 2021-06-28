@@ -52,11 +52,9 @@ import com.google.android.exoplayer2.util.MimeTypes
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.ui.player.PlayerData
-import com.lagradost.shiro.ui.player.PlayerFragment
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.player.SSLTrustManager
 import com.lagradost.shiro.ui.tv.MainFragment.Companion.hasBeenInPlayer
-import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.setViewPosDur
@@ -299,9 +297,11 @@ class PlayerFragmentTv : VideoSupportFragment() {
                     )
                     // Enables pass-through of transport controls to our player instance
                     playerGlue = MediaPlayerGlue(activity, playerAdapter).apply {
+                        val fillerInfo =
+                            if (data?.fillerEpisodes?.get((data?.episodeIndex ?: -1) + 1) == true) " (Filler) " else ""
                         host = VideoSupportFragmentGlueHost(this@PlayerFragmentTv)
                         title = "${data?.card?.name}"
-                        subtitle = "Episode ${data?.episodeIndex!! + 1}"
+                        subtitle = "Episode ${data?.episodeIndex!! + 1}" + fillerInfo
 
                         // Adds playback state listeners
                         addPlayerCallback(object : PlaybackGlue.PlayerCallback() {
@@ -701,6 +701,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
+        println("ARGUMENTS ${arguments?.getString(DATA)}")
         arguments?.getString(DATA)?.let {
             data = it.toKotlinObject()
         }
@@ -729,10 +730,10 @@ class PlayerFragmentTv : VideoSupportFragment() {
             }
 
         fun newInstance() =
-            PlayerFragment().apply {
+            PlayerFragmentTv().apply {
                 arguments = Bundle().apply {
                     masterViewModel?.playerData?.value?.let {
-                        putString("data", mapper.writeValueAsString(it))
+                        putString(DATA, mapper.writeValueAsString(it))
                     }
                 }
             }

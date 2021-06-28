@@ -15,11 +15,8 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
+import android.widget.*
 import android.widget.AbsListView.CHOICE_MODE_SINGLE
-import android.widget.ArrayAdapter
-import android.widget.FrameLayout
-import android.widget.ListView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -652,41 +649,65 @@ class ResultFragment : Fragment() {
                         title_holder?.let { TransitionManager.beginDelayedTransition(it, transition) }
 
                         edit_episodes_btt?.setOnClickListener {
-                            val dialog = Dialog(activity, R.style.AlertDialogCustom)
-                            //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                            dialog.setTitle("Select episodes seen")
-                            dialog.setContentView(R.layout.number_picker_dialog)
+                            if (tvActivity != null) {
+                                val numberPicker =
+                                    NumberPicker(activity/*, obtainStyledAttributes(activity, R.style.AlertDialogCustom)*/)
+                                numberPicker.minValue = 0
+                                numberPicker.maxValue = info.episodes
+                                val builder = AlertDialog.Builder(activity)
+                                builder.setTitle("Select episodes seen")
 
-                            dialog.number_picker_episode_text.setText(info.progress.toString())
-
-                            dialog.number_picker_episode_up.setOnClickListener {
-                                val number = if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
-                                ) 1 else minOf(
-                                    dialog.number_picker_episode_text.text.toString().toInt() + 1,
-                                    info.episodes
-                                )
-                                dialog.number_picker_episode_text.setText(number.toString())
-                            }
-                            dialog.number_picker_episode_down.setOnClickListener {
-                                val number = if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
-                                ) 0 else maxOf(dialog.number_picker_episode_text.text.toString().toInt() - 1, 0)
-                                dialog.number_picker_episode_text.setText(number.toString())
-                            }
-                            dialog.episode_progress_btt.setOnClickListener {
-                                thread {
-                                    val progress =
-                                        if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
-                                        ) 0 else minOf(
-                                            dialog.number_picker_episode_text.text.toString().toInt(),
-                                            info.episodes
-                                        )
-                                    // Applying progress after is needed
-                                    info.progress = progress
+                                builder.setPositiveButton("OK") { dialog, which ->
+                                    info.progress = which
                                     info.syncData()
                                     dialog.dismiss()
                                 }
+
+                                builder.setNegativeButton("Cancel") { dialog, _ ->
+                                    dialog.dismiss()
+                                }
+                                builder.setView(numberPicker)
+                                builder.show()
+
+                            } else {
+                                val dialog = Dialog(activity, R.style.AlertDialogCustom)
+                                //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                                dialog.setTitle("Select episodes seen")
+                                dialog.setContentView(R.layout.number_picker_dialog)
+
+                                dialog.number_picker_episode_text.setText(info.progress.toString())
+
+                                dialog.number_picker_episode_up.setOnClickListener {
+                                    val number =
+                                        if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
+                                        ) 1 else minOf(
+                                            dialog.number_picker_episode_text.text.toString().toInt() + 1,
+                                            info.episodes
+                                        )
+                                    dialog.number_picker_episode_text.setText(number.toString())
+                                }
+                                dialog.number_picker_episode_down.setOnClickListener {
+                                    val number =
+                                        if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
+                                        ) 0 else maxOf(dialog.number_picker_episode_text.text.toString().toInt() - 1, 0)
+                                    dialog.number_picker_episode_text.setText(number.toString())
+                                }
+                                dialog.episode_progress_btt.setOnClickListener {
+                                    thread {
+                                        val progress =
+                                            if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
+                                            ) 0 else minOf(
+                                                dialog.number_picker_episode_text.text.toString().toInt(),
+                                                info.episodes
+                                            )
+                                        // Applying progress after is needed
+                                        info.progress = progress
+                                        info.syncData()
+                                        dialog.dismiss()
+                                    }
+                                }
+                                dialog.show()
                             }
-                            dialog.show()
                         }
 
                         // Expands touch hitbox
@@ -695,9 +716,6 @@ class ResultFragment : Fragment() {
                         expandTouchArea(title_anilist_holder, title_anilist, 30.toPx)
 
                         rating_btt?.setOnClickListener {
-                            val bottomSheetDialog = BottomSheetDialog(activity)
-                            bottomSheetDialog.setContentView(R.layout.bottom_sheet)
-                            val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
                             val arrayAdapter = ArrayAdapter<String>(activity, R.layout.bottom_single_choice)
                             val choices = listOf(
                                 "No rating",
@@ -714,19 +732,37 @@ class ResultFragment : Fragment() {
                             )
                             arrayAdapter.addAll(ArrayList(choices))
 
-                            res.choiceMode = CHOICE_MODE_SINGLE
-                            res.adapter = arrayAdapter
-                            res.setItemChecked(
-                                info.score,
-                                true
-                            )
-                            res.setOnItemClickListener { _, _, position, _ ->
-                                info.score = position
-                                info.syncData()
-                                bottomSheetDialog.dismiss()
+                            if (tvActivity != null) {
+                                val builder = AlertDialog.Builder(activity, R.style.AlertDialogCustom)
+                                builder.setTitle("Rating")
+
+                                lateinit var dialog: Dialog
+                                // Using the arrayAdapter here apparently fucks up highlighting. I don't know why
+                                builder.setSingleChoiceItems(choices.toTypedArray(), info.score) { _, position ->
+                                    info.score = position
+                                    info.syncData()
+                                    dialog.dismiss()
+                                }
+                                dialog = builder.create()
+                                dialog.show()
+                            } else {
+                                val bottomSheetDialog = BottomSheetDialog(activity)
+                                bottomSheetDialog.setContentView(R.layout.bottom_sheet)
+                                val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
+                                res.choiceMode = CHOICE_MODE_SINGLE
+                                res.adapter = arrayAdapter
+                                res.setItemChecked(
+                                    info.score,
+                                    true
+                                )
+                                res.setOnItemClickListener { _, _, position, _ ->
+                                    info.score = position
+                                    info.syncData()
+                                    bottomSheetDialog.dismiss()
+                                }
+                                bottomSheetDialog.main_text.text = "Rating"
+                                bottomSheetDialog.show()
                             }
-                            bottomSheetDialog.main_text.text = "Rating"
-                            bottomSheetDialog.show()
                         }
 
                         status_btt?.setOnClickListener {
@@ -745,27 +781,45 @@ class ResultFragment : Fragment() {
                                 // Rewatching doesn't exist on MAL
                                 0, if (hasAniList) 6 else 5
                             )
-
                             arrayAdapter.addAll(ArrayList(choices))
 
-                            res.choiceMode = CHOICE_MODE_SINGLE
-                            res.adapter = arrayAdapter
-                            res.setItemChecked(
-                                info.typeValue,
-                                true
-                            )
-                            res.setOnItemClickListener { _, _, position, _ ->
-                                info.typeValue = position
+                            if (tvActivity != null) {
+                                val builder = AlertDialog.Builder(activity, R.style.AlertDialogCustom)
+                                builder.setTitle("Status")
 
-                                if (position == AniListApi.Companion.AniListStatusType.Completed.value) {
-                                    info.progress = info.episodes
+                                lateinit var dialog: Dialog
+                                builder.setSingleChoiceItems(choices.toTypedArray(), info.typeValue) { _, position ->
+                                    info.typeValue = position
+
+                                    if (position == AniListApi.Companion.AniListStatusType.Completed.value) {
+                                        info.progress = info.episodes
+                                    }
+
+                                    info.syncData()
+                                    dialog.dismiss()
                                 }
+                                dialog = builder.create()
+                                dialog.show()
+                            } else {
+                                res.choiceMode = CHOICE_MODE_SINGLE
+                                res.adapter = arrayAdapter
+                                res.setItemChecked(
+                                    info.typeValue,
+                                    true
+                                )
+                                res.setOnItemClickListener { _, _, position, _ ->
+                                    info.typeValue = position
 
-                                info.syncData()
-                                bottomSheetDialog.dismiss()
+                                    if (position == AniListApi.Companion.AniListStatusType.Completed.value) {
+                                        info.progress = info.episodes
+                                    }
+
+                                    info.syncData()
+                                    bottomSheetDialog.dismiss()
+                                }
+                                bottomSheetDialog.main_text.text = "Status"
+                                bottomSheetDialog.show()
                             }
-                            bottomSheetDialog.main_text.text = "Status"
-                            bottomSheetDialog.show()
                         }
 
                         title_anilist?.setOnClickListener {
@@ -880,15 +934,15 @@ class ResultFragment : Fragment() {
         }
         onTokenFetched -= ::loadDataWhenTokenIsLoaded
     }
-/*
-private fun ToggleViewState(_isViewState: Boolean) {
-    isViewState = _isViewState
-    if (isViewState) {
-        title_viewstate.setImageResource(R.drawable.filled_viewstate)
-    } else {
-        title_viewstate.setImageResource(R.drawable.outlined_viewstate)
-    }
-}*/
+    /*
+    private fun ToggleViewState(_isViewState: Boolean) {
+        isViewState = _isViewState
+        if (isViewState) {
+            title_viewstate.setImageResource(R.drawable.filled_viewstate)
+        } else {
+            title_viewstate.setImageResource(R.drawable.outlined_viewstate)
+        }
+    }*/
 
     private fun toggleHeartVisual(_isBookmarked: Boolean) {
         if (_isBookmarked) {

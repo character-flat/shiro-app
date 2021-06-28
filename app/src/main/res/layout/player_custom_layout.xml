@@ -256,7 +256,7 @@
                     android:layout_width="70dp"
                     android:layout_gravity="center"
                     android:background="@drawable/video_tap_button_always_white"
-                    android:foreground="@drawable/netflix_play"
+                    android:src="@drawable/netflix_play"
                     android:clickable="true"
                     android:focusable="true"/>
             <ImageButton
@@ -267,7 +267,7 @@
                     android:layout_width="70dp"
                     android:layout_gravity="center"
                     android:background="@drawable/video_tap_button_always_white"
-                    android:foreground="@drawable/netflix_pause"
+                    android:src="@drawable/netflix_pause"
                     android:clickable="true"
                     android:focusable="true"/>
 
