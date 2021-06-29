@@ -198,7 +198,6 @@ class DownloadFragment : Fragment() {
             }
             keys.forEach {
                 val data = DataStore.getKey<DownloadManager.DownloadFileMetadataLegacy>(it)
-                println("DATA $data $it")
                 if (data != null) {
                     // NEEDS REMOVAL TO PREVENT DUPLICATES
                     DataStore.removeKey(it)

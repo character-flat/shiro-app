@@ -5,7 +5,6 @@ import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.pmap
 import org.jsoup.Jsoup
-import kotlin.concurrent.thread
 
 class Vidstream(var providersActive: HashSet<String> = HashSet()) {
     val name: String = "Vidstream"
@@ -35,7 +34,8 @@ class Vidstream(var providersActive: HashSet<String> = HashSet()) {
                     val url = api.getExtractorUrl(id)
                     val source = api.getUrl(url)
                     source?.forEach {
-                        callback.invoke(it)
+                        // When shiro serves unavailable.mp4
+                        if (!it.url.contains("shiro.is/")) callback.invoke(it)
                     }
                 }
             }

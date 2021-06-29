@@ -108,7 +108,7 @@
         <SwitchPreference
                 android:icon="@drawable/ic_baseline_new_releases_24"
                 app:key="new_results_page"
-                android:title="Use new anime info page"
+                android:title="Use alternative anime info page"
                 app:defaultValue="false"
         />
         <!--<SeekBarPreference

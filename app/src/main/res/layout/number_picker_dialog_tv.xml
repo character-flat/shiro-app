@@ -67,7 +67,9 @@
                 android:id="@+id/progress_plus_1"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:focusable="true"
-        />
+        >
+            <requestFocus/>
+        </TextView>
         <TextView
                 android:layout_width="50dp"
                 android:layout_height="50dp"

@@ -329,7 +329,7 @@ class PlayerFragment : Fragment() {
 
 
         // Quickstart
-        if (link.name == "Shiro"/*Shiro().name*/) {
+        if (link.name.startsWith("Shiro")/*Shiro().name*/) {
             activity?.runOnUiThread {
                 initPlayerIfPossible(link)
             }
@@ -555,7 +555,7 @@ class PlayerFragment : Fragment() {
         video_lock?.isClickable = isShowing
         //handler.postDelayed(restoreLockClickable, time + 50L)
 
-        if (!isLocked || video_holder.alpha != 1.0f || shadow_overlay.alpha != 1.0f) {
+        if (!isLocked || video_holder?.alpha != 1.0f || shadow_overlay?.alpha != 1.0f) {
             video_holder?.startAnimation(fadeAnimation)
             shadow_overlay?.startAnimation(fadeAnimation)
         }
@@ -1336,7 +1336,7 @@ class PlayerFragment : Fragment() {
 
         val progress = malHolder?.my_list_status?.num_episodes_watched ?: holder?.progress ?: 0
         val score = malHolder?.my_list_status?.score ?: holder?.score ?: 0
-        val type = if (malHolder != null) {
+        var type = if (malHolder != null) {
             var type =
                 AniListApi.fromIntToAnimeStatus(malStatusAsString.indexOf(malHolder.my_list_status?.status))
             type =
@@ -1349,6 +1349,10 @@ class PlayerFragment : Fragment() {
         }
 
         val currentEpisodeProgress = data?.episodeIndex!! + 1
+
+        if (currentEpisodeProgress == holder?.episodes ?: data?.card?.episodes?.size && type.value != AniListApi.Companion.AniListStatusType.Completed.value) {
+            type = AniListApi.Companion.AniListStatusType.Completed
+        }
 
         if (progress < currentEpisodeProgress && holder ?: malHolder != null) {
             val anilistPost =

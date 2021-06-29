@@ -105,7 +105,8 @@ class ResAdapter(
                             BookmarkedTitle(
                                 card.name,
                                 card.image,
-                                card.slug
+                                card.slug,
+                                card.english
                             )
                         )
                     } else {

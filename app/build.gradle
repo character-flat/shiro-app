@@ -19,8 +19,8 @@ android {
         minSdkVersion 21
         targetSdkVersion 30
         // Don't forget to update versionCode too :)
-        versionCode 23
-        versionName "2.4.3"
+        versionCode 25
+        versionName "2.4.5"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -167,6 +167,4 @@ dependencies {
 
     // Double tap
     // implementation 'com.github.vkay94:DoubleTapPlayerView:1.0.2'
-
-    implementation 'com.michaelmuenzer.android:ScrollableNumberPicker:0.2.2'
 }

@@ -49,13 +49,13 @@
         <item name="textColorGray">@color/textColorGray</item>
         <item name="textColorGrayWhite">@color/textColorGrayWhite</item>
         <item name="video_ripple">@color/video_ripple</item>
+        <item name="android:editTextColor">?attr/textColor</item>
         <!-- prefrencescreen switch color -->
         <item name="android:colorForeground">?attr/white</item>
         <item name="android:colorControlHighlight">?attr/white</item>
         <item name="alertDialogTheme">@style/AlertDialogCustom</item>
         <item name="android:includeFontPadding">false</item>
         <item name="bottomSheetDialogTheme">@style/AppBottomSheetDialogTheme</item>
-
         <item name="android:colorControlActivated">?attr/colorPrimarySecond</item>
         <item name="android:colorControlNormal">@color/lb_preference_item_primary_text_color_default</item>
         <item name="android:windowTranslucentNavigation">false</item>
@@ -109,6 +109,7 @@
     </style>
 
     <style name="CustomPreferenceTheme">
+        <item name="seekBarPreferenceStyle">@style/Preference.SeekBarPreference.Material</item>
         <item name="preferenceInformationStyle">@style/Preference.Information.Material</item>
         <item name="checkBoxPreferenceStyle">@style/Preference.CheckBoxPreference.Material</item>
         <item name="dialogPreferenceStyle">@style/Preference.DialogPreference.Material</item>

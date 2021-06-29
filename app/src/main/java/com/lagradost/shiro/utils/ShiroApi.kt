@@ -364,7 +364,7 @@ class ShiroApi {
                         if (data != null) {
                             // NEEDS REMOVAL TO PREVENT DUPLICATES
                             DataStore.removeKey(it)
-                            DataStore.setKey(it, BookmarkedTitle(data.name, data.image, data.slug))
+                            DataStore.setKey(it, BookmarkedTitle(data.name, data.image, data.slug, data.english))
                         } else {
                             DataStore.removeKey(it)
                         }

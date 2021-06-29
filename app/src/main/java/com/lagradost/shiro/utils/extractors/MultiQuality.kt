@@ -53,7 +53,7 @@ class MultiQuality : ExtractorApi() {
                     } else if (extractedUrl.endsWith(".mp4")) {
                         extractedLinksList.add(
                             ExtractorLink(
-                                "$name ${sourceMatch.groupValues[2]}",
+                                "$name ${sourceMatch.groupValues[2].removeSuffix(" P")}",
                                 extractedUrl,
                                 url.replace(" ", "%20"),
                                 Qualities.Unknown.value,

@@ -362,6 +362,7 @@
                                         android:src="@drawable/ic_baseline_star_border_24"
                                         android:layout_gravity="center"
                                         app:tint="?attr/white"
+                                        android:nextFocusUp="@id/edit_episodes_btt"
                                 />
                                 <TextView
                                         android:text="Rate"
@@ -388,7 +389,9 @@
                                         android:focusable="true"
                                         android:src="@drawable/filled_viewstate"
                                         android:layout_gravity="center"
+                                        android:nextFocusUp="@id/edit_episodes_btt"
                                         app:tint="?attr/white"/>
+
                                 <TextView
                                         android:text="Status"
                                         android:id="@+id/status_text"
@@ -414,6 +417,7 @@
                                         android:elevation="10dp"
                                         android:clickable="true"
                                         android:focusable="true"
+                                        android:nextFocusUp="@id/edit_episodes_btt"
                                         android:src="@drawable/ic_anilist_icon"
                                         android:layout_gravity="center"
                                         android:contentDescription="@string/anilist_btt_hint"/>
@@ -442,6 +446,7 @@
                                         android:elevation="10dp"
                                         android:clickable="true"
                                         android:focusable="true"
+                                        android:nextFocusUp="@id/edit_episodes_btt"
                                         android:src="@drawable/mal_logo"
                                         android:layout_gravity="center"
                                         android:contentDescription="@string/anilist_btt_hint"/>

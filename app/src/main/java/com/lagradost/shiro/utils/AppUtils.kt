@@ -249,7 +249,8 @@ object AppUtils {
                 BookmarkedTitle(
                     name,
                     image,
-                    slug
+                    slug,
+                    null,
                 )
             )
         } else {
@@ -313,7 +314,8 @@ object AppUtils {
                             SUBSCRIPTIONS_BOOKMARK_KEY, data.slug, BookmarkedTitle(
                                 data.name,
                                 data.image,
-                                data.slug
+                                data.slug,
+                                data.english
                             )
                         )
                     }

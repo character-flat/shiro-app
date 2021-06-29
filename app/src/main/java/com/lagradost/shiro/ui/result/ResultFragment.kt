@@ -416,7 +416,8 @@ class ResultFragment : Fragment() {
                                             SUBSCRIPTIONS_BOOKMARK_KEY, slug, BookmarkedTitle(
                                                 data.name,
                                                 data.image,
-                                                data.slug
+                                                data.slug,
+                                                data.english
                                             )
                                         )
                                     }
@@ -528,9 +529,6 @@ class ResultFragment : Fragment() {
                                 //field = value
                                 println("Changed type")
                                 field = fromIntToAnimeStatus(this.typeValue)
-                                activity.runOnUiThread {
-                                    status_text?.text = field.name
-                                }
                             }
 
                         // This is helper class to type.value because setter on type.value isn't working.
@@ -539,6 +537,9 @@ class ResultFragment : Fragment() {
                                 field = value
                                 // Invoke setter
                                 // println("Invoked setter")
+                                activity.runOnUiThread {
+                                    status_text?.text = fromIntToAnimeStatus(this.typeValue).name
+                                }
                                 this::type.setter.call(type)
                             }
                         var progress =
@@ -641,8 +642,7 @@ class ResultFragment : Fragment() {
                         resultViewModel?.let { viewModel ->
                             observe(viewModel.visibleEpisodeProgress) {
                                 it?.let {
-                                    aniList_progressbar?.progress = it * 100 / info.episodes
-                                    anilist_progress_txt?.text = "${it}/${info.episodes}"
+                                    info.progress = it
                                 }
                             }
                         }
@@ -984,7 +984,8 @@ class ResultFragment : Fragment() {
                 BookmarkedTitle(
                     data.name,
                     data.image,
-                    data.slug
+                    data.slug,
+                    data.english
                 )
             )
         } else {

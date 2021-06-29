@@ -24,6 +24,7 @@ import android.graphics.Color
 import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
 import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
 import android.view.*
@@ -40,6 +41,7 @@ import androidx.leanback.widget.Action
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.PlaybackControlsRow
 import androidx.leanback.widget.SeekBar
+import androidx.preference.PreferenceManager
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.ext.leanback.LeanbackPlayerAdapter
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
@@ -54,14 +56,18 @@ import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.ui.player.PlayerData
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.player.SSLTrustManager
+import com.lagradost.shiro.ui.result.ResultFragment.Companion.resultViewModel
 import com.lagradost.shiro.ui.tv.MainFragment.Companion.hasBeenInPlayer
+import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.AniListApi.Companion.getDataAboutId
+import com.lagradost.shiro.utils.AniListApi.Companion.postDataAboutId
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.setViewPosDur
 import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.DataStore.toKotlinObject
-import com.lagradost.shiro.utils.ExtractorLink
-import com.lagradost.shiro.utils.ShiroApi
+import com.lagradost.shiro.utils.MALApi.Companion.malStatusAsString
+import com.lagradost.shiro.utils.MALApi.Companion.setScoreRequest
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 import com.lagradost.shiro.utils.ShiroApi.Companion.loadLinks
 import java.io.File
@@ -86,12 +92,17 @@ class PlayerFragmentTv : VideoSupportFragment() {
     /** Allows interaction with transport controls, volume keys, media buttons  */
     private lateinit var mediaSession: MediaSessionCompat
     private var playbackPosition: Long = 0
-
+    private val checkProgressAction = Runnable { checkProgress() }
+    private var lastSyncedEpisode = -1
+    private val handler = Handler()
     private var hasAddedSources = false
 
     /** Glue layer between the player and our UI */
     private lateinit var playerGlue: MediaPlayerGlue
     private lateinit var exoPlayer: SimpleExoPlayer
+    private val settingsManager = PreferenceManager.getDefaultSharedPreferences(getCurrentActivity()!!)
+    private val fastForwardTime = settingsManager!!.getInt("fast_forward_button_time", 10)
+    private val fastForwardTimeMillis: Long = TimeUnit.SECONDS.toMillis(fastForwardTime.toLong())
 
     // To prevent watching everything while sleeping
     private var episodesSinceInteraction = 0
@@ -123,7 +134,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
         //private val actionClosedCaptions = PlaybackControlsRow.ClosedCaptioningAction(context)
 
-        fun skipForward(millis: Long = SKIP_PLAYBACK_MILLIS) =
+        fun skipForward(millis: Long = fastForwardTimeMillis) =
             // Ensures we don't advance past the content duration (if set)
             exoPlayer.seekTo(
                 if (exoPlayer.contentDuration > 0) {
@@ -133,7 +144,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
                 }
             )
 
-        fun skipBackward(millis: Long = SKIP_PLAYBACK_MILLIS) =
+        fun skipBackward(millis: Long = fastForwardTimeMillis) =
             // Ensures we don't go below zero position
             exoPlayer.seekTo(max(0, exoPlayer.currentPosition - millis))
 
@@ -256,6 +267,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
     }
 
     private fun playNextEpisode() {
+        handler.removeCallbacks(checkProgressAction)
         savePos()
         playerGlue.host.hideControlsOverlay(false)
         isLoadingNextEpisode = true
@@ -264,6 +276,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
         extractorLinks.clear()
         releasePlayer()
         loadAndPlay()
+        handler.postDelayed(checkProgressAction, 5000L)
     }
 
     private fun releasePlayer() {
@@ -273,6 +286,110 @@ class PlayerFragmentTv : VideoSupportFragment() {
             exoPlayer.release()
         }
     }
+
+    private fun checkProgress() {
+        val time = 5000L
+
+        // Disabled if it's 0
+        val setPercentage: Float = settingsManager.getInt("completed_percentage", 80).toFloat() / 100
+        val saveHistory: Boolean = settingsManager.getBoolean("save_history", true)
+
+        if (this::exoPlayer.isInitialized && setPercentage != 0.0f && saveHistory) {
+            val currentPercentage = exoPlayer.currentPosition.toFloat() / exoPlayer.duration.toFloat()
+            if (currentPercentage > setPercentage && lastSyncedEpisode < data?.episodeIndex!!) {
+                lastSyncedEpisode = data?.episodeIndex!!
+                thread {
+                    updateProgress()
+                }
+            } else {
+                if (data?.anilistID != null || data?.malID != null) handler.postDelayed(
+                    checkProgressAction,
+                    time
+                )
+            }
+        } else if (data?.anilistID != null || data?.malID != null && setPercentage != 0.0f && saveHistory) {
+            handler.postDelayed(
+                checkProgressAction,
+                time
+            )
+        }
+    }
+
+    private fun updateProgress() {
+        val hasAniList = DataStore.getKey<String>(
+            ANILIST_TOKEN_KEY,
+            ANILIST_ACCOUNT_ID,
+            null
+        ) != null
+        val hasMAL = DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+
+        val malHolder = if (hasMAL) data?.malID?.let { MALApi.getDataAboutId(it) } else null
+        val holder = if (hasAniList && malHolder == null) data?.anilistID?.let {
+            activity?.getDataAboutId(
+                it
+            )
+        } else null
+
+        val progress = malHolder?.my_list_status?.num_episodes_watched ?: holder?.progress ?: 0
+        val score = malHolder?.my_list_status?.score ?: holder?.score ?: 0
+        var type = if (malHolder != null) {
+            var type =
+                AniListApi.fromIntToAnimeStatus(malStatusAsString.indexOf(malHolder.my_list_status?.status))
+            type =
+                if (type.value == MALApi.Companion.MalStatusType.None.value) AniListApi.Companion.AniListStatusType.Watching else type
+            type
+        } else {
+            val type =
+                if (holder?.type == AniListApi.Companion.AniListStatusType.None) AniListApi.Companion.AniListStatusType.Watching else holder?.type
+            AniListApi.fromIntToAnimeStatus(type?.value ?: 0)
+        }
+        val currentEpisodeProgress = data?.episodeIndex!! + 1
+
+        if (currentEpisodeProgress == holder?.episodes ?: data?.card?.episodes?.size && type.value != AniListApi.Companion.AniListStatusType.Completed.value) {
+            type = AniListApi.Companion.AniListStatusType.Completed
+        }
+
+
+        if (progress < currentEpisodeProgress && holder ?: malHolder != null) {
+            val anilistPost =
+                if (hasAniList) data?.anilistID?.let {
+                    activity?.postDataAboutId(
+                        it,
+                        type,
+                        score,
+                        currentEpisodeProgress
+                    )
+                } ?: false else true
+            val malPost = if (hasMAL)
+                data?.malID?.let {
+                    setScoreRequest(
+                        it,
+                        MALApi.fromIntToAnimeStatus(type.value),
+                        score,
+                        currentEpisodeProgress
+                    )
+                } ?: false else true
+            if (!anilistPost || !malPost) {
+                getCurrentActivity()!!.runOnUiThread {
+                    Toast.makeText(
+                        getCurrentActivity()!!,
+                        "Error updating episode progress",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            } else {
+                resultViewModel?.visibleEpisodeProgress?.postValue(currentEpisodeProgress)
+                getCurrentActivity()!!.runOnUiThread {
+                    Toast.makeText(
+                        getCurrentActivity()!!,
+                        "Marked episode as seen",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+    }
+
 
     private fun savePos() {
         println("Savepos")
@@ -298,7 +415,10 @@ class PlayerFragmentTv : VideoSupportFragment() {
                     // Enables pass-through of transport controls to our player instance
                     playerGlue = MediaPlayerGlue(activity, playerAdapter).apply {
                         val fillerInfo =
-                            if (data?.fillerEpisodes?.get((data?.episodeIndex ?: -1) + 1) == true) " (Filler) " else ""
+                            if (data?.fillerEpisodes?.get(
+                                    (data?.episodeIndex ?: -1) + 1
+                                ) == true
+                            ) " (Filler) " else ""
                         host = VideoSupportFragmentGlueHost(this@PlayerFragmentTv)
                         title = "${data?.card?.name}"
                         subtitle = "Episode ${data?.episodeIndex!! + 1}" + fillerInfo
@@ -380,7 +500,6 @@ class PlayerFragmentTv : VideoSupportFragment() {
                 }
             }
         }
-
     }
 
     private fun initPlayer(inputUrl: ExtractorLink? = null) {
@@ -449,7 +568,6 @@ class PlayerFragmentTv : VideoSupportFragment() {
                 SimpleExoPlayer.Builder(it)
                     .setTrackSelector(trackSelector)
             } ?: SimpleExoPlayer.Builder(getCurrentActivity()!!)
-
 
             exoPlayerBuilder.setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
 
@@ -655,6 +773,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
         isInPlayer = true
         onPlayerNavigated.invoke(true)
         loadAndPlay()
+        handler.postDelayed(checkProgressAction, 5000L)
         // Kick off metadata update task which runs periodically in the main thread
         //view?.postDelayed(updateMetadataTask, METADATA_UPDATE_INTERVAL_MILLIS)
     }
@@ -691,6 +810,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
         mediaSession.release()
         onPlayerNavigated.invoke(false)
         isInPlayer = false
+        handler.removeCallbacks(checkProgressAction)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -716,7 +836,6 @@ class PlayerFragmentTv : VideoSupportFragment() {
         private const val PLAYER_UPDATE_INTERVAL_MILLIS: Int = 100
 
         /** Default time used when skipping playback in milliseconds */
-        private val SKIP_PLAYBACK_MILLIS: Long = TimeUnit.SECONDS.toMillis(10)
 
         private val SKIP_OP_MILLIS: Long = TimeUnit.SECONDS.toMillis(85)
         var isInPlayer: Boolean = false

@@ -89,7 +89,7 @@ data class BookmarkedTitle(
     @JsonProperty("name") override val name: String,
     @JsonProperty("image") override val image: String,
     @JsonProperty("slug") override val slug: String,
-    @JsonProperty("english") override val english: String? = null
+    @JsonProperty("english") override val english: String?
 ) : ShiroApi.CommonAnimePage
 
 class MainActivity : AppCompatActivity() {
@@ -241,6 +241,10 @@ class MainActivity : AppCompatActivity() {
         masterViewModel = masterViewModel ?: ViewModelProvider(this).get(MasterViewModel::class.java)
 
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
+        init()
+        DataStore.init(this)
+        DownloadManager.init(this)
+
         // ----- Themes ----
         //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         lightMode = false
@@ -263,11 +267,8 @@ class MainActivity : AppCompatActivity() {
 
         // -----------------
         super.onCreate(savedInstanceState)
-        DataStore.init(this)
-        init()
         setContentView(R.layout.activity_main)
 
-        DownloadManager.init(this)
 
         //@SuppressLint("HardwareIds")
         //val androidId: String = Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID).md5()
