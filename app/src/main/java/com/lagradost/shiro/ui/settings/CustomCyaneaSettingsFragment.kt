@@ -79,10 +79,10 @@ open class CyaneaSettingsFragment : PreferenceFragmentCompat(), OnPreferenceChan
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(getPreferenceXmlResId(), rootKey)
 
-        prefThemePicker = findPreference(PREF_THEME_PICKER)
-        prefColorPrimary = findPreference(PREF_COLOR_PRIMARY)
-        prefColorAccent = findPreference(PREF_COLOR_ACCENT)
-        prefColorBackground = findPreference(PREF_COLOR_BACKGROUND)
+        prefThemePicker = findPreferenceNotNull(PREF_THEME_PICKER)
+        prefColorPrimary = findPreferenceNotNull(PREF_COLOR_PRIMARY)
+        prefColorAccent = findPreferenceNotNull(PREF_COLOR_ACCENT)
+        prefColorBackground = findPreferenceNotNull(PREF_COLOR_BACKGROUND)
         //prefColorNavBar = findPreference(PREF_COLOR_NAV_BAR)
 
         prefColorPrimary.saveValue(cyanea.primary)
@@ -174,7 +174,7 @@ open class CyaneaSettingsFragment : PreferenceFragmentCompat(), OnPreferenceChan
         prefColorNavBar.isChecked = cyanea.shouldTintNavBar || isColored
         val sysBarConfig = SystemBarTint(requireActivity()).sysBarConfig
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT || !sysBarConfig.hasNavigationBar) {
-            findPreference<PreferenceCategory>(PREF_CATEGORY).run {
+            findPreferenceNotNull<PreferenceCategory>(PREF_CATEGORY).run {
                 removePreference(prefColorNavBar)
             }
         }
@@ -186,7 +186,7 @@ open class CyaneaSettingsFragment : PreferenceFragmentCompat(), OnPreferenceChan
         //rv.setPadding(0, getCurrentActivity()!!.getNavigationBarSizeFake() + 20.toPx, 0, 0)
     }
 
-    private inline fun <reified T : Preference> findPreference(key: String): T =
+    private inline fun <reified T : Preference> findPreferenceNotNull(key: String): T =
         super.findPreference<Preference>(key) as T
 
     companion object {

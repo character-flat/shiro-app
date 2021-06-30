@@ -91,7 +91,8 @@ val blacklistedTvKeys = listOf(
     "accent_color_for_nav_view",
     "statusbar_hidden",
     "hide_open_website",
-    "expanded_span_count"
+    "expanded_span_count",
+    "new_results_page"
 )
 
 class SubSettingsFragment : PreferenceFragmentCompat() {

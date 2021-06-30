@@ -163,6 +163,7 @@
         <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
         <item name="textColorAlertDialogListItem">?attr/textColor</item>
         <item name="colorControlNormal">?attr/textColor</item>
+        <item name="android:descendantFocusability">afterDescendants</item>
         <!--
         -->
         <!-- colorPrimarySecond used because colorPrimary fails for no reason -->

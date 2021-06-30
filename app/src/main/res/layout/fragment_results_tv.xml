@@ -103,6 +103,7 @@
                             android:focusable="true"
                             android:clickable="true"
                             android:id="@+id/language_button"
+                            android:nextFocusLeft="@id/title_go_back"
                             android:nextFocusRight="@id/next_episode_btt"
                             android:background="?attr/selectableItemBackgroundBorderless">
                     </ImageView>
@@ -210,7 +211,6 @@
                                 android:layout_margin="15dp"
                                 android:orientation="vertical"
                         >
-
                             <TextView
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
@@ -569,6 +569,7 @@
     <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/transparent"
     >
         <FrameLayout
                 android:background="?attr/backgroundColor"
