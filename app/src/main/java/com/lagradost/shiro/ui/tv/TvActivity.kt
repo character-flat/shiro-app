@@ -12,6 +12,7 @@ import androidx.preference.PreferenceManager
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.ui.MasterViewModel
+import com.lagradost.shiro.ui.WebViewFragment.Companion.isInWebView
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.settings.SettingsFragment.Companion.isInSettings
@@ -63,13 +64,12 @@ class TvActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if ((isInSearch || isInSettings) && !isInResults) {
+        if ((isInSearch || isInSettings) && !isInResults && !isInWebView) {
             supportFragmentManager.beginTransaction()
                 .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 .replace(R.id.home_root_tv, MainFragment())
                 .commit()
-
-        } else if (isInResults || isInPlayer) {
+        } else if (isInResults || isInPlayer || isInWebView) {
             popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         } else {
             super.onBackPressed()
@@ -80,6 +80,11 @@ class TvActivity : AppCompatActivity() {
         masterViewModel = masterViewModel ?: ViewModelProvider(this).get(MasterViewModel::class.java)
         DataStore.init(this)
         settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
+        DownloadManager.init(this)
+        init()
+        thread {
+            ShiroApi.init()
+        }
 
         applyThemes()
         super.onCreate(savedInstanceState)
@@ -91,11 +96,6 @@ class TvActivity : AppCompatActivity() {
         }*/
         // ------ Init -----
         tvActivity = this
-        DownloadManager.init(this)
-        init()
-        thread {
-            ShiroApi.init()
-        }
         thread {
             runAutoUpdate(this)
         }

@@ -169,7 +169,6 @@
         >
         </SeekBarPreference>-->
     </PreferenceCategory>
-
     <PreferenceCategory
             android:key="player"
             android:title="Player"
@@ -270,28 +269,6 @@
                 app:defaultValue="false"
         />
     </PreferenceCategory>
-
-    <PreferenceCategory
-            android:key="history"
-            android:title="History"
-    >
-        <SwitchPreference
-                android:icon="@drawable/ic_baseline_history_24"
-                android:key="save_history"
-                android:title="Save and sync watch history"
-                app:defaultValue="true"
-        />
-        <Preference
-                android:icon="@drawable/ic_baseline_delete_24"
-                app:key="clear_history"
-                android:title="Clear watch history"
-        />
-        <Preference
-                android:icon="@drawable/ic_baseline_delete_24"
-                app:key="clear_cache"
-                android:title="Clear image cache"
-        />
-    </PreferenceCategory>
     <PreferenceCategory
             app:isPreferenceVisible="true"
             android:key="accounts"
@@ -314,7 +291,27 @@
                 android:icon="@drawable/ic_baseline_perm_identity_24"
         />
     </PreferenceCategory>
-
+    <PreferenceCategory
+            android:key="history"
+            android:title="History"
+    >
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_history_24"
+                android:key="save_history"
+                android:title="Save and sync watch history"
+                app:defaultValue="true"
+        />
+        <Preference
+                android:icon="@drawable/ic_baseline_delete_24"
+                app:key="clear_history"
+                android:title="Clear watch history"
+        />
+        <Preference
+                android:icon="@drawable/ic_baseline_delete_24"
+                app:key="clear_cache"
+                android:title="Clear image cache"
+        />
+    </PreferenceCategory>
     <PreferenceCategory
             android:key="update_info"
             android:title="Update info"

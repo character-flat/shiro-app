@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.lagradost.shiro.ui.settings.SettingsFragment.Companion.settingsViewModel
 import com.lagradost.shiro.utils.AppUtils.openBrowser
 import com.lagradost.shiro.utils.AppUtils.splitQuery
 import com.lagradost.shiro.utils.AppUtils.unixTime
@@ -68,6 +69,7 @@ class MALApi {
 
                         if (res != "") {
                             storeToken(res)
+                            settingsViewModel?.hasLoggedIntoMAL?.postValue(true)
                             //println("GOT MAL MASTER TOKEN:::: " + res)
                         }
                     }

@@ -70,7 +70,6 @@
                 android:entryValues="@array/ThemesDark"
         />
     </PreferenceCategory>
-
     <PreferenceCategory
             android:key="player"
             android:title="Player"
@@ -97,7 +96,28 @@
         >
         </SeekBarPreference>
     </PreferenceCategory>
-
+    <PreferenceCategory
+            app:isPreferenceVisible="true"
+            android:key="accounts"
+            android:title="Accounts"
+    >
+        <Preference
+                android:title="Anilist account"
+                app:key="anilist_setting_btt"
+                android:icon="@drawable/ic_anilist_icon"
+        />
+        <Preference
+                android:title="MAL account"
+                app:key="mal_setting_btt"
+                android:icon="@drawable/mal_logo"
+        />
+        <Preference
+                android:title="Donor ID"
+                app:key="donor_id"
+                app:isPreferenceVisible="false"
+                android:icon="@drawable/ic_baseline_perm_identity_24"
+        />
+    </PreferenceCategory>
     <PreferenceCategory
             android:key="history"
             android:title="History"
@@ -119,7 +139,6 @@
                 android:title="Clear image cache"
         />
     </PreferenceCategory>
-
     <PreferenceCategory
             android:key="update_info"
             android:title="Version info"
@@ -151,28 +170,6 @@
                 android:title="Changelog"
                 app:key="changelog"
                 android:icon="@drawable/ic_baseline_notes_24"
-        />
-    </PreferenceCategory>
-    <PreferenceCategory
-            app:isPreferenceVisible="true"
-            android:key="accounts"
-            android:title="Accounts"
-    >
-        <Preference
-                android:title="Anilist account"
-                app:key="anilist_setting_btt"
-                android:icon="@drawable/ic_anilist_icon"
-        />
-        <Preference
-                android:title="MAL account"
-                app:key="mal_setting_btt"
-                android:icon="@drawable/mal_logo"
-        />
-        <Preference
-                android:title="Donor ID"
-                app:key="donor_id"
-                app:isPreferenceVisible="false"
-                android:icon="@drawable/ic_baseline_perm_identity_24"
         />
     </PreferenceCategory>
     <PreferenceCategory

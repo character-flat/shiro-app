@@ -345,7 +345,8 @@ class PlayerFragmentTv : VideoSupportFragment() {
         }
         val currentEpisodeProgress = data?.episodeIndex!! + 1
 
-        if (currentEpisodeProgress == holder?.episodes ?: data?.card?.episodes?.size && type.value != AniListApi.Companion.AniListStatusType.Completed.value) {
+        if (currentEpisodeProgress == holder?.episodes ?: data?.card?.episodes?.size
+            && type.value != AniListApi.Companion.AniListStatusType.Completed.value) {
             type = AniListApi.Companion.AniListStatusType.Completed
         }
 

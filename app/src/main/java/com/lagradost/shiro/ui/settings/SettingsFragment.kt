@@ -11,11 +11,14 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.ViewModelProvider
 import androidx.preference.*
 import com.bumptech.glide.Glide
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -25,6 +28,7 @@ import com.lagradost.shiro.BuildConfig
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
+import com.lagradost.shiro.ui.WebViewFragment.Companion.onWebViewNavigated
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
@@ -34,6 +38,7 @@ import com.lagradost.shiro.utils.AppUtils.checkWrite
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.md5
+import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.BackupUtils.backup
 import com.lagradost.shiro.utils.BackupUtils.restore
@@ -51,15 +56,19 @@ class SettingsFragment : PreferenceFragmentCompat() {
     companion object {
         var isInSettings: Boolean = false
         var restoreFileSelector: ActivityResultLauncher<String>? = null
+        var settingsViewModel: SettingsViewModel? = null
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-
-        super.onCreateView(inflater, container, savedInstanceState)?.apply {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return super.onCreateView(inflater, container, savedInstanceState)?.apply {
             activity?.getColorFromAttr(R.attr.background)?.let { setBackgroundColor(it) }
         }
+    }
+
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        settingsViewModel =
+            settingsViewModel ?: ViewModelProvider(getCurrentActivity()!!).get(SettingsViewModel::class.java)
         restoreFileSelector = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             activity?.let { activity ->
                 uri?.let {
@@ -252,6 +261,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         val anilistButton = findPreference("anilist_setting_btt") as Preference?
         val isLoggedInAniList = isLoggedIntoAniList()
+        val malButton = findPreference("mal_setting_btt") as Preference?
+
+        observe(settingsViewModel!!.hasLoggedIntoMAL) {
+            malButton?.summary = if (it) "Logged in" else "Not logged in"
+        }
+        observe(settingsViewModel!!.hasLoggedIntoAnilist) {
+            anilistButton?.summary = if (it) "Logged in" else "Not logged in"
+        }
+
         anilistButton?.summary = if (isLoggedInAniList) "Logged in" else "Not logged in"
         anilistButton?.setOnPreferenceClickListener {
             if (!isLoggedIntoAniList()) {
@@ -288,7 +306,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
             return@setOnPreferenceClickListener true
         }
 
-        val malButton = findPreference("mal_setting_btt") as Preference?
         val isLoggedInMAL = isLoggedIntoMal()
         malButton?.summary = if (isLoggedInMAL) "Logged in" else "Not logged in"
         malButton?.setOnPreferenceClickListener {
@@ -510,14 +527,26 @@ class SettingsFragment : PreferenceFragmentCompat() {
          */
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        isInSettings = true
+    private fun restoreState(hasEntered: Boolean) {
+        if (hasEntered) {
+            this.view?.visibility = GONE
+        } else {
+            this.view?.visibility = VISIBLE
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        onWebViewNavigated -= ::restoreState
         isInSettings = false
+    }
+
+    override fun onResume() {
+        isInSettings = true
+        if (tvActivity != null) {
+            onWebViewNavigated += ::restoreState
+        }
+        super.onResume()
     }
 
 }

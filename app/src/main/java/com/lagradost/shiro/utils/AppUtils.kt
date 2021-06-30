@@ -46,12 +46,9 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ui.BookmarkedTitle
-import com.lagradost.shiro.ui.EpisodePosDurInfo
-import com.lagradost.shiro.ui.LastEpisodeInfo
+import com.lagradost.shiro.ui.*
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
-import com.lagradost.shiro.ui.NextEpisode
 import com.lagradost.shiro.ui.home.CardAdapter
 import com.lagradost.shiro.ui.home.CardContinueAdapter
 import com.lagradost.shiro.ui.home.EXPANDED_HOME_FRAGMENT_TAG
@@ -431,9 +428,13 @@ object AppUtils {
     }
 
     fun Activity.openBrowser(url: String) {
-        val intent = Intent(Intent.ACTION_VIEW)
-        intent.data = Uri.parse(url)
-        startActivity(intent)
+        if (tvActivity != null) {
+            tvActivity?.addFragmentOnlyOnce(android.R.id.content, WebViewFragment.newInstance(url), "WEB_VIEW")
+        } else {
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse(url)
+            startActivity(intent)
+        }
     }
 
     fun getViewPosDur(aniListId: String, episodeIndex: Int): EpisodePosDurInfo {
@@ -684,7 +685,6 @@ object AppUtils {
             val currentFragment = supportFragmentManager.fragments.lastOrNull {
                 it.isVisible
             }
-
 
             if (tvActivity == null) {
                 requestedOrientation = if (settingsManager?.getBoolean("force_landscape", false) == true) {

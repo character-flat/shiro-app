@@ -39,6 +39,7 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.MainActivity
+import com.lagradost.shiro.ui.WebViewFragment.Companion.onWebViewNavigated
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
@@ -189,6 +190,9 @@ class ResultFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        if (tvActivity != null) {
+            onWebViewNavigated += ::restoreState
+        }
         onPlayerNavigated += ::handleVideoPlayerNavigation
         DownloadManager.downloadStartEvent += ::onDownloadStarted
         isInResults = true
@@ -1046,6 +1050,7 @@ class ResultFragment : Fragment() {
         resultViewModel?.currentMalId?.postValue(null)
         resultViewModel?.visibleEpisodeProgress?.postValue(null)
 
+        onWebViewNavigated -= ::restoreState
         onPlayerNavigated -= ::handleVideoPlayerNavigation
         DownloadManager.downloadStartEvent -= ::onDownloadStarted
         onLoadedOther -= ::onLoadOtherEvent
@@ -1175,5 +1180,15 @@ class ResultFragment : Fragment() {
 
         onLoadedOther += ::onLoadOtherEvent
         onLoaded += ::onLoadEvent
+    }
+
+    private fun restoreState(hasEntered: Boolean) {
+        if (tvActivity != null) {
+            if (hasEntered) {
+                this.view?.visibility = GONE
+            } else {
+                this.view?.visibility = VISIBLE
+            }
+        }
     }
 }
