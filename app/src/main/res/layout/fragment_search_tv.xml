@@ -6,7 +6,7 @@
               xmlns:app="http://schemas.android.com/apk/res-auto"
               tools:context=".ui.tv.SearchFragmentTv"
               android:orientation="vertical"
-              android:background="?attr/background"
+              android:background="?attr/backgroundColor"
 >
     <androidx.leanback.widget.SearchBar
             android:layout_width="match_parent"

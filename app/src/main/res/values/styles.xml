@@ -2,33 +2,44 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="AppTheme" parent="Theme.Cyanea.Dark.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="android:fontFamily">@font/poppins_regular</item>
         <!--<item name="android:windowTranslucentStatus">true</item>-->
         <!--<item name="android:statusBarColor">@color/transparent</item>-->
-        <item name="android:statusBarColor">?attr/darkBar</item>
-        <item name="tabBackground">?attr/darkBar</item>
+        <item name="android:statusBarColor">?attr/backgroundColorDark</item>
         <item name="android:textColor">?attr/textColor</item>
         <item name="android:textColorHint">?attr/textColor</item>
         <item name="mediaRouteButtonTint">?attr/white</item>
         <item name="android:textColorSecondary">?attr/textColorGray</item>
         <item name="android:scrollbarThumbHorizontal">@color/transparent</item>
         <item name="android:scrollbarThumbVertical">@color/transparent</item>
-        <item name="colorSurface">?attr/darkBar</item>
         <item name="bottomNavigationStyle">@style/Widget.App.BottomNavigationView</item>
+        <item name="tabBackground">?attr/backgroundColorDark</item>
+        <item name="colorSurface">?attr/backgroundColorDark</item>
+        <!--
         <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimarySecond">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:colorAccent">@color/colorAccent</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorPrimarySecond">@color/colorPrimary</item>
         <item name="colorOnPrimary">@color/colorAccent</item>
-        <item name="textColorAlertDialogListItem">?attr/textColor</item>
-        <item name="actionMenuTextColor">?attr/textColor</item>
-        <item name="android:indeterminateTint">?attr/colorPrimary</item>
-        <item name="android:windowBackground">@drawable/splash_background</item>
         <item name="colorPrimaryMegaDark">@color/colorPrimaryMegaDark</item>
         <item name="colorPrimaryDarker">@color/colorPrimaryDarker</item>
+        <item name="android:colorControlActivated">?attr/colorPrimarySecond</item>
+
+        <item name="android:indeterminateTint">?attr/colorPrimary</item>
+        <item name="darkBar">@color/darkBar</item>
+        <item name="darkBarLight">@color/darkBarLight</item>
+        <item name="darkBarTransparent">@color/darkBarTransparent</item>
+        <item name="backgroundLight">@color/backgroundLight</item>
+        <item name="background">@color/background</item>
+                -->
+
+
+        <item name="textColorAlertDialogListItem">?attr/textColor</item>
+        <item name="actionMenuTextColor">?attr/textColor</item>
+        <item name="android:windowBackground">@drawable/splash_background</item>
         <!-- <item name="android:windowBackground">?attr/darkBar</item>-->
         <item name="castExpandedControllerStyle">
             @style/CustomCastExpandedController
@@ -38,11 +49,6 @@
         <item name="android:windowAllowEnterTransitionOverlap">true</item>
 
         <!-- default theme -->
-        <item name="darkBar">@color/darkBar</item>
-        <item name="darkBarLight">@color/darkBarLight</item>
-        <item name="darkBarTransparent">@color/darkBarTransparent</item>
-        <item name="backgroundLight">@color/backgroundLight</item>
-        <item name="background">@color/background</item>
         <item name="white">@android:color/white</item>
         <item name="textColor">@color/textColor</item>
         <item name="textColorGray">@color/textColorGray</item>
@@ -55,7 +61,6 @@
         <item name="alertDialogTheme">@style/AlertDialogCustom</item>
         <item name="android:includeFontPadding">false</item>
         <item name="bottomSheetDialogTheme">@style/AppBottomSheetDialogTheme</item>
-        <item name="android:colorControlActivated">?attr/colorPrimarySecond</item>
         <item name="android:colorControlNormal">@color/lb_preference_item_primary_text_color_default</item>
         <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
         <!-- <item name="android:windowTranslucentNavigation">false</item>-->
@@ -98,7 +103,7 @@
     </style>
 
     <style name="AlertDialogCustom" parent="Theme.AppCompat.Dialog.Alert">
-        <item name="android:colorBackground">?attr/background</item>
+        <item name="android:colorBackground">?attr/backgroundColor</item>
         <item name="android:textColor">?attr/textColor</item>
         <item name="android:textColorPrimary">?attr/textColor</item>
         <item name="android:colorControlHighlight">?attr/white</item>
@@ -166,7 +171,6 @@
         <item name="colorOnPrimary">#1186FE</item>
         <item name="colorPrimarySecond">#027ffb</item>
     </style>
-    -->
 
     <style name="LightMode" parent="AppTheme">
         <item name="darkBar">@color/lightDarkBar</item>
@@ -192,6 +196,23 @@
         <item name="textColorGray">@color/textColorGray</item>
         <item name="textColorGrayWhite">@color/textColorGrayWhite</item>
     </style>
+    -->
+
+
+    <style name="lightText">
+        <item name="white">@android:color/white</item>
+        <item name="textColor">@color/textColor</item>
+        <item name="textColorGray">@color/textColorGray</item>
+        <item name="textColorGrayWhite">@color/textColorGrayWhite</item>
+    </style>
+
+    <style name="darkText">
+        <item name="white">@android:color/black</item>
+        <item name="textColor">@color/lightTextColor</item>
+        <item name="textColorGray">@color/lightTextColorGray</item>
+        <item name="textColorGrayWhite">@color/lightTextColorGrayWhite</item>
+    </style>
+
 
     <style name="normalText">
         <item name="android:textColor">@color/textColor</item>
@@ -205,7 +226,7 @@
         </item>
         <item name="castButtonColor">@null</item>
         <item name="castSeekBarProgressAndThumbColor">@color/white</item>
-        <item name="castSeekBarSecondaryProgressColor">?attr/darkBar</item>
+        <item name="castSeekBarSecondaryProgressColor">?attr/backgroundColorDark</item>
         <item name="castBackground">?attr/colorPrimary</item>
         <item name="castProgressBarColor">?attr/colorPrimary</item>
         <item name="castPlayButtonDrawable">@drawable/netflix_play</item>
@@ -221,7 +242,7 @@
         <item name="castShowImageThumbnail">true</item>
         <item name="castTitleTextAppearance">@style/TextAppearance.AppCompat.Subhead</item>
         <item name="castSubtitleTextAppearance">@style/TextAppearance.AppCompat.Caption</item>
-        <item name="castBackground">?attr/darkBar</item>
+        <item name="castBackground">?attr/backgroundColorDark</item>
         <item name="castProgressBarColor">?attr/colorPrimary</item>
         <item name="castStopButtonDrawable">@drawable/cast_ic_mini_controller_stop</item>'
         <item name="castLargeStopButtonDrawable">@drawable/cast_ic_mini_controller_stop_large</item>
@@ -238,7 +259,7 @@
     </style>
 
     <style name="PopupMenu" parent="@android:style/Widget.PopupMenu">
-        <item name="android:backgroundTint">?attr/backgroundLight</item>
+        <item name="android:backgroundTint">?attr/backgroundColorLight</item>
     </style>
 
     <style name="HomeCategoriesText">

@@ -62,8 +62,14 @@ object InAppUpdater {
 
             val url = "https://api.github.com/repos/Blatzar/shiro-app/releases"
             val headers = mapOf("Accept" to "application/vnd.github.v3+json")
-            val response =
+
+            val response = try {
                 mapper.readValue<List<GithubRelease>>(khttp.get(url, headers = headers).text)
+            } catch (e: java.lang.Exception) {
+                null
+            } ?: return Update(false, null, null, null)
+            //val response =
+            //     mapper.readValue<List<GithubRelease>>(khttp.get(url, headers = headers).text)
 
             val cleanedResponse = response.filter { (!it.prerelease || isBetaMode) && !it.draft }
 

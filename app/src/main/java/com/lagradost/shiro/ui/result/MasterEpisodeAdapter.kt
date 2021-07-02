@@ -9,9 +9,10 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.google.common.math.IntMath.mod
+import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.utils.AppUtils.dubbify
-import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.getViewKey
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.ShiroApi
@@ -105,7 +106,7 @@ class MasterEpisodeAdapter(
             if (isSeen) {
                 activity.let {
                     itemView.cardBg.setCardBackgroundColor(
-                        it.getColorFromAttr(R.attr.colorPrimaryDark)
+                        Cyanea.instance.primaryDark
                     )
                     itemView.expand_icon.setColorFilter(
                         ContextCompat.getColor(it, R.color.textColor)
@@ -117,13 +118,13 @@ class MasterEpisodeAdapter(
             } else {
                 activity.let {
                     itemView.cardBg.setCardBackgroundColor(
-                        it.getColorFromAttr(R.attr.backgroundLight)
+                        Cyanea.instance.primaryLight
                     )
                     itemView.expand_icon.setColorFilter(
-                        it.getColorFromAttr(R.attr.textColor)
+                        activity.getTextColor()
                     )
                     itemView.cardTitle.setTextColor(
-                        it.getColorFromAttr(R.attr.textColor)
+                        activity.getTextColor()
                     )
                 }
             }

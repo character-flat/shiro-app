@@ -10,7 +10,7 @@
             app:cardCornerRadius="10dp"
             android:elevation="100dp"
             app:cardElevation="100dp"
-            android:backgroundTint="?attr/colorPrimaryMegaDark"
+            android:backgroundTint="?attr/colorPrimaryDark"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
         <FrameLayout
@@ -58,8 +58,8 @@
     <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:backgroundTint="?attr/darkBar"
-            android:background="?attr/darkBar"
+            android:backgroundTint="?attr/backgroundColorDark"
+            android:background="?attr/backgroundColorDark"
             android:layout_marginTop="-10dp"
             android:paddingTop="10dp"
     >

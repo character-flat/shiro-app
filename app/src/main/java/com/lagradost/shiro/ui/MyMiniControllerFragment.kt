@@ -6,6 +6,7 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import com.google.android.gms.cast.framework.media.widget.MiniControllerFragment
+import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.utils.AppUtils.adjustAlpha
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
@@ -22,7 +23,7 @@ class MyMiniControllerFragment : MiniControllerFragment() {
             containerAll.getChildAt(0)?.alpha = 0f // REMOVE GRADIENT
 
             context?.let { ctx ->
-                progressBar.setBackgroundColor(adjustAlpha(ctx.getColorFromAttr(R.attr.colorPrimary), 0.35f))
+                progressBar.setBackgroundColor(adjustAlpha(Cyanea.instance.primary, 0.35f))
                 val params = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, 2.toPx)
 
                 progressBar.layoutParams = params

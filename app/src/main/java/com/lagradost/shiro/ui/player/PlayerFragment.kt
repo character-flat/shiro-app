@@ -50,6 +50,7 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoSize
+import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
@@ -63,7 +64,6 @@ import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.getDataAboutId
 import com.lagradost.shiro.utils.AniListApi.Companion.postDataAboutId
-import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getViewKey
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
@@ -409,7 +409,7 @@ class PlayerFragment : Fragment() {
     private fun updateLock() {
         video_locked_img.setImageResource(if (isLocked) R.drawable.video_locked else R.drawable.video_unlocked)
         video_locked_img.setColorFilter(
-            if (isLocked && activity != null) getCurrentActivity()!!.getColorFromAttr(R.attr.colorPrimary)
+            if (isLocked && activity != null) Cyanea.instance.primary
             else Color.WHITE
         )
 

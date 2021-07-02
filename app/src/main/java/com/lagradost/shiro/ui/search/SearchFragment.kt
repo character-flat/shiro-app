@@ -1,11 +1,9 @@
 package com.lagradost.shiro.ui.search
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.res.ColorStateList
 import android.content.res.Configuration
-import android.media.Image
 import android.os.Bundle
 import android.transition.ChangeBounds
 import android.transition.Transition
@@ -16,24 +14,24 @@ import android.view.View.GONE
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
-import android.widget.*
+import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
+import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.toPx
-import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.AppUtils.settingsManager
@@ -96,7 +94,9 @@ class SearchFragment : Fragment() {
             )
         }
         cardSpace?.adapter = adapter
-
+        search_fab_button.backgroundTintList = ColorStateList.valueOf(
+            Cyanea.instance.primaryDark
+        )
         search_fab_button.setOnClickListener {
             val tags = searchViewModel!!.searchOptions.value?.genres?.sortedBy { it.name }
             val bottomSheetDialog = BottomSheetDialog(getCurrentActivity()!!)
@@ -219,7 +219,7 @@ class SearchFragment : Fragment() {
                             val imm: InputMethodManager? =
                                 activity?.getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager?
                             imm?.showSoftInput(view.findFocus(), 0)
-        activity?.findViewById<View>(R.id.search_mag_icon)?.visibility = GONE
+                            activity?.findViewById<View>(R.id.search_mag_icon)?.visibility = GONE
                         }
                     }
                 }, 200)
@@ -268,7 +268,7 @@ class SearchFragment : Fragment() {
                     searchViewModel!!.selectedGenres.postValue(newGenres)
                 }
                 view.backgroundTintList = ColorStateList.valueOf(
-                    it.getColorFromAttr(R.attr.colorAccent)
+                    Cyanea.instance.primaryLight
                 )
                 //view.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
             } else if (changed) {

@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
+import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.ui.MasterViewModel
@@ -30,9 +31,9 @@ import kotlin.concurrent.thread
 /**
  * Loads [MainFragment].
  */
-class TvActivity : AppCompatActivity() {
+class TvActivity : CyaneaAppCompatActivity() {
     companion object {
-        var tvActivity: AppCompatActivity? = null
+        var tvActivity: TvActivity? = null
         var isInSearch = false
 
         fun FragmentActivity.applyThemes() {
@@ -40,12 +41,12 @@ class TvActivity : AppCompatActivity() {
             //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             //theme.applyStyle(R.style.AppTheme, true)
 
-            val currentTheme = when (settingsManager!!.getString("theme", "Black")) {
-                "Black" -> R.style.AppTheme
-                "Dark" -> R.style.DarkMode
-                "Light" -> R.style.LightMode
-                else -> R.style.AppTheme
-            }
+            /* val currentTheme = when (settingsManager!!.getString("theme", "Black")) {
+                 "Black" -> R.style.AppTheme
+                 "Dark" -> R.style.DarkMode
+                 "Light" -> R.style.LightMode
+                 else -> R.style.AppTheme
+             }*/
 
             /*if (settingsManager.getBoolean("cool_mode", false)) {
                 theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
@@ -54,10 +55,10 @@ class TvActivity : AppCompatActivity() {
             }*/
             //theme.applyStyle(R.style.AppTheme, true)
             theme.applyStyle(R.style.Theme_LeanbackCustom, true)
-            theme.applyStyle(currentTheme, true)
+            /*theme.applyStyle(currentTheme, true)
             AppUtils.getTheme()?.let {
                 theme.applyStyle(it, true)
-            }
+            }*/
             // -----------------
         }
 

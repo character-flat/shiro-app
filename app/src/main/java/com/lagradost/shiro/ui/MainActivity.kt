@@ -7,6 +7,7 @@ import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.content.res.Resources
+import android.graphics.drawable.ColorDrawable
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -18,7 +19,6 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.view.KeyEvent
 import android.view.WindowManager
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -26,6 +26,8 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.jaredrummler.cyanea.Cyanea
+import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.player.PlayerEventType
@@ -36,7 +38,7 @@ import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
 import com.lagradost.shiro.utils.AniListApi.Companion.initGetUser
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.checkWrite
-import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.hasPIPPermission
 import com.lagradost.shiro.utils.AppUtils.hideSystemUI
 import com.lagradost.shiro.utils.AppUtils.init
@@ -93,7 +95,7 @@ data class BookmarkedTitle(
     @JsonProperty("english") override val english: String?
 ) : ShiroApi.CommonAnimePage
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : CyaneaAppCompatActivity() {
     companion object {
         var isInPIPMode = false
 
@@ -145,7 +147,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    fun enterPIPMode() {
+    private fun enterPIPMode() {
         if (!shouldShowPIPMode(isInPlayer) || !canShowPipMode) return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             try {
@@ -248,7 +250,7 @@ class MainActivity : AppCompatActivity() {
 
         // ----- Themes ----
         //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-        lightMode = false
+        /*lightMode = false
         val currentTheme = when (settingsManager.getString("theme", "Black")) {
             "Black" -> R.style.AppTheme
             "Dark" -> {
@@ -264,6 +266,12 @@ class MainActivity : AppCompatActivity() {
         theme.applyStyle(currentTheme, true)
         AppUtils.getTheme()?.let {
             theme.applyStyle(it, true)
+        }*/
+
+        if (cyanea.isDark){
+            theme.applyStyle(R.style.lightText, true)
+        } else {
+            theme.applyStyle(R.style.darkText, true)
         }
 
         // -----------------
@@ -305,7 +313,6 @@ class MainActivity : AppCompatActivity() {
                 WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
             )
         }
-
 
         val statusBarHidden = settingsManager.getBoolean("statusbar_hidden", true)
         statusHeight = changeStatusBarState(statusBarHidden)
@@ -414,7 +421,7 @@ class MainActivity : AppCompatActivity() {
             true
         }*/
 
-        val attrPrimary = if (lightMode) R.attr.colorPrimaryDarker else R.attr.colorPrimary
+       val attrPrimary = if (lightMode) Cyanea.instance.primaryDark else Cyanea.instance.primary
         val states = arrayOf(
             intArrayOf(android.R.attr.state_checked),
             intArrayOf(-android.R.attr.state_checked),
@@ -422,18 +429,18 @@ class MainActivity : AppCompatActivity() {
             intArrayOf(-android.R.attr.state_enabled),
         )
         val colors = intArrayOf(
-            this.getColorFromAttr(attrPrimary),
-            this.getColorFromAttr(R.attr.textColor),
-            this.getColorFromAttr(attrPrimary),
-            this.getColorFromAttr(R.attr.textColor),
+            attrPrimary,
+            this.getTextColor(),
+            attrPrimary,
+            this.getTextColor(),
         )
 
-        navView.itemRippleColor = ColorStateList.valueOf(this.getColorFromAttr(attrPrimary))
+        navView.itemRippleColor = ColorStateList.valueOf(Cyanea.instance.primary)
         navView.itemIconTintList = ColorStateList(states, colors)
         navView.itemTextColor = ColorStateList(states, colors)
 
 
-        //navView.itemBackground = ColorDrawable(getColorFromAttr(R.attr.darkBar))
+        navView.itemBackground = ColorDrawable(Cyanea.instance.backgroundColorDark)
 
         /*navView.setOnKeyListener { v, keyCode, event ->
             println("$keyCode $event")
@@ -472,7 +479,7 @@ class MainActivity : AppCompatActivity() {
             return@setOnKeyListener true
         }*/
 
-        window.setBackgroundDrawableResource(R.color.background)
+        window.setBackgroundDrawable(ColorDrawable(Cyanea.instance.backgroundColor))
         //val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
         val data: Uri? = intent?.data
 

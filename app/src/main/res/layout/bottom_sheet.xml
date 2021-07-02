@@ -8,7 +8,7 @@
         android:layout_height="match_parent">
     <androidx.cardview.widget.CardView
             app:cardCornerRadius="10dp"
-            android:backgroundTint="?attr/backgroundLight"
+            android:backgroundTint="?attr/backgroundColorLight"
             android:layout_width="match_parent" android:layout_height="wrap_content">
         <TextView
                 android:gravity="center_vertical"
@@ -28,7 +28,7 @@
             android:layout_marginTop="-10dp"
             android:paddingTop="10dp"
             android:id="@+id/sort_click"
-            android:background="?attr/darkBar"
+            android:background="?attr/backgroundColorDark"
             tools:listitem="@layout/bottom_single_choice"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">

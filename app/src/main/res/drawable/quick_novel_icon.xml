@@ -20,11 +20,11 @@
               android:strokeWidth="1"/>
         <path android:name="path_2"
               android:pathData="M 127.44 364.24 C 165.5 381.028 200.476 404.082 230.91 432.44 L 230.91 411.44 C 200.476 383.082 165.5 360.028 127.44 343.24 M 127.44 364.24 C 88.492 347.123 46.718 337.339 4.22 335.38 L 4.22 314.38 C 46.718 316.339 88.492 326.123 127.44 343.24"
-              android:fillColor="?attr/colorPrimaryDarker"
+              android:fillColor="?attr/colorPrimaryDark"
               android:strokeWidth="1"/>
         <path android:name="path_3"
               android:pathData="M 0 304.28 C 43.238 306.218 85.766 315.994 125.51 333.13 C 164.182 349.86 199.803 372.909 230.91 401.33 L 230.91 97.04 C 199.803 68.619 164.182 45.57 125.51 28.84 C 85.761 11.725 43.234 1.967 0 0.04 L 0 304.28"
-              android:fillColor="?attr/colorPrimaryDarker"
+              android:fillColor="?attr/colorPrimaryDark"
               android:strokeWidth="1"/>
     </group>
 </vector>

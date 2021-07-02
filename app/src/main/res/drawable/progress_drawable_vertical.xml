@@ -3,7 +3,7 @@
     <item android:id="@android:id/background">
         <shape>
             <corners android:radius="8dp"/>
-            <solid android:color="?attr/darkBarTransparent"/>
+            <solid android:color="@color/darkBarTransparent"/>
         </shape>
     </item>
 

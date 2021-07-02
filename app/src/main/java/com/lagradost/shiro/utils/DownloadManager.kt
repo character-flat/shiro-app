@@ -14,13 +14,13 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.downloads.DownloadFragment.Companion.downloadsUpdated
-import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
@@ -741,7 +741,7 @@ if (scopedUri != null) {
             .setColorized(true)
             .setAutoCancel(true)
             .setOnlyAlertOnce(true)
-            .setColor(localContext!!.getColorFromAttr(R.attr.colorAccent))
+            .setColor(Cyanea.instance.primaryLight)
 
         if (type == DownloadType.IsDownloading) {
             builder.setProgress(100, progressPro, false)

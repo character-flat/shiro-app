@@ -19,11 +19,16 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
-import androidx.preference.*
+import androidx.preference.MultiSelectListPreference
+import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SwitchPreference
 import com.bumptech.glide.Glide
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
+import com.jaredrummler.cyanea.Cyanea
+import com.jaredrummler.cyanea.prefs.CyaneaSettingsActivity
 import com.lagradost.shiro.BuildConfig
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
@@ -35,7 +40,6 @@ import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
 import com.lagradost.shiro.utils.AppUtils.allApi
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.checkWrite
-import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.md5
 import com.lagradost.shiro.utils.AppUtils.observe
@@ -61,8 +65,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return super.onCreateView(inflater, container, savedInstanceState)?.apply {
-            activity?.getColorFromAttr(R.attr.background)?.let { setBackgroundColor(it) }
+            setBackgroundColor(Cyanea.instance.backgroundColor)
         }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
     }
 
 
@@ -127,8 +135,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
             VIEWSTATE_KEY
         ).size
 
-        val accentColors = findPreference<ListPreference>("accent_color")
 
+        /*
+        val accentColors = findPreference<ListPreference>("accent_color")
         fun unlockPinkTheme() {
             accentColors?.entries = getCurrentActivity()!!.resources.getTextArray(R.array.AccentColorsFull)
             accentColors?.entryValues = getCurrentActivity()!!.resources.getTextArray(R.array.AccentColorsFull)
@@ -138,14 +147,24 @@ class SettingsFragment : PreferenceFragmentCompat() {
             unlockPinkTheme()
         }
         findPreference<ListPreference>("theme")?.setOnPreferenceChangeListener { _, _ ->
-            activity?.recreate()
+            getCurrentActivity()!!.changeTheme()
+
+            //activity?.recreate()
             return@setOnPreferenceChangeListener true
+        }*/
+
+        findPreference<Preference>("cyanea_theme")?.setOnPreferenceClickListener {
+            val intent = Intent(context, CyaneaSettingsActivity::class.java)
+            startActivity(intent)
+            return@setOnPreferenceClickListener true
         }
 
+
+        /*
         accentColors?.setOnPreferenceChangeListener { _, _ ->
             activity?.recreate()
             return@setOnPreferenceChangeListener true
-        }
+        }*/
 
         clearHistory?.summary = "$historyItems item${if (historyItems == 1) "" else "s"}"
         clearHistory?.setOnPreferenceClickListener {
@@ -470,14 +489,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         versionButton?.summary = BuildConfig.VERSION_NAME + " Built on " + BuildConfig.BUILDDATE
         versionButton?.setOnPreferenceClickListener {
-            if (easterEggClicks == 7) {
+            /*if (easterEggClicks == 7) {
                 if (DataStore.getKey("pink_theme", false) != true) {
                     Toast.makeText(context, "Unlocked pink theme", Toast.LENGTH_LONG).show()
                     DataStore.setKey("pink_theme", true)
                     unlockPinkTheme()
                 }
             }
-            easterEggClicks++
+            easterEggClicks++*/
             return@setOnPreferenceClickListener true
         }
 

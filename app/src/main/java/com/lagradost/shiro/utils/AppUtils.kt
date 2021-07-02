@@ -31,7 +31,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -45,6 +44,8 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
+import com.jaredrummler.cyanea.Cyanea
+import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.*
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
@@ -71,6 +72,7 @@ import java.io.*
 import java.net.URL
 import java.net.URLDecoder
 import java.security.MessageDigest
+import java.util.*
 import kotlin.concurrent.thread
 import kotlin.math.roundToInt
 
@@ -391,7 +393,7 @@ object AppUtils {
         }
     }
 
-    fun getCurrentActivity(): AppCompatActivity? {
+    fun getCurrentActivity(): CyaneaAppCompatActivity? {
         return when {
             activity != null -> activity
             tvActivity != null -> tvActivity
@@ -455,7 +457,7 @@ object AppUtils {
         }*/
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             systemUiVisibility =
-                if (lightMode)  systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR else systemUiVisibility
+                if (lightMode) systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR else systemUiVisibility
             navigationBarColor = Color.TRANSPARENT
         }
         systemUiVisibility = systemUiVisibility or
@@ -869,6 +871,28 @@ fun loadPlayer(title: String?, url: String, startAt: Long?) {
         }
     */
         // NavigationUI.navigateUp(navController!!,R.layout.fragment_results)
+    }
+
+    fun CyaneaAppCompatActivity.changeTheme() {
+        cyanea.edit {
+            val rnd = Random()
+            val color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+            primary(color)
+            accent(color)
+            backgroundResource(R.color.background_material_dark)
+            // Many other theme modifications are available
+        }.recreate(this)
+    }
+
+
+    fun Context.getTextColor(isGrey: Boolean = false): Int{
+        return if (Cyanea.instance.isDark){
+            val color = if (isGrey) R.color.textColorGray else R.color.textColor
+            ContextCompat.getColor(this, color)
+        } else {
+            val color = if (isGrey) R.color.lightTextColorGray else R.color.lightTextColor
+            ContextCompat.getColor(this, color)
+        }
     }
 
     @ColorInt

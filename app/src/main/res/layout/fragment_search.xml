@@ -12,7 +12,7 @@
             android:id="@+id/dashboardRoot"
             tools:context=".ui.search.SearchFragment"
             android:orientation="vertical"
-            android:background="?attr/background"
+            android:background="?attr/backgroundColor"
     >
         <View
                 android:layout_width="wrap_content"
@@ -25,7 +25,7 @@
                 android:gravity="top"
                 app:queryBackground="@android:color/transparent"
                 android:iconifiedByDefault="false"
-                android:background="?attr/darkBar"
+                android:background="?attr/backgroundColorDark"
                 app:searchHintIcon="@drawable/search_icon"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
@@ -68,7 +68,7 @@
             android:layout_gravity="right|bottom"
             android:id="@+id/search_fab_button"
             android:text="Genres"
-            android:backgroundTint="?attr/colorPrimaryDark"
+            android:backgroundTint="?colorPrimaryDark"
             app:icon="@drawable/ic_baseline_filter_list_24"
             android:layout_margin="20dp"
             app:iconTint="@color/white"

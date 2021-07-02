@@ -5,7 +5,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         xmlns:tools="http://schemas.android.com/tools"
-        android:background="?attr/background"
+        android:background="?attr/backgroundColor"
         android:id="@+id/results_root"
 >
     <ImageView
@@ -13,7 +13,7 @@
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
             android:alpha="0.3"
-            android:background="?attr/background"
+            android:background="?attr/backgroundColor"
             android:id="@+id/result_poster_blur">
     </ImageView>
 
@@ -33,7 +33,7 @@
                 android:layout_marginBottom="-10dp"
         >
             <RelativeLayout
-                    android:background="?attr/background"
+                    android:background="?attr/backgroundColor"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
@@ -159,7 +159,7 @@
             </RelativeLayout>
             <androidx.core.widget.NestedScrollView
                     android:layout_marginTop="50dp"
-                    android:background="?attr/background"
+                    android:background="?attr/backgroundColor"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
             >
@@ -179,7 +179,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 app:cardCornerRadius="10dp"
-                                app:cardBackgroundColor="?attr/darkBar"
+                                app:cardBackgroundColor="?attr/backgroundColorDark"
                                 android:elevation="10dp"
                         >
 
@@ -654,12 +654,9 @@
     <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/transparent"
     >
-
         <FrameLayout
-                android:background="?attr/background"
-                android:backgroundTint="?attr/background"
+                android:background="?attr/backgroundColor"
                 tools:visibility="gone"
                 android:id="@+id/loading_overlay"
                 android:layout_width="match_parent"

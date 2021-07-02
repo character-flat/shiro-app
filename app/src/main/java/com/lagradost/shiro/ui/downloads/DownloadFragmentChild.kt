@@ -1,7 +1,7 @@
 package com.lagradost.shiro.ui.downloads
 
 import android.annotation.SuppressLint
-import android.os.Build
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,8 +13,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.LinearLayoutCompat
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.downloads.DownloadFragment.Companion.downloadsUpdated
@@ -25,17 +25,20 @@ import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.fixEpTitle
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isViewState
-import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.checkWrite
-import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
+import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.getViewKey
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.DOWNLOAD_PARENT_KEY
+import com.lagradost.shiro.utils.DataStore
+import com.lagradost.shiro.utils.DownloadManager
 import com.lagradost.shiro.utils.DownloadManager.moveToExternalStorage
+import com.lagradost.shiro.utils.VIEWSTATE_KEY
 import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
 import kotlinx.android.synthetic.main.fragment_download_child.*
 import java.io.File
@@ -51,6 +54,7 @@ class DownloadFragmentChild : Fragment() {
         arguments?.getString(SLUG)?.let {
             slug = it
         }
+        download_child_scroll_view.background = ColorDrawable(Cyanea.instance.backgroundColor)
         val topParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
             LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
             MainActivity.statusHeight // view height
@@ -374,22 +378,20 @@ class DownloadFragmentChild : Fragment() {
                 // ================ REGULAR ================
                 if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
                     card.cardBg.setCardBackgroundColor(
-                        getCurrentActivity()!!.getColorFromAttr(
-                            R.attr.colorPrimaryMegaDark
-                        )
+                        Cyanea.instance.primaryDark
                     )
                     card.cardTitle.setTextColor(
-                        ContextCompat.getColor(getCurrentActivity()!!, R.color.textColor)
+                        getCurrentActivity()!!.getTextColor()
                     )
                     card.cardTitleExtra.setTextColor(
-                        ContextCompat.getColor(getCurrentActivity()!!, R.color.textColor)
+                        getCurrentActivity()!!.getTextColor()
                     )
                 } else {
                     card.cardTitle.setTextColor(
-                        getCurrentActivity()!!.getColorFromAttr(R.attr.textColor)
+                        getCurrentActivity()!!.getTextColor()
                     )
                     card.cardTitleExtra.setTextColor(
-                        getCurrentActivity()!!.getColorFromAttr(R.attr.textColor)
+                        getCurrentActivity()!!.getTextColor()
                     )
                 }
 

@@ -3,6 +3,7 @@ package com.lagradost.shiro
 import android.app.Application
 import android.content.Context
 import android.widget.Toast
+import com.jaredrummler.cyanea.Cyanea
 import org.acra.ACRA
 import org.acra.annotation.AcraCore
 import org.acra.annotation.AcraToast
@@ -51,5 +52,10 @@ class AcraApplication : Application() {
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
         ACRA.init(this)
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        Cyanea.init(this, resources)
     }
 }

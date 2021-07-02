@@ -27,6 +27,7 @@ import com.google.android.gms.cast.MediaStatus.REPEAT_MODE_REPEAT_SINGLE
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
 import com.google.android.gms.common.images.WebImage
+import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.downloads.DownloadFragment.Companion.downloadsUpdated
@@ -36,6 +37,7 @@ import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.dubbify
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getLatestSeenEpisode
+import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.getViewKey
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.isCastApiAvailable
@@ -490,19 +492,19 @@ class EpisodeAdapter(
                 if (last.isFound && last.episodeIndex == episodePos) {
                     activity.let {
                         card.cardBg.setCardBackgroundColor(
-                            it.getColorFromAttr(R.attr.colorPrimaryDark)
+                            Cyanea.instance.primary
                         )
                     }
                 } else {
                     activity.let {
                         card.cardBg.setCardBackgroundColor(
-                            it.getColorFromAttr(R.attr.colorPrimaryMegaDark)
+                            Cyanea.instance.primaryDark
                         )
                     }
                 }
                 activity.let {
                     card.cardTitle.setTextColor(
-                        ContextCompat.getColor(it, R.color.textColor)
+                        it.getTextColor()
                     )
                     card.cdi.setColorFilter(
                         ContextCompat.getColor(it, R.color.white)
@@ -515,10 +517,10 @@ class EpisodeAdapter(
                 // Otherwise color is recycled
                 activity.let {
                     card.cardTitle.setTextColor(
-                        it.getColorFromAttr(R.attr.textColor)
+                        it.getTextColor()
                     )
                     card.cardBg.setCardBackgroundColor(
-                        it.getColorFromAttr(R.attr.darkBar)
+                        Cyanea.instance.backgroundColorDark
                     )
                     card.cdi.setColorFilter(
                         it.getColorFromAttr(R.attr.white)

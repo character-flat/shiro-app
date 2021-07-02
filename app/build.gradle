@@ -80,6 +80,19 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
+    // https://stackoverflow.com/questions/44342455/more-than-one-file-was-found-with-os-independent-path-meta-inf-license
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+        exclude("META-INF/*.kotlin_module")
+    }
 }
 repositories {
     jcenter()
@@ -167,4 +180,8 @@ dependencies {
 
     // Double tap
     // implementation 'com.github.vkay94:DoubleTapPlayerView:1.0.2'
+
+    // Theme
+    implementation 'com.jaredrummler:cyanea:1.0.2'
+
 }

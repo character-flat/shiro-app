@@ -25,7 +25,7 @@
                 android:elevation="10dp"
                 app:cardCornerRadius="@dimen/card_corner_radius"
                 android:id="@+id/cardBg"
-                app:cardBackgroundColor="?attr/backgroundLight"
+                app:cardBackgroundColor="?attr/backgroundColorLight"
         >
             <RelativeLayout
                     android:layout_width="match_parent"

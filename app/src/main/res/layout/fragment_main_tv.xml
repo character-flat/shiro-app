@@ -6,7 +6,7 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        android:background="?attr/background"
+        android:background="?attr/backgroundColor"
 >
     <ProgressBar
             android:layout_width="50dp"
@@ -22,7 +22,7 @@
             android:focusable="true"
             android:clickable="true"
             android:backgroundTint="?attr/textColor"
-            android:textColor="?attr/background"
+            android:textColor="?attr/backgroundColor"
             android:gravity="center"
             android:layout_gravity="center"
             android:id="@+id/main_reload_data_btt"

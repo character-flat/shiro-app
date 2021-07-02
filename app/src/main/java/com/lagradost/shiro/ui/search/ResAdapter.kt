@@ -1,6 +1,7 @@
 package com.lagradost.shiro.ui.search
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -13,6 +14,7 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.AutofitRecyclerView
 import com.lagradost.shiro.ui.BookmarkedTitle
@@ -21,6 +23,7 @@ import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppUtils.fixCardTitle
+import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.onLongCardClick
 import com.lagradost.shiro.utils.AppUtils.settingsManager
@@ -89,8 +92,11 @@ class ResAdapter(
                 fun toggleHeartVisual(_isBookmarked: Boolean) {
                     if (_isBookmarked) {
                         itemView.title_bookmark.setImageResource(R.drawable.filled_heart)
+                        itemView.title_bookmark.imageTintList = ColorStateList.valueOf(Cyanea.instance.primary)
                     } else {
                         itemView.title_bookmark.setImageResource(R.drawable.outlined_heart)
+                        itemView.title_bookmark.imageTintList =
+                            ColorStateList.valueOf(context.getColorFromAttr(R.attr.white))
                     }
                 }
 
@@ -121,6 +127,10 @@ class ResAdapter(
                     toggleHeart(!isBookmarked)
                 }
                 // ------------------------------------------------
+                itemView.backgroundCard.backgroundTintList = ColorStateList.valueOf(
+                    Cyanea.instance.backgroundColorDark
+                )
+
                 itemView.backgroundCard.setOnClickListener {
                     activity?.loadPage(card.slug, card.name)
 

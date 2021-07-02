@@ -19,7 +19,7 @@
             app:strokeWidth="2dp"
             tools:text="Test"
             android:textColor="?attr/textColor"
-            app:strokeColor="?attr/colorPrimaryDark"
+            app:strokeColor="?attr/textColor"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:id="@+id/result_tag_card">
 

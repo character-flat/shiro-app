@@ -77,9 +77,14 @@
             android:title="Style"
             app:isPreferenceVisible="true"
     >
-        <ListPreference
+        <Preference
+                app:key="cyanea_theme"
+                android:title="Set theme"
+                android:icon="@drawable/ic_baseline_color_lens_24"
+        />
+        <!--<ListPreference
                 app:key="theme"
-                android:title="Theme"
+                android:title="Set theme"
                 android:icon="@drawable/ic_baseline_color_lens_24"
                 app:useSimpleSummaryProvider="true"
                 android:entries="@array/Themes"
@@ -92,7 +97,7 @@
                 app:useSimpleSummaryProvider="true"
                 android:entries="@array/AccentColors"
                 android:entryValues="@array/AccentColors"
-        />
+        />-->
         <SwitchPreference
                 android:icon="@drawable/ic_baseline_fullscreen_24"
                 app:key="statusbar_hidden"

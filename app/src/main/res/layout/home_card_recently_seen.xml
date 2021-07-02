@@ -25,7 +25,7 @@
                 android:elevation="10dp"
                 android:id="@+id/home_card_recently_seen"
                 app:cardCornerRadius="@dimen/card_corner_radius"
-                app:cardBackgroundColor="?attr/darkBar"
+                app:cardBackgroundColor="?attr/backgroundColor"
 
         >
             <ImageView
@@ -72,11 +72,11 @@
                         android:layout_gravity="bottom"
                         android:paddingBottom="5dp"
                         android:paddingTop="5dp"
-                        android:textColor="?attr/textColor"
+                        android:textColor="@color/textColor"
                         android:id="@+id/imageText"
                         android:textStyle="bold"
                         android:maxLines="1"
-                        android:background="?attr/darkBarTransparent"
+                        android:background="@color/darkBarTransparent"
                         android:layout_alignParentBottom="true"
                 />
             </RelativeLayout>

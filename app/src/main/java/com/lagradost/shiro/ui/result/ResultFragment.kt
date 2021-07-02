@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Html
 import android.transition.ChangeBounds
@@ -33,9 +35,9 @@ import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.transition.MaterialFadeThrough
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
+import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.GlideApp
@@ -59,6 +61,7 @@ import com.lagradost.shiro.utils.AppUtils.expandTouchArea
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getLatestSeenEpisode
+import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.hideKeyboard
 import com.lagradost.shiro.utils.AppUtils.isCastApiAvailable
@@ -309,9 +312,9 @@ class ResultFragment : Fragment() {
                 }
 
 
-                val textColor = Integer.toHexString(requireActivity().getColorFromAttr(R.attr.textColor)).substring(2)
+                val textColor = Integer.toHexString(getCurrentActivity()!!.getTextColor()).substring(2)
                 val textColorGrey =
-                    Integer.toHexString(requireActivity().getColorFromAttr(R.attr.textColorGray)).substring(2)
+                    Integer.toHexString(getCurrentActivity()!!.getTextColor(true)).substring(2)
                 if (data.status != null) {
                     // fromHtml is depreciated, but works on android 6 as opposed to the new
                     title_status.text =
@@ -871,9 +874,9 @@ class ResultFragment : Fragment() {
 
 
     private fun Context.displayDate() {
-        val textColor = Integer.toHexString(getColorFromAttr(R.attr.textColor)).substring(2)
+        val textColor = Integer.toHexString(getCurrentActivity()!!.getTextColor()).substring(2)
         val textColorGrey =
-            Integer.toHexString(getColorFromAttr(R.attr.textColorGray)).substring(2)
+            Integer.toHexString(getCurrentActivity()!!.getTextColor(true)).substring(2)
         if (anilistPage?.nextAiringEpisode != null) {
             anilistPage?.nextAiringEpisode?.let { airingEpisode ->
                 title_day_of_week?.visibility = VISIBLE
@@ -972,8 +975,11 @@ class ResultFragment : Fragment() {
     private fun toggleHeartVisual(_isBookmarked: Boolean) {
         if (_isBookmarked) {
             title_bookmark?.setImageResource(R.drawable.filled_heart)
+            title_bookmark?.imageTintList = ColorStateList.valueOf(Cyanea.instance.primary)
         } else {
             title_bookmark?.setImageResource(R.drawable.outlined_heart)
+            title_bookmark?.imageTintList =
+                ColorStateList.valueOf(getCurrentActivity()!!.getColorFromAttr(R.attr.white))
         }
     }
 
@@ -1088,6 +1094,11 @@ class ResultFragment : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        title_holder.backgroundTintList = ColorStateList.valueOf(
+            Cyanea.instance.backgroundColor
+        )
+        loading_overlay.background = ColorDrawable(Cyanea.instance.backgroundColor)
 
         hideKeyboard()
         //title_duration.text = data!!.duration.toString() + "min"

@@ -9,8 +9,8 @@
         tools:context=".ui.home.HomeFragment"
         android:orientation="vertical"
         android:tag="fragment_home_tag"
-        android:backgroundTint="?attr/background"
-        android:background="?attr/background"
+        android:backgroundTint="?attr/backgroundColor"
+        android:background="?attr/backgroundColor"
 >
     <ProgressBar
             android:layout_width="50dp"
@@ -20,10 +20,11 @@
     >
     </ProgressBar>
 
-    <Button android:text="@string/error_connecting_reload"
+    <Button
+            android:text="@string/error_connecting_reload"
             android:alpha="0"
             android:backgroundTint="?attr/textColor"
-            android:textColor="?attr/background"
+            android:textColor="?attr/backgroundColor"
             android:gravity="center"
             android:layout_gravity="center"
             android:id="@+id/main_reload_data_btt"

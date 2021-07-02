@@ -1,11 +1,11 @@
 package com.lagradost.shiro.ui.home
 
+import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.fragment.app.Fragment
@@ -14,8 +14,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
@@ -76,6 +76,9 @@ class ExpandedHomeFragment : Fragment() {
         title_go_back_holder.setOnClickListener {
             activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
         }
+        expanded_home_title_holder.backgroundTintList = ColorStateList.valueOf(
+            Cyanea.instance.backgroundColorDark
+        )
 
         val topParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
             LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width

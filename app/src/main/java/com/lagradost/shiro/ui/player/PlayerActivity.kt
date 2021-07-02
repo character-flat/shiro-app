@@ -11,6 +11,8 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
+import com.jaredrummler.cyanea.Cyanea
+import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.canShowPipMode
 import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
@@ -27,9 +29,9 @@ import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.DownloadManager
 
-class PlayerActivity : AppCompatActivity() {
+class PlayerActivity : CyaneaAppCompatActivity() {
     companion object {
-        var playerActivity: AppCompatActivity? = null
+        var playerActivity: PlayerActivity? = null
     }
 
     private val myAudioFocusListener =
@@ -73,7 +75,7 @@ class PlayerActivity : AppCompatActivity() {
             Toast.makeText(this, "Accept storage permissions to play", Toast.LENGTH_LONG).show()
             requestRW()
         }
-        val currentTheme = when (settingsManager.getString("theme", "Black")) {
+        /*val currentTheme = when (settingsManager.getString("theme", "Black")) {
             "Black" -> R.style.AppTheme
             "Dark" -> R.style.DarkMode
             "Light" -> R.style.LightMode
@@ -83,7 +85,7 @@ class PlayerActivity : AppCompatActivity() {
         theme.applyStyle(currentTheme, true)
         AppUtils.getTheme()?.let {
             theme.applyStyle(it, true)
-        }
+        }*/
         // -----------------
 
         val statusBarHidden = settingsManager.getBoolean("statusbar_hidden", true)
