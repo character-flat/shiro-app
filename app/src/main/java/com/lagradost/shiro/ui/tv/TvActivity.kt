@@ -77,6 +77,18 @@ class TvActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Disables ssl check - Needed for development with Android TV VM
+
+        /*
+        val sslContext: SSLContext = SSLContext.getInstance("TLS")
+        sslContext.init(null, arrayOf(SSLTrustManager()), SecureRandom())
+        sslContext.createSSLEngine()
+        HttpsURLConnection.setDefaultHostnameVerifier { _: String, _: SSLSession ->
+            true
+        }
+        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
+        */
+
         masterViewModel = masterViewModel ?: ViewModelProvider(this).get(MasterViewModel::class.java)
         DataStore.init(this)
         settingsManager = PreferenceManager.getDefaultSharedPreferences(this)

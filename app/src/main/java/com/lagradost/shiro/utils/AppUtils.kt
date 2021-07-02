@@ -48,6 +48,7 @@ import com.google.firebase.messaging.ktx.messaging
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.*
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
+import com.lagradost.shiro.ui.MainActivity.Companion.lightMode
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.ui.home.CardAdapter
 import com.lagradost.shiro.ui.home.CardContinueAdapter
@@ -436,6 +437,46 @@ object AppUtils {
             startActivity(intent)
         }
     }
+
+    // https://stackoverflow.com/questions/29069070/completely-transparent-status-bar-and-navigation-bar-on-lollipop
+    fun Activity.transparentStatusAndNavigation(
+        systemUiScrim: Int = Color.parseColor("#40000000") // 25% black
+    ) {
+        var systemUiVisibility = 0
+        // Use a dark scrim by default since light status is API 23+
+        // var statusBarColor = systemUiScrim
+        // Use a dark scrim by default since light nav bar is API 27+
+        var navigationBarColor = systemUiScrim
+        val winParams = window.attributes
+
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            systemUiVisibility = systemUiVisibility// or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            statusBarColor = Color.TRANSPARENT
+        }*/
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            systemUiVisibility =
+                if (lightMode)  systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR else systemUiVisibility
+            navigationBarColor = Color.TRANSPARENT
+        }
+        systemUiVisibility = systemUiVisibility or
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        window.decorView.systemUiVisibility = systemUiVisibility
+        winParams.flags = winParams.flags or
+                //WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS or
+                WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            winParams.flags = winParams.flags and
+                    (WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS or
+                            WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION).inv()
+            //window.statusBarColor = statusBarColor
+            window.navigationBarColor = navigationBarColor
+        }
+
+        window.attributes = winParams
+    }
+
 
     fun getViewPosDur(aniListId: String, episodeIndex: Int): EpisodePosDurInfo {
         val key = getViewKey(aniListId, episodeIndex)

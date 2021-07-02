@@ -342,6 +342,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
             return@setOnPreferenceClickListener true
         }
 
+        (findPreference("fullscreen_notch") as Preference?)?.isVisible = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+
         // Changelog
         val changeLog = findPreference("changelog") as Preference?
         changeLog?.setOnPreferenceClickListener {
@@ -479,9 +481,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             return@setOnPreferenceClickListener true
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            (findPreference("pip_enabled") as Preference?)?.isVisible = true
-        }
+        (findPreference("pip_enabled") as Preference?)?.isVisible = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
 
         val forceLandscape = findPreference("force_landscape") as SwitchPreference?
         forceLandscape?.setOnPreferenceChangeListener { _, newValue ->

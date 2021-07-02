@@ -35,6 +35,7 @@ import androidx.core.content.ContextCompat
 import androidx.leanback.app.PlaybackSupportFragment
 import androidx.leanback.app.VideoSupportFragment
 import androidx.leanback.app.VideoSupportFragmentGlueHost
+import androidx.leanback.media.MediaPlayerGlue
 import androidx.leanback.media.PlaybackGlue
 import androidx.leanback.media.PlaybackTransportControlGlue
 import androidx.leanback.widget.Action
@@ -100,22 +101,34 @@ class PlayerFragmentTv : VideoSupportFragment() {
     /** Glue layer between the player and our UI */
     private lateinit var playerGlue: MediaPlayerGlue
     private lateinit var exoPlayer: SimpleExoPlayer
+
+    /** Settings */
     private val settingsManager = PreferenceManager.getDefaultSharedPreferences(getCurrentActivity()!!)
     private val fastForwardTime = settingsManager!!.getInt("fast_forward_button_time", 10)
     private val fastForwardTimeMillis: Long = TimeUnit.SECONDS.toMillis(fastForwardTime.toLong())
+    private val autoPlayEnabled = settingsManager!!.getBoolean("autoplay_enabled", true)
+
+    /*
+    private val resizeModes = listOf(
+        VIDEO_SCALING_MODE_DEFAULT,
+        VIDEO_SCALING_MODE_SCALE_TO_FIT,
+        VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING,
+    )
+    private var resizeMode = DataStore.getKey(RESIZE_MODE_KEY, 0) ?: 0*/
 
     // To prevent watching everything while sleeping
     private var episodesSinceInteraction = 0
 
     var data: PlayerData? = null
-    private var isCurrentlyPlaying: Boolean = false
 
+    /** Link loading */
     private var selectedSource: ExtractorLink? = null
     private var sources: Pair<Int?, List<ExtractorLink>?> = Pair(null, null)
+    private val extractorLinks = mutableListOf<ExtractorLink>()
 
     // Prevent clicking next episode button multiple times
     private var isLoadingNextEpisode = false
-    private val extractorLinks = mutableListOf<ExtractorLink>()
+    private var isCurrentlyPlaying: Boolean = false
 
     /**
      * Connects a [MediaSessionCompat] to a [Player] so transport controls are handled automatically
@@ -131,7 +144,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
         private val actionSkipOp = PlaybackControlsRow.FastForwardAction(context)
         private val actionNextEpisode = PlaybackControlsRow.SkipNextAction(context)
         private val actionSources = PlaybackControlsRow.MoreActions(context)
-
+        // private val actionResize = PlaybackControlsRow.MoreActions(context)
         //private val actionClosedCaptions = PlaybackControlsRow.ClosedCaptioningAction(context)
 
         fun skipForward(millis: Long = fastForwardTimeMillis) =
@@ -151,48 +164,28 @@ class PlayerFragmentTv : VideoSupportFragment() {
         override fun onCreatePrimaryActions(adapter: ArrayObjectAdapter) {
             super.onCreatePrimaryActions(adapter)
 
-            // Lmao gotta get white icons even in light mode
-            actionRewind.icon = ContextCompat.getDrawable(context, R.drawable.netflix_skip_back).apply {
-                this?.mutate()
-                    ?.setColorFilter(
-                        ContextCompat.getColor(getCurrentActivity()!!, R.color.white),
-                        PorterDuff.Mode.SRC_IN
-                    )
+            fun Action.setIcon(drawable: Int) {
+                this.icon = ContextCompat.getDrawable(context, drawable).apply {
+                    this?.mutate()
+                        ?.setColorFilter(
+                            ContextCompat.getColor(getCurrentActivity()!!, R.color.white),
+                            PorterDuff.Mode.SRC_IN
+                        )
+                }
             }
-            actionFastForward.icon = ContextCompat.getDrawable(context, R.drawable.netflix_skip_forward).apply {
-                this?.mutate()
-                    ?.setColorFilter(
-                        ContextCompat.getColor(getCurrentActivity()!!, R.color.white),
-                        PorterDuff.Mode.SRC_IN
-                    )
-            }
-            actionSkipOp.icon = ContextCompat.getDrawable(context, R.drawable.ic_baseline_fast_forward_24).apply {
-                this?.mutate()
-                    ?.setColorFilter(
-                        ContextCompat.getColor(getCurrentActivity()!!, R.color.white),
-                        PorterDuff.Mode.SRC_IN
-                    )
-            }
-            actionNextEpisode.icon = ContextCompat.getDrawable(context, R.drawable.exo_controls_next).apply {
-                this?.mutate()
-                    ?.setColorFilter(
-                        ContextCompat.getColor(getCurrentActivity()!!, R.color.white),
-                        PorterDuff.Mode.SRC_IN
-                    )
-            }
-            actionSources.icon = ContextCompat.getDrawable(context, R.drawable.ic_baseline_playlist_play_24).apply {
-                this?.mutate()
-                    ?.setColorFilter(
-                        ContextCompat.getColor(getCurrentActivity()!!, R.color.white),
-                        PorterDuff.Mode.SRC_IN
-                    )
-            }
+            actionRewind.setIcon(R.drawable.netflix_skip_back)
+            actionFastForward.setIcon(R.drawable.netflix_skip_forward)
+            actionSkipOp.setIcon(R.drawable.ic_baseline_fast_forward_24)
+            actionNextEpisode.setIcon(R.drawable.exo_controls_next)
+            actionSources.setIcon(R.drawable.ic_baseline_playlist_play_24)
+            // actionResize.setIcon(R.drawable.ic_baseline_aspect_ratio_24)
 
             // Append rewind and fast forward actions to our player, keeping the play/pause actions
             // created by default by the glue
             // adapter.add(actionRewind)
             // adapter.add(actionFastForward)
             adapter.add(actionSkipOp)
+            // adapter.add(actionResize)
 
             if (sources.second?.size ?: 0 > 1) {
                 adapter.add(actionSources)
@@ -260,6 +253,13 @@ class PlayerFragmentTv : VideoSupportFragment() {
                     ).show()*/
 
                 }
+                /*actionResize -> {
+                    if (this@PlayerFragmentTv::exoPlayer.isInitialized) {
+                        resizeMode = (resizeMode + 1).fmod(resizeModes.size)
+                        DataStore.setKey(RESIZE_MODE_KEY, resizeMode)
+                        println("HERE $resizeMode")
+                    }
+                }*/
                 else -> super.onActionClicked(action)
             }
         }
@@ -346,7 +346,8 @@ class PlayerFragmentTv : VideoSupportFragment() {
         val currentEpisodeProgress = data?.episodeIndex!! + 1
 
         if (currentEpisodeProgress == holder?.episodes ?: data?.card?.episodes?.size
-            && type.value != AniListApi.Companion.AniListStatusType.Completed.value) {
+            && type.value != AniListApi.Companion.AniListStatusType.Completed.value
+        ) {
             type = AniListApi.Companion.AniListStatusType.Completed
         }
 
@@ -596,7 +597,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
                     override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
                         // episodesSinceInteraction is to prevent watching while sleeping
                         if (playbackState == Player.STATE_ENDED && episodesSinceInteraction <= 3 && data?.episodeIndex != null && !isLoadingNextEpisode) {
-                            playNextEpisode()
+                            if (autoPlayEnabled) playNextEpisode()
                             episodesSinceInteraction++
                         }
                     }
@@ -716,7 +717,6 @@ class PlayerFragmentTv : VideoSupportFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         getCurrentActivity()?.theme?.applyStyle(R.style.normalText, true)
-
         //playbackPosition = activity?.intent?.getSerializableExtra(DetailsActivityTV.PLAYERPOS) as? Long ?: 0L
         //data = mapper.readValue<ShiroApi.AnimePageData>(dataString!!)
         mediaSession = MediaSessionCompat(getCurrentActivity()!!, getString(R.string.app_name))

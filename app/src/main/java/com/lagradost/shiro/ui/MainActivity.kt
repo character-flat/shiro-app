@@ -43,6 +43,7 @@ import com.lagradost.shiro.utils.AppUtils.init
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.AppUtils.shouldShowPIPMode
+import com.lagradost.shiro.utils.AppUtils.transparentStatusAndNavigation
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import kotlin.concurrent.thread
 
@@ -269,6 +270,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        /*window.setFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        )*/
+        transparentStatusAndNavigation()
 
         //@SuppressLint("HardwareIds")
         //val androidId: String = Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID).md5()
@@ -287,10 +293,8 @@ class MainActivity : AppCompatActivity() {
         thread {
             ShiroApi.init()
         }
-        thread {
-            // Hardcoded for now since it fails for some people :|
-            isDonor = true //getDonorStatus() == androidId
-        }
+        // Hardcoded for now since it fails for some people :|
+        isDonor = true //getDonorStatus() == androidId
         thread {
             runAutoUpdate(this)
         }
@@ -375,9 +379,41 @@ class MainActivity : AppCompatActivity() {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         //setupActionBarWithNavController(navController, appBarConfiguration)
+
+
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
         navController = findNavController(R.id.nav_host_fragment)
         navView.setupWithNavController(navController!!)
+        /*
+        navView.setOnNavigationItemReselectedListener {
+            return@setOnNavigationItemReselectedListener
+        }
+        val options = NavOptions.Builder()
+            .setLaunchSingleTop(true)
+            .setEnterAnim(R.anim.enter)
+            .setExitAnim(R.anim.exit)
+            .setPopEnterAnim(R.anim.pop_enter)
+            .setPopExitAnim(R.anim.pop_exit)
+            .setPopUpTo(navController!!.graph.startDestination, false)
+            .build()
+        navView.setOnNavigationItemSelectedListener {
+            when (it.itemId) {
+                R.id.navigation_home -> {
+                    navController?.navigate(R.id.navigation_home, null, options)
+                }
+                R.id.navigation_search -> {
+                    navController?.navigate(R.id.navigation_search, null, options)
+                }
+                R.id.navigation_downloads -> {
+                    navController?.navigate(R.id.navigation_downloads, null, options)
+                }
+                R.id.navigation_settings -> {
+                    navController?.navigate(R.id.navigation_settings, null, options)
+                }
+            }
+            true
+        }*/
+
         val attrPrimary = if (lightMode) R.attr.colorPrimaryDarker else R.attr.colorPrimary
         val states = arrayOf(
             intArrayOf(android.R.attr.state_checked),

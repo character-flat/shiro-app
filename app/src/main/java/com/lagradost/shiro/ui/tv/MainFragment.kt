@@ -36,6 +36,7 @@ class MainFragment : Fragment() {
         activity?.runOnUiThread {
             main_load?.visibility = GONE
             main_reload_data_btt?.visibility = GONE
+            vertical_grid_view.visibility = VISIBLE
             val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder> = MasterCardAdapter(
                 requireActivity(),
             )

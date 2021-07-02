@@ -75,6 +75,13 @@
             android:title="Player"
             app:isPreferenceVisible="true"
     >
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_queue_play_next_24"
+                app:key="autoplay_enabled"
+                android:title="Autoplay next episode"
+                android:summary="Does not work if there's no player interaction during 3 episodes"
+                app:defaultValue="true"
+        />
         <SeekBarPreference
                 android:icon="@drawable/ic_baseline_cloud_done_24"
                 android:title="Completed percentage"

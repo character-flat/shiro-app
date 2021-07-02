@@ -16,14 +16,11 @@ import android.graphics.Color
 import android.graphics.drawable.Icon
 import android.media.AudioManager
 import android.net.Uri
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.os.SystemClock
+import android.os.*
 import android.provider.Settings
 import android.view.*
 import android.view.View.*
-import android.view.WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+import android.view.WindowManager.LayoutParams.*
 import android.view.animation.*
 import android.widget.ProgressBar
 import android.widget.Toast
@@ -224,6 +221,9 @@ class PlayerFragment : Fragment() {
     private val playerResizeEnabled = true//settingsManager!!.getBoolean("player_resize_enabled", false)
     private val doubleTapTime = settingsManager!!.getInt("dobule_tap_time", 10)
     private val fastForwardTime = settingsManager!!.getInt("fast_forward_button_time", 10)
+    private val autoPlayEnabled = settingsManager!!.getBoolean("autoplay_enabled", true)
+    private val fullscreenNotch = settingsManager!!.getBoolean("fullscreen_notch", true)
+
     private var sources: Pair<Int?, List<ExtractorLink>?> = Pair(null, null)
 
     private var lastSyncedEpisode = -1
@@ -395,6 +395,9 @@ class PlayerFragment : Fragment() {
         // restoring screen brightness
         val lp = activity?.window?.attributes
         lp?.screenBrightness = BRIGHTNESS_OVERRIDE_NONE
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            lp?.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+        }
         activity?.window?.attributes = lp
         handler.removeCallbacks(checkProgressAction)
 
@@ -1236,10 +1239,12 @@ class PlayerFragment : Fragment() {
     }
 
     private fun cancelNextEpisode() {
-        handler.removeCallbacks(nextEpisodeAction)
-        timer?.cancel()
-        next_episode_time_text?.text = ""
-        next_episode_overlay?.visibility = GONE
+        if (autoPlayEnabled) {
+            handler.removeCallbacks(nextEpisodeAction)
+            timer?.cancel()
+            next_episode_time_text?.text = ""
+            next_episode_overlay?.visibility = GONE
+        }
     }
 
     /*fun show() {
@@ -1351,7 +1356,8 @@ class PlayerFragment : Fragment() {
         val currentEpisodeProgress = data?.episodeIndex!! + 1
 
         if (currentEpisodeProgress == holder?.episodes ?: data?.card?.episodes?.size
-            && type.value != AniListApi.Companion.AniListStatusType.Completed.value) {
+            && type.value != AniListApi.Companion.AniListStatusType.Completed.value
+        ) {
             type = AniListApi.Companion.AniListStatusType.Completed
         }
 
@@ -1584,7 +1590,7 @@ class PlayerFragment : Fragment() {
                                     focusRequest?.let { activity?.requestAudioFocus(it) }
                                 }
                                 if (playbackState == Player.STATE_ENDED && next_episode_btt?.visibility == VISIBLE) {
-                                    queueNextEpisode()
+                                    if (autoPlayEnabled) queueNextEpisode()
                                 } else {
                                     cancelNextEpisode()
                                 }
@@ -1669,6 +1675,11 @@ class PlayerFragment : Fragment() {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && fullscreenNotch) {
+            val params = getCurrentActivity()!!.window.attributes
+            params.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            getCurrentActivity()!!.window.attributes = params
+        }
         onPlayerNavigated.invoke(true)
 
         // https://github.com/Blatzar/shiro-app/issues/48

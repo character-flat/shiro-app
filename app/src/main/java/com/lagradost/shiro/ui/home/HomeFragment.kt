@@ -40,13 +40,16 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import kotlinx.android.synthetic.main.download_card.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlin.concurrent.thread
-
 //const val MAXIMUM_FADE = 0.3f
 //const val FADE_SCROLL_DISTANCE = 700f
 
 class HomeFragment : Fragment() {
     companion object {
         var homeViewModel: HomeViewModel? = null
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
     }
 
     override fun onCreateView(
