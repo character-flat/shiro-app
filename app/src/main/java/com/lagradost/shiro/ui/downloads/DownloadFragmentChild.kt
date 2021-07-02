@@ -1,6 +1,7 @@
 package com.lagradost.shiro.ui.downloads
 
 import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -260,7 +261,7 @@ class DownloadFragmentChild : Fragment() {
                 val megaBytesTotal = DownloadManager.convertBytesToAny(child.maxFileSize, 0, 2.0).toInt()
                 val localBytesTotal = maxOf(DownloadManager.convertBytesToAny(file.length(), 0, 2.0).toInt(), 1)
                 card.cardTitleExtra.text = "$localBytesTotal / $megaBytesTotal MB"
-
+                card.progressBar.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
                 fun updateIcon(megabytes: Int) {
                     if (megabytes + 0.1 >= megaBytesTotal) {
                         card.progressBar.visibility = GONE
@@ -304,7 +305,7 @@ class DownloadFragmentChild : Fragment() {
 
                 setStatus()
                 updateIcon(localBytesTotal)
-
+                card.cardPauseIcon.imageTintList = ColorStateList.valueOf(Cyanea.instance.primary)
                 card.cardPauseIcon.setOnClickListener { v ->
                     val ctw = ContextThemeWrapper(context, R.style.PopupMenu)
                     val popup = PopupMenu(ctw, v)
@@ -387,6 +388,9 @@ class DownloadFragmentChild : Fragment() {
                         getCurrentActivity()!!.getTextColor()
                     )
                 } else {
+                    card.cardBg.setCardBackgroundColor(
+                        Cyanea.instance.backgroundColorDark
+                    )
                     card.cardTitle.setTextColor(
                         getCurrentActivity()!!.getTextColor()
                     )

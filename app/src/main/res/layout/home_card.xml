@@ -23,7 +23,6 @@
             android:elevation="10dp"
             app:cardCornerRadius="@dimen/card_corner_radius"
             app:cardBackgroundColor="?attr/backgroundColorDark"
-
     >
         <ImageView
                 android:duplicateParentState="true"

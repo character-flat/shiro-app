@@ -71,7 +71,7 @@
                     android:layout_marginTop="80dp"
                     android:shadowColor="@android:color/black"
                     android:shadowRadius="10.0"
-                    android:textColor="@android:color/white"
+                    android:textColor="@color/white"
             >
 
             </TextView>
@@ -86,7 +86,7 @@
                     android:textSize="40sp"
                     android:shadowColor="@android:color/black"
                     android:shadowRadius="10.0"
-                    android:textColor="@android:color/white"
+                    android:textColor="@color/white"
             >
             </TextView>
         </LinearLayout>
@@ -100,7 +100,7 @@
                 android:alpha="0"
                 android:shadowColor="@android:color/black"
                 android:shadowRadius="10.0"
-                android:textColor="@android:color/white"
+                android:textColor="@color/white"
         >
 
         </TextView>
@@ -157,7 +157,7 @@
                         android:paddingStart="10dp"
                         android:paddingEnd="10dp"
                         android:layout_gravity="center"
-                        android:textColor="@android:color/white"
+                        android:textColor="@color/white"
                 >
                 </TextView>
                 <ImageView
@@ -184,7 +184,7 @@
                     android:layout_height="30dp"
                     android:layout_gravity="center"
                     android:src="@drawable/arrow_back"
-                    app:tint="@android:color/white"
+                    app:tint="@color/white"
             >
             </ImageView>
             <ImageView
@@ -373,7 +373,7 @@
                         android:includeFontPadding="false"
                         android:paddingLeft="4dp"
                         android:paddingRight="4dp"
-                        android:textColor="@android:color/white"
+                        android:textColor="@color/white"
                         android:textSize="14sp"
                         android:textStyle="bold"/>
 
@@ -393,7 +393,7 @@
                         android:includeFontPadding="false"
                         android:paddingLeft="4dp"
                         android:paddingRight="4dp"
-                        android:textColor="@android:color/white"
+                        android:textColor="@color/white"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:layout_marginEnd="20dp"
@@ -433,7 +433,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
                                 android:src="@drawable/ic_baseline_aspect_ratio_24"
-                                app:tint="@android:color/white"
+                                app:tint="@color/white"
                                 android:layout_gravity="center">
 
                         </ImageView>
@@ -445,7 +445,7 @@
                                 android:paddingStart="10dp"
                                 android:paddingEnd="10dp"
                                 android:layout_gravity="center"
-                                android:textColor="@android:color/white"
+                                android:textColor="@color/white"
                                 android:singleLine="true"
                         >
                         </TextView>
@@ -479,7 +479,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
                                 android:src="@drawable/ic_baseline_speed_24"
-                                app:tint="@android:color/white"
+                                app:tint="@color/white"
                         >
 
                         </ImageView>
@@ -492,7 +492,7 @@
                                 android:paddingEnd="10dp"
                                 android:id="@+id/player_speed_text"
                                 android:layout_gravity="center"
-                                android:textColor="@android:color/white"
+                                android:textColor="@color/white"
                                 android:singleLine="true"
                         >
                         </TextView>
@@ -527,7 +527,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
                                 android:src="@drawable/ic_baseline_playlist_play_24"
-                                app:tint="@android:color/white"
+                                app:tint="@color/white"
                                 android:layout_gravity="center">
 
                         </ImageView>
@@ -539,7 +539,7 @@
                                 android:paddingStart="10dp"
                                 android:paddingEnd="10dp"
                                 android:layout_gravity="center"
-                                android:textColor="@android:color/white"
+                                android:textColor="@color/white"
                                 android:singleLine="true"
                         >
                         </TextView>
@@ -572,7 +572,7 @@
                                 android:layout_width="24dp"
                                 android:layout_height="match_parent"
                                 android:src="@drawable/exo_controls_fastforward"
-                                app:tint="@android:color/white"
+                                app:tint="@color/white"
                                 android:layout_gravity="center">
                         </ImageView>
                         <TextView
@@ -583,7 +583,7 @@
                                 android:paddingStart="10dp"
                                 android:paddingEnd="10dp"
                                 android:layout_gravity="center"
-                                android:textColor="@android:color/white"
+                                android:textColor="@color/white"
                                 android:singleLine="true"
                         >
                         </TextView>
@@ -631,7 +631,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_baseline_volume_up_24"
-                    app:tint="@android:color/white"
+                    app:tint="@color/white"
             >
 
             </ImageView>
@@ -674,7 +674,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_baseline_brightness_7_24"
-                    app:tint="@android:color/white"
+                    app:tint="@color/white"
             >
 
             </ImageView>
@@ -755,7 +755,7 @@
                         android:gravity="center"
                         android:padding="10dp"
                         android:layout_gravity="center"
-                        android:textColor="@android:color/white"
+                        android:textColor="@color/white"
                         android:singleLine="true"
                 >
                 </TextView>
@@ -779,7 +779,7 @@
                         android:gravity="center"
                         android:padding="10dp"
                         android:layout_gravity="center"
-                        android:textColor="@android:color/white"
+                        android:textColor="@color/white"
                         android:singleLine="true"
                 >
                 </TextView>

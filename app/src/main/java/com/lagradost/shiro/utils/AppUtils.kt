@@ -257,7 +257,7 @@ object AppUtils {
             DataStore.removeKey(BOOKMARK_KEY, slug)
         }
         thread {
-            homeViewModel!!.favorites.postValue(getFav())
+            homeViewModel?.favorites?.postValue(getFav())
         }
         return !isBookmarked
     }
@@ -301,7 +301,7 @@ object AppUtils {
                         msg = "Unsubscribing failed :("//getString(R.string.msg_subscribe_failed)
                     }
                     thread {
-                        homeViewModel!!.subscribed.postValue(getSubbed())
+                        homeViewModel?.subscribed?.postValue(getSubbed())
                     }
                     //Log.d(TAG, msg)
                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
@@ -324,7 +324,7 @@ object AppUtils {
                         msg = "Subscription failed :("//getString(R.string.msg_subscribe_failed)
                     }
                     thread {
-                        homeViewModel!!.subscribed.postValue(getSubbed())
+                        homeViewModel?.subscribed?.postValue(getSubbed())
                     }
                     //Log.d(TAG, msg)
                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()

@@ -15,7 +15,6 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.appcompat.widget.SearchView
@@ -163,7 +162,7 @@ class SearchFragment : Fragment() {
                     val data = ShiroApi.search(query, genresInput = searchViewModel!!.selectedGenres.value)
                     activity?.runOnUiThread {
                         if (data == null) {
-                            Toast.makeText(activity, "Server error", Toast.LENGTH_LONG).show()
+                            //Toast.makeText(activity, "Server error", Toast.LENGTH_LONG).show()
                             progress_bar?.visibility = View.GONE
                         } else {
                             val filteredData =
@@ -188,7 +187,7 @@ class SearchFragment : Fragment() {
                         activity?.runOnUiThread {
                             // Nullable since takes time to get data
                             if (data == null) {
-                                Toast.makeText(activity, "Server error", Toast.LENGTH_LONG).show()
+                                //Toast.makeText(activity, "Server error", Toast.LENGTH_LONG).show()
                                 progress_bar?.visibility = View.GONE
                             } else {
                                 progress_bar?.visibility =

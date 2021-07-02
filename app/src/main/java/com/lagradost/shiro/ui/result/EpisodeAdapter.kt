@@ -1,5 +1,6 @@
 package com.lagradost.shiro.ui.result
 
+import android.content.res.ColorStateList
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
@@ -280,7 +281,7 @@ class EpisodeAdapter(
             } else {
                 card.video_progress.alpha = 0f
             }
-
+            card.progressBar.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
             fun updateIcon(megabytes: Int, child: DownloadManager.DownloadFileMetadata) {
                 val file = File(child.videoPath)
                 val megaBytesTotal = DownloadManager.convertBytesToAny(child.maxFileSize, 0, 2.0).toInt()
@@ -397,6 +398,7 @@ class EpisodeAdapter(
                         setStatus()
                         updateIcon(localBytesTotal, child)
 
+                        card.cardPauseIcon.imageTintList = ColorStateList.valueOf(Cyanea.instance.primary)
                         card.cardPauseIcon.setOnClickListener { v ->
                             val ctw = ContextThemeWrapper(activity, R.style.PopupMenu)
                             val popup = PopupMenu(ctw, v)

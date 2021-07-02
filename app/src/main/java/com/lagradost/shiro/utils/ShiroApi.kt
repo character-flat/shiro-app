@@ -252,7 +252,7 @@ class ShiroApi {
                     mapped
                 else null
             } catch (e: Exception) {
-                println(e.message)
+                println(e.printStackTrace())
                 null
             }
         }
@@ -271,7 +271,7 @@ class ShiroApi {
                     return mapped.data
                 }
             } catch (e: Exception) {
-                println("EXCEPTION123")
+                println(e.printStackTrace())
             }
             return null
         }

@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
+import com.jaredrummler.cyanea.prefs.CyaneaTheme
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.player.PlayerEventType
@@ -38,7 +39,6 @@ import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
 import com.lagradost.shiro.utils.AniListApi.Companion.initGetUser
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.checkWrite
-import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.hasPIPPermission
 import com.lagradost.shiro.utils.AppUtils.hideSystemUI
 import com.lagradost.shiro.utils.AppUtils.init
@@ -129,7 +129,6 @@ class MainActivity : CyaneaAppCompatActivity() {
                 }
             }
         }
-
         super.onNewIntent(intent)
     }
 
@@ -268,11 +267,16 @@ class MainActivity : CyaneaAppCompatActivity() {
             theme.applyStyle(it, true)
         }*/
 
-        if (cyanea.isDark){
+        if (cyanea.isDark) {
             theme.applyStyle(R.style.lightText, true)
         } else {
             theme.applyStyle(R.style.darkText, true)
         }
+        if (!Cyanea.instance.isThemeModified) {
+            val list: List<CyaneaTheme> = CyaneaTheme.Companion.from(assets, "themes/cyanea_themes.json");
+            list[0].apply(Cyanea.instance).recreate(this)
+        }
+        println("CURRENT THEME ${Cyanea.instance.isThemeModified}}")
 
         // -----------------
         super.onCreate(savedInstanceState)
@@ -421,7 +425,7 @@ class MainActivity : CyaneaAppCompatActivity() {
             true
         }*/
 
-       val attrPrimary = if (lightMode) Cyanea.instance.primaryDark else Cyanea.instance.primary
+        //val attrPrimary = Cyanea.instance.menuIconColor //if (lightMode) Cyanea.instance.primaryDark else Cyanea.instance.primary
         val states = arrayOf(
             intArrayOf(android.R.attr.state_checked),
             intArrayOf(-android.R.attr.state_checked),
@@ -429,18 +433,19 @@ class MainActivity : CyaneaAppCompatActivity() {
             intArrayOf(-android.R.attr.state_enabled),
         )
         val colors = intArrayOf(
-            attrPrimary,
-            this.getTextColor(),
-            attrPrimary,
-            this.getTextColor(),
+            Cyanea.instance.menuIconColor,
+            Cyanea.instance.menuIconColor,
+            Cyanea.instance.menuIconColor,
+            Cyanea.instance.menuIconColor,
         )
 
-        navView.itemRippleColor = ColorStateList.valueOf(Cyanea.instance.primary)
+        println("RIPPLE ${navView.itemRippleColor}")
+        navView.itemRippleColor = ColorStateList.valueOf(Cyanea.instance.menuIconColor)
         navView.itemIconTintList = ColorStateList(states, colors)
         navView.itemTextColor = ColorStateList(states, colors)
 
-
-        navView.itemBackground = ColorDrawable(Cyanea.instance.backgroundColorDark)
+        // Uncommenting this fucks ripple
+        //navView.itemBackground = ColorDrawable(Cyanea.instance.backgroundColorDark)
 
         /*navView.setOnKeyListener { v, keyCode, event ->
             println("$keyCode $event")

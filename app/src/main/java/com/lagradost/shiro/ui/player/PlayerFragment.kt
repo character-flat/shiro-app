@@ -787,6 +787,8 @@ class PlayerFragment : Fragment() {
                 Settings.System.CONTENT_URI, true, volumeObserver
             )
 
+        exo_progress.setPlayedColor(Cyanea.instance.primary)
+
         MainActivity.onPlayerEvent += ::handlePlayerEvent
         MainActivity.onAudioFocusEvent += ::handleAudioFocusEvent
 

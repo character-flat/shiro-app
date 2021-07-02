@@ -15,6 +15,7 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.LastEpisodeInfo
@@ -59,7 +60,7 @@ class CardContinueAdapter(
             }
         }
 
-
+        holder.itemView.home_card_recently_seen.setCardBackgroundColor(Cyanea.instance.backgroundColorDark)
         holder.itemView.setOnFocusChangeListener { view, hasFocus ->
             val subFocus =
                 view.tv_button_info.hasFocus() || view.tv_button_cancel.hasFocus() || view.tv_button_remove.hasFocus()

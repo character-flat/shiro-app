@@ -12,6 +12,7 @@ import android.widget.LinearLayout
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.fragment.app.Fragment
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
@@ -100,6 +101,8 @@ class DownloadFragment : Fragment() {
                             cardView.cardInfo.text =
                                 if (parent.isMovie) "$megaBytes MB" else
                                     "${childData.count} Episode${(if (childData.count == 1) "" else "s")} | $megaBytes MB"
+
+                            cardView.cardBg?.setCardBackgroundColor(Cyanea.instance.backgroundColorDark)
 
                             cardView.cardBg.setOnClickListener {
                                 activity?.addFragmentOnlyOnce(

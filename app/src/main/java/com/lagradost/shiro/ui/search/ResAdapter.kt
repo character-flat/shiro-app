@@ -32,6 +32,7 @@ import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFav
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
+import kotlinx.android.synthetic.main.search_result.view.*
 import kotlinx.android.synthetic.main.search_result.view.imageText
 import kotlinx.android.synthetic.main.search_result.view.imageView
 import kotlinx.android.synthetic.main.search_result_compact.view.*
@@ -119,7 +120,7 @@ class ResAdapter(
                         DataStore.removeKey(BOOKMARK_KEY, card.slug)
                     }
                     thread {
-                        homeViewModel!!.favorites.postValue(getFav())
+                        homeViewModel?.favorites?.postValue(getFav())
                     }
                 }
                 toggleHeartVisual(isBookmarked)
@@ -156,7 +157,7 @@ class ResAdapter(
                     coverHeight
                 )
             }
-
+            itemView.search_result_card?.setCardBackgroundColor(Cyanea.instance.backgroundColorDark)
             itemView.imageText?.text = fixCardTitle(card.name)
             if (card.english != null) {
                 itemView.imageSubText?.visibility = VISIBLE

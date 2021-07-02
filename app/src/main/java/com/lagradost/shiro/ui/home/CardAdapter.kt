@@ -14,6 +14,7 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.result.RESULT_FRAGMENT_TAG
@@ -51,6 +52,7 @@ class CardAdapter(
                 holder.bind(cardList[position])
             }
         }
+        holder.itemView.home_card?.setCardBackgroundColor(Cyanea.instance.backgroundColorDark)
         holder.itemView.setOnFocusChangeListener { v, hasFocus ->
             val toSize = if (hasFocus) 1.1f else 1.0f
             val fromSize = if (!hasFocus) 1.1f else 1.0f

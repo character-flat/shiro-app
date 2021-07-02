@@ -110,25 +110,27 @@
                 android:visibility="visible"
         />
 
-        <ImageView android:layout_width="30dp"
-                   android:layout_height="30dp"
-                   android:layout_margin="10dp"
-                   android:id="@+id/cardPauseIcon"
-                   android:src="@drawable/exo_icon_stop"
-                   app:tint="?attr/colorPrimary"
-                   android:layout_gravity="end|center_vertical"
-                   android:background="?android:attr/selectableItemBackgroundBorderless"
-                   android:contentDescription="@string/stop_download"/>
+        <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_margin="10dp"
+                android:id="@+id/cardPauseIcon"
+                android:src="@drawable/exo_icon_stop"
+                app:tint="?attr/colorPrimary"
+                android:layout_gravity="end|center_vertical"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/stop_download"/>
 
-        <ImageView android:layout_width="30dp"
-                   android:layout_height="30dp"
-                   android:layout_margin="10dp"
-                   app:tint="@color/white"
-                   android:id="@+id/cardRemoveIcon"
-                   android:src="@drawable/ic_baseline_delete_24"
-                   android:layout_gravity="end|center_vertical"
-                   android:background="?android:attr/selectableItemBackgroundBorderless"
-                   android:contentDescription="@string/remove_download"/>
+        <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_margin="10dp"
+                app:tint="@color/white"
+                android:id="@+id/cardRemoveIcon"
+                android:src="@drawable/ic_baseline_delete_24"
+                android:layout_gravity="end|center_vertical"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/remove_download"/>
         <!--
         <TextView
                 android:id="@+id/cardDescription"

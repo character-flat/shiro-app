@@ -72,4 +72,11 @@
     <color name="colorPrimaryYellow">#FFD900</color>
     <color name="colorPrimaryLightBlue">#42CEF5</color>
     <!--<color name="colorPrimaryLightBlue">#BD5353</color>-->
+
+    <!--
+    Not white! Very strange bug on older versions
+    it sets all other colors to the themed colorPrimary if it's the same initial value
+    -->
+    <color name="cyanea_primary_reference">#FEFEFE</color>
+    <color name="cyanea_accent_reference">#FEFEFE</color>
 </resources>
