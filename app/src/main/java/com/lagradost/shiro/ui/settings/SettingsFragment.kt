@@ -28,7 +28,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 import com.jaredrummler.cyanea.Cyanea
-import com.jaredrummler.cyanea.prefs.CyaneaSettingsActivity
 import com.lagradost.shiro.BuildConfig
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
@@ -68,11 +67,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
             setBackgroundColor(Cyanea.instance.backgroundColor)
         }
     }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-    }
-
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         settingsViewModel =
@@ -154,7 +148,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }*/
 
         findPreference<Preference>("cyanea_theme")?.setOnPreferenceClickListener {
-            val intent = Intent(context, CyaneaSettingsActivity::class.java)
+            val intent = Intent(context, CustomCyaneaSettingsActivity::class.java)
             startActivity(intent)
             return@setOnPreferenceClickListener true
         }

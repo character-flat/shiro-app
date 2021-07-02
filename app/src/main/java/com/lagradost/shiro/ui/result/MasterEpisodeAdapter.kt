@@ -118,7 +118,7 @@ class MasterEpisodeAdapter(
             } else {
                 activity.let {
                     itemView.cardBg.setCardBackgroundColor(
-                        Cyanea.instance.primaryLight
+                        Cyanea.instance.backgroundColorLight
                     )
                     itemView.expand_icon.setColorFilter(
                         activity.getTextColor()

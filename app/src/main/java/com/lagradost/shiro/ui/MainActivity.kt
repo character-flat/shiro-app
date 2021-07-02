@@ -241,7 +241,6 @@ class MainActivity : CyaneaAppCompatActivity() {
         activity = this
         // used for PlayerData to prevent crashes
         masterViewModel = masterViewModel ?: ViewModelProvider(this).get(MasterViewModel::class.java)
-
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
         init()
         DataStore.init(this)
@@ -267,6 +266,7 @@ class MainActivity : CyaneaAppCompatActivity() {
             theme.applyStyle(it, true)
         }*/
 
+        supportActionBar?.hide()
         if (cyanea.isDark) {
             theme.applyStyle(R.style.lightText, true)
         } else {
@@ -276,7 +276,6 @@ class MainActivity : CyaneaAppCompatActivity() {
             val list: List<CyaneaTheme> = CyaneaTheme.Companion.from(assets, "themes/cyanea_themes.json");
             list[0].apply(Cyanea.instance).recreate(this)
         }
-        println("CURRENT THEME ${Cyanea.instance.isThemeModified}}")
 
         // -----------------
         super.onCreate(savedInstanceState)

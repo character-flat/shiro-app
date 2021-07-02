@@ -9,7 +9,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
+import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
+import com.jaredrummler.cyanea.prefs.CyaneaTheme
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.ui.MasterViewModel
@@ -98,7 +100,16 @@ class TvActivity : CyaneaAppCompatActivity() {
         thread {
             ShiroApi.init()
         }
-
+        supportActionBar?.hide()
+        if (cyanea.isDark) {
+            theme.applyStyle(R.style.lightText, true)
+        } else {
+            theme.applyStyle(R.style.darkText, true)
+        }
+        if (!Cyanea.instance.isThemeModified) {
+            val list: List<CyaneaTheme> = CyaneaTheme.Companion.from(assets, "themes/cyanea_themes.json");
+            list[0].apply(Cyanea.instance).recreate(this)
+        }
         applyThemes()
         super.onCreate(savedInstanceState)
         /*if (!isTv()) {

@@ -2,7 +2,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.Cyanea.Dark.NoActionBar">
+    <style name="AppTheme" parent="Theme.Cyanea.Dark">
         <!-- Customize your theme here. -->
         <item name="android:fontFamily">@font/poppins_regular</item>
         <!--<item name="android:windowTranslucentStatus">true</item>-->

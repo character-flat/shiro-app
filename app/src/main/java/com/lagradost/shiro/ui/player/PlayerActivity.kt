@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
 import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
+import com.jaredrummler.cyanea.prefs.CyaneaTheme
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.canShowPipMode
 import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
@@ -58,7 +59,16 @@ class PlayerActivity : CyaneaAppCompatActivity() {
         DataStore.init(this)
         DownloadManager.init(this)
         init()
-
+        supportActionBar?.hide()
+        if (cyanea.isDark) {
+            theme.applyStyle(R.style.lightText, true)
+        } else {
+            theme.applyStyle(R.style.darkText, true)
+        }
+        if (!Cyanea.instance.isThemeModified) {
+            val list: List<CyaneaTheme> = CyaneaTheme.Companion.from(assets, "themes/cyanea_themes.json");
+            list[0].apply(Cyanea.instance).recreate(this)
+        }
 
         //https://stackoverflow.com/questions/29146757/set-windowtranslucentstatus-true-when-android-lollipop-or-higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
