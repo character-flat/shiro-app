@@ -19,6 +19,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.view.KeyEvent
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -39,6 +40,7 @@ import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
 import com.lagradost.shiro.utils.AniListApi.Companion.initGetUser
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.checkWrite
+import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.hasPIPPermission
 import com.lagradost.shiro.utils.AppUtils.hideSystemUI
 import com.lagradost.shiro.utils.AppUtils.init
@@ -239,12 +241,15 @@ class MainActivity : CyaneaAppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         activity = this
+
         // used for PlayerData to prevent crashes
         masterViewModel = masterViewModel ?: ViewModelProvider(this).get(MasterViewModel::class.java)
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
         init()
         DataStore.init(this)
         DownloadManager.init(this)
+        // Hack to make tinting work
+        if (Cyanea.instance.isLight) delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
 
         // ----- Themes ----
         //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
@@ -431,15 +436,17 @@ class MainActivity : CyaneaAppCompatActivity() {
             intArrayOf(android.R.attr.state_enabled),
             intArrayOf(-android.R.attr.state_enabled),
         )
+
+        val usedColor = this.getTextColor()
+
         val colors = intArrayOf(
-            Cyanea.instance.menuIconColor,
-            Cyanea.instance.menuIconColor,
-            Cyanea.instance.menuIconColor,
-            Cyanea.instance.menuIconColor,
+            usedColor,
+            usedColor,
+            usedColor,
+            usedColor,
         )
 
-        println("RIPPLE ${navView.itemRippleColor}")
-        navView.itemRippleColor = ColorStateList.valueOf(Cyanea.instance.menuIconColor)
+        navView.itemRippleColor = ColorStateList.valueOf(usedColor)
         navView.itemIconTintList = ColorStateList(states, colors)
         navView.itemTextColor = ColorStateList(states, colors)
 

@@ -13,6 +13,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.database.Cursor
 import android.graphics.Color
+import android.graphics.Point
 import android.graphics.Rect
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -49,7 +50,6 @@ import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.*
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
-import com.lagradost.shiro.ui.MainActivity.Companion.lightMode
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.ui.home.CardAdapter
 import com.lagradost.shiro.ui.home.CardContinueAdapter
@@ -95,13 +95,57 @@ object AppUtils {
         return uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
     }
 
-    fun Activity.getStatusBarHeight(): Int {
+    fun Context.getStatusBarHeight(): Int {
         val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
         return if (resourceId > 0) {
             resources.getDimensionPixelSize(resourceId)
         } else
             0
     }
+
+    fun Context.getNavigationBarSizeFake(): Int {
+        val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+        return if (resourceId > 0) {
+            resources.getDimensionPixelSize(resourceId)
+        } else
+            0
+    }
+
+
+    // https://stackoverflow.com/questions/20264268/how-do-i-get-the-height-and-width-of-the-android-navigation-bar-programmatically
+    fun Context.getNavigationBarSize(): Point {
+        val appUsableSize = getAppUsableScreenSize(this)
+        val realScreenSize = getRealScreenSize(this)
+
+        // navigation bar on the side
+        if (appUsableSize.x < realScreenSize.x) {
+            return Point(realScreenSize.x - appUsableSize.x, appUsableSize.y)
+        }
+
+        // navigation bar at the bottom
+        return if (appUsableSize.y < realScreenSize.y) {
+            Point(appUsableSize.x, realScreenSize.y - appUsableSize.y)
+        } else Point()
+
+        // navigation bar is not present
+    }
+
+    private fun getAppUsableScreenSize(context: Context): Point {
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val display = windowManager.defaultDisplay
+        val size = Point()
+        display.getSize(size)
+        return size
+    }
+
+    private fun getRealScreenSize(context: Context): Point {
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val display = windowManager.defaultDisplay
+        val size = Point()
+        display.getRealSize(size)
+        return size
+    }
+
 
     // Guarantee slug is dubbed or not
     fun ShiroApi.AnimePageData.dubbify(turnDubbed: Boolean): ShiroApi.AnimePageData {
@@ -459,7 +503,7 @@ object AppUtils {
         }*/
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             systemUiVisibility =
-                if (lightMode) systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR else systemUiVisibility
+                if (Cyanea.instance.isLight) systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR else systemUiVisibility
             navigationBarColor = Color.TRANSPARENT
         }
         systemUiVisibility = systemUiVisibility or

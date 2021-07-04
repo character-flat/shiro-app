@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
@@ -11,16 +12,19 @@ import androidx.preference.MultiSelectListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 import com.lagradost.shiro.BuildConfig
 import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
 import com.lagradost.shiro.utils.AppUtils.allApi
 import com.lagradost.shiro.utils.AppUtils.checkWrite
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
+import com.lagradost.shiro.utils.AppUtils.getNavigationBarSizeFake
 import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.BackupUtils.backup
@@ -35,7 +39,7 @@ import kotlin.concurrent.thread
 const val XML_KEY = "xml"
 
 class SubSettingsFragment : PreferenceFragmentCompat() {
-    var xmlFile: Int? = null
+    private var xmlFile: Int? = null
 
     companion object {
         var settingsViewModel: SettingsViewModel? = null
@@ -46,7 +50,12 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                     putInt(XML_KEY, xml)
                 }
             }
+    }
 
+   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val rv: RecyclerView = listView; // This holds the PreferenceScreen's items
+        rv.setPadding(0, getCurrentActivity()!!.getNavigationBarSizeFake() + 20.toPx, 0, 0)
     }
 
     override fun onAttach(context: Context) {
@@ -55,6 +64,10 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
         arguments?.getInt(XML_KEY)?.let {
             xmlFile = it
         }
+    }
+
+    fun setTitle(title: String) {
+        getCurrentActivity()?.title = title
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -66,7 +79,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
 
                 /** General settings */
 
-                getCurrentActivity()!!.title = "General settings"
+                setTitle("General settings")
 
                 findPreference<SwitchPreference>("force_landscape")?.setOnPreferenceChangeListener { _, newValue ->
                     if (newValue == true) {
@@ -85,7 +98,6 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                     }
                     return@setOnPreferenceChangeListener true
                 }
-
 
                 val subToAnnouncements = findPreference("subscribe_to_announcements") as SwitchPreference?
                 subToAnnouncements?.setOnPreferenceChangeListener { _, newValue ->
@@ -127,7 +139,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
 
                 /** Player settings */
 
-                getCurrentActivity()!!.title = "Player settings"
+                setTitle("Player settings")
 
                 findPreference<Preference?>("pip_enabled")?.isVisible =
                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
@@ -139,7 +151,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
 
                 selectedProvidersPreference?.entries = apiNames.toTypedArray()
                 selectedProvidersPreference?.entryValues = apiNames.toTypedArray()
-                selectedProvidersPreference?.setOnPreferenceChangeListener { preference, newValue ->
+                selectedProvidersPreference?.setOnPreferenceChangeListener { _, newValue ->
                     allApi.providersActive = newValue as HashSet<String>
 
                     return@setOnPreferenceChangeListener true
@@ -153,9 +165,14 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
 
                 /** Account settings */
 
-                getCurrentActivity()!!.title = "Account settings"
+                setTitle("Account settings")
 
-                settingsViewModel = settingsViewModel ?: ViewModelProvider(getCurrentActivity()!!).get(SettingsViewModel::class.java)
+                settingsViewModel =
+                    settingsViewModel ?: getCurrentActivity()?.let {
+                        ViewModelProvider(it).get(
+                            SettingsViewModel::class.java
+                        )
+                    }
 
                 fun isLoggedIntoMal(): Boolean {
                     return DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
@@ -186,7 +203,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                             builder.apply {
                                 setPositiveButton(
                                     "Logout"
-                                ) { dialog, id ->
+                                ) { _, _ ->
                                     DataStore.removeKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID)
                                     DataStore.removeKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID)
                                     DataStore.removeKey(ANILIST_USER_KEY, ANILIST_ACCOUNT_ID)
@@ -194,7 +211,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                                 }
                                 setNegativeButton(
                                     "Cancel"
-                                ) { dialog, id ->
+                                ) { _, _ ->
                                     // User cancelled the dialog
                                 }
                             }
@@ -223,7 +240,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                             builder.apply {
                                 setPositiveButton(
                                     "Logout"
-                                ) { dialog, id ->
+                                ) { _, _ ->
                                     DataStore.removeKey(MAL_TOKEN_KEY, MAL_ACCOUNT_ID)
                                     DataStore.removeKey(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID)
                                     DataStore.removeKey(MAL_USER_KEY, MAL_ACCOUNT_ID)
@@ -232,7 +249,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                                 }
                                 setNegativeButton(
                                     "Cancel"
-                                ) { _, id ->
+                                ) { _, _ ->
                                     // User cancelled the dialog
                                 }
                             }
@@ -255,7 +272,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
 
                 /** History settings */
 
-                getCurrentActivity()!!.title = "History settings"
+                setTitle("History settings")
 
                 val clearHistory = findPreference<Preference?>("clear_history")
                 val historyItems = getKeys(VIEW_POS_KEY).size + getKeys(
@@ -268,7 +285,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                         builder.apply {
                             setPositiveButton(
                                 "OK"
-                            ) { dialog, id ->
+                            ) { _, _ ->
                                 val amount = removeKeys(VIEW_POS_KEY) + removeKeys(
                                     VIEWSTATE_KEY
                                 )
@@ -288,7 +305,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                             }
                             setNegativeButton(
                                 "Cancel"
-                            ) { dialog, id ->
+                            ) { _, _ ->
                                 // User cancelled the dialog
                             }
                         }
@@ -327,7 +344,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
 
                 /** Update info settings */
 
-                getCurrentActivity()!!.title = "Update info"
+                setTitle("Update info")
 
                 // Changelog
                 val changeLog = findPreference("changelog") as Preference?
@@ -416,7 +433,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
 
                 /** Info settings */
 
-                getCurrentActivity()!!.title = "Info"
+                setTitle("Info")
 
                 findPreference<Preference?>("backup_btt")?.setOnPreferenceClickListener {
                     activity?.backup()

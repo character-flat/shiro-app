@@ -61,6 +61,7 @@ import com.lagradost.shiro.utils.AppUtils.expandTouchArea
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getLatestSeenEpisode
+import com.lagradost.shiro.utils.AppUtils.getNavigationBarSize
 import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.hideKeyboard
@@ -81,6 +82,25 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.onTokenFetched
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.bottom_sheet.*
 import kotlinx.android.synthetic.main.fragment_results.*
+import kotlinx.android.synthetic.main.fragment_results.aniList_progressbar
+import kotlinx.android.synthetic.main.fragment_results.anilist_btt_holder
+import kotlinx.android.synthetic.main.fragment_results.anilist_holder
+import kotlinx.android.synthetic.main.fragment_results.anilist_progress_txt
+import kotlinx.android.synthetic.main.fragment_results.edit_episodes_btt
+import kotlinx.android.synthetic.main.fragment_results.rating_btt
+import kotlinx.android.synthetic.main.fragment_results.rating_btt_holder
+import kotlinx.android.synthetic.main.fragment_results.rating_text
+import kotlinx.android.synthetic.main.fragment_results.status_btt
+import kotlinx.android.synthetic.main.fragment_results.status_btt_holder
+import kotlinx.android.synthetic.main.fragment_results.status_text
+import kotlinx.android.synthetic.main.fragment_results.subscribe_holder
+import kotlinx.android.synthetic.main.fragment_results.subscribe_image
+import kotlinx.android.synthetic.main.fragment_results.title_anilist
+import kotlinx.android.synthetic.main.fragment_results.title_anilist_holder
+import kotlinx.android.synthetic.main.fragment_results.title_mal
+import kotlinx.android.synthetic.main.fragment_results.title_mal_holder
+import kotlinx.android.synthetic.main.fragment_results.title_subscribe_holder
+import kotlinx.android.synthetic.main.fragment_results_new.*
 import kotlinx.android.synthetic.main.fragment_results_new.bookmark_holder
 import kotlinx.android.synthetic.main.fragment_results_new.episodes_res_view
 import kotlinx.android.synthetic.main.fragment_results_new.language_button
@@ -1094,6 +1114,8 @@ class ResultFragment : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        fragments_new_nav_view?.setPadding(0, 0, 0, getCurrentActivity()!!.getNavigationBarSize().y)
 
         title_holder.backgroundTintList = ColorStateList.valueOf(
             Cyanea.instance.backgroundColor

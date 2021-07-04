@@ -23,7 +23,6 @@
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
         >
-
             <FrameLayout
                     android:layout_margin="5dp"
                     android:layout_width="wrap_content"
@@ -76,9 +75,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/expanded_card_list_view"
                 tools:listitem="@layout/home_card"
-        >
-
-        </com.lagradost.shiro.ui.AutofitRecyclerView>
+        />
     </ScrollView>
 
 </LinearLayout>

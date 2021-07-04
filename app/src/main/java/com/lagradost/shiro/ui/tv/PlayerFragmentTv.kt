@@ -18,6 +18,7 @@ package com.lagradost.shiro.ui.tv
 
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.graphics.Color
@@ -28,9 +29,11 @@ import android.os.Handler
 import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
 import android.view.*
+import android.view.View.GONE
+import android.widget.AbsListView.CHOICE_MODE_SINGLE
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.leanback.app.PlaybackSupportFragment
 import androidx.leanback.app.VideoSupportFragment
@@ -71,6 +74,7 @@ import com.lagradost.shiro.utils.MALApi.Companion.malStatusAsString
 import com.lagradost.shiro.utils.MALApi.Companion.setScoreRequest
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 import com.lagradost.shiro.utils.ShiroApi.Companion.loadLinks
+import kotlinx.android.synthetic.main.bottom_sheet.*
 import java.io.File
 import java.security.SecureRandom
 import java.util.concurrent.TimeUnit
@@ -213,15 +217,25 @@ class PlayerFragmentTv : VideoSupportFragment() {
                 }
                 actionSources -> {
                     activity?.let { activity ->
-                        lateinit var dialog: AlertDialog
                         sources.second?.let {
                             val sourcesText = it.map { link -> link.name }
-                            val builder = AlertDialog.Builder(activity, R.style.AlertDialogCustom)
-                            builder.setTitle("Pick source")
+                            val dialog = Dialog(activity, R.style.AlertDialogCustom)
                             val index = maxOf(sources.second?.indexOf(selectedSource) ?: -1, 0)
-                            builder.setSingleChoiceItems(sourcesText.toTypedArray(), index) { _, which ->
-                                //val speed = speedsText[which]
-                                //Toast.makeText(requireContext(), "$speed selected.", Toast.LENGTH_SHORT).show()
+                            //dialog = builder.create()
+                            dialog.setContentView(R.layout.bottom_sheet)
+                            dialog.bottom_sheet_top_bar?.visibility = GONE
+                            val res = dialog.sort_click
+
+                            res.choiceMode = CHOICE_MODE_SINGLE
+                            val arrayAdapter =
+                                ArrayAdapter<String>(getCurrentActivity()!!, R.layout.bottom_single_choice)
+                            arrayAdapter.addAll(ArrayList(sourcesText))
+                            res.adapter = arrayAdapter
+                            res.setItemChecked(
+                                index,
+                                true
+                            )
+                            res.setOnItemClickListener { _, _, which, _ ->
                                 selectedSource = it[which]
                                 savePos()
                                 releasePlayer()
@@ -229,8 +243,8 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
                                 dialog.dismiss()
                             }
-                            dialog = builder.create()
                             dialog.show()
+
                         }
                     }
                     // Do not remove
@@ -332,17 +346,22 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
         val progress = malHolder?.my_list_status?.num_episodes_watched ?: holder?.progress ?: 0
         val score = malHolder?.my_list_status?.score ?: holder?.score ?: 0
-        var type = if (malHolder != null) {
+        var type = if (holder != null) {
+            val type =
+                if (holder.type == AniListApi.Companion.AniListStatusType.None) AniListApi.Companion.AniListStatusType.Watching else holder.type
+            AniListApi.fromIntToAnimeStatus(type.value)
+        } else {
             var type =
-                AniListApi.fromIntToAnimeStatus(malStatusAsString.indexOf(malHolder.my_list_status?.status))
+                AniListApi.fromIntToAnimeStatus(
+                    malStatusAsString.indexOf(
+                        malHolder?.my_list_status?.status ?: "watching"
+                    )
+                )
             type =
                 if (type.value == MALApi.Companion.MalStatusType.None.value) AniListApi.Companion.AniListStatusType.Watching else type
             type
-        } else {
-            val type =
-                if (holder?.type == AniListApi.Companion.AniListStatusType.None) AniListApi.Companion.AniListStatusType.Watching else holder?.type
-            AniListApi.fromIntToAnimeStatus(type?.value ?: 0)
         }
+
         val currentEpisodeProgress = data?.episodeIndex!! + 1
 
         if (currentEpisodeProgress == holder?.episodes ?: data?.card?.episodes?.size

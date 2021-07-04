@@ -55,7 +55,6 @@
                         android:visibility="gone"
                         class="com.lagradost.shiro.ui.MyMiniControllerFragment"
                         tools:ignore="FragmentTagUsage">
-
                 </fragment>
             </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>

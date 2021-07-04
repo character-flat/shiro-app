@@ -49,8 +49,8 @@
 
     <string-array name="LongClickOptions">
         <item>Show Toast</item>
-        <item>Favorite</item>
-        <item>Subscribe</item>
-        <item>Favorite and Subscribe</item>
+        <item>Toggle Favorite</item>
+        <item>Toggle Subscribe</item>
+        <item>Toggle Favorite and Subscribe</item>
     </string-array>
 </resources>

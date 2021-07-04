@@ -48,7 +48,6 @@
         <item name="castMiniControllerStyle">@style/CustomCastMiniController</item>
         <item name="android:windowAllowReturnTransitionOverlap">true</item>
         <item name="android:windowAllowEnterTransitionOverlap">true</item>
-
         <!-- default theme -->
         <item name="white">@color/white</item>
         <item name="textColor">@color/textColor</item>
@@ -232,6 +231,12 @@
     <style name="customText">
         <item name="android:textColor">?attr/textColor</item>
     </style>
+
+    <style name="preferenceActivityTheme">
+        <item name="android:textColor">?attr/textColor</item>
+        <item name="android:tint">@color/whiteSettings</item>
+    </style>
+
     <style name="CustomCastExpandedController" parent="CastExpandedController">
         <item name="castControlButtons">
             @array/cast_expanded_controller_control_buttons

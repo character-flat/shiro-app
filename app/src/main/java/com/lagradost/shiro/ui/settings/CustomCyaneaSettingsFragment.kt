@@ -21,10 +21,12 @@ import android.os.Build
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.Bundle
+import android.view.View
 import androidx.annotation.XmlRes
 import androidx.preference.*
 import androidx.preference.Preference.OnPreferenceChangeListener
 import androidx.preference.Preference.OnPreferenceClickListener
+import androidx.recyclerview.widget.RecyclerView
 import com.jaredrummler.android.colorpicker.ColorPreferenceCompat
 import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.app.BaseCyaneaActivity
@@ -34,8 +36,10 @@ import com.jaredrummler.cyanea.tinting.SystemBarTint
 import com.jaredrummler.cyanea.utils.ColorUtils
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
+import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
+import com.lagradost.shiro.utils.AppUtils.getNavigationBarSizeFake
 
 /**
  * Fragment to display preferences to modify the primary, accent, and background color of the app.
@@ -96,7 +100,8 @@ open class CyaneaSettingsFragment : PreferenceFragmentCompat(), OnPreferenceChan
         /** Removed nav bar color selection */
         //setupNavBarPref()
 
-        getCurrentActivity()!!.title = "Style settings"
+        getCurrentActivity()?.title = "Appearance settings"
+        // Hack to make tinting work
 
         val statusBarHidden = findPreference<SwitchPreference?>("statusbar_hidden")
         statusBarHidden?.setOnPreferenceChangeListener { _, newValue ->
@@ -105,7 +110,14 @@ open class CyaneaSettingsFragment : PreferenceFragmentCompat(), OnPreferenceChan
             }
             return@setOnPreferenceChangeListener true
         }
+    }
 
+    override fun onResume() {
+        super.onResume()
+        if (hasEnteredThemeSelector) {
+            hasEnteredThemeSelector = false
+            activity?.recreate()
+        }
     }
 
     override fun onPreferenceClick(preference: Preference?): Boolean {
@@ -115,6 +127,8 @@ open class CyaneaSettingsFragment : PreferenceFragmentCompat(), OnPreferenceChan
                     if (this is CyaneaThemePickerLauncher) {
                         launchThemePicker()
                     } else {
+                        // Hack to make it apply the colors properly
+                        hasEnteredThemeSelector = true
                         startActivity(Intent(this, CyaneaThemePickerActivity::class.java))
                     }
                 }
@@ -158,6 +172,12 @@ open class CyaneaSettingsFragment : PreferenceFragmentCompat(), OnPreferenceChan
         }
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val rv: RecyclerView = listView; // This holds the PreferenceScreen's items
+        rv.setPadding(0, getCurrentActivity()!!.getNavigationBarSizeFake() + 20.toPx, 0, 0)
+    }
+
     private inline fun <reified T : Preference> findPreference(key: String): T =
         super.findPreference<Preference>(key) as T
 
@@ -168,6 +188,8 @@ open class CyaneaSettingsFragment : PreferenceFragmentCompat(), OnPreferenceChan
         private const val PREF_COLOR_ACCENT = "pref_color_accent"
         private const val PREF_COLOR_BACKGROUND = "pref_color_background"
         //private const val PREF_COLOR_NAV_BAR = "pref_color_navigation_bar"
+
+        var hasEnteredThemeSelector = false
 
         fun newInstance() = CyaneaSettingsFragment()
     }

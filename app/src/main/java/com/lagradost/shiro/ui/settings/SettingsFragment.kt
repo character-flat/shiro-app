@@ -1,6 +1,7 @@
 package com.lagradost.shiro.ui.settings
 
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -93,6 +94,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
         activity?.changeStatusBarState(settingsManager.getBoolean("statusbar_hidden", true))?.let {
             statusHeight = it
+        }
+        activity?.requestedOrientation = if (settingsManager.getBoolean("force_landscape", false)) {
+            ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+        } else {
+            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
         isInSettings = true
         if (tvActivity != null) {

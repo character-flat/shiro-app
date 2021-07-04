@@ -494,7 +494,7 @@ class EpisodeAdapter(
                 if (last.isFound && last.episodeIndex == episodePos) {
                     activity.let {
                         card.cardBg.setCardBackgroundColor(
-                            Cyanea.instance.primary
+                            Cyanea.instance.primaryLight
                         )
                     }
                 } else {

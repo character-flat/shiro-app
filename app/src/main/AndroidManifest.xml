@@ -31,7 +31,6 @@
             android:theme="@style/AppTheme"
             tools:node="merge">
 
-
         <!-- Set custom default icon. This is used when no icon is set for incoming notification messages. -->
         <meta-data
                 android:name="com.google.firebase.messaging.default_notification_icon"
@@ -51,7 +50,6 @@
                 <data android:scheme="content"/>
                 <data android:mimeType="video/*"/>
             </intent-filter>
-
         </activity>
 
         <provider
@@ -65,7 +63,13 @@
         </provider>
 
         <activity android:name=".ui.ControllerActivity"/>
-        <activity android:name=".ui.settings.SettingsActivity"/>
+        <activity android:name=".ui.settings.SettingsActivity"
+                  android:screenOrientation="behind"
+                  android:theme="@style/preferenceActivityTheme"
+                  android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation"
+        >
+
+        </activity>
         <meta-data
                 android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
                 android:value="com.lagradost.shiro.utils.CastOptionsProvider"/>

@@ -7,6 +7,7 @@
         android:gravity="center_vertical"
         android:textColor="?attr/textColor"
         tools:text="Example Text"
+        android:minWidth="600dp"
         android:background="?attr/backgroundColor"
         android:selectAllOnFocus="true"
         android:foreground="?attr/selectableItemBackgroundBorderless"
