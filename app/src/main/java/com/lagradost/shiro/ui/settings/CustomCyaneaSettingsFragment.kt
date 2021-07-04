@@ -22,12 +22,9 @@ import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.Bundle
 import androidx.annotation.XmlRes
-import androidx.preference.Preference
+import androidx.preference.*
 import androidx.preference.Preference.OnPreferenceChangeListener
 import androidx.preference.Preference.OnPreferenceClickListener
-import androidx.preference.PreferenceCategory
-import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.SwitchPreferenceCompat
 import com.jaredrummler.android.colorpicker.ColorPreferenceCompat
 import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.app.BaseCyaneaActivity
@@ -36,6 +33,9 @@ import com.jaredrummler.cyanea.prefs.CyaneaThemePickerLauncher
 import com.jaredrummler.cyanea.tinting.SystemBarTint
 import com.jaredrummler.cyanea.utils.ColorUtils
 import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
+import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
+import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 
 /**
  * Fragment to display preferences to modify the primary, accent, and background color of the app.
@@ -64,7 +64,7 @@ open class CyaneaSettingsFragment : PreferenceFragmentCompat(), OnPreferenceChan
      * @return The XML resource id to inflate
      */
     @XmlRes
-    open fun getPreferenceXmlResId(): Int = R.xml.pref_cyanea
+    open fun getPreferenceXmlResId(): Int = R.xml.custom_pref_cyanea
 
     /**
      * Sets whether to reserve the space of all Preference views. If set to false, all padding will be removed.
@@ -81,7 +81,7 @@ open class CyaneaSettingsFragment : PreferenceFragmentCompat(), OnPreferenceChan
         prefColorPrimary = findPreference(PREF_COLOR_PRIMARY)
         prefColorAccent = findPreference(PREF_COLOR_ACCENT)
         prefColorBackground = findPreference(PREF_COLOR_BACKGROUND)
-        prefColorNavBar = findPreference(PREF_COLOR_NAV_BAR)
+        //prefColorNavBar = findPreference(PREF_COLOR_NAV_BAR)
 
         prefColorPrimary.saveValue(cyanea.primary)
         prefColorAccent.saveValue(cyanea.accent)
@@ -91,10 +91,21 @@ open class CyaneaSettingsFragment : PreferenceFragmentCompat(), OnPreferenceChan
         prefColorPrimary.onPreferenceChangeListener = this
         prefColorAccent.onPreferenceChangeListener = this
         prefColorBackground.onPreferenceChangeListener = this
-        prefColorNavBar.onPreferenceChangeListener = this
+        //prefColorNavBar.onPreferenceChangeListener = this
 
         /** Removed nav bar color selection */
         //setupNavBarPref()
+
+        getCurrentActivity()!!.title = "Style settings"
+
+        val statusBarHidden = findPreference<SwitchPreference?>("statusbar_hidden")
+        statusBarHidden?.setOnPreferenceChangeListener { _, newValue ->
+            activity?.changeStatusBarState(newValue == true)?.let {
+                statusHeight = it
+            }
+            return@setOnPreferenceChangeListener true
+        }
+
     }
 
     override fun onPreferenceClick(preference: Preference?): Boolean {
@@ -156,7 +167,7 @@ open class CyaneaSettingsFragment : PreferenceFragmentCompat(), OnPreferenceChan
         private const val PREF_COLOR_PRIMARY = "pref_color_primary"
         private const val PREF_COLOR_ACCENT = "pref_color_accent"
         private const val PREF_COLOR_BACKGROUND = "pref_color_background"
-        private const val PREF_COLOR_NAV_BAR = "pref_color_navigation_bar"
+        //private const val PREF_COLOR_NAV_BAR = "pref_color_navigation_bar"
 
         fun newInstance() = CyaneaSettingsFragment()
     }

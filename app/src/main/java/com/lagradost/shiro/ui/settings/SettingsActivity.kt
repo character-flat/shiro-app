@@ -18,21 +18,32 @@ package com.lagradost.shiro.ui.settings
 
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.preference.PreferenceManager
 import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
+import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
+import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
+import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 
 /**
  * Activity to show Cyanea preferences allowing the user to modify the primary, accent and background color of the app.
  */
-open class CustomCyaneaSettingsActivity : CyaneaAppCompatActivity() {
+open class SettingsActivity : CyaneaAppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        settingsActivity = this
         supportActionBar?.show()
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .add(android.R.id.content, CyaneaSettingsFragment.newInstance())
-                .commit()
+
+        when (val xml = intent.getIntExtra(XML_KEY, -1)) {
+            R.xml.custom_pref_cyanea -> {
+                this.addFragmentOnlyOnce(android.R.id.content, CyaneaSettingsFragment.newInstance(), "SETTINGS")
+            }
+            -1 -> finish()
+            else -> {
+                this.addFragmentOnlyOnce(android.R.id.content, SubSettingsFragment.newInstance(xml), "SETTINGS")
+            }
         }
     }
 
@@ -42,5 +53,15 @@ open class CustomCyaneaSettingsActivity : CyaneaAppCompatActivity() {
             true
         }
         else -> super.onOptionsItemSelected(item)
+    }
+
+    override fun onResume() {
+        val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
+        statusHeight = changeStatusBarState(settingsManager.getBoolean("statusbar_hidden", true))
+        super.onResume()
+    }
+
+    companion object {
+        var settingsActivity: SettingsActivity? = null
     }
 }

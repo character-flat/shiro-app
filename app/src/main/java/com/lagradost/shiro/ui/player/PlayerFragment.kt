@@ -11,6 +11,7 @@ import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
+import android.content.res.ColorStateList
 import android.database.ContentObserver
 import android.graphics.Color
 import android.graphics.drawable.Icon
@@ -351,7 +352,7 @@ class PlayerFragment : Fragment() {
             if (data?.fillerEpisodes?.get((data?.episodeIndex ?: -1) + 1) == true) " (Filler) " else ""
         if (data?.title != null) return data?.title!! + fillerInfo + postTitle
 
-        val isMovie: Boolean = data?.card!!.episodes!!.size == 1 && data?.card?.status == "finished"
+        val isMovie: Boolean = data?.card?.episodes?.size == 1 && data?.card?.status == "finished"
         // data?.card!!.cdndata?.seasons.size == 1 && data?.card!!.cdndata?.seasons[0].episodes.size == 1
         var preTitle = ""
         if (!isMovie) {
@@ -782,6 +783,9 @@ class PlayerFragment : Fragment() {
             playerViewModel?.videoSize?.postValue(null)
         }
 
+        progressBarLeft.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
+        progressBarRight.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
+
         activity?.contentResolver
             ?.registerContentObserver(
                 Settings.System.CONTENT_URI, true, volumeObserver
@@ -1133,7 +1137,8 @@ class PlayerFragment : Fragment() {
             lateinit var dialog: AlertDialog
             sources.second?.let {
                 val sourcesText = it.map { link -> link.name }
-                val builder = AlertDialog.Builder(getCurrentActivity()!!, R.style.AlertDialogCustom)
+                val builder =
+                    AlertDialog.Builder(ContextThemeWrapper(getCurrentActivity()!!, R.style.AlertDialogCustom))
                 builder.setTitle("Pick source")
                 val index = maxOf(sources.second?.indexOf(playerViewModel?.selectedSource?.value) ?: -1, 0)
                 builder.setSingleChoiceItems(sourcesText.toTypedArray(), index) { _, which ->

@@ -13,7 +13,7 @@
     "background_light": "#303030"
   },
   {
-    "theme_name": "Dev favorite",
+    "theme_name": "Classic purple",
     "base_theme": "DARK",
     "primary": "#6200EA",
     "primary_dark": "#39097D",
@@ -52,7 +52,7 @@
     "background_light": "#FF2D363A"
   },
   {
-    "theme_name": "Inkpot",
+    "theme_name": "Dev favorite",
     "base_theme": "DARK",
     "primary": "#FF6068B2",
     "primary_dark": "#FF515897",
@@ -76,6 +76,32 @@
     "background": "#FFEBE5D9",
     "background_dark": "#FFA4A097",
     "background_light": "#FFEEE8DE"
+  },
+  {
+    "theme_name": "Midnight Dusk",
+    "base_theme": "DARK",
+    "primary": "#EF2475",
+    "primary_dark": "#BF1C5D",
+    "primary_light": "#F24F90",
+    "accent": "#8B8A8F",
+    "accent_dark": "#6F6E72",
+    "accent_light": "#A2A1A5",
+    "background": "#16151D",
+    "background_dark": "#0D0C11",
+    "background_light": "#44434A"
+  },
+  {
+    "theme_name": "Dalek's Theme",
+    "base_theme": "DARK",
+    "primary": "#8DB62F",
+    "primary_dark": "#6C8C24",
+    "primary_light": "#AEE13A",
+    "accent": "#8DB62F",
+    "accent_dark": "#6C8C24",
+    "accent_light": "#AEE13A",
+    "background": "#2A370E",
+    "background_dark": "#0A0C03",
+    "background_light": "#4B6119"
   },
   {
     "theme_name": "Brave",

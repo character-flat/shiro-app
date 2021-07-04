@@ -62,6 +62,7 @@ import com.lagradost.shiro.ui.player.PlayerData
 import com.lagradost.shiro.ui.player.PlayerFragment
 import com.lagradost.shiro.ui.result.RESULT_FRAGMENT_TAG
 import com.lagradost.shiro.ui.result.ResultFragment
+import com.lagradost.shiro.ui.settings.SettingsActivity.Companion.settingsActivity
 import com.lagradost.shiro.ui.tv.PlayerFragmentTv
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.DataStore.mapper
@@ -395,6 +396,7 @@ object AppUtils {
 
     fun getCurrentActivity(): CyaneaAppCompatActivity? {
         return when {
+            settingsActivity != null -> settingsActivity
             activity != null -> activity
             tvActivity != null -> tvActivity
             playerActivity != null -> playerActivity
@@ -885,8 +887,8 @@ fun loadPlayer(title: String?, url: String, startAt: Long?) {
     }
 
 
-    fun Context.getTextColor(isGrey: Boolean = false): Int{
-        return if (Cyanea.instance.isDark){
+    fun Context.getTextColor(isGrey: Boolean = false): Int {
+        return if (Cyanea.instance.isDark) {
             val color = if (isGrey) R.color.textColorGray else R.color.textColor
             ContextCompat.getColor(this, color)
         } else {
