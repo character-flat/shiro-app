@@ -65,8 +65,8 @@ class DownloadFragment : Fragment() {
                             val id = child.slug
                             println("EpisodeIndex: " + child.episodeIndex)
                             val isDownloading =
-                                DownloadManager.downloadStatus.containsKey(child.internalId) &&
-                                        DownloadManager.downloadStatus[child.internalId] == DownloadManager.DownloadStatusType.IsDownloading
+                                VideoDownloadManager.downloadStatus.containsKey(child.internalId) &&
+                                        VideoDownloadManager.downloadStatus[child.internalId] == VideoDownloadManager.DownloadType.IsDownloading
 
                             if (!epData.containsKey(id)) {
                                 epData[id] = EpisodesDownloaded(1, if (isDownloading) 1 else 0, child.maxFileSize)
