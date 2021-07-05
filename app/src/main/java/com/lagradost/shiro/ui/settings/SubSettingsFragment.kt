@@ -15,7 +15,6 @@ import androidx.preference.MultiSelectListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
-import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.firebase.ktx.Firebase
@@ -23,13 +22,11 @@ import com.google.firebase.messaging.ktx.messaging
 import com.lagradost.shiro.BuildConfig
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.settings.SettingsFragment.Companion.restoreFileSelector
-import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
 import com.lagradost.shiro.utils.AppUtils.allApi
 import com.lagradost.shiro.utils.AppUtils.checkWrite
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
-import com.lagradost.shiro.utils.AppUtils.getNavigationBarSizeFake
 import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.BackupUtils.backup
@@ -62,8 +59,8 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val rv: RecyclerView = listView; // This holds the PreferenceScreen's items
-        rv.setPadding(0, getCurrentActivity()!!.getNavigationBarSizeFake() + 20.toPx, 0, 0)
+        //val rv: RecyclerView = listView // This holds the PreferenceScreen's items
+        //rv.setPadding(0, getCurrentActivity()!!.getNavigationBarSizeFake() + 20.toPx, 0, 0)
     }
 
     override fun onAttach(context: Context) {
@@ -499,7 +496,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
 
                 /** Info settings */
 
-                setTitle("Info")
+                setTitle("About")
 
                 /** End of Info settings */
 

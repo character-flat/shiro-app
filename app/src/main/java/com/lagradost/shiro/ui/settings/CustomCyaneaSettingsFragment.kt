@@ -26,7 +26,6 @@ import androidx.annotation.XmlRes
 import androidx.preference.*
 import androidx.preference.Preference.OnPreferenceChangeListener
 import androidx.preference.Preference.OnPreferenceClickListener
-import androidx.recyclerview.widget.RecyclerView
 import com.jaredrummler.android.colorpicker.ColorPreferenceCompat
 import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.app.BaseCyaneaActivity
@@ -36,10 +35,8 @@ import com.jaredrummler.cyanea.tinting.SystemBarTint
 import com.jaredrummler.cyanea.utils.ColorUtils
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
-import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
-import com.lagradost.shiro.utils.AppUtils.getNavigationBarSizeFake
 
 /**
  * Fragment to display preferences to modify the primary, accent, and background color of the app.
@@ -178,8 +175,8 @@ open class CyaneaSettingsFragment : PreferenceFragmentCompat(), OnPreferenceChan
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val rv: RecyclerView = listView; // This holds the PreferenceScreen's items
-        rv.setPadding(0, getCurrentActivity()!!.getNavigationBarSizeFake() + 20.toPx, 0, 0)
+        //val rv: RecyclerView = listView; // This holds the PreferenceScreen's items
+        //rv.setPadding(0, getCurrentActivity()!!.getNavigationBarSizeFake() + 20.toPx, 0, 0)
     }
 
     private inline fun <reified T : Preference> findPreference(key: String): T =

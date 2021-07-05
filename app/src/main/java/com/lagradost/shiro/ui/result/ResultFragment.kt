@@ -1115,7 +1115,12 @@ class ResultFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        fragments_new_nav_view?.setPadding(0, 0, 0, getCurrentActivity()!!.getNavigationBarSize().y)
+        // ORIENTATION_PORTRAIT not working for some reason so I chose this
+        if (!settingsManager!!.getBoolean("force_landscape", false)) {
+            val navBarSize = getCurrentActivity()!!.getNavigationBarSize()
+            val min = minOf(navBarSize.y, navBarSize.x)
+            fragments_new_nav_view?.setPadding(0, 0, 0, min)
+        }
 
         title_holder.backgroundTintList = ColorStateList.valueOf(
             Cyanea.instance.backgroundColor

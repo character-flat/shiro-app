@@ -42,8 +42,7 @@ open class SettingsActivity : CyaneaAppCompatActivity() {
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        transparentStatusAndNavigation()
-
+        //transparentStatusAndNavigation()
 
         //getNavigationBarSize()
 

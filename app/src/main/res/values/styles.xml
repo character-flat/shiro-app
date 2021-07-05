@@ -242,7 +242,7 @@
 
     <style name="preferenceActivityTheme">
         <item name="android:textColor">?attr/textColor</item>
-        <item name="android:tint">@color/whiteSettings</item>
+        <item name="android:tint">?attr/colorAccent</item>
     </style>
 
     <style name="CustomCastExpandedController" parent="CastExpandedController">
