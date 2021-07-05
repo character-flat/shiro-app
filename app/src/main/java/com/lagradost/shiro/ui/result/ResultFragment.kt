@@ -794,7 +794,7 @@ class ResultFragment : Fragment() {
                                 dialog = builder.create()
                                 dialog.show()
                             } else {
-                                val bottomSheetDialog = BottomSheetDialog(activity)
+                                val bottomSheetDialog = BottomSheetDialog(activity, R.style.AppBottomSheetDialogTheme)
                                 bottomSheetDialog.setContentView(R.layout.bottom_sheet)
                                 val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
                                 res.choiceMode = CHOICE_MODE_SINGLE
@@ -814,7 +814,7 @@ class ResultFragment : Fragment() {
                         }
 
                         status_btt?.setOnClickListener {
-                            val bottomSheetDialog = BottomSheetDialog(activity)
+                            val bottomSheetDialog = BottomSheetDialog(activity, R.style.AppBottomSheetDialogTheme)
                             bottomSheetDialog.setContentView(R.layout.bottom_sheet)
                             val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
                             val arrayAdapter = ArrayAdapter<String>(activity, R.layout.bottom_single_choice)

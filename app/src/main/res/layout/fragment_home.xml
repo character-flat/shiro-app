@@ -60,8 +60,6 @@
                             android:layout_width="match_parent"
                             android:layout_height="300dp"
                             android:scaleType="centerCrop"
-                            android:alpha="1"
-                            android:foreground="?android:attr/selectableItemBackgroundBorderless"
                             android:focusable="true"
                             android:contentDescription="@string/home_background_content_description"
                             android:nextFocusUp="@+id/nav_view"

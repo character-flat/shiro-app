@@ -437,13 +437,14 @@ class MainActivity : CyaneaAppCompatActivity() {
             intArrayOf(-android.R.attr.state_enabled),
         )
 
-        val usedColor = this.getTextColor()
+        val primary = settingsManager.getBoolean("accent_color_for_nav_view", true)
+        val usedColor = if (primary) Cyanea.instance.accent else this.getTextColor()
 
         val colors = intArrayOf(
             usedColor,
+            this.getTextColor(),
             usedColor,
-            usedColor,
-            usedColor,
+            this.getTextColor(),
         )
 
         navView.itemRippleColor = ColorStateList.valueOf(usedColor)

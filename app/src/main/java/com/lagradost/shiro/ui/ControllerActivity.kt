@@ -8,7 +8,6 @@ import android.widget.AbsListView.CHOICE_MODE_SINGLE
 import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.ListView
-import androidx.appcompat.app.AlertDialog
 import com.google.android.gms.cast.MediaStatus.REPEAT_MODE_REPEAT_SINGLE
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastSession
@@ -45,7 +44,7 @@ class SelectSourceController(val view: ImageView) : UIController() {
                 }
             }
             if (items.isNotEmpty()) {
-                val bottomSheetDialog = BottomSheetDialog(view.context)
+                val bottomSheetDialog = BottomSheetDialog(view.context, R.style.AppBottomSheetDialogTheme)
                 bottomSheetDialog.setContentView(R.layout.bottom_sheet)
                 val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
                 val arrayAdapter = ArrayAdapter<String>(view.context, R.layout.bottom_single_choice)

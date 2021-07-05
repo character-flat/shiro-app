@@ -100,8 +100,12 @@ open class CyaneaSettingsFragment : PreferenceFragmentCompat(), OnPreferenceChan
         /** Removed nav bar color selection */
         //setupNavBarPref()
 
-        getCurrentActivity()?.title = "Appearance settings"
+        activity?.title = "Appearance settings"
         // Hack to make tinting work
+        findPreference<SwitchPreference?>("accent_color_for_nav_view")?.setOnPreferenceClickListener {
+            cyanea.edit { }.recreate(getCurrentActivity()!!, smooth = true)
+            return@setOnPreferenceClickListener true
+        }
 
         val statusBarHidden = findPreference<SwitchPreference?>("statusbar_hidden")
         statusBarHidden?.setOnPreferenceChangeListener { _, newValue ->

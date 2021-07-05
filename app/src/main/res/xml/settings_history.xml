@@ -20,5 +20,15 @@
             app:key="clear_cache"
             android:title="Clear image cache"
     />
+    <Preference
+            android:title="Back up all data"
+            app:key="backup_btt"
+            android:icon="@drawable/ic_baseline_settings_backup_restore_24"
+    />
+    <Preference
+            android:title="Restore all data"
+            app:key="restore_btt"
+            android:icon="@drawable/ic_baseline_settings_backup_restore_24"
+    />
 
 </PreferenceScreen>

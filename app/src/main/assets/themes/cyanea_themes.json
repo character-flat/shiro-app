@@ -91,19 +91,6 @@
     "background_light": "#44434A"
   },
   {
-    "theme_name": "Dalek's Theme",
-    "base_theme": "DARK",
-    "primary": "#8DB62F",
-    "primary_dark": "#6C8C24",
-    "primary_light": "#AEE13A",
-    "accent": "#8DB62F",
-    "accent_dark": "#6C8C24",
-    "accent_light": "#AEE13A",
-    "background": "#2A370E",
-    "background_dark": "#0A0C03",
-    "background_light": "#4B6119"
-  },
-  {
     "theme_name": "Brave",
     "base_theme": "DARK",
     "primary": "#FF3E9AB4",
@@ -232,6 +219,19 @@
     "background": "#FF060000",
     "background_dark": "#FF050000",
     "background_light": "#FF2B2626"
+  },
+  {
+    "theme_name": "Green",
+    "base_theme": "DARK",
+    "primary": "#8DB62F",
+    "primary_dark": "#6C8C24",
+    "primary_light": "#AEE13A",
+    "accent": "#8DB62F",
+    "accent_dark": "#6C8C24",
+    "accent_light": "#AEE13A",
+    "background": "#2A370E",
+    "background_dark": "#8DB62F",
+    "background_light": "#4B6119"
   },
   {
     "theme_name": "Olive",

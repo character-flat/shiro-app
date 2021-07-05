@@ -4,16 +4,6 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
 >
     <Preference
-            android:title="Back up all data"
-            app:key="backup_btt"
-            android:icon="@drawable/ic_baseline_settings_backup_restore_24"
-    />
-    <Preference
-            android:title="Restore all data"
-            app:key="restore_btt"
-            android:icon="@drawable/ic_baseline_settings_backup_restore_24"
-    />
-    <Preference
             android:icon="@drawable/ic_baseline_payment_24"
             android:title="Donate to Shiro.is"
             app:summary="To help fund the site"

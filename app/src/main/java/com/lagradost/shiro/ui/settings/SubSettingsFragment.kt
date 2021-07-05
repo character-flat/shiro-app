@@ -1,11 +1,14 @@
 package com.lagradost.shiro.ui.settings
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.MultiSelectListPreference
@@ -14,10 +17,12 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 import com.lagradost.shiro.BuildConfig
 import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.settings.SettingsFragment.Companion.restoreFileSelector
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
@@ -28,11 +33,14 @@ import com.lagradost.shiro.utils.AppUtils.getNavigationBarSizeFake
 import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.BackupUtils.backup
+import com.lagradost.shiro.utils.BackupUtils.restore
 import com.lagradost.shiro.utils.BackupUtils.restorePrompt
 import com.lagradost.shiro.utils.DataStore.getKeys
+import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.DataStore.removeKeys
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import com.lagradost.shiro.utils.MALApi.Companion.authenticateMAL
+import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -52,7 +60,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
             }
     }
 
-   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val rv: RecyclerView = listView; // This holds the PreferenceScreen's items
         rv.setPadding(0, getCurrentActivity()!!.getNavigationBarSizeFake() + 20.toPx, 0, 0)
@@ -67,7 +75,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
     }
 
     fun setTitle(title: String) {
-        getCurrentActivity()?.title = title
+        activity?.title = title
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -337,6 +345,64 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                     return@setOnPreferenceClickListener true
                 }
 
+                findPreference<Preference?>("backup_btt")?.setOnPreferenceClickListener {
+                    activity?.backup()
+                    return@setOnPreferenceClickListener true
+                }
+
+                restoreFileSelector = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+                    activity?.let { activity ->
+                        uri?.let {
+                            try {
+                                val input =
+                                    activity.contentResolver.openInputStream(uri) ?: return@registerForActivityResult
+
+                                /*val bis = BufferedInputStream(input)
+                                val buf = ByteArrayOutputStream()
+                                var result = bis.read()
+                                while (result != -1) {
+                                    buf.write(result)
+                                    result = bis.read()
+                                }
+                                val fullText = buf.toString("UTF-8")
+
+                                 println(fullText)*/
+                                val builder = AlertDialog.Builder(activity)
+                                val items = arrayOf("Settings", "Data")
+                                val preselectedItems = booleanArrayOf(true, true)
+                                builder.setTitle("Select what to restore")
+                                    .setMultiChoiceItems(
+                                        items, preselectedItems
+                                    ) { _, which, isChecked ->
+                                        preselectedItems[which] = isChecked
+                                    }
+                                builder.setPositiveButton("OK") { _, _ ->
+                                    val restoredValue = mapper.readValue<BackupUtils.BackupFile>(input)
+                                    restore(restoredValue, preselectedItems[0], preselectedItems[1])
+                                    requestHome(true)
+                                    val intent = Intent(activity, getCurrentActivity()!!::class.java)
+                                    startActivity(intent)
+                                    activity.finishAffinity()
+                                }
+
+                                builder.setNegativeButton("Cancel") { _, _ ->
+
+                                }
+                                builder.show()
+                            } catch (e: Exception) {
+                                println(e.printStackTrace())
+                                Toast.makeText(activity, "Error restoring backup file :(", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                }
+
+
+                findPreference<Preference?>("restore_btt")?.setOnPreferenceClickListener {
+                    activity?.restorePrompt()
+                    return@setOnPreferenceClickListener true
+                }
+
                 /** End of History settings */
             }
 
@@ -434,16 +500,6 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                 /** Info settings */
 
                 setTitle("Info")
-
-                findPreference<Preference?>("backup_btt")?.setOnPreferenceClickListener {
-                    activity?.backup()
-                    return@setOnPreferenceClickListener true
-                }
-
-                findPreference<Preference?>("restore_btt")?.setOnPreferenceClickListener {
-                    activity?.restorePrompt()
-                    return@setOnPreferenceClickListener true
-                }
 
                 /** End of Info settings */
 

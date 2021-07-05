@@ -50,6 +50,14 @@
     />
 
     <SwitchPreference
+            android:icon="@drawable/ic_baseline_more_horiz_24"
+            app:key="accent_color_for_nav_view"
+            android:title="Accent color for bottom navigation icons"
+            android:summary="Some themes may not work with this enabled"
+            app:defaultValue="true"
+    />
+
+    <SwitchPreference
             android:icon="@drawable/ic_baseline_fullscreen_24"
             app:key="statusbar_hidden"
             android:title="Hide statusbar"

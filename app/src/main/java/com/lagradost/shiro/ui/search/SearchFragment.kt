@@ -98,7 +98,7 @@ class SearchFragment : Fragment() {
         )
         search_fab_button.setOnClickListener {
             val tags = searchViewModel!!.searchOptions.value?.genres?.sortedBy { it.name }
-            val bottomSheetDialog = BottomSheetDialog(getCurrentActivity()!!)
+            val bottomSheetDialog = BottomSheetDialog(getCurrentActivity()!!, R.style.AppBottomSheetDialogTheme)
             bottomSheetDialog.setContentView(R.layout.genres_search)
             val filterButton = bottomSheetDialog.findViewById<MaterialButton>(R.id.filter_button)!!
             val searchTags = bottomSheetDialog.findViewById<MyFlowLayout>(R.id.search_tags)!!
