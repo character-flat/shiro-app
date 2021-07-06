@@ -70,10 +70,12 @@ class MasterEpisodeAdapter(
             position: Int,
             data: ShiroApi.AnimePageData,
         ) {
+            val episodeOffset = if (data.episodes?.filter { it.episode_number == 0 }.isNullOrEmpty()) 0 else -1
+
             //println("BIND $position" + "|" + (fillerList?.size ?: "NULLL"))
             itemView.cardTitle.text =
-                if (item.start + 1 == item.end) "Episode ${item.end}"
-                else "Episodes ${item.start + 1} - ${item.end}"
+                if (item.start + 1 == item.end) "Episode ${item.end + episodeOffset}"
+                else "Episodes ${item.start + 1 + episodeOffset} - ${item.end + episodeOffset}"
 
             val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder> = EpisodeAdapter(
                 activity,

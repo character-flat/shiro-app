@@ -102,6 +102,9 @@ class PlayerFragmentTv : VideoSupportFragment() {
     private val handler = Handler()
     private var hasAddedSources = false
 
+    // To show episode 0
+    private var episodeOffset = 0
+
     /** Glue layer between the player and our UI */
     private lateinit var playerGlue: MediaPlayerGlue
     private lateinit var exoPlayer: SimpleExoPlayer
@@ -362,10 +365,11 @@ class PlayerFragmentTv : VideoSupportFragment() {
             type
         }
 
-        val currentEpisodeProgress = data?.episodeIndex!! + 1
+        val currentEpisodeProgress = data?.episodeIndex!! + 1 + episodeOffset
 
-        if (currentEpisodeProgress == holder?.episodes ?: data?.card?.episodes?.size
+        if (currentEpisodeProgress == holder?.episodes ?: data?.card?.episodes?.size?.plus(episodeOffset)
             && type.value != AniListApi.Companion.AniListStatusType.Completed.value
+            && data?.card?.status?.lowercase() == "finished"
         ) {
             type = AniListApi.Companion.AniListStatusType.Completed
         }
@@ -442,7 +446,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
                             ) " (Filler) " else ""
                         host = VideoSupportFragmentGlueHost(this@PlayerFragmentTv)
                         title = "${data?.card?.name}"
-                        subtitle = "Episode ${data?.episodeIndex!! + 1}" + fillerInfo
+                        subtitle = "Episode ${data?.episodeIndex!! + 1 + episodeOffset}" + fillerInfo
 
                         // Adds playback state listeners
                         addPlayerCallback(object : PlaybackGlue.PlayerCallback() {
@@ -726,7 +730,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
         // data?.card!!.cdndata?.seasons.size == 1 && data?.card!!.cdndata?.seasons[0].episodes.size == 1
         var preTitle = ""
         if (!isMovie) {
-            preTitle = "Episode ${data?.episodeIndex!! + 1} · "
+            preTitle = "Episode ${data?.episodeIndex!! + 1 + episodeOffset} · "
         }
         // Replaces with "" if it's null
         return preTitle + data?.card?.name
@@ -844,6 +848,8 @@ class PlayerFragmentTv : VideoSupportFragment() {
         println("ARGUMENTS ${arguments?.getString(DATA)}")
         arguments?.getString(DATA)?.let {
             data = it.toKotlinObject()
+            episodeOffset = if (data?.card?.episodes?.filter { it.episode_number == 0 }.isNullOrEmpty()) 0 else -1
+
         }
     }
 

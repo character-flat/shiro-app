@@ -93,6 +93,8 @@ object DownloadManager {
         val isMovie: Boolean =
             info.animeData.episodes?.size ?: 0 == 1 && info.animeData.status == "finished"
 
+        val episodeOffset = if (info.animeData.episodes?.filter { it.episode_number == 0 }.isNullOrEmpty()) 0 else -1
+
         DataStore.setKey(
             DOWNLOAD_PARENT_KEY, info.animeData.slug,
             DownloadParentFileMetadata(
@@ -144,7 +146,7 @@ object DownloadManager {
                 getFullUrlCdn(info.animeData.image),
                 name,
                 null,
-                if (isMovie) null else info.episodeIndex + 1
+                if (isMovie) null else info.episodeIndex + 1 + episodeOffset
             ),
             link
         )

@@ -49,7 +49,6 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
 import kotlinx.android.synthetic.main.episode_result_compact.view.*
 import kotlinx.android.synthetic.main.fragment_results.view.*
 import org.json.JSONObject
-import java.io.File
 import kotlin.concurrent.thread
 
 class EpisodeAdapter(
@@ -130,6 +129,7 @@ class EpisodeAdapter(
                     resView.isFocusable = focused
                 }
             }
+            val episodeOffset = if (data.episodes?.filter { it.episode_number == 0 }.isNullOrEmpty()) 0 else -1
 
 
             //println("START $start pos $position")
@@ -196,7 +196,7 @@ class EpisodeAdapter(
                             } else {
                                 Toast.makeText(
                                     activity,
-                                    "Download failed for episode ${episodePos + 1}",
+                                    "Download failed for episode ${episodePos + 1 + episodeOffset}",
                                     Toast.LENGTH_SHORT
                                 ).show()
                                 card.cdi.visibility = VISIBLE
@@ -264,7 +264,7 @@ class EpisodeAdapter(
                 } else false
             } else false
 
-            val title = "Episode ${episodePos + 1}" + (if (isCurrentFiller) " (Filler)" else "")
+            val title = "Episode ${episodePos + 1 + episodeOffset}" + (if (isCurrentFiller) " (Filler)" else "")
             card.cardTitle.text = title
 
             setCardViewState(episodePos)

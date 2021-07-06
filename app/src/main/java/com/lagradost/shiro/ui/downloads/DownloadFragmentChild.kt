@@ -3,11 +3,11 @@ package com.lagradost.shiro.ui.downloads
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.graphics.drawable.ColorDrawable
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.*
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.PopupMenu
@@ -35,12 +35,8 @@ import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
-import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
-import kotlinx.android.synthetic.main.episode_result_downloaded.view.cardBg
-import kotlinx.android.synthetic.main.episode_result_downloaded.view.cardTitle
 import kotlinx.android.synthetic.main.fragment_download_child.*
-import java.io.File
 
 const val SLUG = "slug"
 
@@ -160,6 +156,8 @@ class DownloadFragmentChild : Fragment() {
                     }
                 }*/
 
+                val episodeOffset =
+                    if (child.animeData.episodes?.filter { it.episode_number == 0 }.isNullOrEmpty()) 0 else -1
 
                 val key = getViewKey(slug!!, child.episodeIndex)
                 card.cardBg.setOnClickListener {
@@ -168,7 +166,7 @@ class DownloadFragmentChild : Fragment() {
                     }
                     activity?.loadPlayer(
                         PlayerData(
-                            "Episode ${child.episodeIndex + 1} · ${child.videoTitle}",
+                            "Episode ${child.episodeIndex + 1 + episodeOffset} · ${child.videoTitle}",
                             fileInfo.path.toString(),// child.videoPath,
                             child.episodeIndex,
                             0,
@@ -181,22 +179,25 @@ class DownloadFragmentChild : Fragment() {
                         )
                     )
                 }
+
+
                 //MainActivity.loadPlayer(epIndex, index, data)
                 val title = fixEpTitle(
-                    child.videoTitle, child.episodeIndex + 1,
+                    child.videoTitle, child.episodeIndex + 1 + episodeOffset,
                     parent?.isMovie == true, true
                 )
 
                 // ================ DOWNLOAD STUFF ================
                 fun deleteFile() {
                     println("FIXED:::: " + child.internalId)
+
                     if (VideoDownloadManager.deleteFileAndUpdateSettings(requireContext(), child.internalId)) {
                         activity?.runOnUiThread {
                             card.visibility = GONE
                             DataStore.removeKey(it.value)
                             Toast.makeText(
                                 context,
-                                "${child.videoTitle} E${child.episodeIndex + 1} deleted",
+                                "${child.videoTitle} E${child.episodeIndex + 1 + episodeOffset} deleted",
                                 Toast.LENGTH_LONG
                             ).show()
                         }
@@ -220,7 +221,7 @@ class DownloadFragmentChild : Fragment() {
                             }
                         }
                         // Set other dialog properties
-                        builder.setTitle("Delete ${child.videoTitle} - E${child.episodeIndex + 1}")
+                        builder.setTitle("Delete ${child.videoTitle} - E${child.episodeIndex + 1 + episodeOffset}")
 
                         // Create the AlertDialog
                         builder.create()

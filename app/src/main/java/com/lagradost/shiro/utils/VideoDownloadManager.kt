@@ -39,7 +39,7 @@ const val DOWNLOAD_CHANNEL_NAME = "Downloads"
 const val DOWNLOAD_CHANNEL_DESCRIPT = "The download notification channel"
 
 object VideoDownloadManager {
-    var maxConcurrentDownloads = 3
+    var maxConcurrentDownloads = 1
     private var currentDownloads = mutableListOf<Int>()
 
     private const val USER_AGENT =
@@ -136,11 +136,11 @@ object VideoDownloadManager {
     val downloadStatusEvent = Event<Pair<Int, DownloadType>>()
     val downloadEvent = Event<Pair<Int, DownloadActionType>>()
     val downloadProgressEvent = Event<Pair<Int, Long>>()
-    private val downloadQueue = LinkedList<DownloadResumePackage>()
+    val downloadQueue = LinkedList<DownloadResumePackage>()
 
-    private var hasCreatedNotChanel = false
+    private var hasCreatedNotChannel = false
     private fun Context.createNotificationChannel() {
-        hasCreatedNotChanel = true
+        hasCreatedNotChannel = true
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -317,7 +317,7 @@ object VideoDownloadManager {
                 }
             }
 
-            if (!hasCreatedNotChanel) {
+            if (!hasCreatedNotChannel) {
                 context.createNotificationChannel()
             }
 

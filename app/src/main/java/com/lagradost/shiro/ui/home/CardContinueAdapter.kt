@@ -123,8 +123,10 @@ class CardContinueAdapter(
                     .into(card.imageView)
 
                 itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).start()
+                val episodeOffset =
+                    if (cardInfo.id?.episodes?.filter { it.episode_number == 0 }.isNullOrEmpty()) 0 else -1
                 itemView.imageText.text =
-                    if (cardInfo.id?.name?.endsWith("Dubbed") == true) "✦ Episode ${cardInfo.episodeIndex + 1}" else "Episode ${cardInfo.episodeIndex + 1}"
+                    if (cardInfo.id?.name?.endsWith("Dubbed") == true) "✦ Episode ${cardInfo.episodeIndex + 1 + episodeOffset}" else "Episode ${cardInfo.episodeIndex + 1 + episodeOffset}"
                 if (cardInfo.id != null && tvActivity == null) {
                     itemView.infoButton.visibility = VISIBLE
                     itemView.infoButton.setOnClickListener {

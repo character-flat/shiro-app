@@ -187,6 +187,7 @@ class PlayerFragment : Fragment() {
 
         arguments?.getString("data")?.let {
             data = it.toKotlinObject()
+            episodeOffset = if (data?.card?.episodes?.filter { it.episode_number == 0 }.isNullOrEmpty()) 0 else -1
         }
     }
 
@@ -247,6 +248,9 @@ class PlayerFragment : Fragment() {
     private val hideAction = Runnable { hide() }
     private val nextEpisodeAction = Runnable { playNextEpisode() }
     private val checkProgressAction = Runnable { checkProgress() }
+
+    // To show episode 0
+    private var episodeOffset = 0
 
     //private val restoreLockClickable = Runnable { video_lock?.isClickable = true }
     private var timer: Timer? = null
@@ -342,7 +346,12 @@ class PlayerFragment : Fragment() {
 
 
     private fun getCurrentUrl(): ExtractorLink? {
-        if (data?.url != null) return ExtractorLink("Downloaded", data?.url!!, "", Qualities.Unknown.value)
+        if (data?.url != null) return ExtractorLink(
+            "Downloaded",
+            data?.url!!.removePrefix("file://").replace("%20", " "),
+            "",
+            Qualities.Unknown.value
+        )
         val index = maxOf(sources.second?.indexOf(playerViewModel?.selectedSource?.value) ?: -1, 0)
         return sources.second?.getOrNull(index)
     }
@@ -359,7 +368,7 @@ class PlayerFragment : Fragment() {
         // data?.card!!.cdndata?.seasons.size == 1 && data?.card!!.cdndata?.seasons[0].episodes.size == 1
         var preTitle = ""
         if (!isMovie) {
-            preTitle = "Episode ${data?.episodeIndex!! + 1} · "
+            preTitle = "Episode ${data?.episodeIndex!! + 1 + episodeOffset} · "
         }
 
         // Replaces with "" if it's null
@@ -1382,10 +1391,11 @@ class PlayerFragment : Fragment() {
             type
         }
 
-        val currentEpisodeProgress = data?.episodeIndex!! + 1
+        val currentEpisodeProgress = data?.episodeIndex!! + 1 + episodeOffset
 
-        if (currentEpisodeProgress == holder?.episodes ?: data?.card?.episodes?.size
+        if (currentEpisodeProgress == holder?.episodes ?: data?.card?.episodes?.size?.plus(episodeOffset)
             && type.value != AniListApi.Companion.AniListStatusType.Completed.value
+            && data?.card?.status?.lowercase() == "finished"
         ) {
             type = AniListApi.Companion.AniListStatusType.Completed
         }
@@ -1526,7 +1536,7 @@ class PlayerFragment : Fragment() {
                                             handler.postDelayed(checkProgressAction, 5000L)
 
                                             data!!.title =
-                                                "Episode ${nextEpisode[0]!!.episodeIndex + 1} · ${nextEpisode[0]!!.videoTitle}"
+                                                "Episode ${nextEpisode[0]!!.episodeIndex + 1 + episodeOffset} · ${nextEpisode[0]!!.videoTitle}"
                                             data?.url = fileInfo.path.toString()
                                             data?.episodeIndex = data!!.episodeIndex!! + 1
                                         }

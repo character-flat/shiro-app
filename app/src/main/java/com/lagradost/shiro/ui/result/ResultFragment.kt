@@ -145,6 +145,8 @@ class ResultFragment : Fragment() {
 
     private var hasLoadedAnilist = false
     private var anilistPage: AniListApi.GetSearchMedia? = null
+    private var episodeOffset = 0
+
 
     companion object {
         //var lastSelectedEpisode = 0
@@ -218,7 +220,7 @@ class ResultFragment : Fragment() {
             onWebViewNavigated += ::restoreState
         }
         onPlayerNavigated += ::handleVideoPlayerNavigation
-       // DownloadManager.downloadStartEvent += ::onDownloadStarted
+        // DownloadManager.downloadStartEvent += ::onDownloadStarted
         isInResults = true
         onResultsNavigated.invoke(true)
     }
@@ -226,6 +228,8 @@ class ResultFragment : Fragment() {
     private fun onLoadEvent(isSucc: Boolean) {
         if (isSucc) {
             val data = if (isDefaultData) data else dataOther
+            episodeOffset = if (data?.episodes?.filter { it.episode_number == 0 }.isNullOrEmpty()) 0 else -1
+
             activity?.runOnUiThread {
                 if (data == null) {
                     Toast.makeText(activity, "Error loading anime page!", Toast.LENGTH_LONG).show()
@@ -304,7 +308,7 @@ class ResultFragment : Fragment() {
                         val next = canPlayNextEpisode(data, episode.episodeIndex)
                         if (next.isFound && episodePos.viewstate) {
                             val pos = getViewPosDur(data.slug, episode.episodeIndex)
-                            Toast.makeText(activity, "Playing episode ${next.episodeIndex + 1}", Toast.LENGTH_SHORT)
+                            Toast.makeText(activity, "Playing episode ${next.episodeIndex + 1 + episodeOffset}", Toast.LENGTH_SHORT)
                                 .show()
                             activity?.loadPlayer(
                                 next.episodeIndex,
@@ -315,7 +319,7 @@ class ResultFragment : Fragment() {
                                 fillerEpisodes
                             )
                         } else {
-                            Toast.makeText(activity, "Playing episode ${episode.episodeIndex + 1}", Toast.LENGTH_SHORT)
+                            Toast.makeText(activity, "Playing episode ${episode.episodeIndex + 1 + episodeOffset}", Toast.LENGTH_SHORT)
                                 .show()
                             activity?.loadPlayer(
                                 episode.episodeIndex,
@@ -582,7 +586,10 @@ class ResultFragment : Fragment() {
                                 if (typeValue == AniListApi.Companion.AniListStatusType.None.value) {
                                     typeValue = AniListApi.Companion.AniListStatusType.Watching.value
                                 }
-                                if (progress == episodes && typeValue != AniListApi.Companion.AniListStatusType.Completed.value) {
+                                if (progress == episodes
+                                    && typeValue != AniListApi.Companion.AniListStatusType.Completed.value
+                                    && data?.status?.lowercase() == "finished"
+                                ) {
                                     activity.runOnUiThread {
                                         Toast.makeText(
                                             activity,
@@ -1079,7 +1086,7 @@ class ResultFragment : Fragment() {
 
         onWebViewNavigated -= ::restoreState
         onPlayerNavigated -= ::handleVideoPlayerNavigation
-       // DownloadManager.downloadStartEvent -= ::onDownloadStarted
+        // DownloadManager.downloadStartEvent -= ::onDownloadStarted
         onLoadedOther -= ::onLoadOtherEvent
         onLoaded -= ::onLoadEvent
     }

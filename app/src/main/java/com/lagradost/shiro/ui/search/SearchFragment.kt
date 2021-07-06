@@ -1,6 +1,7 @@
 package com.lagradost.shiro.ui.search
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.res.ColorStateList
 import android.content.res.Configuration
@@ -102,46 +103,48 @@ class SearchFragment : Fragment() {
             Cyanea.instance.primaryDark
         )
         search_fab_button.setOnClickListener {
-            if (searchViewModel!!.searchOptions.value == null) {
-                thread {
-                    searchViewModel!!.searchOptions.postValue(getSearchMethods())
-                }
-            }
-
-            val tags = searchViewModel!!.searchOptions.value?.genres?.sortedBy { it.name }
-            val bottomSheetDialog = BottomSheetDialog(getCurrentActivity()!!, R.style.AppBottomSheetDialogTheme)
-            bottomSheetDialog.setContentView(R.layout.genres_search)
-
-            bottomSheetDialog.genres_top_bar.backgroundTintList = ColorStateList.valueOf(
-                Cyanea.instance.primaryDark
-            )
-
-            val filterButton = bottomSheetDialog.findViewById<MaterialButton>(R.id.filter_button)!!
-            val searchTags = bottomSheetDialog.findViewById<MyFlowLayout>(R.id.search_tags)!!
-
-            tags?.forEachIndexed { index, tag ->
-                val viewBtt = layoutInflater.inflate(R.layout.genre_tag, null)
-                val btt = viewBtt.findViewById<MaterialButton>(R.id.result_tag_card)
-                btt.text = tag.name
-                changeTagState(btt, tag)
-
-                btt.setOnClickListener {
-                    changeTagState(btt, tag, true)
+            activity?.let { activity ->
+                if (searchViewModel!!.searchOptions.value == null) {
+                    thread {
+                        searchViewModel!!.searchOptions.postValue(getSearchMethods())
+                    }
                 }
 
-                searchTags.addView(viewBtt, index)
-            }
+                val tags = searchViewModel!!.searchOptions.value?.genres?.sortedBy { it.name }
+                val bottomSheetDialog = BottomSheetDialog(activity, R.style.AppBottomSheetDialogTheme)
+                bottomSheetDialog.setContentView(R.layout.genres_search)
 
-            filterButton.setOnClickListener {
-                searchViewModel!!.selectedGenres.postValue(listOf())
-                bottomSheetDialog.dismiss()
-            }
+                bottomSheetDialog.genres_top_bar.backgroundTintList = ColorStateList.valueOf(
+                    Cyanea.instance.primaryDark
+                )
 
-            bottomSheetDialog.setOnDismissListener {
-                //  MainActivity.semihideNavbar()
+                val filterButton = bottomSheetDialog.findViewById<MaterialButton>(R.id.filter_button)!!
+                val searchTags = bottomSheetDialog.findViewById<MyFlowLayout>(R.id.search_tags)!!
+
+                tags?.forEachIndexed { index, tag ->
+                    val viewBtt = layoutInflater.inflate(R.layout.genre_tag, null)
+                    val btt = viewBtt.findViewById<MaterialButton>(R.id.result_tag_card)
+                    btt.text = tag.name
+                    activity.changeTagState(btt, tag)
+
+                    btt.setOnClickListener {
+                        activity.changeTagState(btt, tag, true)
+                    }
+
+                    searchTags.addView(viewBtt, index)
+                }
+
+                filterButton.setOnClickListener {
+                    searchViewModel!!.selectedGenres.postValue(listOf())
+                    bottomSheetDialog.dismiss()
+                }
+
+                bottomSheetDialog.setOnDismissListener {
+                    //  MainActivity.semihideNavbar()
+                }
+                bottomSheetDialog.show()
+                //  MainActivity.showNavbar()
             }
-            bottomSheetDialog.show()
-            //  MainActivity.showNavbar()
         }
 
         val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)
@@ -271,7 +274,7 @@ class SearchFragment : Fragment() {
     }
 
 
-    private fun changeTagState(view: MaterialButton, tag: ShiroApi.Genre, changed: Boolean = false) {
+    private fun Context.changeTagState(view: MaterialButton, tag: ShiroApi.Genre, changed: Boolean = false) {
         val contains = (searchViewModel!!.selectedGenres.value ?: listOf()).contains(tag) == changed
 
         activity?.let {
@@ -290,7 +293,7 @@ class SearchFragment : Fragment() {
                 val newGenres = searchViewModel!!.selectedGenres.value?.filter { genre -> genre != tag }
                 searchViewModel!!.selectedGenres.postValue(newGenres)
                 view.backgroundTintList =
-                    ColorStateList.valueOf(ContextCompat.getColor(getCurrentActivity()!!, R.color.transparent))
+                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.transparent))
                 /*view.setTextColor(
                     it.getColorFromAttr(R.attr.colorAccent)
                 )*/
