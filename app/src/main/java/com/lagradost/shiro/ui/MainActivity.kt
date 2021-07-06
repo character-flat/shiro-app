@@ -44,6 +44,7 @@ import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.hasPIPPermission
 import com.lagradost.shiro.utils.AppUtils.hideSystemUI
 import com.lagradost.shiro.utils.AppUtils.init
+import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.AppUtils.shouldShowPIPMode
@@ -507,17 +508,14 @@ class MainActivity : CyaneaAppCompatActivity() {
             }
 
             thread {
-                val urlRegex = Regex("""fastani\.net/watch/(.*?)/(/d+)/(/+)""")
+                val urlRegex = Regex("""shiro\..{2,5}/anime/(.*)""")
                 val found = urlRegex.find(data.toString())
                 if (found != null) {
-                    val (id, season, episode) = found.destructured
-                    println("$id $season $episode")
-                    /*val card = getCardById(id)
-                    if (card?.anime?.cdnData?.seasons?.getOrNull(season.toInt() - 1) != null) {
-                        if (card.anime.cdnData.seasons[season.toInt() - 1].episodes.getOrNull(episode.toInt() - 1) != null) {
-                            //loadPlayer(episode.toInt() - 1, season.toInt() - 1, card)
-                        }
-                    }*/
+                    val (slug) = found.destructured
+                    // Kinda hack using 2 slugs, but should work semi fine
+                    activity?.runOnUiThread {
+                        activity?.loadPage(slug, slug)
+                    }
                 }
             }
         } else {

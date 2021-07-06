@@ -8,6 +8,7 @@
         android:layout_height="match_parent">
     <androidx.cardview.widget.CardView
             app:cardCornerRadius="10dp"
+            android:id="@+id/genres_top_bar"
             android:elevation="100dp"
             app:cardElevation="100dp"
             android:backgroundTint="?attr/colorPrimaryDark"
@@ -45,9 +46,9 @@
                     app:cornerRadius="5dp"
                     app:strokeWidth="2dp"
                     android:textColor="@color/white"
-                    app:strokeColor="?attr/colorPrimaryDark"
+                    app:strokeColor="@color/white"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    app:rippleColor="?attr/colorPrimary"
+                    app:rippleColor="@color/white"
             >
             </com.google.android.material.button.MaterialButton>
         </FrameLayout>

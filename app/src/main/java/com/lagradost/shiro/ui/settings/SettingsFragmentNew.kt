@@ -60,6 +60,14 @@ class SettingsFragmentNew : Fragment() {
                 )
             }
 
+
+        // Because the user isn't necessarily fetched
+        if (DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+            && DataStore.getKeys(MAL_USER_KEY).isEmpty()
+        ) {
+            MALApi.getUser()
+        }
+
         context?.let { context ->
             settings_listview?.adapter = ArrayAdapter(context, R.layout.listview_single_item, array.map { it.first })
             settings_listview.setOnItemClickListener { _, _, position, _ ->
@@ -67,21 +75,17 @@ class SettingsFragmentNew : Fragment() {
             }
             loadProfile()
             observe(settingsViewModel!!.hasLoggedIntoMAL) {
-                println("OBSERVER")
                 loadProfile()
             }
             observe(settingsViewModel!!.hasLoggedIntoAnilist) {
-                println("OBSERVER")
                 loadProfile()
             }
 
 
         }
-
     }
 
     private fun loadProfile() {
-        println("LOADING PROFILE!!!!!!!!!!!!!! ")
         var userImage: String? = null
         var userName: String? = null
         DataStore.getKeys(ANILIST_USER_KEY).forEach { key ->

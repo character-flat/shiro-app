@@ -39,6 +39,7 @@ import com.lagradost.shiro.utils.HAS_DISMISSED_SEARCH_INFO
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.getSearchMethods
 import kotlinx.android.synthetic.main.fragment_search.*
+import kotlinx.android.synthetic.main.genres_search.*
 import kotlin.concurrent.thread
 
 class SearchFragment : Fragment() {
@@ -72,7 +73,11 @@ class SearchFragment : Fragment() {
             )
         }*/
         val orientation = resources.configuration.orientation
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE || settingsManager!!.getBoolean("force_landscape", false)) {
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE || settingsManager!!.getBoolean(
+                "force_landscape",
+                false
+            )
+        ) {
             cardSpace?.spanCount = spanCountLandscape
         } else {
             cardSpace?.spanCount = spanCountPortrait
@@ -97,9 +102,20 @@ class SearchFragment : Fragment() {
             Cyanea.instance.primaryDark
         )
         search_fab_button.setOnClickListener {
+            if (searchViewModel!!.searchOptions.value == null) {
+                thread {
+                    searchViewModel!!.searchOptions.postValue(getSearchMethods())
+                }
+            }
+
             val tags = searchViewModel!!.searchOptions.value?.genres?.sortedBy { it.name }
             val bottomSheetDialog = BottomSheetDialog(getCurrentActivity()!!, R.style.AppBottomSheetDialogTheme)
             bottomSheetDialog.setContentView(R.layout.genres_search)
+
+            bottomSheetDialog.genres_top_bar.backgroundTintList = ColorStateList.valueOf(
+                Cyanea.instance.primaryDark
+            )
+
             val filterButton = bottomSheetDialog.findViewById<MaterialButton>(R.id.filter_button)!!
             val searchTags = bottomSheetDialog.findViewById<MyFlowLayout>(R.id.search_tags)!!
 
@@ -248,7 +264,7 @@ class SearchFragment : Fragment() {
 
         if (searchViewModel!!.searchOptions.value == null) {
             thread {
-                getSearchMethods()
+                searchViewModel!!.searchOptions.postValue(getSearchMethods())
             }
         }
         return inflater.inflate(R.layout.fragment_search, container, false)

@@ -15,16 +15,16 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
 import com.bumptech.glide.Glide
-import com.lagradost.shiro.utils.mvvm.logError
-import com.lagradost.shiro.utils.mvvm.normalSafeApiCall
-import com.lagradost.shiro.utils.Coroutines.main
 import com.lagradost.shiro.R
 import com.lagradost.shiro.services.VideoDownloadService
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
+import com.lagradost.shiro.utils.Coroutines.main
 import com.lagradost.shiro.utils.DataStore.getKey
 import com.lagradost.shiro.utils.DataStore.removeKey
 import com.lagradost.shiro.utils.DataStore.setKey
+import com.lagradost.shiro.utils.mvvm.logError
+import com.lagradost.shiro.utils.mvvm.normalSafeApiCall
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -33,7 +33,6 @@ import java.lang.Thread.sleep
 import java.net.URL
 import java.net.URLConnection
 import java.util.*
-import kotlin.collections.ArrayList
 
 const val DOWNLOAD_CHANNEL_ID = "shiro.general"
 const val DOWNLOAD_CHANNEL_NAME = "Downloads"

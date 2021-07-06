@@ -267,7 +267,6 @@ class ShiroApi {
                 val mapped = response?.let { mapper.readValue<AllSearchMethods>(it.text) }
 
                 if (mapped?.status == "Found") {
-                    onSearchFetched.invoke(mapped.data)
                     return mapped.data
                 }
             } catch (e: Exception) {
@@ -478,7 +477,6 @@ class ShiroApi {
         var currentHeaders: MutableMap<String, String>? = null
         var onHomeFetched = Event<ShiroHomePage?>()
         var onTokenFetched = Event<Boolean>()
-        var onSearchFetched = Event<AllSearchMethodsData?>()
         var onHomeError = Event<Boolean>() // TRUE IF FULL RELOAD OF TOKEN, FALSE IF JUST HOME
         var hasThrownError = -1
 

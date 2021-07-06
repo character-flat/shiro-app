@@ -88,6 +88,7 @@ object DownloadManager {
     }
 
     fun downloadEpisode(context: Context, info: DownloadInfo, link: List<ExtractorLink>) {
+
         val id = (info.animeData.slug + "E${info.episodeIndex}").hashCode()
         val isMovie: Boolean =
             info.animeData.episodes?.size ?: 0 == 1 && info.animeData.status == "finished"
@@ -109,8 +110,6 @@ object DownloadManager {
         if (title.replace(" ", "") == "") {
             title = "Episode " + info.episodeIndex + 1
         }
-
-
 
         DataStore.setKey(
             DOWNLOAD_CHILD_KEY, id.toString(),
