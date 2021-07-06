@@ -9,7 +9,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
-import com.lagradost.shiro.ui.settings.SubSettingsFragment.Companion.settingsViewModel
+import com.lagradost.shiro.ui.settings.SettingsFragmentNew.Companion.settingsViewModel
 import com.lagradost.shiro.utils.AppUtils.openBrowser
 import com.lagradost.shiro.utils.AppUtils.splitQuery
 import com.lagradost.shiro.utils.AppUtils.unixTime
@@ -78,9 +78,9 @@ class AniListApi {
                 DataStore.setKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, token)
 
                 println("ANILIST LOGIN DONE")
-                settingsViewModel?.hasLoggedIntoAnilist?.postValue(true)
                 thread {
                     getUser()
+                    settingsViewModel?.hasLoggedIntoAnilist?.postValue(true)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

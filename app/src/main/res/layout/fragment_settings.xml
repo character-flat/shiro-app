@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+
+>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentTop="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_above="@+id/settings_card_view"
+            android:animateLayoutChanges="true"
+    >
+        <androidx.cardview.widget.CardView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:padding="10dp"
+                app:cardCornerRadius="50dp"
+                android:foreground="@drawable/circle"
+                app:cardElevation="20dp"
+                android:layout_marginBottom="20dp"
+        >
+            <ImageView
+                    android:id="@+id/icon_image"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_gravity="center"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/shiro_logo_rounded"
+                    android:foreground="?attr/selectableItemBackgroundBorderless"
+            >
+
+            </ImageView>
+        </androidx.cardview.widget.CardView>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:id="@+id/name_text"
+                tools:text="Shiro"
+                android:text="Not logged in"
+                android:visibility="invisible"
+        >
+        </TextView>
+    </LinearLayout>
+
+
+    <androidx.cardview.widget.CardView
+            android:id="@+id/settings_card_view"
+            android:layout_centerInParent="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:layout_gravity="center"
+            app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="10dp"
+    >
+
+        <ListView
+                android:id="@+id/settings_listview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:listitem="@layout/listview_single_item"
+                tools:layout_height="200dp"
+        >
+
+        </ListView>
+
+    </androidx.cardview.widget.CardView>
+
+</RelativeLayout>

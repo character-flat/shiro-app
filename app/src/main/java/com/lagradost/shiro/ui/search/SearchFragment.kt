@@ -72,7 +72,7 @@ class SearchFragment : Fragment() {
             )
         }*/
         val orientation = resources.configuration.orientation
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE || settingsManager!!.getBoolean("force_landscape", false)) {
             cardSpace?.spanCount = spanCountLandscape
         } else {
             cardSpace?.spanCount = spanCountPortrait

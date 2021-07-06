@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.lagradost.shiro.ui.settings.SubSettingsFragment.Companion.settingsViewModel
+import com.lagradost.shiro.ui.settings.SettingsFragmentNew.Companion.settingsViewModel
 import com.lagradost.shiro.utils.AppUtils.openBrowser
 import com.lagradost.shiro.utils.AppUtils.splitQuery
 import com.lagradost.shiro.utils.AppUtils.unixTime
@@ -69,7 +69,10 @@ class MALApi {
 
                         if (res != "") {
                             storeToken(res)
-                            settingsViewModel?.hasLoggedIntoMAL?.postValue(true)
+                            thread {
+                                getUser()
+                                settingsViewModel?.hasLoggedIntoMAL?.postValue(true)
+                            }
                             //println("GOT MAL MASTER TOKEN:::: " + res)
                         }
                     }
@@ -100,7 +103,8 @@ class MALApi {
                         "client_id" to MAL_CLIENT_ID,
                         "grant_type" to "refresh_token",
                         "refresh_token" to DataStore.getKey(
-                            MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID)!!
+                            MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID
+                        )!!
                     )
                 ).text
                 storeToken(res)
@@ -124,7 +128,7 @@ class MALApi {
                     )
                 ).text
                 mapper.readValue<MalAnime>(res)
-            } catch (e : Exception) {
+            } catch (e: Exception) {
                 null
             }
         }
@@ -157,7 +161,9 @@ class MALApi {
 
         private fun checkToken() {
             if (unixTime() > DataStore.getKey<Long>(
-                    MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID)!!) {
+                    MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID
+                )!!
+            ) {
                 refreshToken()
             }
         }

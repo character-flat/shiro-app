@@ -10,7 +10,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.lifecycle.ViewModelProvider
 import androidx.preference.MultiSelectListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -22,12 +21,12 @@ import com.google.firebase.messaging.ktx.messaging
 import com.lagradost.shiro.BuildConfig
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.settings.SettingsFragment.Companion.restoreFileSelector
+import com.lagradost.shiro.ui.settings.SettingsFragmentNew.Companion.settingsViewModel
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
 import com.lagradost.shiro.utils.AppUtils.allApi
 import com.lagradost.shiro.utils.AppUtils.checkWrite
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
-import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.BackupUtils.backup
 import com.lagradost.shiro.utils.BackupUtils.restore
@@ -47,7 +46,6 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
     private var xmlFile: Int? = null
 
     companion object {
-        var settingsViewModel: SettingsViewModel? = null
 
         fun newInstance(xml: Int) =
             SubSettingsFragment().apply {
@@ -172,12 +170,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
 
                 setTitle("Account settings")
 
-                settingsViewModel =
-                    settingsViewModel ?: getCurrentActivity()?.let {
-                        ViewModelProvider(it).get(
-                            SettingsViewModel::class.java
-                        )
-                    }
+
 
                 fun isLoggedIntoMal(): Boolean {
                     return DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
@@ -191,42 +184,34 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                 val isLoggedInAniList = isLoggedIntoAniList()
                 val malButton = findPreference("mal_setting_btt") as Preference?
 
-                observe(settingsViewModel!!.hasLoggedIntoMAL) {
-                    malButton?.summary = if (it) "Logged in" else "Not logged in"
-                }
-                observe(settingsViewModel!!.hasLoggedIntoAnilist) {
-                    anilistButton?.summary = if (it) "Logged in" else "Not logged in"
-                }
-
                 anilistButton?.summary = if (isLoggedInAniList) "Logged in" else "Not logged in"
                 anilistButton?.setOnPreferenceClickListener {
                     if (!isLoggedIntoAniList()) {
                         activity?.authenticateAniList()
                     } else {
-                        val alertDialog: AlertDialog? = activity?.let {
-                            val builder = AlertDialog.Builder(it, R.style.AlertDialogCustom)
-                            builder.apply {
-                                setPositiveButton(
+                        activity?.let {
+                            AlertDialog.Builder(it, R.style.AlertDialogCustom)
+                                .setPositiveButton(
                                     "Logout"
                                 ) { _, _ ->
                                     DataStore.removeKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID)
                                     DataStore.removeKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID)
                                     DataStore.removeKey(ANILIST_USER_KEY, ANILIST_ACCOUNT_ID)
                                     anilistButton.summary = if (isLoggedIntoMal()) "Logged in" else "Not logged in"
+                                    settingsViewModel?.hasLoggedIntoAnilist?.postValue(false)
                                 }
-                                setNegativeButton(
+                                .setNegativeButton(
                                     "Cancel"
                                 ) { _, _ ->
                                     // User cancelled the dialog
                                 }
-                            }
-                            // Set other dialog properties
-                            builder.setTitle("Logout from AniList")
+                                // Set other dialog properties
+                                .setTitle("Logout from AniList")
 
-                            // Create the AlertDialog
-                            builder.create()
+                                // Create the AlertDialog
+                                .create()
+                                .show()
                         }
-                        alertDialog?.show()
 
                     }
                     anilistButton.summary = if (isLoggedIntoAniList()) "Logged in" else "Not logged in"
@@ -240,10 +225,9 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                     if (!isLoggedIntoMal()) {
                         activity?.authenticateMAL()
                     } else {
-                        val alertDialog: AlertDialog? = activity?.let {
-                            val builder = AlertDialog.Builder(it, R.style.AlertDialogCustom)
-                            builder.apply {
-                                setPositiveButton(
+                        activity?.let { activity ->
+                            AlertDialog.Builder(activity, R.style.AlertDialogCustom)
+                                .setPositiveButton(
                                     "Logout"
                                 ) { _, _ ->
                                     DataStore.removeKey(MAL_TOKEN_KEY, MAL_ACCOUNT_ID)
@@ -251,20 +235,20 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                                     DataStore.removeKey(MAL_USER_KEY, MAL_ACCOUNT_ID)
                                     DataStore.removeKey(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID)
                                     malButton.summary = if (isLoggedIntoMal()) "Logged in" else "Not logged in"
+                                    settingsViewModel?.hasLoggedIntoMAL?.postValue(false)
                                 }
-                                setNegativeButton(
+                                .setNegativeButton(
                                     "Cancel"
                                 ) { _, _ ->
                                     // User cancelled the dialog
                                 }
-                            }
-                            // Set other dialog properties
-                            builder.setTitle("Logout from MAL")
+                                // Set other dialog properties
+                                .setTitle("Logout from MAL")
 
-                            // Create the AlertDialog
-                            builder.create()
+                                // Create the AlertDialog
+                                .create()
+                                .show()
                         }
-                        alertDialog?.show()
                     }
 
                     return@setOnPreferenceClickListener true
@@ -492,7 +476,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
 
             }
 
-            R.xml.settings_info -> {
+            R.xml.settings_about -> {
 
                 /** Info settings */
 

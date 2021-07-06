@@ -51,9 +51,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         findPreference<Preference>("settings_player")?.onPreferenceClickListener =
             PreferenceClickListener(R.xml.settings_player)
 
-        findPreference<Preference>("settings_general")?.onPreferenceClickListener =
-            PreferenceClickListener(R.xml.settings_general)
-
         findPreference<Preference>("settings_accounts")?.onPreferenceClickListener =
             PreferenceClickListener(R.xml.settings_accounts)
 
@@ -64,7 +61,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             PreferenceClickListener(R.xml.settings_update_info)
 
         findPreference<Preference>("settings_info")?.onPreferenceClickListener =
-            PreferenceClickListener(R.xml.settings_info)
+            PreferenceClickListener(R.xml.settings_about)
 
 
     }

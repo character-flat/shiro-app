@@ -111,18 +111,20 @@
     </style>
 
     <style name="AlertDialogCustom" parent="Theme.AppCompat.Dialog.Alert">
+        <!--<item name="android:background">?attr/background</item>-->
         <item name="android:colorBackground">?attr/backgroundColor</item>
         <item name="android:textColor">?attr/textColor</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="colorControlActivated">?attr/colorPrimary</item>
+        <item name="android:colorControlActivated">?attr/colorPrimary</item>
         <item name="android:textColorPrimary">?attr/textColor</item>
         <item name="android:colorControlHighlight">?attr/white</item>
-        <!--<item name="android:background">?attr/background</item>-->
-        <item name="android:textAllCaps">false</item>
-        <item name="textColorAlertDialogListItem">?attr/textColor</item>
-        <item name="colorControlNormal">?attr/textColor</item>
-        <item name="colorControlActivated">?colorPrimary</item>
-        <item name="android:colorControlActivated">?colorPrimary</item>
         <item name="buttonBarNegativeButtonStyle">@style/NegativeButtonStyle</item>
         <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
+        <item name="textColorAlertDialogListItem">?attr/textColor</item>
+        <item name="colorControlNormal">?attr/textColor</item>
+        <!--
+        -->
         <!-- colorPrimarySecond used because colorPrimary fails for no reason -->
     </style>
 

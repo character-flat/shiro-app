@@ -41,7 +41,11 @@ open class SettingsActivity : CyaneaAppCompatActivity() {
         supportActionBar?.show()
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
+        if (cyanea.isDark) {
+            theme.applyStyle(R.style.lightText, true)
+        } else {
+            theme.applyStyle(R.style.darkText, true)
+        }
         //transparentStatusAndNavigation()
 
         //getNavigationBarSize()
