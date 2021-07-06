@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.view.WindowManager
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
 import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
@@ -19,7 +18,6 @@ import com.lagradost.shiro.ui.MainActivity.Companion.canShowPipMode
 import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
 import com.lagradost.shiro.ui.MainActivity.Companion.onAudioFocusEvent
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
-import com.lagradost.shiro.utils.AppUtils
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.checkWrite
 import com.lagradost.shiro.utils.AppUtils.getUri
@@ -28,7 +26,6 @@ import com.lagradost.shiro.utils.AppUtils.init
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.DataStore
-import com.lagradost.shiro.utils.DownloadManager
 
 class PlayerActivity : CyaneaAppCompatActivity() {
     companion object {
@@ -57,7 +54,6 @@ class PlayerActivity : CyaneaAppCompatActivity() {
         playerActivity = this
 
         DataStore.init(this)
-        DownloadManager.init(this)
         init()
         supportActionBar?.hide()
         if (cyanea.isDark) {

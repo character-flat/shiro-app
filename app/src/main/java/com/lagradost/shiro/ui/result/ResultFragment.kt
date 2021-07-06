@@ -218,7 +218,7 @@ class ResultFragment : Fragment() {
             onWebViewNavigated += ::restoreState
         }
         onPlayerNavigated += ::handleVideoPlayerNavigation
-        DownloadManager.downloadStartEvent += ::onDownloadStarted
+       // DownloadManager.downloadStartEvent += ::onDownloadStarted
         isInResults = true
         onResultsNavigated.invoke(true)
     }
@@ -1079,7 +1079,7 @@ class ResultFragment : Fragment() {
 
         onWebViewNavigated -= ::restoreState
         onPlayerNavigated -= ::handleVideoPlayerNavigation
-        DownloadManager.downloadStartEvent -= ::onDownloadStarted
+       // DownloadManager.downloadStartEvent -= ::onDownloadStarted
         onLoadedOther -= ::onLoadOtherEvent
         onLoaded -= ::onLoadEvent
     }

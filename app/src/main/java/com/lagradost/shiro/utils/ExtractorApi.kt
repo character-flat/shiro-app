@@ -1,13 +1,14 @@
 package com.lagradost.shiro.utils
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.shiro.utils.extractors.*
 
 data class ExtractorLink(
-    val name: String,
+     val name: String,
     val url: String,
-    val referer: String,
-    val quality: Int,
-    val isM3u8: Boolean = false,
+     val referer: String,
+     val quality: Int,
+     val isM3u8: Boolean = false,
 )
 
 enum class Qualities(var value: Int) {

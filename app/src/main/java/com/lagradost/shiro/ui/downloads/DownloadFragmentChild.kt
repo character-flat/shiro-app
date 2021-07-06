@@ -3,6 +3,7 @@ package com.lagradost.shiro.ui.downloads
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -26,24 +27,20 @@ import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.fixEpTitle
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isViewState
-import com.lagradost.shiro.utils.AppUtils.checkWrite
+import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.getViewKey
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
-import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.AppUtils.settingsManager
-import com.lagradost.shiro.utils.DOWNLOAD_PARENT_KEY
-import com.lagradost.shiro.utils.DataStore
-import com.lagradost.shiro.utils.DownloadManager
-import com.lagradost.shiro.utils.DownloadManager.moveToExternalStorage
-import com.lagradost.shiro.utils.VIEWSTATE_KEY
+import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
+import kotlinx.android.synthetic.main.episode_result_downloaded.view.cardBg
+import kotlinx.android.synthetic.main.episode_result_downloaded.view.cardTitle
 import kotlinx.android.synthetic.main.fragment_download_child.*
 import java.io.File
-import kotlin.concurrent.thread
 
 const val SLUG = "slug"
 
@@ -78,7 +75,7 @@ class DownloadFragmentChild : Fragment() {
         loadData()
     }
 
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint("ClickableViewAccessibility", "SetTextI18n")
     private fun loadData() {
         downloadRootChild.removeAllViews()
         val save = settingsManager!!.getBoolean("save_history", true)
@@ -94,20 +91,19 @@ class DownloadFragmentChild : Fragment() {
             val child = it.key
 
             if (child != null) {
-                val file = File(child.videoPath)
-                if (!file.exists()) {
-                    return@forEach
-                }
+                // val file = File(child.videoPath)
+                val fileInfo = VideoDownloadManager.getDownloadFileInfoAndUpdateSettings(
+                    requireContext(),
+                    child.internalId
+                ) ?: return@forEach
 
                 val card: View =
                     layoutInflater.inflate(R.layout.episode_result_downloaded, view?.parent as? ViewGroup?, false)
                 /*if (child.thumbPath != null) {
-                    card.imageView.setImageURI(Uri.parse(child.thumbPath))
-                }
+                    card.imageView?.setImageURI(Uri.parse(child.thumbPath))
+                }*/
 
-
-                */
-
+                /*
                 fun showMoveButton() {
                     if (child.videoPath.startsWith(getCurrentActivity()!!.filesDir.toString())) {
                         card.switch_storage_button.visibility = VISIBLE
@@ -162,7 +158,7 @@ class DownloadFragmentChild : Fragment() {
                     } else {
                         card.switch_storage_button.visibility = INVISIBLE
                     }
-                }
+                }*/
 
 
                 val key = getViewKey(slug!!, child.episodeIndex)
@@ -173,7 +169,7 @@ class DownloadFragmentChild : Fragment() {
                     activity?.loadPlayer(
                         PlayerData(
                             "Episode ${child.episodeIndex + 1} · ${child.videoTitle}",
-                            child.videoPath,
+                            fileInfo.path.toString(),// child.videoPath,
                             child.episodeIndex,
                             0,
                             null,
@@ -193,29 +189,19 @@ class DownloadFragmentChild : Fragment() {
 
                 // ================ DOWNLOAD STUFF ================
                 fun deleteFile() {
-                    if (file.exists()) {
-                        val dir = File(file.absoluteFile.parent)
-                        if (dir.listFiles() == null) {
-                            activity?.runOnUiThread {
-                                Toast.makeText(context, "Storage permission missing", Toast.LENGTH_LONG).show()
-                            }
-                            return
+                    println("FIXED:::: " + child.internalId)
+                    if (VideoDownloadManager.deleteFileAndUpdateSettings(requireContext(), child.internalId)) {
+                        activity?.runOnUiThread {
+                            card.visibility = GONE
+                            DataStore.removeKey(it.value)
+                            Toast.makeText(
+                                context,
+                                "${child.videoTitle} E${child.episodeIndex + 1} deleted",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
-                        file.delete()
-                        if (dir.listFiles()?.isEmpty() == true) {
-                            dir.delete()
-                        }
+                        downloadsUpdated.invoke(true)
                     }
-                    activity?.runOnUiThread {
-                        card.visibility = GONE
-                        DataStore.removeKey(it.value)
-                        Toast.makeText(
-                            context,
-                            "${child.videoTitle} E${child.episodeIndex + 1} deleted",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                    downloadsUpdated.invoke(true)
                 }
 
                 card.cardRemoveIcon.setOnClickListener {
@@ -258,8 +244,8 @@ class DownloadFragmentChild : Fragment() {
                     if (parent?.fillerEpisodes?.get(child.episodeIndex + 1) == true) " (Filler) " else ""
 
                 card.cardTitle.text = title + fillerInfo
-                val megaBytesTotal = DownloadManager.convertBytesToAny(child.maxFileSize, 0, 2.0).toInt()
-                val localBytesTotal = maxOf(DownloadManager.convertBytesToAny(file.length(), 0, 2.0).toInt(), 1)
+                val megaBytesTotal = DownloadManager.convertBytesToAny(fileInfo.totalBytes, 0, 2.0).toInt()
+                val localBytesTotal = maxOf(DownloadManager.convertBytesToAny(fileInfo.fileLength, 0, 2.0).toInt(), 1)
                 card.cardTitleExtra.text = "$localBytesTotal / $megaBytesTotal MB"
                 card.progressBar.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
                 fun updateIcon(megabytes: Int) {
@@ -267,7 +253,7 @@ class DownloadFragmentChild : Fragment() {
                         card.progressBar.visibility = GONE
                         card.cardPauseIcon.visibility = GONE
                         card.cardRemoveIcon.visibility = VISIBLE
-                        showMoveButton()
+                        //   showMoveButton()
                     } else {
                         card.progressBar.visibility = VISIBLE
                         card.cardRemoveIcon.visibility = GONE
@@ -286,8 +272,8 @@ class DownloadFragmentChild : Fragment() {
                 }
 
                 fun getStatus(): Boolean { // IF CAN RESUME
-                    return if (DownloadManager.downloadStatus.containsKey(child.internalId)) {
-                        DownloadManager.downloadStatus[child.internalId] == DownloadManager.DownloadStatusType.IsPaused
+                    return if (VideoDownloadManager.downloadStatus.containsKey(child.internalId)) {
+                        VideoDownloadManager.downloadStatus[child.internalId] == VideoDownloadManager.DownloadType.IsPaused
                     } else {
                         true
                     }
@@ -313,12 +299,28 @@ class DownloadFragmentChild : Fragment() {
                         popup.setOnMenuItemClickListener {
                             when (it.itemId) {
                                 R.id.res_resumedload -> {
-                                    DownloadManager.downloadEpisode(getDownload(), child.downloadFileLink, true)
+                                    if (VideoDownloadManager.downloadStatus.containsKey(child.internalId)) {
+                                        VideoDownloadManager.downloadEvent.invoke(
+                                            Pair(
+                                                child.internalId,
+                                                VideoDownloadManager.DownloadActionType.Resume
+                                            )
+                                        )
+                                    }
+                                    val pkg = VideoDownloadManager.getDownloadResumePackage(
+                                        requireContext(),
+                                        child.internalId
+                                    )
+                                    if (pkg != null) {
+                                        VideoDownloadManager.downloadFromResume(requireContext(), pkg)
+                                    }
                                 }
                                 R.id.res_stopdload -> {
-                                    DownloadManager.invokeDownloadAction(
-                                        child.internalId,
-                                        DownloadManager.DownloadStatusType.IsStopped
+                                    VideoDownloadManager.downloadEvent.invoke(
+                                        Pair(
+                                            child.internalId,
+                                            VideoDownloadManager.DownloadActionType.Stop
+                                        )
                                     )
                                     deleteFile()
                                 }
@@ -330,15 +332,19 @@ class DownloadFragmentChild : Fragment() {
                         popup.setOnMenuItemClickListener {
                             when (it.itemId) {
                                 R.id.stop_pauseload -> {
-                                    DownloadManager.invokeDownloadAction(
-                                        child.internalId,
-                                        DownloadManager.DownloadStatusType.IsPaused
+                                    VideoDownloadManager.downloadEvent.invoke(
+                                        Pair(
+                                            child.internalId,
+                                            VideoDownloadManager.DownloadActionType.Pause
+                                        )
                                     )
                                 }
                                 R.id.stop_stopdload -> {
-                                    DownloadManager.invokeDownloadAction(
-                                        child.internalId,
-                                        DownloadManager.DownloadStatusType.IsStopped
+                                    VideoDownloadManager.downloadEvent.invoke(
+                                        Pair(
+                                            child.internalId,
+                                            VideoDownloadManager.DownloadActionType.Stop
+                                        )
                                     )
                                     deleteFile()
                                 }
@@ -352,23 +358,11 @@ class DownloadFragmentChild : Fragment() {
 
                 card.progressBar.progress = maxOf(minOf(localBytesTotal * 100 / megaBytesTotal, 100), 0)
 
-                DownloadManager.downloadPauseEvent += {
-                    if (it == child.internalId) {
-                        setStatus()
-                    }
-                }
-
-                DownloadManager.downloadDeleteEvent += {
-                    if (it == child.internalId) {
-                        deleteFile()
-                    }
-                }
-
-                DownloadManager.downloadEvent += {
+                VideoDownloadManager.downloadProgressEvent += {
                     activity?.runOnUiThread {
-                        if (it.downloadEvent.id == child.internalId) {
+                        if (it.first == child.internalId) {
                             val megaBytes =
-                                DownloadManager.convertBytesToAny(it.downloadEvent.bytes, 0, 2.0).toInt()
+                                DownloadManager.convertBytesToAny(it.second, 0, 2.0).toInt()
                             card.cardTitleExtra.text = "$megaBytes / $megaBytesTotal MB"
                             card.progressBar.progress = maxOf(minOf(megaBytes * 100 / megaBytesTotal, 100), 0)
                             updateIcon(megaBytes)

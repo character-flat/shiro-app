@@ -95,7 +95,6 @@ class TvActivity : CyaneaAppCompatActivity() {
         masterViewModel = masterViewModel ?: ViewModelProvider(this).get(MasterViewModel::class.java)
         DataStore.init(this)
         settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
-        DownloadManager.init(this)
         init()
         thread {
             ShiroApi.init()
@@ -154,9 +153,7 @@ class TvActivity : CyaneaAppCompatActivity() {
         super.onResume()
         // This is needed to avoid NPE crash due to missing context
         DataStore.init(this)
-        DownloadManager.init(this)
         init()
-
     }
 
 

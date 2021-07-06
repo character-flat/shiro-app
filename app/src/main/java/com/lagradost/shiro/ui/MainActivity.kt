@@ -186,7 +186,6 @@ class MainActivity : CyaneaAppCompatActivity() {
         println("RESUMED!!!")
         // This is needed to avoid NPE crash due to missing context
         DataStore.init(this)
-        DownloadManager.init(this)
         init()
         if (isInPlayer) {
             hideSystemUI()
@@ -247,7 +246,6 @@ class MainActivity : CyaneaAppCompatActivity() {
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
         init()
         DataStore.init(this)
-        DownloadManager.init(this)
         // Hack to make tinting work
         if (Cyanea.instance.isLight) delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
 

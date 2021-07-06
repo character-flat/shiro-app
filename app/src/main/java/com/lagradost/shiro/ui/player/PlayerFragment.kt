@@ -1501,29 +1501,35 @@ class PlayerFragment : Fragment() {
 
                                 val nextEpisode = episodes.filter { it?.episodeIndex == data!!.episodeIndex!! + 1 }
                                 if (!nextEpisode.isNullOrEmpty()) {
-                                    next_episode_btt?.visibility = VISIBLE
-                                    next_episode_btt?.setOnClickListener {
-                                        handler.removeCallbacks(checkProgressAction)
-                                        cancelNextEpisode()
-                                        if (isLoadingNextEpisode) return@setOnClickListener
-                                        updateHideTime(interaction = false)
-                                        isLoadingNextEpisode = true
-                                        savePos()
-                                        val key = getViewKey(
-                                            slug,
-                                            data!!.episodeIndex!! + 1
-                                        )
-                                        DataStore.removeKey(VIEW_POS_KEY, key)
-                                        DataStore.removeKey(VIEW_DUR_KEY, key)
+                                    val fileInfo = VideoDownloadManager.getDownloadFileInfoAndUpdateSettings(
+                                        requireContext(),
+                                        nextEpisode[0]!!.internalId
+                                    )
+                                    if (fileInfo != null) {
+                                        next_episode_btt?.visibility = VISIBLE
+                                        next_episode_btt?.setOnClickListener {
+                                            handler.removeCallbacks(checkProgressAction)
+                                            cancelNextEpisode()
+                                            if (isLoadingNextEpisode) return@setOnClickListener
+                                            updateHideTime(interaction = false)
+                                            isLoadingNextEpisode = true
+                                            savePos()
+                                            val key = getViewKey(
+                                                slug,
+                                                data!!.episodeIndex!! + 1
+                                            )
+                                            DataStore.removeKey(VIEW_POS_KEY, key)
+                                            DataStore.removeKey(VIEW_DUR_KEY, key)
 
-                                        releasePlayer()
-                                        loadAndPlay()
-                                        handler.postDelayed(checkProgressAction, 5000L)
+                                            releasePlayer()
+                                            loadAndPlay()
+                                            handler.postDelayed(checkProgressAction, 5000L)
 
-                                        data!!.title =
-                                            "Episode ${nextEpisode[0]!!.episodeIndex + 1} · ${nextEpisode[0]!!.videoTitle}"
-                                        data?.url = nextEpisode[0]!!.videoPath
-                                        data?.episodeIndex = data!!.episodeIndex!! + 1
+                                            data!!.title =
+                                                "Episode ${nextEpisode[0]!!.episodeIndex + 1} · ${nextEpisode[0]!!.videoTitle}"
+                                            data?.url = fileInfo.path.toString()
+                                            data?.episodeIndex = data!!.episodeIndex!! + 1
+                                        }
                                     }
                                 } else {
                                     next_episode_btt?.visibility = GONE
