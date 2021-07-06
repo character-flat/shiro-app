@@ -50,7 +50,21 @@
                 <data android:scheme="content"/>
                 <data android:mimeType="video/*"/>
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+
+                <data android:scheme="https" android:host="shiro.is" android:pathPrefix="/anime/"/>
+            </intent-filter>
         </activity>
+
+        <service
+                android:name=".services.VideoDownloadService"
+                android:enabled="true"
+                android:exported="false">
+        </service>
 
         <provider
                 android:name="androidx.core.content.FileProvider"

@@ -2,6 +2,7 @@ package com.lagradost.shiro.utils
 
 import android.content.Context
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import kotlin.math.pow
 import kotlin.math.round
 
@@ -23,7 +24,7 @@ object DownloadManager {
         @JsonProperty("child") val child: DownloadFileMetadata,
     )*/
 
-    data class DownloadFileMetadata(
+    data class DownloadFileMetadataSemiLegacy(
         @JsonProperty("internalId") val internalId: Int, // UNIQUE ID BASED ON aniListId season and index
         @JsonProperty("slug") val slug: String,
         @JsonProperty("animeData") val animeData: ShiroApi.AnimePageData,
@@ -36,7 +37,18 @@ object DownloadManager {
 
         @JsonProperty("downloadAt") val downloadAt: Long,
         @JsonProperty("maxFileSize") val maxFileSize: Long, // IF MUST RESUME
-        //@JsonProperty("downloadFileLink") val downloadFileLink: ExtractorLink?, // IF RESUME, DO IT FROM THIS URL
+        @JsonProperty("downloadFileLink") val downloadFileLink: ExtractorLink, // IF RESUME, DO IT FROM THIS URL
+    )
+
+    data class DownloadFileMetadata(
+        @JsonProperty("internalId") val internalId: Int, // UNIQUE ID BASED ON aniListId season and index
+        @JsonProperty("slug") val slug: String,
+        @JsonProperty("animeData") val animeData: ShiroApi.AnimePageData,
+
+        @JsonProperty("thumbPath") val thumbPath: String?,
+        @JsonProperty("videoTitle") val videoTitle: String,
+        @JsonProperty("episodeIndex") val episodeIndex: Int,
+        @JsonProperty("downloadAt") val downloadAt: Long,
     )
 
     data class DownloadFileMetadataLegacy(
@@ -84,7 +96,7 @@ object DownloadManager {
             DOWNLOAD_PARENT_KEY, info.animeData.slug,
             DownloadParentFileMetadata(
                 info.animeData.name,
-                "", //mainPosterPath
+                getFullUrlCdn(info.animeData.image), //mainPosterPath
                 isMovie,
                 info.animeData.slug,
                 info.anilistID,
@@ -92,6 +104,27 @@ object DownloadManager {
                 info.fillerEpisodes
             )
         )
+
+        var title = info.animeData.name
+        if (title.replace(" ", "") == "") {
+            title = "Episode " + info.episodeIndex + 1
+        }
+
+
+
+        DataStore.setKey(
+            DOWNLOAD_CHILD_KEY, id.toString(),
+            DownloadFileMetadata(
+                id,
+                info.animeData.slug,
+                info.animeData,
+                getFullUrlCdn(info.animeData.image), //TODO Download poster
+                title,
+                info.episodeIndex,
+                System.currentTimeMillis(),
+            )
+        )
+
         val mainTitle = info.animeData.name
 
         val folder = if (isMovie) {
@@ -99,17 +132,17 @@ object DownloadManager {
         } else {
             "Anime/${VideoDownloadManager.sanitizeFilename(mainTitle)}"
         }
-        val name = if (isMovie) mainTitle else "Episode ${info.episodeIndex + 1}"
+        val name = if (isMovie) mainTitle else null
 
         VideoDownloadManager.downloadEpisode(
             context,
-            null,
+            "https://shiro.is/anime/${info.animeData.slug}",
             folder,
             VideoDownloadManager.DownloadEpisodeMetadata(
                 id,
                 mainTitle,
-                "Shiro",
-                info.animeData.image,
+                null, // "Shiro"
+                getFullUrlCdn(info.animeData.image),
                 name,
                 null,
                 if (isMovie) null else info.episodeIndex + 1

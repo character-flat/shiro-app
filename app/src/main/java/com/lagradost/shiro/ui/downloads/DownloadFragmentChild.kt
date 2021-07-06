@@ -3,6 +3,7 @@ package com.lagradost.shiro.ui.downloads
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -34,7 +35,10 @@ import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
+import kotlinx.android.synthetic.main.episode_result_downloaded.view.cardBg
+import kotlinx.android.synthetic.main.episode_result_downloaded.view.cardTitle
 import kotlinx.android.synthetic.main.fragment_download_child.*
 import java.io.File
 
@@ -87,19 +91,17 @@ class DownloadFragmentChild : Fragment() {
             val child = it.key
 
             if (child != null) {
-                val file = File(child.videoPath)
-                if (!file.exists()) {
-                    return@forEach
-                }
+                // val file = File(child.videoPath)
+                val fileInfo = VideoDownloadManager.getDownloadFileInfoAndUpdateSettings(
+                    requireContext(),
+                    child.internalId
+                ) ?: return@forEach
 
                 val card: View =
                     layoutInflater.inflate(R.layout.episode_result_downloaded, view?.parent as? ViewGroup?, false)
                 /*if (child.thumbPath != null) {
-                    card.imageView.setImageURI(Uri.parse(child.thumbPath))
-                }
-
-
-                */
+                    card.imageView?.setImageURI(Uri.parse(child.thumbPath))
+                }*/
 
                 /*
                 fun showMoveButton() {
@@ -167,7 +169,7 @@ class DownloadFragmentChild : Fragment() {
                     activity?.loadPlayer(
                         PlayerData(
                             "Episode ${child.episodeIndex + 1} · ${child.videoTitle}",
-                            child.videoPath,
+                            fileInfo.path.toString(),// child.videoPath,
                             child.episodeIndex,
                             0,
                             null,
@@ -187,29 +189,19 @@ class DownloadFragmentChild : Fragment() {
 
                 // ================ DOWNLOAD STUFF ================
                 fun deleteFile() {
-                    if (file.exists()) {
-                        val dir = File(file.absoluteFile.parent)
-                        if (dir.listFiles() == null) {
-                            activity?.runOnUiThread {
-                                Toast.makeText(context, "Storage permission missing", Toast.LENGTH_LONG).show()
-                            }
-                            return
+                    println("FIXED:::: " + child.internalId)
+                    if (VideoDownloadManager.deleteFileAndUpdateSettings(requireContext(), child.internalId)) {
+                        activity?.runOnUiThread {
+                            card.visibility = GONE
+                            DataStore.removeKey(it.value)
+                            Toast.makeText(
+                                context,
+                                "${child.videoTitle} E${child.episodeIndex + 1} deleted",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
-                        file.delete()
-                        if (dir.listFiles()?.isEmpty() == true) {
-                            dir.delete()
-                        }
+                        downloadsUpdated.invoke(true)
                     }
-                    activity?.runOnUiThread {
-                        card.visibility = GONE
-                        DataStore.removeKey(it.value)
-                        Toast.makeText(
-                            context,
-                            "${child.videoTitle} E${child.episodeIndex + 1} deleted",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                    downloadsUpdated.invoke(true)
                 }
 
                 card.cardRemoveIcon.setOnClickListener {
@@ -252,8 +244,8 @@ class DownloadFragmentChild : Fragment() {
                     if (parent?.fillerEpisodes?.get(child.episodeIndex + 1) == true) " (Filler) " else ""
 
                 card.cardTitle.text = title + fillerInfo
-                val megaBytesTotal = DownloadManager.convertBytesToAny(child.maxFileSize, 0, 2.0).toInt()
-                val localBytesTotal = maxOf(DownloadManager.convertBytesToAny(file.length(), 0, 2.0).toInt(), 1)
+                val megaBytesTotal = DownloadManager.convertBytesToAny(fileInfo.totalBytes, 0, 2.0).toInt()
+                val localBytesTotal = maxOf(DownloadManager.convertBytesToAny(fileInfo.fileLength, 0, 2.0).toInt(), 1)
                 card.cardTitleExtra.text = "$localBytesTotal / $megaBytesTotal MB"
                 card.progressBar.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
                 fun updateIcon(megabytes: Int) {
@@ -261,7 +253,7 @@ class DownloadFragmentChild : Fragment() {
                         card.progressBar.visibility = GONE
                         card.cardPauseIcon.visibility = GONE
                         card.cardRemoveIcon.visibility = VISIBLE
-                     //   showMoveButton()
+                        //   showMoveButton()
                     } else {
                         card.progressBar.visibility = VISIBLE
                         card.cardRemoveIcon.visibility = GONE
@@ -307,10 +299,30 @@ class DownloadFragmentChild : Fragment() {
                         popup.setOnMenuItemClickListener {
                             when (it.itemId) {
                                 R.id.res_resumedload -> {
-                                    VideoDownloadManager.downloadEvent.invoke(Pair(child.internalId,VideoDownloadManager.DownloadActionType.Resume))
+                                    if (VideoDownloadManager.downloadStatus.containsKey(child.internalId)) {
+                                        VideoDownloadManager.downloadEvent.invoke(
+                                            Pair(
+                                                child.internalId,
+                                                VideoDownloadManager.DownloadActionType.Resume
+                                            )
+                                        )
+                                    }
+                                    val pkg = VideoDownloadManager.getDownloadResumePackage(
+                                        requireContext(),
+                                        child.internalId
+                                    )
+                                    if (pkg != null) {
+                                        VideoDownloadManager.downloadFromResume(requireContext(), pkg)
+                                    }
                                 }
                                 R.id.res_stopdload -> {
-                                    VideoDownloadManager.downloadEvent.invoke(Pair(child.internalId,VideoDownloadManager.DownloadActionType.Stop))
+                                    VideoDownloadManager.downloadEvent.invoke(
+                                        Pair(
+                                            child.internalId,
+                                            VideoDownloadManager.DownloadActionType.Stop
+                                        )
+                                    )
+                                    deleteFile()
                                 }
                             }
                             return@setOnMenuItemClickListener true
@@ -320,10 +332,21 @@ class DownloadFragmentChild : Fragment() {
                         popup.setOnMenuItemClickListener {
                             when (it.itemId) {
                                 R.id.stop_pauseload -> {
-                                    VideoDownloadManager.downloadEvent.invoke(Pair(child.internalId,VideoDownloadManager.DownloadActionType.Pause))
+                                    VideoDownloadManager.downloadEvent.invoke(
+                                        Pair(
+                                            child.internalId,
+                                            VideoDownloadManager.DownloadActionType.Pause
+                                        )
+                                    )
                                 }
                                 R.id.stop_stopdload -> {
-                                    VideoDownloadManager.downloadEvent.invoke(Pair(child.internalId,VideoDownloadManager.DownloadActionType.Stop))
+                                    VideoDownloadManager.downloadEvent.invoke(
+                                        Pair(
+                                            child.internalId,
+                                            VideoDownloadManager.DownloadActionType.Stop
+                                        )
+                                    )
+                                    deleteFile()
                                 }
                             }
                             return@setOnMenuItemClickListener true

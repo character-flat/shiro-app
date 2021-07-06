@@ -113,6 +113,7 @@ object VideoDownloadManager {
     )
 
     data class DownloadedFileInfoResult(
+        val fileLength: Long,
         val totalBytes: Long,
         val path: Uri,
     )
@@ -672,7 +673,7 @@ object VideoDownloadManager {
                 cr.getExistingDownloadUriOrNullQ(info.relativePath, info.displayName) ?: return null
             val fileLength = cr.getFileLength(fileUri)
             if (fileLength == 0L) return null
-            return DownloadedFileInfoResult(fileLength, fileUri)
+            return DownloadedFileInfoResult(fileLength, info.totalBytes, fileUri)
         } else {
             val normalPath =
                 "${Environment.getExternalStorageDirectory()}${File.separatorChar}${info.relativePath}${info.displayName}".replace(
@@ -681,7 +682,7 @@ object VideoDownloadManager {
                 )
             val dFile = File(normalPath)
             if (!dFile.exists()) return null
-            return DownloadedFileInfoResult(dFile.length(), dFile.toUri())
+            return DownloadedFileInfoResult(dFile.length(), info.totalBytes, dFile.toUri())
         }
     }
 

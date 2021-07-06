@@ -284,16 +284,15 @@ class EpisodeAdapter(
                 card.video_progress.alpha = 0f
             }
             card.progressBar.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
-            fun updateIcon(megabytes: Int, child: DownloadManager.DownloadFileMetadata) {
-                val file = File(child.videoPath)
-                val megaBytesTotal = DownloadManager.convertBytesToAny(child.maxFileSize, 0, 2.0).toInt()
-                if (!file.exists()) {
+            fun updateIcon(megabytes: Int, fileInfo: VideoDownloadManager.DownloadedFileInfoResult?) {
+                if (fileInfo == null) {
                     card.cdi.visibility = VISIBLE
                     card.progressBar.visibility = GONE
                     card.cardPauseIcon.visibility = GONE
                     card.cardRemoveIcon.visibility = GONE
                 } else {
                     card.cdi.visibility = GONE
+                    val megaBytesTotal = DownloadManager.convertBytesToAny(fileInfo.totalBytes, 0, 2.0).toInt()
                     if (megabytes + 0.1 >= megaBytesTotal) {
                         card.progressBar.visibility = GONE
                         card.cardPauseIcon.visibility = GONE
@@ -314,31 +313,26 @@ class EpisodeAdapter(
                 )
                 // ================ DOWNLOAD STUFF ================
                 if (child != null) {
-                    val file = File(child.videoPath)
-                    if (file.exists()) {
-                        val megaBytesTotal = DownloadManager.convertBytesToAny(child.maxFileSize, 0, 2.0).toInt()
+                    val fileInfo = VideoDownloadManager.getDownloadFileInfoAndUpdateSettings(activity, child.internalId)
+                    if (fileInfo != null) {
+                        val megaBytesTotal = DownloadManager.convertBytesToAny(fileInfo.totalBytes, 0, 2.0).toInt()
                         val localBytesTotal =
-                            maxOf(DownloadManager.convertBytesToAny(file.length(), 0, 2.0).toInt(), 1)
+                            maxOf(DownloadManager.convertBytesToAny(fileInfo.fileLength, 0, 2.0).toInt(), 1)
 
                         println("FILE EXISTS:$episodePos")
                         fun deleteFile() {
-                            if (file.exists()) {
-                                file.delete()
-                                val dir = File(file.absoluteFile.parent)
-                                if (dir.listFiles().isEmpty()) {
-                                    dir.delete()
-                                }
-                            }
-                            activity.runOnUiThread {
+                            if (VideoDownloadManager.deleteFileAndUpdateSettings(activity, child.internalId)) {
                                 DataStore.removeKey(DOWNLOAD_CHILD_KEY, key)
-                                Toast.makeText(
-                                    activity,
-                                    "${child.videoTitle} E${child.episodeIndex + 1} deleted",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                updateIcon(0, child)
+                                activity.runOnUiThread {
+                                    Toast.makeText(
+                                        activity,
+                                        "${child.videoTitle} E${child.episodeIndex + 1} deleted",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                    updateIcon(0, null)
+                                }
+                                downloadsUpdated.invoke(true)
                             }
-                            downloadsUpdated.invoke(true)
                         }
 
                         card.cardRemoveIcon.setOnClickListener {
@@ -387,7 +381,7 @@ class EpisodeAdapter(
                             }
                         }
 
-                        fun setStatus(isPaused : Boolean) {
+                        fun setStatus(isPaused: Boolean) {
                             activity.runOnUiThread {
                                 if (isPaused) {
                                     card.cardPauseIcon.setImageResource(R.drawable.netflix_play)
@@ -398,7 +392,7 @@ class EpisodeAdapter(
                         }
 
                         setStatus(true)
-                        updateIcon(localBytesTotal, child)
+                        updateIcon(localBytesTotal, fileInfo)
 
                         card.cardPauseIcon.imageTintList = ColorStateList.valueOf(Cyanea.instance.primary)
                         card.cardPauseIcon.setOnClickListener { v ->
@@ -416,7 +410,12 @@ class EpisodeAdapter(
                                             }
                                         }
                                         R.id.res_stopdload -> {
-                                            VideoDownloadManager.downloadEvent.invoke(Pair(child.internalId, VideoDownloadManager.DownloadActionType.Stop))
+                                            VideoDownloadManager.downloadEvent.invoke(
+                                                Pair(
+                                                    child.internalId,
+                                                    VideoDownloadManager.DownloadActionType.Stop
+                                                )
+                                            )
                                             deleteFile()
                                         }
                                     }
@@ -427,10 +426,20 @@ class EpisodeAdapter(
                                 popup.setOnMenuItemClickListener {
                                     when (it.itemId) {
                                         R.id.stop_pauseload -> {
-                                            VideoDownloadManager.downloadEvent.invoke(Pair(child.internalId, VideoDownloadManager.DownloadActionType.Pause))
+                                            VideoDownloadManager.downloadEvent.invoke(
+                                                Pair(
+                                                    child.internalId,
+                                                    VideoDownloadManager.DownloadActionType.Pause
+                                                )
+                                            )
                                         }
                                         R.id.stop_stopdload -> {
-                                            VideoDownloadManager.downloadEvent.invoke(Pair(child.internalId, VideoDownloadManager.DownloadActionType.Stop))
+                                            VideoDownloadManager.downloadEvent.invoke(
+                                                Pair(
+                                                    child.internalId,
+                                                    VideoDownloadManager.DownloadActionType.Stop
+                                                )
+                                            )
                                         }
                                     }
                                     return@setOnMenuItemClickListener true

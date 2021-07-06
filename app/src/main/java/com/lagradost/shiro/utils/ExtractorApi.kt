@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.shiro.utils.extractors.*
 
 data class ExtractorLink(
-    @JsonProperty("name") val name: String,
-    @JsonProperty("url")val url: String,
-    @JsonProperty("referer") val referer: String,
-    @JsonProperty("quality") val quality: Int,
-    @JsonProperty("isM3u8") val isM3u8: Boolean = false,
+     val name: String,
+    val url: String,
+     val referer: String,
+     val quality: Int,
+     val isM3u8: Boolean = false,
 )
 
 enum class Qualities(var value: Int) {

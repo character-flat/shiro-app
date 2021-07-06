@@ -11,9 +11,12 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.fragment.app.Fragment
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.utils.*
@@ -21,6 +24,7 @@ import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.fragment_download.*
+import kotlinx.android.synthetic.main.fragment_results_new.*
 import java.io.File
 
 class DownloadFragment : Fragment() {
@@ -49,12 +53,16 @@ class DownloadFragment : Fragment() {
                 for (k in childKeys) {
                     val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(k)
                     if (child != null) {
-                        if (!File(child.videoPath).exists()) { // FILE DOESN'T EXIT
-                            val thumbFile = File(child.thumbPath)
+                        val fileInfo = VideoDownloadManager.getDownloadFileInfoAndUpdateSettings(
+                            requireContext(),
+                            child.internalId
+                        )
+                        if (fileInfo == null) { // FILE DOESN'T EXIT
+                            /*val thumbFile = File(child.thumbPath)
                             if (thumbFile.exists()) {
                                 thumbFile.delete()
-                            }
-                            DataStore.removeKey(k)
+                            }*/
+                            // DataStore.removeKey(k)
                         } else {
                             if (childMetadataKeys.containsKey(child.slug)) {
                                 childMetadataKeys[child.slug]?.add(k)
@@ -69,13 +77,13 @@ class DownloadFragment : Fragment() {
                                         VideoDownloadManager.downloadStatus[child.internalId] == VideoDownloadManager.DownloadType.IsDownloading
 
                             if (!epData.containsKey(id)) {
-                                epData[id] = EpisodesDownloaded(1, if (isDownloading) 1 else 0, child.maxFileSize)
+                                epData[id] = EpisodesDownloaded(1, if (isDownloading) 1 else 0, fileInfo.totalBytes)
                             } else {
                                 val current = epData[id]!!
                                 epData[id] = EpisodesDownloaded(
                                     current.count + 1,
                                     current.countDownloading + (if (isDownloading) 1 else 0),
-                                    current.countBytes + child.maxFileSize
+                                    current.countBytes + fileInfo.totalBytes
                                 )
                             }
                         }
@@ -94,8 +102,15 @@ class DownloadFragment : Fragment() {
                             }
 
                             cardView.cardTitle.text = parent.title
-                            cardView.imageView.setImageURI(Uri.parse(parent.coverImagePath))
-
+                            //cardView.imageView.setImageURI(Uri.parse(parent.coverImagePath))
+                            val glideUrlMain =
+                                GlideUrl(ShiroApi.getFullUrlCdn(parent.coverImagePath)) { ShiroApi.currentHeaders }
+                            context?.let {
+                                GlideApp.with(it)
+                                    .load(glideUrlMain)
+                                    .transition(DrawableTransitionOptions.withCrossFade(200))
+                                    .into(cardView.imageView)
+                            }
                             val childData = epData[parent.slug]!!
                             val megaBytes = DownloadManager.convertBytesToAny(childData.countBytes, 0, 2.0).toInt()
                             cardView.cardInfo.text =
@@ -204,25 +219,19 @@ class DownloadFragment : Fragment() {
                 if (data != null) {
                     // NEEDS REMOVAL TO PREVENT DUPLICATES
                     DataStore.removeKey(it)
-                    DataStore.setKey(
-                        it, DownloadManager.DownloadFileMetadata(
-                            data.internalId,
-                            data.slug,
-                            data.animeData,
-                            data.thumbPath,
-                            data.videoPath,
-                            data.videoTitle,
-                            data.episodeIndex,
-                            data.downloadAt,
-                            data.maxFileSize,
-                            ExtractorLink(
-                                "Shiro",
-                                data.downloadFileUrl,
-                                "https://shiro.is/",
-                                Qualities.UHD.value
-                            )
-                        )
-                    )
+                    /*  DataStore.setKey(
+                          it, DownloadManager.DownloadFileMetadataSemiLegacy(
+                              data.internalId,
+                              data.slug,
+                              data.animeData,
+                              data.thumbPath,
+                              data.videoPath,
+                              data.videoTitle,
+                              data.episodeIndex,
+                              data.downloadAt,
+                              data.maxFileSize,
+                          )
+                      )*/
                 }
             }
             DataStore.setKey(LEGACY_DOWNLOADS, false)
