@@ -17,6 +17,12 @@
             android:title="Hide all dubbed shows"
             app:defaultValue="true"
     />
+    <SwitchPreference
+            android:icon="@drawable/quantum_ic_refresh_white_24"
+            app:key="swipe_to_refresh"
+            android:title="Swipe to refresh in homepage"
+            app:defaultValue="true"
+    />
     <!--<SwitchPreference
             android:icon="@drawable/outlined_heart"
             app:key="hold_to_favorite"

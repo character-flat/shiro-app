@@ -7,12 +7,16 @@
         xmlns:tools="http://schemas.android.com/tools"
 
 >
+    <View
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:id="@+id/top_padding_settings"/>
 
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_alignParentTop="true"
+            android:layout_alignTop="@+id/top_padding_settings"
             android:gravity="center"
             android:orientation="vertical"
             android:layout_above="@+id/settings_card_view"

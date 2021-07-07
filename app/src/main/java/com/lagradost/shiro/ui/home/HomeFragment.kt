@@ -40,6 +40,7 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import kotlinx.android.synthetic.main.download_card.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlin.concurrent.thread
+
 //const val MAXIMUM_FADE = 0.3f
 //const val FADE_SCROLL_DISTANCE = 700f
 
@@ -85,10 +86,17 @@ class HomeFragment : Fragment() {
                 MainActivity.loadPage(cardInfo!!)
                 // MainActivity.loadPlayer(0, 0, cardInfo!!)
             }*/
-            home_swipe_refresh.setOnRefreshListener {
-                generateRandom()
-                home_swipe_refresh.isRefreshing = false
+
+            if (settingsManager?.getBoolean("swipe_to_refresh", true) == true) {
+                home_swipe_refresh?.isEnabled = true
+                home_swipe_refresh.setOnRefreshListener {
+                    generateRandom()
+                    home_swipe_refresh.isRefreshing = false
+                }
+            } else {
+                home_swipe_refresh?.isEnabled = false
             }
+
 
             generateRandom(data?.random)
 

@@ -46,6 +46,7 @@ import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
+import com.lagradost.shiro.utils.VideoDownloadManager.downloadQueue
 import kotlinx.android.synthetic.main.episode_result_compact.view.*
 import kotlinx.android.synthetic.main.fragment_results.view.*
 import org.json.JSONObject
@@ -137,14 +138,20 @@ class EpisodeAdapter(
             val key = getViewKey(data.slug, episodePos)
 
             // Because the view is recycled
-            card.cdi.visibility = VISIBLE
             card.progressBar.visibility = GONE
             card.cardPauseIcon.visibility = GONE
             card.cardRemoveIcon.visibility = GONE
-            card.cdi_loading.visibility = GONE
+
+            // Sets loading icon on queued items
+            if (downloadQueue.any { it.item.ep.episode == episodePos }) {
+                card.cdi_loading.visibility = VISIBLE
+                card.cdi.visibility = GONE
+            } else {
+                card.cdi_loading.visibility = GONE
+                card.cdi.visibility = VISIBLE
+            }
 
             if (isDonor) {
-                card.cdi.visibility = VISIBLE
                 card.cdi.setOnClickListener {
                     card.cdi_loading.visibility = VISIBLE
                     card.cdi.visibility = GONE
@@ -156,8 +163,8 @@ class EpisodeAdapter(
                         }?.filter { !it.isM3u8 }
                         activity.runOnUiThread {
                             if (!sources.isNullOrEmpty()) {
-                                card.cdi.visibility = VISIBLE
-                                card.cdi_loading.visibility = GONE
+                                // card.cdi.visibility = VISIBLE
+                                // card.cdi_loading.visibility = GONE
                                 if (settingsManager?.getBoolean("pick_downloads", false) == true) {
                                     lateinit var dialog: AlertDialog
                                     val sourcesTexts = sources.map { it.name }

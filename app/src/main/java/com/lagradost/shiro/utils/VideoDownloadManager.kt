@@ -18,6 +18,7 @@ import com.bumptech.glide.Glide
 import com.lagradost.shiro.R
 import com.lagradost.shiro.services.VideoDownloadService
 import com.lagradost.shiro.ui.MainActivity
+import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.Coroutines.main
 import com.lagradost.shiro.utils.DataStore.getKey
@@ -620,6 +621,7 @@ object VideoDownloadManager {
     private fun downloadCheck(context: Context) {
         if (currentDownloads.size < maxConcurrentDownloads && downloadQueue.size > 0) {
             val pkg = downloadQueue.removeFirst()
+            masterViewModel?.downloadQueue?.postValue(downloadQueue)
             val item = pkg.item
             val id = item.ep.id
             if (currentDownloads.contains(id)) { // IF IT IS ALREADY DOWNLOADING, RESUME IT
@@ -719,6 +721,7 @@ object VideoDownloadManager {
 
     fun downloadFromResume(context: Context, pkg: DownloadResumePackage) {
         downloadQueue.addLast(pkg)
+        masterViewModel?.downloadQueue?.postValue(downloadQueue)
         downloadCheck(context)
     }
 

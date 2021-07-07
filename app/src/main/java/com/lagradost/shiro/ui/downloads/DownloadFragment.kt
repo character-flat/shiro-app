@@ -1,7 +1,8 @@
 package com.lagradost.shiro.ui.downloads
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.net.Uri
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,12 +20,14 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
+import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
 import com.lagradost.shiro.utils.AppUtils.loadPage
+import com.lagradost.shiro.utils.AppUtils.observe
+import com.lagradost.shiro.utils.VideoDownloadManager.downloadQueue
 import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.fragment_download.*
-import kotlinx.android.synthetic.main.fragment_results_new.*
 import java.io.File
 
 class DownloadFragment : Fragment() {
@@ -156,22 +159,38 @@ class DownloadFragment : Fragment() {
     }
 
 
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val topParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
             LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
             MainActivity.statusHeight // view height
         )
+
+        queue_card?.backgroundTintList = ColorStateList.valueOf(Cyanea.instance.backgroundColorDark)
+        queue_card?.setOnClickListener {
+            activity?.addFragmentOnlyOnce(
+                R.id.homeRoot,
+                QueueFragment.newInstance(),
+                downloadFragmentTag
+            )
+        }
+
+        fun setQueueText() {
+            val size = downloadQueue.toList().distinctBy { it.item.ep.id }.size
+            val suffix = if (size == 1) "" else "s"
+            queue_card_text?.text = "Queue (${
+               size
+            } item$suffix)"
+        }
+        setQueueText()
+
+        observe(masterViewModel!!.downloadQueue) {
+            setQueueText()
+        }
+
         top_padding_download.layoutParams = topParams
         updateItems()
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        /*val path = activity?.filesDir.toString() + "/Download/"
-        File(path).walk().forEach {
-            println("PATH: $it")
-        }*/
     }
 
     override fun onCreateView(

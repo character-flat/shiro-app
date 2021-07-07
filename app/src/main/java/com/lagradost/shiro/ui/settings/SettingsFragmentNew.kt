@@ -8,7 +8,9 @@ import android.view.View
 import android.view.View.*
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.LinearLayout
 import androidx.activity.result.ActivityResultLauncher
+import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -16,6 +18,7 @@ import androidx.preference.PreferenceManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.GlideApp
+import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
 import com.lagradost.shiro.ui.WebViewFragment.Companion.onWebViewNavigated
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
@@ -60,6 +63,11 @@ class SettingsFragmentNew : Fragment() {
                 )
             }
 
+        val topParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
+            LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
+            MainActivity.statusHeight // view height
+        )
+        top_padding_settings?.layoutParams = topParams
 
         // Because the user isn't necessarily fetched
         if (DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
