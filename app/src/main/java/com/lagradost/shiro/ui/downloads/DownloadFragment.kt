@@ -204,7 +204,7 @@ class DownloadFragment : Fragment() {
     companion object {
         val downloadsUpdated = Event<Boolean>()
         val childMetadataKeys = hashMapOf<String, MutableList<String>>()
-        const val LEGACY_DOWNLOADS = "legacy_downloads"
+        const val LEGACY_DOWNLOADS = "legacy_downloads_2"
     }
 
     private fun getChildren(): List<String> {
@@ -229,28 +229,25 @@ class DownloadFragment : Fragment() {
     private fun convertOldDownloads() {
         try {
             val keys = DataStore.getKeys(DOWNLOAD_CHILD_KEY)
-            println("KEYS $keys")
             keys.pmap {
-                DataStore.getKey<DownloadManager.DownloadFileMetadataLegacy>(it)
+                DataStore.getKey<DownloadManager.DownloadFileMetadataSemiLegacy>(it)
             }
             keys.forEach {
-                val data = DataStore.getKey<DownloadManager.DownloadFileMetadataLegacy>(it)
+                val data = DataStore.getKey<DownloadManager.DownloadFileMetadataSemiLegacy>(it)
                 if (data != null) {
                     // NEEDS REMOVAL TO PREVENT DUPLICATES
                     DataStore.removeKey(it)
-                    /*  DataStore.setKey(
-                          it, DownloadManager.DownloadFileMetadataSemiLegacy(
+                      DataStore.setKey(
+                          it, DownloadManager.DownloadFileMetadata(
                               data.internalId,
                               data.slug,
                               data.animeData,
                               data.thumbPath,
-                              data.videoPath,
                               data.videoTitle,
                               data.episodeIndex,
                               data.downloadAt,
-                              data.maxFileSize,
                           )
-                      )*/
+                      )
                 }
             }
             DataStore.setKey(LEGACY_DOWNLOADS, false)

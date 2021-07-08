@@ -391,7 +391,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
 
                 /** Update info settings */
 
-                setTitle("Update info")
+                setTitle("Updates")
 
                 // Changelog
                 val changeLog = findPreference("changelog") as Preference?

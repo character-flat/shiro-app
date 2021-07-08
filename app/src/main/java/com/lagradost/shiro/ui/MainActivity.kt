@@ -248,7 +248,7 @@ class MainActivity : CyaneaAppCompatActivity() {
         init()
         DataStore.init(this)
         // Hack to make tinting work
-        if (Cyanea.instance.isLight) delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
+        //if (Cyanea.instance.isLight) delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
 
         // ----- Themes ----
         //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)

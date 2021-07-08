@@ -8,9 +8,8 @@ import android.view.View
 import android.view.View.*
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import androidx.activity.result.ActivityResultLauncher
-import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -52,7 +51,7 @@ class SettingsFragmentNew : Fragment() {
             Pair("Player", R.xml.settings_player),
             Pair("Accounts", R.xml.settings_accounts),
             Pair("History", R.xml.settings_history),
-            Pair("Update info", R.xml.settings_update_info),
+            Pair("Updates", R.xml.settings_update_info),
             Pair("About", R.xml.settings_about),
         )
 
@@ -63,8 +62,8 @@ class SettingsFragmentNew : Fragment() {
                 )
             }
 
-        val topParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
-            LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
+        val topParams: RelativeLayout.LayoutParams = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT, // view width
             MainActivity.statusHeight // view height
         )
         top_padding_settings?.layoutParams = topParams

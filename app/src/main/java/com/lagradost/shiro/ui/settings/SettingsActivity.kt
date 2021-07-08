@@ -16,20 +16,14 @@
 
 package com.lagradost.shiro.ui.settings
 
-import android.content.pm.ActivityInfo
 import android.os.Bundle
-import android.util.TypedValue
 import android.view.MenuItem
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.PreferenceManager
-import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
 import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
-import com.lagradost.shiro.utils.AppUtils.getNavigationBarSize
-import com.lagradost.shiro.utils.AppUtils.transparentStatusAndNavigation
 
 /**
  * Activity to show Cyanea preferences allowing the user to modify the primary, accent and background color of the app.
@@ -51,8 +45,8 @@ open class SettingsActivity : CyaneaAppCompatActivity() {
         //getNavigationBarSize()
 
         // Hack to make tinting work
-        delegate.localNightMode =
-            if (Cyanea.instance.isLight) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+        //delegate.localNightMode =
+        //    if (Cyanea.instance.isLight) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
 
         when (val xml = intent.getIntExtra(XML_KEY, -1)) {
             R.xml.custom_pref_cyanea -> {
