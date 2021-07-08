@@ -25,9 +25,7 @@ import com.lagradost.shiro.ui.settings.SettingsFragmentNew.Companion.settingsVie
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
 import com.lagradost.shiro.utils.AppUtils.allApi
-import com.lagradost.shiro.utils.AppUtils.checkWrite
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
-import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.BackupUtils.backup
 import com.lagradost.shiro.utils.BackupUtils.restore
 import com.lagradost.shiro.utils.BackupUtils.restorePrompt
@@ -93,14 +91,14 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                     return@setOnPreferenceChangeListener true
                 }
 
-                findPreference<SwitchPreference?>("use_external_storage")?.setOnPreferenceChangeListener { _, newValue ->
+                /*findPreference<SwitchPreference?>("use_external_storage")?.setOnPreferenceChangeListener { _, newValue ->
                     if (newValue == true) {
                         if (!activity?.checkWrite()!!) {
                             activity?.requestRW()
                         }
                     }
                     return@setOnPreferenceChangeListener true
-                }
+                }*/
 
                 val subToAnnouncements = findPreference("subscribe_to_announcements") as SwitchPreference?
                 subToAnnouncements?.setOnPreferenceChangeListener { _, newValue ->

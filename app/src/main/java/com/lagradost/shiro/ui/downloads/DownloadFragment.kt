@@ -24,8 +24,8 @@ import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
 import com.lagradost.shiro.utils.AppUtils.loadPage
-import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.VideoDownloadManager.downloadQueue
+import com.lagradost.shiro.utils.mvvm.observe
 import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.fragment_download.*
 import java.io.File
@@ -40,15 +40,16 @@ class DownloadFragment : Fragment() {
     )
 
     private fun updateItems(bool: Boolean = true) {
-        activity?.runOnUiThread {
+        val begin = System.nanoTime()
 
-            downloadRoot.removeAllViews()
+        activity?.runOnUiThread {
             childMetadataKeys.clear()
+            val childKeys = getChildren()
+            downloadRoot.removeAllViews()
             val inflater = activity?.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
             val epData = hashMapOf<String, EpisodesDownloaded>()
             try {
-                val childKeys = getChildren()
                 downloadCenterText.text =
                     if (isDonor) getString(R.string.resultpage1) else getString(R.string.resultpage2)
                 downloadCenterRoot.visibility = if (childKeys.isEmpty()) VISIBLE else GONE
@@ -60,12 +61,19 @@ class DownloadFragment : Fragment() {
                             requireContext(),
                             child.internalId
                         )
-                        if (fileInfo == null) { // FILE DOESN'T EXIT
-                            /*val thumbFile = File(child.thumbPath)
-                            if (thumbFile.exists()) {
-                                thumbFile.delete()
-                            }*/
-                            // DataStore.removeKey(k)
+
+                        if (fileInfo == null) {
+                            // FILE DOESN'T EXIT
+                            try {
+                                child.thumbPath?.let {
+                                    val thumbFile = File(it)
+                                    if (thumbFile.exists()) {
+                                        thumbFile.delete()
+                                    }
+                                }
+                            } catch (e: Exception) {
+                            }
+                            DataStore.removeKey(k)
                         } else {
                             if (childMetadataKeys.containsKey(child.slug)) {
                                 childMetadataKeys[child.slug]?.add(k)
@@ -92,6 +100,7 @@ class DownloadFragment : Fragment() {
                         }
                     }
                 }
+
 
                 val keys = DataStore.getKeys(DOWNLOAD_PARENT_KEY)
                 for (k in keys) {
@@ -151,6 +160,7 @@ class DownloadFragment : Fragment() {
                         }
                     }
                 }
+
             } catch (e: Exception) {
                 println("ERROR LOADING DOWNLOADS:::")
                 e.printStackTrace()
@@ -180,7 +190,7 @@ class DownloadFragment : Fragment() {
             val size = downloadQueue.toList().distinctBy { it.item.ep.id }.size
             val suffix = if (size == 1) "" else "s"
             queue_card_text?.text = "Queue (${
-               size
+                size
             } item$suffix)"
         }
         setQueueText()
@@ -190,7 +200,9 @@ class DownloadFragment : Fragment() {
         }
 
         top_padding_download.layoutParams = topParams
+
         updateItems()
+
     }
 
     override fun onCreateView(
@@ -237,17 +249,17 @@ class DownloadFragment : Fragment() {
                 if (data != null) {
                     // NEEDS REMOVAL TO PREVENT DUPLICATES
                     DataStore.removeKey(it)
-                      DataStore.setKey(
-                          it, DownloadManager.DownloadFileMetadata(
-                              data.internalId,
-                              data.slug,
-                              data.animeData,
-                              data.thumbPath,
-                              data.videoTitle,
-                              data.episodeIndex,
-                              data.downloadAt,
-                          )
-                      )
+                    DataStore.setKey(
+                        it, DownloadManager.DownloadFileMetadata(
+                            data.internalId,
+                            data.slug,
+                            data.animeData,
+                            data.thumbPath,
+                            data.videoTitle,
+                            data.episodeIndex,
+                            data.downloadAt,
+                        )
+                    )
                 }
             }
             DataStore.setKey(LEGACY_DOWNLOADS, false)

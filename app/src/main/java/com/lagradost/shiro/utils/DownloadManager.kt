@@ -1,7 +1,10 @@
 package com.lagradost.shiro.utils
 
-import android.content.Context
+import android.widget.Toast
+import androidx.fragment.app.FragmentActivity
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.lagradost.shiro.utils.AppUtils.checkWrite
+import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import kotlin.math.pow
 import kotlin.math.round
@@ -87,7 +90,12 @@ object DownloadManager {
         return (bytes / 1024.0.pow(steps)).round(digits)
     }
 
-    fun downloadEpisode(context: Context, info: DownloadInfo, link: List<ExtractorLink>) {
+    fun downloadEpisode(context: FragmentActivity, info: DownloadInfo, link: List<ExtractorLink>) {
+        if (!context.checkWrite()) {
+            Toast.makeText(context, "Accept storage permissions to download", Toast.LENGTH_LONG).show()
+            context.requestRW()
+            return
+        }
 
         val id = (info.animeData.slug + "E${info.episodeIndex}").hashCode()
         val isMovie: Boolean =

@@ -727,14 +727,14 @@ object AppUtils {
         }
     }
 
-    fun Activity.checkWrite(): Boolean {
+    fun Context.checkWrite(): Boolean {
         return ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    fun Activity.requestRW() {
+    fun FragmentActivity.requestRW() {
         ActivityCompat.requestPermissions(
             this,
             arrayOf(

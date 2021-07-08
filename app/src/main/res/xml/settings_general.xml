@@ -37,13 +37,16 @@
             android:entries="@array/LongClickOptions"
             android:entryValues="@array/LongClickOptions"
     />
+    <!--
     <SwitchPreference
             android:icon="@drawable/ic_baseline_storage_24"
             app:key="use_external_storage"
             android:title="Use external storage for downloads"
             android:summaryOn="Files downloaded to Download/Shiro"
             app:defaultValue="false"
+            app:isPreferenceVisible="false"
     />
+    -->
     <SwitchPreference
             android:icon="@drawable/netflix_download"
             app:key="pick_downloads"

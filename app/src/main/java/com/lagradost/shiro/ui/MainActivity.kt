@@ -298,12 +298,12 @@ class MainActivity : CyaneaAppCompatActivity() {
         } else {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
-        if (settingsManager.getBoolean("use_external_storage", false)) {
+        /*if (settingsManager.getBoolean("use_external_storage", false)) {
             if (!checkWrite()) {
                 Toast.makeText(activity, "Accept storage permissions to download", Toast.LENGTH_LONG).show()
                 requestRW()
             }
-        }
+        }*/
 
         thread {
             ShiroApi.init()
