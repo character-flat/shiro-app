@@ -1,5 +1,11 @@
 package com.lagradost.shiro.ui.settings
 
+import ANILIST_USER_KEY
+import DataStore.getKey
+import DataStore.getKeys
+import MAL_TOKEN_KEY
+import MAL_USER_KEY
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
@@ -21,10 +27,13 @@ import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
 import com.lagradost.shiro.ui.WebViewFragment.Companion.onWebViewNavigated
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
-import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.AniListApi
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.observe
+import com.lagradost.shiro.utils.MALApi
+import com.lagradost.shiro.utils.MALApi.Companion.getUser
+import com.lagradost.shiro.utils.MAL_ACCOUNT_ID
 import kotlinx.android.synthetic.main.fragment_settings.*
 
 class SettingsFragmentNew : Fragment() {
@@ -69,10 +78,10 @@ class SettingsFragmentNew : Fragment() {
         top_padding_settings?.layoutParams = topParams
 
         // Because the user isn't necessarily fetched
-        if (DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
-            && DataStore.getKeys(MAL_USER_KEY).isEmpty()
+        if (context?.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+            && context?.getKeys(MAL_USER_KEY)?.isEmpty() == true
         ) {
-            MALApi.getUser()
+            context?.getUser()
         }
 
         context?.let { context ->
@@ -80,31 +89,31 @@ class SettingsFragmentNew : Fragment() {
             settings_listview.setOnItemClickListener { _, _, position, _ ->
                 openSettingSubMenu(array[position].second)
             }
-            loadProfile()
+            context.loadProfile()
             observe(settingsViewModel!!.hasLoggedIntoMAL) {
-                loadProfile()
+                context.loadProfile()
             }
             observe(settingsViewModel!!.hasLoggedIntoAnilist) {
-                loadProfile()
+                context.loadProfile()
             }
 
 
         }
     }
 
-    private fun loadProfile() {
+    private fun Context.loadProfile() {
         var userImage: String? = null
         var userName: String? = null
-        DataStore.getKeys(ANILIST_USER_KEY).forEach { key ->
-            DataStore.getKey<AniListApi.AniListUser>(key, null)?.let {
+        getKeys(ANILIST_USER_KEY).forEach { key ->
+            getKey<AniListApi.AniListUser>(key, null)?.let {
                 userImage = it.picture
                 userName = it.name
             }
         }
 
         if (userImage == null || userName == null) {
-            DataStore.getKeys(MAL_USER_KEY).forEach { key ->
-                DataStore.getKey<MALApi.MalUser>(key, null)?.let {
+            getKeys(MAL_USER_KEY).forEach { key ->
+                getKey<MALApi.MalUser>(key, null)?.let {
                     userImage = userImage ?: it.picture
                     userName = userName ?: it.name
                 }

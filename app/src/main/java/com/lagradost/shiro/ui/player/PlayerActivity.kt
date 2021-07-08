@@ -25,7 +25,6 @@ import com.lagradost.shiro.utils.AppUtils.hasPIPPermission
 import com.lagradost.shiro.utils.AppUtils.init
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.requestRW
-import com.lagradost.shiro.utils.DataStore
 
 class PlayerActivity : CyaneaAppCompatActivity() {
     companion object {
@@ -53,7 +52,6 @@ class PlayerActivity : CyaneaAppCompatActivity() {
         }
         playerActivity = this
 
-        DataStore.init(this)
         init()
         supportActionBar?.hide()
         if (cyanea.isDark) {

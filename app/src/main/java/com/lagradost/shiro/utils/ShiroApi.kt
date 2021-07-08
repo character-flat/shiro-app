@@ -1,6 +1,15 @@
 package com.lagradost.shiro.utils
 
+import BOOKMARK_KEY
+import DataStore.getKey
+import DataStore.getKeys
+import DataStore.removeKey
+import DataStore.setKey
+import LEGACY_BOOKMARKS
+import SUBSCRIPTIONS_BOOKMARK_KEY
+import VIEW_LST_KEY
 import android.annotation.SuppressLint
+import android.content.Context
 import android.provider.Settings
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -351,24 +360,24 @@ class ShiroApi {
 
 
         // OTHERWISE CRASH AT BOOT FROM HAVING OLD FAVORITES SYSTEM
-        private fun convertOldFavorites() {
+        private fun Context.convertOldFavorites() {
             try {
-                val keys = DataStore.getKeys(BOOKMARK_KEY)
+                val keys = getKeys(BOOKMARK_KEY)
                 thread {
                     keys.pmap {
-                        DataStore.getKey<AnimePageData>(it)
+                        getKey<AnimePageData>(it)
                     }
                     keys.forEach {
-                        val data = DataStore.getKey<AnimePageData>(it)
+                        val data = getKey<AnimePageData>(it)
                         if (data != null) {
                             // NEEDS REMOVAL TO PREVENT DUPLICATES
-                            DataStore.removeKey(it)
-                            DataStore.setKey(it, BookmarkedTitle(data.name, data.image, data.slug, data.english))
+                            removeKey(it)
+                            setKey(it, BookmarkedTitle(data.name, data.image, data.slug, data.english))
                         } else {
-                            DataStore.removeKey(it)
+                            removeKey(it)
                         }
                     }
-                    DataStore.setKey(LEGACY_BOOKMARKS, false)
+                    setKey(LEGACY_BOOKMARKS, false)
                 }
             } catch (e: Exception) {
                 return
@@ -377,52 +386,52 @@ class ShiroApi {
         }
 
 
-        fun getFav(): List<BookmarkedTitle?> {
-            val legacyBookmarks = DataStore.getKey(LEGACY_BOOKMARKS, true)
+        fun Context.getFav(): List<BookmarkedTitle?> {
+            val legacyBookmarks = getKey(LEGACY_BOOKMARKS, true)
             if (legacyBookmarks == true) {
                 convertOldFavorites()
             }
-            val keys = DataStore.getKeys(BOOKMARK_KEY)
+            val keys = getKeys(BOOKMARK_KEY)
 
             thread {
                 keys.pmap {
-                    DataStore.getKey<BookmarkedTitle>(it)
+                    getKey<BookmarkedTitle>(it)
                 }
             }
 
             return keys.map {
-                DataStore.getKey(it)
+                getKey(it)
             }
         }
 
-        fun getSubbed(): List<BookmarkedTitle?> {
-            val keys = DataStore.getKeys(SUBSCRIPTIONS_BOOKMARK_KEY)
+        fun Context.getSubbed(): List<BookmarkedTitle?> {
+            val keys = getKeys(SUBSCRIPTIONS_BOOKMARK_KEY)
 
             thread {
                 keys.pmap {
-                    DataStore.getKey<BookmarkedTitle>(it)
+                    getKey<BookmarkedTitle>(it)
                 }
             }
 
             return keys.map {
-                DataStore.getKey(it)
+                getKey(it)
             }
         }
 
-        private fun getLastWatch(): List<LastEpisodeInfo?> {
-            val keys = DataStore.getKeys(VIEW_LST_KEY)
+        private fun Context.getLastWatch(): List<LastEpisodeInfo?> {
+            val keys = getKeys(VIEW_LST_KEY)
             println("KEYS: $keys")
             thread {
                 keys.pmap {
-                    DataStore.getKey<LastEpisodeInfo>(it)?.id
+                    getKey<LastEpisodeInfo>(it)?.id
                 }
             }
-            return (DataStore.getKeys(VIEW_LST_KEY).map {
-                DataStore.getKey<LastEpisodeInfo>(it)
+            return (getKeys(VIEW_LST_KEY).map {
+                getKey<LastEpisodeInfo>(it)
             }).sortedBy { if (it == null) 0 else -(it.seenAt) }
         }
 
-        fun requestHome(canBeCached: Boolean = true): ShiroHomePage? {
+        fun Context.requestHome(canBeCached: Boolean = true): ShiroHomePage? {
             println("LOAD HOME $currentToken")
             if (currentToken == null) return null
             return getHome(canBeCached)
@@ -439,7 +448,7 @@ class ShiroApi {
             }
         }
 
-        private fun getHome(canBeCached: Boolean, usedToken: Token? = currentToken): ShiroHomePage? {
+        private fun Context.getHome(canBeCached: Boolean, usedToken: Token? = currentToken): ShiroHomePage? {
             var res: ShiroHomePage? = null
             println("HOME GETTING FETCHED ")
             if (canBeCached && cachedHome != null) {
@@ -480,7 +489,7 @@ class ShiroApi {
         var onHomeError = Event<Boolean>() // TRUE IF FULL RELOAD OF TOKEN, FALSE IF JUST HOME
         var hasThrownError = -1
 
-        fun init() {
+        fun Context.initShiroApi() {
             if (currentToken != null) return
 
             currentToken = getToken()

@@ -36,6 +36,7 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.getRandomAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.hasThrownError
+import com.lagradost.shiro.utils.ShiroApi.Companion.initShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import kotlinx.android.synthetic.main.download_card.*
 import kotlinx.android.synthetic.main.fragment_home.*
@@ -195,8 +196,10 @@ class HomeFragment : Fragment() {
                                 // LETTING USER PRESS STUFF WHEN THIS LOADS CAN CAUSE BUGS
                                 val page = getAnimePage(randomData.slug)
                                 if (page != null) {
-                                    val nextEpisode = getNextEpisode(page.data)
-                                    activity?.loadPlayer(nextEpisode.episodeIndex, 0L, page.data)
+                                    val nextEpisode = context?.getNextEpisode(page.data)
+                                    nextEpisode?.let {
+                                        activity?.loadPlayer(nextEpisode.episodeIndex, 0L, page.data)
+                                    }
                                 } else {
                                     activity?.runOnUiThread {
                                         Toast.makeText(activity, "Loading link failed", Toast.LENGTH_SHORT).show()
@@ -207,12 +210,14 @@ class HomeFragment : Fragment() {
                         main_watch_button.setOnLongClickListener {
                             //MainActivity.loadPage(cardInfo!!)
                             if (cardInfo != null) {
-                                val nextEpisode = getNextEpisode(randomData)
-                                Toast.makeText(
-                                    activity,
-                                    "Episode ${nextEpisode.episodeIndex + 1}",
-                                    Toast.LENGTH_LONG
-                                ).show()
+                                val nextEpisode = context?.getNextEpisode(randomData)
+                                if (nextEpisode != null) {
+                                    Toast.makeText(
+                                        activity,
+                                        "Episode ${nextEpisode.episodeIndex + 1}",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
                             }
                             return@setOnLongClickListener true
                         }
@@ -253,9 +258,9 @@ class HomeFragment : Fragment() {
                     main_reload_data_btt?.isClickable = false
                     thread {
                         if (fullRe) {
-                            ShiroApi.init()
+                            context?.initShiroApi()
                         } else {
-                            requestHome(false)
+                            context?.requestHome(false)
                         }
                     }
                 }

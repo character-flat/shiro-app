@@ -1,5 +1,17 @@
 package com.lagradost.shiro.utils
 
+import BOOKMARK_KEY
+import DataStore.containsKey
+import DataStore.getKey
+import DataStore.mapper
+import DataStore.removeKey
+import DataStore.setKey
+import SUBSCRIPTIONS_BOOKMARK_KEY
+import SUBSCRIPTIONS_KEY
+import VIEWSTATE_KEY
+import VIEW_DUR_KEY
+import VIEW_LST_KEY
+import VIEW_POS_KEY
 import android.Manifest
 import android.app.Activity
 import android.app.AppOpsManager
@@ -65,9 +77,9 @@ import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.ui.settings.SettingsActivity.Companion.settingsActivity
 import com.lagradost.shiro.ui.tv.PlayerFragmentTv
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
-import com.lagradost.shiro.utils.DataStore.mapper
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFav
 import com.lagradost.shiro.utils.ShiroApi.Companion.getSubbed
+import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import com.lagradost.shiro.utils.extractors.Vidstream
 import java.io.*
 import java.net.URL
@@ -284,11 +296,11 @@ object AppUtils {
         return uri
     }
 
-    private fun toggleHeart(name: String, image: String, slug: String): Boolean {
+    private fun Context.toggleHeart(name: String, image: String, slug: String): Boolean {
         /*Saving the new bookmark in the database*/
-        val isBookmarked = DataStore.getKey<BookmarkedTitle>(BOOKMARK_KEY, slug, null) != null
+        val isBookmarked = getKey<BookmarkedTitle>(BOOKMARK_KEY, slug, null) != null
         if (!isBookmarked) {
-            DataStore.setKey(
+            setKey(
                 BOOKMARK_KEY,
                 slug,
                 BookmarkedTitle(
@@ -299,7 +311,7 @@ object AppUtils {
                 )
             )
         } else {
-            DataStore.removeKey(BOOKMARK_KEY, slug)
+            removeKey(BOOKMARK_KEY, slug)
         }
         thread {
             homeViewModel?.favorites?.postValue(getFav())
@@ -328,18 +340,18 @@ object AppUtils {
     }
 
     // TODO USE THIS IN RESULT_FRAGMENT
-    private fun subscribeToShow(data: ShiroApi.CommonAnimePage/*, isBookmarked: Boolean? = null*/) {
+    private fun Context.subscribeToShow(data: ShiroApi.CommonAnimePage/*, isBookmarked: Boolean? = null*/) {
         // isBookmarked
-        val subbedBookmark = DataStore.getKey<BookmarkedTitle>(SUBSCRIPTIONS_BOOKMARK_KEY, data.slug, null)
-        val isSubbedOld = DataStore.getKey(SUBSCRIPTIONS_KEY, data.slug, false)!!
+        val subbedBookmark = getKey<BookmarkedTitle>(SUBSCRIPTIONS_BOOKMARK_KEY, data.slug, null)
+        val isSubbedOld = getKey(SUBSCRIPTIONS_KEY, data.slug, false)!!
         val isSubbed = isSubbedOld || subbedBookmark != null
 
         if (isSubbed /*&& !(isBookmarked ?: !isSubbed)*/) {
             Firebase.messaging.unsubscribeFromTopic(data.slug)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        DataStore.removeKey(SUBSCRIPTIONS_BOOKMARK_KEY, data.slug)
-                        DataStore.removeKey(SUBSCRIPTIONS_KEY, data.slug)
+                        removeKey(SUBSCRIPTIONS_BOOKMARK_KEY, data.slug)
+                        removeKey(SUBSCRIPTIONS_KEY, data.slug)
                     }
                     var msg = "Unsubscribed to ${data.name}"//getString(R.string.msg_subscribed)
                     if (!task.isSuccessful) {
@@ -355,7 +367,7 @@ object AppUtils {
             Firebase.messaging.subscribeToTopic(data.slug)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        DataStore.setKey(
+                        setKey(
                             SUBSCRIPTIONS_BOOKMARK_KEY, data.slug, BookmarkedTitle(
                                 data.name,
                                 data.image,
@@ -526,13 +538,13 @@ object AppUtils {
     }
 
 
-    fun getViewPosDur(aniListId: String, episodeIndex: Int): EpisodePosDurInfo {
+    fun Context.getViewPosDur(aniListId: String, episodeIndex: Int): EpisodePosDurInfo {
         val key = getViewKey(aniListId, episodeIndex)
 
         return EpisodePosDurInfo(
-            DataStore.getKey(VIEW_POS_KEY, key, -1L)!!,
-            DataStore.getKey(VIEW_DUR_KEY, key, -1L)!!,
-            DataStore.containsKey(VIEWSTATE_KEY, key)
+            getKey(VIEW_POS_KEY, key, -1L)!!,
+            getKey(VIEW_DUR_KEY, key, -1L)!!,
+            containsKey(VIEWSTATE_KEY, key)
         )
     }
 
@@ -547,7 +559,7 @@ object AppUtils {
 
     }
 
-    fun getLatestSeenEpisode(data: ShiroApi.AnimePageData): NextEpisode {
+    fun Context.getLatestSeenEpisode(data: ShiroApi.AnimePageData): NextEpisode {
         for (i in (data.episodes?.size?.minus(1) ?: 0) downTo 0) {
             val firstPos = getViewPosDur(data.slug, i)
             if (firstPos.viewstate) {
@@ -628,7 +640,7 @@ object AppUtils {
     }
 
 
-    fun getNextEpisode(data: ShiroApi.AnimePageData): NextEpisode {
+    fun Context.getNextEpisode(data: ShiroApi.AnimePageData): NextEpisode {
         // HANDLES THE LOGIC FOR NEXT EPISODE
         var episodeIndex = 0
         var seasonIndex = 0
@@ -657,13 +669,13 @@ object AppUtils {
     }
 
 
-    fun setViewPosDur(data: PlayerData, pos: Long, dur: Long) {
+    fun Context.setViewPosDur(data: PlayerData, pos: Long, dur: Long) {
         val key = getViewKey(data)
 
         if (settingsManager?.getBoolean("save_history", true) == true) {
-            DataStore.setKey(VIEW_POS_KEY, key, pos)
-            DataStore.setKey(VIEW_DUR_KEY, key, dur)
-            DataStore.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
+            setKey(VIEW_POS_KEY, key, pos)
+            setKey(VIEW_DUR_KEY, key, dur)
+            setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
         }
 
         if (data.card == null) return
@@ -699,7 +711,7 @@ object AppUtils {
         if (!isFound) return
 
         if (settingsManager?.getBoolean("save_history", true) == true) {
-            DataStore.setKey(
+            setKey(
                 VIEW_LST_KEY,
                 data.card.slug,
                 LastEpisodeInfo(
@@ -722,7 +734,7 @@ object AppUtils {
             )
 
             thread {
-                ShiroApi.requestHome(true)
+                requestHome(true)
             }
         }
     }

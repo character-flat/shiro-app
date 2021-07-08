@@ -1,5 +1,8 @@
 package com.lagradost.shiro.utils
 
+import DOWNLOAD_CHILD_KEY
+import DOWNLOAD_PARENT_KEY
+import DataStore.setKey
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -103,7 +106,7 @@ object DownloadManager {
 
         val episodeOffset = if (info.animeData.episodes?.filter { it.episode_number == 0 }.isNullOrEmpty()) 0 else -1
 
-        DataStore.setKey(
+        context.setKey(
             DOWNLOAD_PARENT_KEY, info.animeData.slug,
             DownloadParentFileMetadata(
                 info.animeData.name,
@@ -121,7 +124,7 @@ object DownloadManager {
             title = "Episode " + info.episodeIndex + 1
         }
 
-        DataStore.setKey(
+        context.setKey(
             DOWNLOAD_CHILD_KEY, id.toString(),
             DownloadFileMetadata(
                 id,

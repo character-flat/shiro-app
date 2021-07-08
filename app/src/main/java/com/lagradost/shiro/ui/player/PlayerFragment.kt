@@ -1,5 +1,15 @@
 package com.lagradost.shiro.ui.player
 
+import ANILIST_TOKEN_KEY
+import DataStore.getKey
+import DataStore.removeKey
+import DataStore.setKey
+import DataStore.toKotlinObject
+import MAL_TOKEN_KEY
+import PLAYBACK_SPEED_KEY
+import RESIZE_MODE_KEY
+import VIEW_DUR_KEY
+import VIEW_POS_KEY
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
@@ -76,7 +86,7 @@ import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.requestAudioFocus
 import com.lagradost.shiro.utils.AppUtils.setViewPosDur
 import com.lagradost.shiro.utils.AppUtils.showSystemUI
-import com.lagradost.shiro.utils.DataStore.toKotlinObject
+import com.lagradost.shiro.utils.MALApi.Companion.getDataAboutMalId
 import com.lagradost.shiro.utils.MALApi.Companion.malStatusAsString
 import com.lagradost.shiro.utils.MALApi.Companion.setScoreRequest
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
@@ -215,7 +225,7 @@ class PlayerFragment : Fragment() {
     private var playerViewModel: PlayerViewModel? = null
 
     private var isCurrentlyPlaying: Boolean = false
-    private var playbackSpeed: Float? = DataStore.getKey(PLAYBACK_SPEED_KEY, 1f)
+    private var playbackSpeed: Float? = getCurrentActivity()!!.getKey(PLAYBACK_SPEED_KEY, 1f)
 
     private val settingsManager = PreferenceManager.getDefaultSharedPreferences(getCurrentActivity()!!)
     private val swipeEnabled = settingsManager!!.getBoolean("swipe_enabled", true)
@@ -261,7 +271,7 @@ class PlayerFragment : Fragment() {
         AspectRatioFrameLayout.RESIZE_MODE_FILL,
         AspectRatioFrameLayout.RESIZE_MODE_ZOOM,
     )
-    private var resizeMode = DataStore.getKey(RESIZE_MODE_KEY, 0) ?: 0
+    private var resizeMode = getCurrentActivity()!!.getKey(RESIZE_MODE_KEY, 0) ?: 0
 
     // Made getters because this can change if user is in a split view for example
     val width: Int
@@ -383,7 +393,7 @@ class PlayerFragment : Fragment() {
                 && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0
             ) {
                 println("SETTING VIEW POS DUR ${data!!.slug}")
-                setViewPosDur(data!!, exoPlayer.currentPosition, exoPlayer.duration)
+                context?.setViewPosDur(data!!, exoPlayer.currentPosition, exoPlayer.duration)
             }
         }
     }
@@ -862,7 +872,7 @@ class PlayerFragment : Fragment() {
                 updateHideTime()
                 resizeMode = (resizeMode + 1).fmod(resizeModes.size)
                 //println("RESIZE $resizeMode")
-                DataStore.setKey(RESIZE_MODE_KEY, resizeMode)
+                context?.setKey(RESIZE_MODE_KEY, resizeMode)
                 player_view.resizeMode = resizeModes[resizeMode]
                 //exoPlayer.videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
             }
@@ -1140,7 +1150,7 @@ class PlayerFragment : Fragment() {
             )
             res.setOnItemClickListener { _, _, which, _ ->
                 playbackSpeed = speedsNumbers[which]
-                DataStore.setKey(PLAYBACK_SPEED_KEY, playbackSpeed)
+                context?.setKey(PLAYBACK_SPEED_KEY, playbackSpeed)
                 val param = PlaybackParameters(playbackSpeed!!)
                 exoPlayer.playbackParameters = param
                 player_speed_text.text = "Speed (${playbackSpeed}x)".replace(".0x", "x")
@@ -1340,7 +1350,7 @@ class PlayerFragment : Fragment() {
             if (currentPercentage > setPercentage && lastSyncedEpisode < data?.episodeIndex!!) {
                 lastSyncedEpisode = data?.episodeIndex!!
                 thread {
-                    updateProgress()
+                    context?.updateProgress()
                 }
             } else {
                 if (data?.anilistID != null || data?.malID != null) handler.postDelayed(
@@ -1357,15 +1367,15 @@ class PlayerFragment : Fragment() {
     }
 
 
-    private fun updateProgress() {
-        val hasAniList = DataStore.getKey<String>(
+    private fun Context.updateProgress() {
+        val hasAniList = getKey<String>(
             ANILIST_TOKEN_KEY,
             ANILIST_ACCOUNT_ID,
             null
         ) != null
-        val hasMAL = DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+        val hasMAL = getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
 
-        val malHolder = if (hasMAL) data?.malID?.let { MALApi.getDataAboutId(it) } else null
+        val malHolder = if (hasMAL) data?.malID?.let { getDataAboutMalId(it) } else null
         val holder = if (hasAniList && malHolder == null) data?.anilistID?.let {
             activity?.getDataAboutId(
                 it
@@ -1487,16 +1497,18 @@ class PlayerFragment : Fragment() {
                         }
 
                         if (data?.card != null || (data?.slug != null && data?.episodeIndex != null && data?.seasonIndex != null)) {
-                            val pro = getViewPosDur(
+                            val pro = context?.getViewPosDur(
                                 if (data?.card != null) data?.card!!.slug else data?.slug!!,
                                 data?.episodeIndex!!
                             )
-                            playbackPosition =
-                                if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
-                                    pro.pos
-                                } else {
-                                    0L
-                                }
+                            if (pro != null) {
+                                playbackPosition =
+                                    if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
+                                        pro.pos
+                                    } else {
+                                        0L
+                                    }
+                            }
                         } else if (data?.startAt != null) {
                             playbackPosition = data?.startAt!!
                         }
@@ -1507,9 +1519,9 @@ class PlayerFragment : Fragment() {
 
                         if (currentUrl.name == "Downloaded" && data != null) {
                             data?.slug?.let { slug ->
-                                val episodes = getAllDownloadedEpisodes(slug).map { it.key }
+                                val episodes = context?.getAllDownloadedEpisodes(slug)?.map { it.key }
 
-                                val nextEpisode = episodes.filter { it?.episodeIndex == data!!.episodeIndex!! + 1 }
+                                val nextEpisode = episodes?.filter { it?.episodeIndex == data!!.episodeIndex!! + 1 }
                                 if (!nextEpisode.isNullOrEmpty()) {
                                     val fileInfo = VideoDownloadManager.getDownloadFileInfoAndUpdateSettings(
                                         requireContext(),
@@ -1528,8 +1540,8 @@ class PlayerFragment : Fragment() {
                                                 slug,
                                                 data!!.episodeIndex!! + 1
                                             )
-                                            DataStore.removeKey(VIEW_POS_KEY, key)
-                                            DataStore.removeKey(VIEW_DUR_KEY, key)
+                                            context?.removeKey(VIEW_POS_KEY, key)
+                                            context?.removeKey(VIEW_DUR_KEY, key)
 
                                             releasePlayer()
                                             loadAndPlay()
@@ -1563,8 +1575,8 @@ class PlayerFragment : Fragment() {
                                     data?.card!!.slug,
                                     data!!.episodeIndex!! + 1
                                 )
-                                DataStore.removeKey(VIEW_POS_KEY, key)
-                                DataStore.removeKey(VIEW_DUR_KEY, key)
+                                context?.removeKey(VIEW_POS_KEY, key)
+                                context?.removeKey(VIEW_DUR_KEY, key)
 
                                 data?.seasonIndex = 0
                                 data?.episodeIndex = data!!.episodeIndex!! + 1
@@ -1695,8 +1707,8 @@ class PlayerFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         activity?.hideSystemUI()
-        if (data?.card != null) {
-            val pro = getViewPosDur(data?.card!!.slug, data?.episodeIndex!!)
+        if (data?.card != null && getCurrentActivity() != null) {
+            val pro = getCurrentActivity()!!.getViewPosDur(data?.card!!.slug, data?.episodeIndex!!)
             if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
                 playbackPosition = pro.pos
             }

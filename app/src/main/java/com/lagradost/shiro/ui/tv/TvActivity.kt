@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.FocusFinder
 import android.view.KeyEvent
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
@@ -26,6 +25,8 @@ import com.lagradost.shiro.utils.AppUtils.init
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
+import com.lagradost.shiro.utils.MALApi.Companion.authenticateMalLogin
+import com.lagradost.shiro.utils.ShiroApi.Companion.initShiroApi
 import kotlinx.android.synthetic.main.activity_tv.*
 import kotlinx.android.synthetic.main.fragment_main_tv.*
 import kotlin.concurrent.thread
@@ -93,11 +94,10 @@ class TvActivity : CyaneaAppCompatActivity() {
         */
 
         masterViewModel = masterViewModel ?: ViewModelProvider(this).get(MasterViewModel::class.java)
-        DataStore.init(this)
         settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
         init()
         thread {
-            ShiroApi.init()
+            initShiroApi()
         }
         supportActionBar?.hide()
         if (cyanea.isDark) {
@@ -152,7 +152,6 @@ class TvActivity : CyaneaAppCompatActivity() {
     override fun onResume() {
         super.onResume()
         // This is needed to avoid NPE crash due to missing context
-        DataStore.init(this)
         init()
     }
 
@@ -166,7 +165,7 @@ class TvActivity : CyaneaAppCompatActivity() {
                     if (dataString.contains("/anilistlogin")) {
                         authenticateLogin(dataString)
                     } else if (dataString.contains("/mallogin")) {
-                        MALApi.authenticateLogin(dataString)
+                        authenticateMalLogin(dataString)
                     }
                 }
             }

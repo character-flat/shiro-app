@@ -1,5 +1,11 @@
 package com.lagradost.shiro.ui.downloads
 
+import DOWNLOAD_CHILD_KEY
+import DOWNLOAD_PARENT_KEY
+import DataStore.getKey
+import DataStore.getKeys
+import DataStore.removeKey
+import DataStore.setKey
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
@@ -55,7 +61,7 @@ class DownloadFragment : Fragment() {
                 downloadCenterRoot.visibility = if (childKeys.isEmpty()) VISIBLE else GONE
 
                 for (k in childKeys) {
-                    val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(k)
+                    val child = context?.getKey<DownloadManager.DownloadFileMetadata>(k)
                     if (child != null) {
                         val fileInfo = VideoDownloadManager.getDownloadFileInfoAndUpdateSettings(
                             requireContext(),
@@ -73,7 +79,7 @@ class DownloadFragment : Fragment() {
                                 }
                             } catch (e: Exception) {
                             }
-                            DataStore.removeKey(k)
+                            context?.removeKey(k)
                         } else {
                             if (childMetadataKeys.containsKey(child.slug)) {
                                 childMetadataKeys[child.slug]?.add(k)
@@ -102,9 +108,9 @@ class DownloadFragment : Fragment() {
                 }
 
 
-                val keys = DataStore.getKeys(DOWNLOAD_PARENT_KEY)
-                for (k in keys) {
-                    val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(k)
+                val keys = context?.getKeys(DOWNLOAD_PARENT_KEY)
+                for (k in keys ?: listOf()) {
+                    val parent = context?.getKey<DownloadManager.DownloadParentFileMetadata>(k)
                     if (parent != null) {
                         if (epData.containsKey(parent.slug)) {
                             val cardView = inflater.inflate(R.layout.download_card, view?.parent as? ViewGroup, false)
@@ -156,7 +162,7 @@ class DownloadFragment : Fragment() {
                             if (coverFile.exists()) {
                                 coverFile.delete()
                             }
-                            DataStore.removeKey(k)
+                            context?.removeKey(k)
                         }
                     }
                 }
@@ -220,12 +226,12 @@ class DownloadFragment : Fragment() {
     }
 
     private fun getChildren(): List<String> {
-        val legacyDownloads = DataStore.getKey(LEGACY_DOWNLOADS, true)
+        val legacyDownloads = context?.getKey(LEGACY_DOWNLOADS, true)
         if (legacyDownloads == true) {
             convertOldDownloads()
         }
 
-        return DataStore.getKeys(DOWNLOAD_CHILD_KEY)
+        return context?.getKeys(DOWNLOAD_CHILD_KEY) ?: listOf()
     }
 
     override fun onResume() {
@@ -240,16 +246,16 @@ class DownloadFragment : Fragment() {
 
     private fun convertOldDownloads() {
         try {
-            val keys = DataStore.getKeys(DOWNLOAD_CHILD_KEY)
-            keys.pmap {
-                DataStore.getKey<DownloadManager.DownloadFileMetadataSemiLegacy>(it)
+            val keys = context?.getKeys(DOWNLOAD_CHILD_KEY)
+            keys?.pmap {
+                context?.getKey<DownloadManager.DownloadFileMetadataSemiLegacy>(it)
             }
-            keys.forEach {
-                val data = DataStore.getKey<DownloadManager.DownloadFileMetadataSemiLegacy>(it)
+            keys?.forEach {
+                val data = context?.getKey<DownloadManager.DownloadFileMetadataSemiLegacy>(it)
                 if (data != null) {
                     // NEEDS REMOVAL TO PREVENT DUPLICATES
-                    DataStore.removeKey(it)
-                    DataStore.setKey(
+                    context?.removeKey(it)
+                    context?.setKey(
                         it, DownloadManager.DownloadFileMetadata(
                             data.internalId,
                             data.slug,
@@ -262,7 +268,7 @@ class DownloadFragment : Fragment() {
                     )
                 }
             }
-            DataStore.setKey(LEGACY_DOWNLOADS, false)
+            context?.setKey(LEGACY_DOWNLOADS, false)
         } catch (e: Exception) {
             println("Error IN convertOldDownloads")
         }

@@ -1,5 +1,21 @@
 package com.lagradost.shiro.ui.settings
 
+import ANILIST_TOKEN_KEY
+import ANILIST_UNIXTIME_KEY
+import ANILIST_USER_KEY
+import DataStore.getKey
+import DataStore.getKeys
+import DataStore.mapper
+import DataStore.removeKey
+import DataStore.removeKeys
+import MAL_REFRESH_TOKEN_KEY
+import MAL_TOKEN_KEY
+import MAL_UNIXTIME_KEY
+import MAL_USER_KEY
+import VIEWSTATE_KEY
+import VIEW_DUR_KEY
+import VIEW_LST_KEY
+import VIEW_POS_KEY
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -22,18 +38,18 @@ import com.lagradost.shiro.BuildConfig
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.settings.SettingsFragment.Companion.restoreFileSelector
 import com.lagradost.shiro.ui.settings.SettingsFragmentNew.Companion.settingsViewModel
-import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.ANILIST_ACCOUNT_ID
+import com.lagradost.shiro.utils.APIS
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
 import com.lagradost.shiro.utils.AppUtils.allApi
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
+import com.lagradost.shiro.utils.BackupUtils
 import com.lagradost.shiro.utils.BackupUtils.backup
 import com.lagradost.shiro.utils.BackupUtils.restore
 import com.lagradost.shiro.utils.BackupUtils.restorePrompt
-import com.lagradost.shiro.utils.DataStore.getKeys
-import com.lagradost.shiro.utils.DataStore.mapper
-import com.lagradost.shiro.utils.DataStore.removeKeys
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import com.lagradost.shiro.utils.MALApi.Companion.authenticateMAL
+import com.lagradost.shiro.utils.MAL_ACCOUNT_ID
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import java.io.File
 import kotlin.concurrent.thread
@@ -171,11 +187,11 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
 
 
                 fun isLoggedIntoMal(): Boolean {
-                    return DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+                    return context?.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
                 }
 
                 fun isLoggedIntoAniList(): Boolean {
-                    return DataStore.getKey<String>(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, null) != null
+                    return context?.getKey<String>(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, null) != null
                 }
 
                 val anilistButton = findPreference("anilist_setting_btt") as Preference?
@@ -192,9 +208,9 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                                 .setPositiveButton(
                                     "Logout"
                                 ) { _, _ ->
-                                    DataStore.removeKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID)
-                                    DataStore.removeKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID)
-                                    DataStore.removeKey(ANILIST_USER_KEY, ANILIST_ACCOUNT_ID)
+                                    context?.removeKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID)
+                                    context?.removeKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID)
+                                    context?.removeKey(ANILIST_USER_KEY, ANILIST_ACCOUNT_ID)
                                     anilistButton.summary = if (isLoggedIntoMal()) "Logged in" else "Not logged in"
                                     settingsViewModel?.hasLoggedIntoAnilist?.postValue(false)
                                 }
@@ -228,10 +244,10 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                                 .setPositiveButton(
                                     "Logout"
                                 ) { _, _ ->
-                                    DataStore.removeKey(MAL_TOKEN_KEY, MAL_ACCOUNT_ID)
-                                    DataStore.removeKey(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID)
-                                    DataStore.removeKey(MAL_USER_KEY, MAL_ACCOUNT_ID)
-                                    DataStore.removeKey(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID)
+                                    context?.removeKey(MAL_TOKEN_KEY, MAL_ACCOUNT_ID)
+                                    context?.removeKey(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID)
+                                    context?.removeKey(MAL_USER_KEY, MAL_ACCOUNT_ID)
+                                    context?.removeKey(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID)
                                     malButton.summary = if (isLoggedIntoMal()) "Logged in" else "Not logged in"
                                     settingsViewModel?.hasLoggedIntoMAL?.postValue(false)
                                 }
@@ -262,9 +278,11 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                 setTitle("History settings")
 
                 val clearHistory = findPreference<Preference?>("clear_history")
-                val historyItems = getKeys(VIEW_POS_KEY).size + getKeys(
-                    VIEWSTATE_KEY
-                ).size
+                val historyItems = context?.getKeys(VIEW_POS_KEY)?.size?.plus(
+                    context?.getKeys(
+                        VIEWSTATE_KEY
+                    )?.size ?: 0
+                )
                 clearHistory?.summary = "$historyItems item${if (historyItems == 1) "" else "s"}"
                 clearHistory?.setOnPreferenceClickListener {
                     val alertDialog: AlertDialog? = activity?.let {
@@ -273,11 +291,11 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                             setPositiveButton(
                                 "OK"
                             ) { _, _ ->
-                                val amount = removeKeys(VIEW_POS_KEY) + removeKeys(
+                                val amount = context.removeKeys(VIEW_POS_KEY) + context.removeKeys(
                                     VIEWSTATE_KEY
                                 )
-                                removeKeys(VIEW_LST_KEY)
-                                removeKeys(VIEW_DUR_KEY)
+                                context.removeKeys(VIEW_LST_KEY)
+                                context.removeKeys(VIEW_DUR_KEY)
                                 if (amount != 0) {
                                     Toast.makeText(
                                         context,
@@ -286,7 +304,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                                     ).show()
                                 }
                                 thread {
-                                    ShiroApi.requestHome(true)
+                                    context.requestHome(true)
                                 }
                                 clearHistory.summary = "0 items"
                             }
@@ -301,9 +319,9 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                         // Create the AlertDialog
                         builder.create()
                     }
-                    if (getKeys(VIEW_POS_KEY).isNotEmpty() || getKeys(
+                    if (context?.getKeys(VIEW_POS_KEY)?.isNotEmpty() == true || context?.getKeys(
                             VIEWSTATE_KEY
-                        ).isNotEmpty()
+                        )?.isNotEmpty() == true
                     ) {
                         alertDialog?.show()
                     }
@@ -357,8 +375,8 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                                     }
                                 builder.setPositiveButton("OK") { _, _ ->
                                     val restoredValue = mapper.readValue<BackupUtils.BackupFile>(input)
-                                    restore(restoredValue, preselectedItems[0], preselectedItems[1])
-                                    requestHome(true)
+                                    activity.restore(restoredValue, preselectedItems[0], preselectedItems[1])
+                                    activity.requestHome(true)
                                     val intent = Intent(activity, getCurrentActivity()!!::class.java)
                                     startActivity(intent)
                                     activity.finishAffinity()

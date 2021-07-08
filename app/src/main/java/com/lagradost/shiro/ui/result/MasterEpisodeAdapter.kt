@@ -1,5 +1,8 @@
 package com.lagradost.shiro.ui.result
 
+import DataStore.containsKey
+import VIEWSTATE_KEY
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -14,9 +17,7 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.utils.AppUtils.dubbify
 import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.getViewKey
-import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.ShiroApi
-import com.lagradost.shiro.utils.VIEWSTATE_KEY
 import kotlinx.android.synthetic.main.episode_expander.view.*
 
 class MasterEpisodeAdapter(
@@ -32,7 +33,7 @@ class MasterEpisodeAdapter(
         var visible: Boolean = false,
     )
 
-    var items = generateItems(episodes, data.slug)
+    var items = activity.generateItems(episodes, data.slug)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return MasterEpisodeViewHolder(
@@ -100,7 +101,7 @@ class MasterEpisodeAdapter(
             for (episode in item.start..item.end) {
                 val key = getViewKey(data.slug.dubbify(false), episode)
                 val keyDubbed = getViewKey(data.slug.dubbify(true), episode)
-                if (DataStore.containsKey(VIEWSTATE_KEY, key) || DataStore.containsKey(VIEWSTATE_KEY, keyDubbed)) {
+                if (activity.containsKey(VIEWSTATE_KEY, key) || activity.containsKey(VIEWSTATE_KEY, keyDubbed)) {
                     isSeen = true
                 }
             }
@@ -135,7 +136,7 @@ class MasterEpisodeAdapter(
 
 }
 
-fun generateItems(
+fun Context.generateItems(
     episodes: List<ShiroApi.ShiroEpisodes>,
     slug: String
 ): MutableList<MasterEpisodeAdapter.MasterEpisode> {
@@ -164,7 +165,7 @@ fun generateItems(
         var isSeen = false
         for (episode in episodes.size - overflow..episodes.size) {
             val key = getViewKey(slug, episode)
-            if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
+            if (containsKey(VIEWSTATE_KEY, key)) {
                 isSeen = true
             }
         }

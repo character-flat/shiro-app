@@ -1,6 +1,13 @@
 package com.lagradost.shiro.ui.downloads
 
+import DOWNLOAD_PARENT_KEY
+import DataStore.containsKey
+import DataStore.getKey
+import DataStore.removeKey
+import DataStore.setKey
+import VIEWSTATE_KEY
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -27,7 +34,6 @@ import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.fixEpTitle
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isViewState
-import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.getViewKey
@@ -35,6 +41,8 @@ import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.DownloadManager
+import com.lagradost.shiro.utils.VideoDownloadManager
 import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
 import kotlinx.android.synthetic.main.fragment_download_child.*
 
@@ -77,13 +85,13 @@ class DownloadFragmentChild : Fragment() {
         val save = settingsManager!!.getBoolean("save_history", true)
 
         // When fastani is down it doesn't report any seasons and this is needed.
-        val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(DOWNLOAD_PARENT_KEY, slug!!)
+        val parent = context?.getKey<DownloadManager.DownloadParentFileMetadata>(DOWNLOAD_PARENT_KEY, slug!!)
         download_header_text?.text = parent?.title
         // Sorts by Seasons and Episode Index
 
-        val sortedEpisodeKeys = getAllDownloadedEpisodes(slug!!)
+        val sortedEpisodeKeys = context?.getAllDownloadedEpisodes(slug!!)
 
-        sortedEpisodeKeys.forEach { it ->
+        sortedEpisodeKeys?.forEach { it ->
             val child = it.key
 
             if (child != null) {
@@ -162,7 +170,7 @@ class DownloadFragmentChild : Fragment() {
                 val key = getViewKey(slug!!, child.episodeIndex)
                 card.cardBg.setOnClickListener {
                     if (save) {
-                        DataStore.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
+                        context?.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
                     }
                     activity?.loadPlayer(
                         PlayerData(
@@ -194,7 +202,7 @@ class DownloadFragmentChild : Fragment() {
                     if (VideoDownloadManager.deleteFileAndUpdateSettings(requireContext(), child.internalId)) {
                         activity?.runOnUiThread {
                             card.visibility = GONE
-                            DataStore.removeKey(it.value)
+                            context?.removeKey(it.value)
                             Toast.makeText(
                                 context,
                                 "${child.videoTitle} E${child.episodeIndex + 1 + episodeOffset} deleted",
@@ -231,10 +239,10 @@ class DownloadFragmentChild : Fragment() {
 
                 card.setOnLongClickListener {
                     if (isViewState) {
-                        if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
-                            DataStore.removeKey(VIEWSTATE_KEY, key)
+                        if (context?.containsKey(VIEWSTATE_KEY, key) == true) {
+                            context?.removeKey(VIEWSTATE_KEY, key)
                         } else {
-                            DataStore.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
+                            context?.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
                         }
                         loadData()
                     }
@@ -372,7 +380,7 @@ class DownloadFragmentChild : Fragment() {
                 }
 
                 // ================ REGULAR ================
-                if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
+                if (context?.containsKey(VIEWSTATE_KEY, key) == true) {
                     card.cardBg.setCardBackgroundColor(
                         Cyanea.instance.primaryDark
                     )
@@ -394,15 +402,19 @@ class DownloadFragmentChild : Fragment() {
                     )
                 }
 
-                val pro = getViewPosDur(slug!!, child.episodeIndex)
-                if (pro.dur > 0 && pro.pos > 0) {
-                    var progress: Int = (pro.pos * 100L / pro.dur).toInt()
-                    if (progress < 5) {
-                        progress = 5
-                    } else if (progress > 95) {
-                        progress = 100
+                val pro = context?.getViewPosDur(slug!!, child.episodeIndex)
+                if (pro != null) {
+                    if (pro.dur > 0 && pro.pos > 0) {
+                        var progress: Int = (pro.pos * 100L / pro.dur).toInt()
+                        if (progress < 5) {
+                            progress = 5
+                        } else if (progress > 95) {
+                            progress = 100
+                        }
+                        card.video_progress.progress = progress
+                    } else {
+                        card.video_progress?.alpha = 0f
                     }
-                    card.video_progress.progress = progress
                 } else {
                     card.video_progress?.alpha = 0f
                 }
@@ -422,14 +434,14 @@ class DownloadFragmentChild : Fragment() {
 
 
     companion object {
-        fun getAllDownloadedEpisodes(slug: String): Map<DownloadManager.DownloadFileMetadata?, String> {
+        fun Context.getAllDownloadedEpisodes(slug: String): Map<DownloadManager.DownloadFileMetadata?, String> {
             // When shiro is down it doesn't report any seasons and this is needed.
             val episodeKeys = DownloadFragment.childMetadataKeys[slug]
             //val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(DOWNLOAD_PARENT_KEY, slug!!)
             // Sorts by Seasons and Episode Index
 
             return episodeKeys?.associateBy<String, DownloadManager.DownloadFileMetadata?, String>({ key ->
-                DataStore.getKey(key)
+                getKey(key)
             }, { it })?.toList()
                 ?.sortedBy { (key, _) -> key?.episodeIndex }?.toMap() ?: mapOf()
         }

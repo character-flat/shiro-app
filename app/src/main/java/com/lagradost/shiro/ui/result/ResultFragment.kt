@@ -1,5 +1,14 @@
 package com.lagradost.shiro.ui.result
 
+import ANILIST_TOKEN_KEY
+import BOOKMARK_KEY
+import DataStore.containsKey
+import DataStore.getKey
+import DataStore.removeKey
+import DataStore.setKey
+import MAL_TOKEN_KEY
+import SUBSCRIPTIONS_BOOKMARK_KEY
+import SUBSCRIPTIONS_KEY
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
@@ -71,6 +80,7 @@ import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.AppUtils.openBrowser
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.MALApi.Companion.getDataAboutMalId
 import com.lagradost.shiro.utils.MALApi.Companion.malStatusAsString
 import com.lagradost.shiro.utils.MALApi.Companion.setScoreRequest
 import com.lagradost.shiro.utils.ShiroApi.Companion.currentToken
@@ -250,12 +260,12 @@ class ResultFragment : Fragment() {
                 loadSeason()
 
                 thread {
-                    val hasAniList = DataStore.getKey<String>(
+                    val hasAniList = context?.getKey<String>(
                         ANILIST_TOKEN_KEY,
                         ANILIST_ACCOUNT_ID,
                         null
                     ) != null
-                    val hasMAL = DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+                    val hasMAL = context?.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
 
                     if (!hasLoadedAnilist && (hasAniList || hasMAL)) {
                         hasLoadedAnilist = true
@@ -299,36 +309,46 @@ class ResultFragment : Fragment() {
                 if (data.episodes?.isNotEmpty() == true) {
                     next_episode_btt.visibility = VISIBLE
                     next_episode_btt.setOnClickListener {
-                        val lastNormal = getLatestSeenEpisode(data.dubbify(false))
-                        val lastDubbed = getLatestSeenEpisode(data.dubbify(true))
-                        val isEpisodeDubbed = lastDubbed.episodeIndex >= lastNormal.episodeIndex
-                        val episode = if (isEpisodeDubbed) lastDubbed else lastNormal
+                        activity?.let {
+                            val lastNormal = it.getLatestSeenEpisode(data.dubbify(false))
+                            val lastDubbed = it.getLatestSeenEpisode(data.dubbify(true))
+                            val isEpisodeDubbed = lastDubbed.episodeIndex >= lastNormal.episodeIndex
+                            val episode = if (isEpisodeDubbed) lastDubbed else lastNormal
 
-                        val episodePos = getViewPosDur(data.slug, episode.episodeIndex)
-                        val next = canPlayNextEpisode(data, episode.episodeIndex)
-                        if (next.isFound && episodePos.viewstate) {
-                            val pos = getViewPosDur(data.slug, episode.episodeIndex)
-                            Toast.makeText(activity, "Playing episode ${next.episodeIndex + 1 + episodeOffset}", Toast.LENGTH_SHORT)
-                                .show()
-                            activity?.loadPlayer(
-                                next.episodeIndex,
-                                pos.pos,
-                                data,
-                                resultViewModel?.currentAniListId?.value,
-                                resultViewModel?.currentMalId?.value,
-                                fillerEpisodes
-                            )
-                        } else {
-                            Toast.makeText(activity, "Playing episode ${episode.episodeIndex + 1 + episodeOffset}", Toast.LENGTH_SHORT)
-                                .show()
-                            activity?.loadPlayer(
-                                episode.episodeIndex,
-                                episodePos.pos,
-                                data,
-                                resultViewModel?.currentAniListId?.value,
-                                resultViewModel?.currentMalId?.value,
-                                fillerEpisodes
-                            )
+                            val episodePos = it.getViewPosDur(data.slug, episode.episodeIndex)
+                            val next = canPlayNextEpisode(data, episode.episodeIndex)
+                            if (next.isFound && episodePos.viewstate) {
+                                val pos = it.getViewPosDur(data.slug, episode.episodeIndex)
+                                Toast.makeText(
+                                    it,
+                                    "Playing episode ${next.episodeIndex + 1 + episodeOffset}",
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                                it.loadPlayer(
+                                    next.episodeIndex,
+                                    pos.pos,
+                                    data,
+                                    resultViewModel?.currentAniListId?.value,
+                                    resultViewModel?.currentMalId?.value,
+                                    fillerEpisodes
+                                )
+                            } else {
+                                Toast.makeText(
+                                    it,
+                                    "Playing episode ${episode.episodeIndex + 1 + episodeOffset}",
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                                it.loadPlayer(
+                                    episode.episodeIndex,
+                                    episodePos.pos,
+                                    data,
+                                    resultViewModel?.currentAniListId?.value,
+                                    resultViewModel?.currentMalId?.value,
+                                    fillerEpisodes
+                                )
+                            }
                         }
                     }
                 } else {
@@ -355,7 +375,7 @@ class ResultFragment : Fragment() {
                 } else {
                     title_status.visibility = GONE
                 }
-                isBookmarked = DataStore.containsKey(BOOKMARK_KEY, data.slug)
+                isBookmarked = context?.containsKey(BOOKMARK_KEY, data.slug) == true
                 toggleHeartVisual(isBookmarked)
                 title_episodes.text =
                     Html.fromHtml(
@@ -409,16 +429,16 @@ class ResultFragment : Fragment() {
                 data.slug.let { slug ->
                     if (title_subscribe_holder == null) return@let
                     title_subscribe_holder?.visibility = VISIBLE
-                    val subbedBookmark = DataStore.getKey<BookmarkedTitle>(SUBSCRIPTIONS_BOOKMARK_KEY, slug, null)
-                    val isSubbedOld = DataStore.getKey(SUBSCRIPTIONS_KEY, slug, false)!!
+                    val subbedBookmark = context?.getKey<BookmarkedTitle>(SUBSCRIPTIONS_BOOKMARK_KEY, slug, null)
+                    val isSubbedOld = context?.getKey(SUBSCRIPTIONS_KEY, slug, false) == true
                     val isSubbed = isSubbedOld || subbedBookmark != null
 
                     val drawable =
                         if (isSubbed) R.drawable.ic_baseline_notifications_active_24 else R.drawable.ic_baseline_notifications_none_24
                     subscribe_image?.setImageResource(drawable)
                     subscribe_holder?.setOnClickListener {
-                        val subbedBookmark = DataStore.getKey<BookmarkedTitle>(SUBSCRIPTIONS_BOOKMARK_KEY, slug, null)
-                        val isSubbedOld = DataStore.getKey(SUBSCRIPTIONS_KEY, slug, false)!!
+                        val subbedBookmark = context?.getKey<BookmarkedTitle>(SUBSCRIPTIONS_BOOKMARK_KEY, slug, null)
+                        val isSubbedOld = context?.getKey(SUBSCRIPTIONS_KEY, slug, false) == true
                         val isSubbed = isSubbedOld || subbedBookmark != null
 
                         if (isSubbed) {
@@ -426,15 +446,15 @@ class ResultFragment : Fragment() {
                                 .addOnCompleteListener { task ->
                                     if (task.isSuccessful) {
                                         subscribe_image?.setImageResource(R.drawable.ic_baseline_notifications_none_24)
-                                        DataStore.removeKey(SUBSCRIPTIONS_BOOKMARK_KEY, slug)
-                                        DataStore.removeKey(SUBSCRIPTIONS_KEY, slug)
+                                        context?.removeKey(SUBSCRIPTIONS_BOOKMARK_KEY, slug)
+                                        context?.removeKey(SUBSCRIPTIONS_KEY, slug)
                                     }
                                     var msg = "Unsubscribed to ${data.name}"//getString(R.string.msg_subscribed)
                                     if (!task.isSuccessful) {
                                         msg = "Unsubscribing failed :("//getString(R.string.msg_subscribe_failed)
                                     }
                                     thread {
-                                        homeViewModel?.subscribed?.postValue(getSubbed())
+                                        homeViewModel?.subscribed?.postValue(context?.getSubbed())
                                     }
                                     //Log.d(TAG, msg)
                                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
@@ -444,7 +464,7 @@ class ResultFragment : Fragment() {
                                 .addOnCompleteListener { task ->
                                     if (task.isSuccessful) {
                                         subscribe_image?.setImageResource(R.drawable.ic_baseline_notifications_active_24)
-                                        DataStore.setKey(
+                                        context?.setKey(
                                             SUBSCRIPTIONS_BOOKMARK_KEY, slug, BookmarkedTitle(
                                                 data.name,
                                                 data.image,
@@ -458,7 +478,7 @@ class ResultFragment : Fragment() {
                                         msg = "Subscription failed :("//getString(R.string.msg_subscribe_failed)
                                     }
                                     thread {
-                                        homeViewModel?.subscribed?.postValue(getSubbed())
+                                        homeViewModel?.subscribed?.postValue(context?.getSubbed())
                                     }
                                     //Log.d(TAG, msg)
                                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
@@ -516,12 +536,12 @@ class ResultFragment : Fragment() {
     private fun loadGetDataAboutId() {
         try {
             activity?.let { activity ->
-                val hasAniList = DataStore.getKey<String>(
+                val hasAniList = activity.getKey<String>(
                     ANILIST_TOKEN_KEY,
                     ANILIST_ACCOUNT_ID,
                     null
                 ) != null
-                val hasMAL = DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+                val hasMAL = activity.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
 
                 val holder = if (hasAniList) resultViewModel?.currentAniListId?.value?.let {
                     activity.getDataAboutId(
@@ -529,7 +549,7 @@ class ResultFragment : Fragment() {
                     )
                 } else null
                 val malHolder =
-                    if (hasMAL && holder == null) resultViewModel?.currentMalId?.value?.let { MALApi.getDataAboutId(it) } else null
+                    if (hasMAL && holder == null) resultViewModel?.currentMalId?.value?.let { activity.getDataAboutMalId(it) } else null
                 //setAllMalData()
                 //MALApi.allTitles.get(currentMalId)
 
@@ -641,7 +661,7 @@ class ResultFragment : Fragment() {
                                     } else true
                                 val malPost = if (hasMAL)
                                     resultViewModel?.currentMalId?.value?.let {
-                                        setScoreRequest(
+                                        activity.setScoreRequest(
                                             it,
                                             MALApi.fromIntToAnimeStatus(typeValue),
                                             score,
@@ -1010,13 +1030,13 @@ class ResultFragment : Fragment() {
         }
     }
 
-    private fun toggleHeart(_isBookmarked: Boolean) {
-        this.isBookmarked = _isBookmarked
+    private fun Context.toggleHeart(_isBookmarked: Boolean) {
+        this@ResultFragment.isBookmarked = _isBookmarked
         toggleHeartVisual(_isBookmarked)
         val data = (if (isDefaultData) data else dataOther) ?: return
         /*Saving the new bookmark in the database*/
         if (_isBookmarked) {
-            DataStore.setKey(
+            setKey(
                 BOOKMARK_KEY,
                 data.slug,
                 BookmarkedTitle(
@@ -1027,7 +1047,7 @@ class ResultFragment : Fragment() {
                 )
             )
         } else {
-            DataStore.removeKey(BOOKMARK_KEY, data.slug)
+            removeKey(BOOKMARK_KEY, data.slug)
         }
         thread {
             homeViewModel!!.favorites.postValue(getFav())
@@ -1068,7 +1088,7 @@ class ResultFragment : Fragment() {
                 (episodes_res_view.adapter as MasterEpisodeAdapter).notifyDataSetChanged()
             } else {
                 (episodes_res_view.adapter as MasterEpisodeAdapter).data = data
-                (episodes_res_view.adapter as MasterEpisodeAdapter).items = generateItems(data.episodes!!, data.slug)
+                (episodes_res_view.adapter as MasterEpisodeAdapter).items = context?.generateItems(data.episodes!!, data.slug) ?: mutableListOf()
                 (episodes_res_view.adapter as MasterEpisodeAdapter).isFiller = fillerEpisodes
                 (episodes_res_view.adapter as MasterEpisodeAdapter).notifyDataSetChanged()
             }
@@ -1168,7 +1188,7 @@ class ResultFragment : Fragment() {
         }
 
         bookmark_holder.setOnClickListener {
-            toggleHeart(!isBookmarked)
+            context?.toggleHeart(!isBookmarked)
         }
 
         language_button.setOnClickListener {

@@ -1,5 +1,8 @@
 package com.lagradost.shiro.utils
 
+import DataStore.getKey
+import DataStore.removeKey
+import DataStore.setKey
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -21,9 +24,6 @@ import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.Coroutines.main
-import com.lagradost.shiro.utils.DataStore.getKey
-import com.lagradost.shiro.utils.DataStore.removeKey
-import com.lagradost.shiro.utils.DataStore.setKey
 import com.lagradost.shiro.utils.mvvm.logError
 import com.lagradost.shiro.utils.mvvm.normalSafeApiCall
 import kotlinx.coroutines.Dispatchers
@@ -489,7 +489,7 @@ object VideoDownloadManager {
         if (bytesTotal < 5000000) return ERROR_TOO_SMALL_CONNECTION // DATA IS LESS THAN 5MB, SOMETHING IS WRONG
 
         //context.
-        setKey(KEY_DOWNLOAD_INFO, ep.id.toString(), DownloadedFileInfo(bytesTotal, relativePath, displayName))
+        context.setKey(KEY_DOWNLOAD_INFO, ep.id.toString(), DownloadedFileInfo(bytesTotal, relativePath, displayName))
 
         // Could use connection.contentType for mime types when creating the file,
         // however file is already created and players don't go of file type
@@ -636,8 +636,7 @@ object VideoDownloadManager {
                         val link = item.links[index]
                         val resume = pkg.linkIndex == index
 
-                        //context.
-                        setKey(KEY_RESUME_PACKAGES, id.toString(), DownloadResumePackage(item, index))
+                        context.setKey(KEY_RESUME_PACKAGES, id.toString(), DownloadResumePackage(item, index))
                         val connectionResult = withContext(Dispatchers.IO) {
                             normalSafeApiCall {
                                 downloadSingleEpisode(context, item.source, item.folder, item.ep, link, resume)
@@ -645,7 +644,7 @@ object VideoDownloadManager {
                         }
                         if (connectionResult != null && connectionResult > 0) { // SUCCESS
                             //context.
-                            removeKey(KEY_RESUME_PACKAGES, id.toString())
+                            context.removeKey(KEY_RESUME_PACKAGES, id.toString())
                             break
                         }
                     }
@@ -661,12 +660,12 @@ object VideoDownloadManager {
 
     fun getDownloadFileInfoAndUpdateSettings(context: Context, id: Int): DownloadedFileInfoResult? {
         val res = getDownloadFileInfo(context, id)
-        if (res == null) removeKey(KEY_DOWNLOAD_INFO, id.toString()) //context.
+        if (res == null) context.removeKey(KEY_DOWNLOAD_INFO, id.toString()) //context.
         return res
     }
 
     private fun getDownloadFileInfo(context: Context, id: Int): DownloadedFileInfoResult? {
-        val info = getKey<DownloadedFileInfo>(KEY_DOWNLOAD_INFO, id.toString()) ?: return null //context.
+        val info = context.getKey<DownloadedFileInfo>(KEY_DOWNLOAD_INFO, id.toString()) ?: return null //context.
 
         if (isScopedStorage()) {
             val cr = context.contentResolver ?: return null
@@ -689,12 +688,12 @@ object VideoDownloadManager {
 
     fun deleteFileAndUpdateSettings(context: Context, id: Int): Boolean {
         val success = deleteFile(context, id)
-        if (success) removeKey(KEY_DOWNLOAD_INFO, id.toString()) //context.
+        if (success) context.removeKey(KEY_DOWNLOAD_INFO, id.toString()) //context.
         return success
     }
 
     private fun deleteFile(context: Context, id: Int): Boolean {
-        val info = getKey<DownloadedFileInfo>(KEY_DOWNLOAD_INFO, id.toString()) ?: return false //context.
+        val info = context.getKey<DownloadedFileInfo>(KEY_DOWNLOAD_INFO, id.toString()) ?: return false //context.
 
         if (isScopedStorage()) {
             val cr = context.contentResolver ?: return false
@@ -716,7 +715,7 @@ object VideoDownloadManager {
     }
 
     fun getDownloadResumePackage(context: Context, id: Int): DownloadResumePackage? {
-        return getKey(KEY_RESUME_PACKAGES, id.toString()) //context.
+        return context.getKey(KEY_RESUME_PACKAGES, id.toString()) //context.
     }
 
     fun downloadFromResume(context: Context, pkg: DownloadResumePackage) {

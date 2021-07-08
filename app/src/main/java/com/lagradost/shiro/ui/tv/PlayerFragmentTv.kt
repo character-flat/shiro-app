@@ -17,6 +17,11 @@ package com.lagradost.shiro.ui.tv
  */
 
 
+import ANILIST_TOKEN_KEY
+import DataStore.getKey
+import DataStore.mapper
+import DataStore.toKotlinObject
+import MAL_TOKEN_KEY
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
@@ -68,8 +73,7 @@ import com.lagradost.shiro.utils.AniListApi.Companion.postDataAboutId
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.setViewPosDur
-import com.lagradost.shiro.utils.DataStore.mapper
-import com.lagradost.shiro.utils.DataStore.toKotlinObject
+import com.lagradost.shiro.utils.MALApi.Companion.getDataAboutMalId
 import com.lagradost.shiro.utils.MALApi.Companion.malStatusAsString
 import com.lagradost.shiro.utils.MALApi.Companion.setScoreRequest
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
@@ -240,7 +244,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
                             )
                             res.setOnItemClickListener { _, _, which, _ ->
                                 selectedSource = it[which]
-                                savePos()
+                                activity.savePos()
                                 releasePlayer()
                                 loadAndPlay()
 
@@ -285,7 +289,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
     private fun playNextEpisode() {
         handler.removeCallbacks(checkProgressAction)
-        savePos()
+        context?.savePos()
         playerGlue.host.hideControlsOverlay(false)
         isLoadingNextEpisode = true
         data?.episodeIndex = minOf(data?.episodeIndex!! + 1, data?.card?.episodes?.size!! - 1)
@@ -316,7 +320,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
             if (currentPercentage > setPercentage && lastSyncedEpisode < data?.episodeIndex!!) {
                 lastSyncedEpisode = data?.episodeIndex!!
                 thread {
-                    updateProgress()
+                    context?.updateProgress()
                 }
             } else {
                 if (data?.anilistID != null || data?.malID != null) handler.postDelayed(
@@ -332,15 +336,15 @@ class PlayerFragmentTv : VideoSupportFragment() {
         }
     }
 
-    private fun updateProgress() {
-        val hasAniList = DataStore.getKey<String>(
+    private fun Context.updateProgress() {
+        val hasAniList = getKey<String>(
             ANILIST_TOKEN_KEY,
             ANILIST_ACCOUNT_ID,
             null
         ) != null
-        val hasMAL = DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+        val hasMAL = getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
 
-        val malHolder = if (hasMAL) data?.malID?.let { MALApi.getDataAboutId(it) } else null
+        val malHolder = if (hasMAL) data?.malID?.let { getDataAboutMalId(it) } else null
         val holder = if (hasAniList && malHolder == null) data?.anilistID?.let {
             activity?.getDataAboutId(
                 it
@@ -416,9 +420,9 @@ class PlayerFragmentTv : VideoSupportFragment() {
     }
 
 
-    private fun savePos() {
+    private fun Context.savePos() {
         println("Savepos")
-        if (this::exoPlayer.isInitialized) {
+        if (this@PlayerFragmentTv::exoPlayer.isInitialized) {
             if (((data != null
                         && data?.episodeIndex != null) || data?.card?.episodes != null)
                 && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0
@@ -470,7 +474,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
                         })
                         // Begins playback automatically
                         playWhenPrepared()
-                        savePos()
+                        activity.savePos()
 
                         // Adds key listeners
                         host.setOnKeyInterceptListener { view, keyCode, event ->
@@ -488,7 +492,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
                                 /*val navController = Navigation.findNavController(
                                         requireActivity(), R.id.fragment_container)
                                 navController.currentDestination?.id?.let { navController.popBackStack(it, true) }*/
-                                savePos()
+                                activity.savePos()
                                 activity.onBackPressed()
                                 return@setOnKeyInterceptListener true
                             }
@@ -598,7 +602,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
             activity?.runOnUiThread {
                 if (data?.card?.episodes != null || (data?.slug != null && data?.episodeIndex != null)) {
-                    val pro = getViewPosDur(
+                    val pro = requireContext().getViewPosDur(
                         data?.slug!!,
                         data?.episodeIndex!!
                     )
@@ -769,7 +773,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
     override fun onStart() {
         super.onStart()
         if (data != null && data?.episodeIndex != null) {
-            val pro = getViewPosDur(data!!.slug, data?.episodeIndex!!)
+            val pro = getCurrentActivity()!!.getViewPosDur(data!!.slug, data?.episodeIndex!!)
             if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
                 playbackPosition = pro.pos
             }
@@ -829,7 +833,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
     override fun onDestroy() {
         getCurrentActivity()?.theme?.applyStyle(R.style.customText, true)
         super.onDestroy()
-        savePos()
+        getCurrentActivity()?.savePos()
         releasePlayer()
         mediaSession.release()
         onPlayerNavigated.invoke(false)
@@ -839,7 +843,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        savePos()
+        getCurrentActivity()?.savePos()
     }
 
     override fun onAttach(context: Context) {

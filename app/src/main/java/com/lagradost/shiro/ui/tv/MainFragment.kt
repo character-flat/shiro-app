@@ -25,6 +25,7 @@ import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.ShiroApi
+import com.lagradost.shiro.utils.ShiroApi.Companion.initShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import kotlinx.android.synthetic.main.fragment_main_tv.*
 import kotlin.concurrent.thread
@@ -139,9 +140,9 @@ class MainFragment : Fragment() {
                     main_load?.visibility = VISIBLE
                     thread {
                         if (fullRe) {
-                            ShiroApi.init()
+                            context?.initShiroApi()
                         } else {
-                            requestHome(false)
+                            context?.requestHome(false)
                         }
                     }
                 }
@@ -157,7 +158,7 @@ class MainFragment : Fragment() {
         observe(homeViewModel!!.favorites) {
             (vertical_grid_view?.adapter as? MasterCardAdapter)?.notifyDataSetChanged()
         }
-        requestHome()
+        context?.requestHome()
         onResultsNavigated += ::restoreState
         onPlayerNavigated += ::restoreState
         homeViewModel!!.apiData.observe(viewLifecycleOwner) {

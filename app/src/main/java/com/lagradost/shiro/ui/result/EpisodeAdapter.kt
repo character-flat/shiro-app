@@ -1,5 +1,12 @@
 package com.lagradost.shiro.ui.result
 
+import DOWNLOAD_CHILD_KEY
+import DataStore.containsKey
+import DataStore.getKey
+import DataStore.removeKey
+import DataStore.setKey
+import VIEWSTATE_KEY
+import VIEW_POS_KEY
 import android.content.res.ColorStateList
 import android.net.Uri
 import android.view.LayoutInflater
@@ -34,7 +41,6 @@ import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.downloads.DownloadFragment.Companion.downloadsUpdated
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.resultViewModel
 import com.lagradost.shiro.ui.toPx
-import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.dubbify
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getLatestSeenEpisode
@@ -44,8 +50,11 @@ import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.isCastApiAvailable
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.DownloadManager
+import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
+import com.lagradost.shiro.utils.VideoDownloadManager
 import com.lagradost.shiro.utils.VideoDownloadManager.downloadQueue
 import kotlinx.android.synthetic.main.episode_result_compact.view.*
 import kotlinx.android.synthetic.main.fragment_results.view.*
@@ -246,15 +255,15 @@ class EpisodeAdapter(
                 val keyNormal = getViewKey(data.slug.dubbify(false), episodePos)
                 val keyDubbed = getViewKey(data.slug.dubbify(true), episodePos)
 
-                if (DataStore.containsKey(VIEWSTATE_KEY, keyNormal) || DataStore.containsKey(
+                if (activity.containsKey(VIEWSTATE_KEY, keyNormal) || activity.containsKey(
                         VIEWSTATE_KEY,
                         keyDubbed
                     )
                 ) {
-                    DataStore.removeKey(VIEWSTATE_KEY, keyNormal)
-                    DataStore.removeKey(VIEWSTATE_KEY, keyDubbed)
+                    activity.removeKey(VIEWSTATE_KEY, keyNormal)
+                    activity.removeKey(VIEWSTATE_KEY, keyDubbed)
                 } else {
-                    DataStore.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
+                    activity.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
                 }
                 // Hack, but works
                 (activity.findViewById<RecyclerView>(R.id.episodes_res_view).adapter as MasterEpisodeAdapter).notifyItemChanged(
@@ -276,7 +285,7 @@ class EpisodeAdapter(
 
             setCardViewState(episodePos)
 
-            val pro = getViewPosDur(data.slug, episodePos)
+            val pro = activity.getViewPosDur(data.slug, episodePos)
             //println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
             if (pro.dur > 0 && pro.pos > 0) {
                 var progress: Int = (pro.pos * 100L / pro.dur).toInt()
@@ -314,7 +323,7 @@ class EpisodeAdapter(
 
             if (isDonor) {
                 val internalId = (data.slug + "E${episodePos}").hashCode()
-                val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(
+                val child = activity.getKey<DownloadManager.DownloadFileMetadata>(
                     DOWNLOAD_CHILD_KEY,
                     internalId.toString()
                 )
@@ -329,7 +338,7 @@ class EpisodeAdapter(
                         println("FILE EXISTS:$episodePos")
                         fun deleteFile() {
                             if (VideoDownloadManager.deleteFileAndUpdateSettings(activity, child.internalId)) {
-                                DataStore.removeKey(DOWNLOAD_CHILD_KEY, key)
+                                activity.removeKey(DOWNLOAD_CHILD_KEY, key)
                                 activity.runOnUiThread {
                                     Toast.makeText(
                                         activity,
@@ -481,9 +490,9 @@ class EpisodeAdapter(
         private fun setCardViewState(episodePos: Int) {
             val keyNormal = getViewKey(data.slug.dubbify(false), episodePos)
             val keyDubbed = getViewKey(data.slug.dubbify(true), episodePos)
-            if (DataStore.containsKey(VIEWSTATE_KEY, keyNormal) || DataStore.containsKey(VIEWSTATE_KEY, keyDubbed)) {
-                val lastNormal = getLatestSeenEpisode(data.dubbify(false))
-                val lastDubbed = getLatestSeenEpisode(data.dubbify(true))
+            if (activity.containsKey(VIEWSTATE_KEY, keyNormal) || activity.containsKey(VIEWSTATE_KEY, keyDubbed)) {
+                val lastNormal = activity.getLatestSeenEpisode(data.dubbify(false))
+                val lastDubbed = activity.getLatestSeenEpisode(data.dubbify(true))
                 val last = if (lastDubbed.episodeIndex > lastNormal.episodeIndex) lastDubbed else lastNormal
 
                 if (last.isFound && last.episodeIndex == episodePos) {
@@ -586,7 +595,7 @@ class EpisodeAdapter(
                         castPlayer.loadItems(
                             mediaItems,
                             0,
-                            DataStore.getKey(VIEW_POS_KEY, key, 0L)!!,
+                            activity.getKey(VIEW_POS_KEY, key, 0L)!!,
                             REPEAT_MODE_REPEAT_SINGLE
                         )
                     }

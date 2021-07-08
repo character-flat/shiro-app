@@ -1,6 +1,13 @@
 package com.lagradost.shiro.utils
 
+import DataStore.getKey
+import DataStore.setKey
+import MAL_REFRESH_TOKEN_KEY
+import MAL_TOKEN_KEY
+import MAL_UNIXTIME_KEY
+import MAL_USER_KEY
 import android.app.Activity
+import android.content.Context
 import android.util.Base64
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -43,7 +50,7 @@ class MALApi {
             openBrowser(request)
         }
 
-        fun authenticateLogin(data: String) {
+        fun Context.authenticateMalLogin(data: String) {
             try {
                 val sanitizer =
                     splitQuery(URL(data.replace("shiroapp", "https").replace("/#", "?"))) // FIX ERROR
@@ -82,27 +89,27 @@ class MALApi {
             }
         }
 
-        private fun storeToken(response: String) {
+        private fun Context.storeToken(response: String) {
             try {
                 if (response != "") {
                     val token = mapper.readValue<ResponseToken>(response)
-                    DataStore.setKey(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID, (token.expires_in + unixTime()))
-                    DataStore.setKey(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID, token.refresh_token)
-                    DataStore.setKey(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, token.access_token)
+                    setKey(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID, (token.expires_in + unixTime()))
+                    setKey(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID, token.refresh_token)
+                    setKey(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, token.access_token)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
 
-        private fun refreshToken() {
+        private fun Context.refreshToken() {
             try {
                 val res = khttp.post(
                     "https://myanimelist.net/v1/oauth2/token",
                     data = mapOf(
                         "client_id" to MAL_CLIENT_ID,
                         "grant_type" to "refresh_token",
-                        "refresh_token" to DataStore.getKey(
+                        "refresh_token" to getKey(
                             MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID
                         )!!
                     )
@@ -115,13 +122,13 @@ class MALApi {
 
         private val allTitles = hashMapOf<Int, MalTitleHolder>()
 
-        fun getDataAboutId(id: Int): MalAnime? {
+        fun Context.getDataAboutMalId(id: Int): MalAnime? {
             return try {
                 // https://myanimelist.net/apiconfig/references/api/v2#operation/anime_anime_id_get
                 val url = "https://api.myanimelist.net/v2/anime/$id?fields=id,title,num_episodes,my_list_status"
                 val res = khttp.get(
                     url, headers = mapOf(
-                        "Authorization" to "Bearer " + DataStore.getKey<String>(
+                        "Authorization" to "Bearer " + getKey<String>(
                             MAL_TOKEN_KEY,
                             MAL_ACCOUNT_ID
                         )!!
@@ -133,7 +140,7 @@ class MALApi {
             }
         }
 
-        fun setAllMalData() {
+        fun Context.setAllMalData() {
             val user: String = "@me"
             var isDone = false
             var index = 0
@@ -143,7 +150,7 @@ class MALApi {
                 val res = khttp.get(
                     "https://api.myanimelist.net/v2/users/$user/animelist?fields=list_status&limit=1000&offset=${index * 1000}",
                     headers = mapOf(
-                        "Authorization" to "Bearer " + DataStore.getKey<String>(
+                        "Authorization" to "Bearer " + getKey<String>(
                             MAL_TOKEN_KEY,
                             MAL_ACCOUNT_ID
                         )!!
@@ -159,8 +166,8 @@ class MALApi {
             }
         }
 
-        private fun checkToken() {
-            if (unixTime() > DataStore.getKey<Long>(
+        private fun Context.checkToken() {
+            if (unixTime() > getKey<Long>(
                     MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID
                 )!!
             ) {
@@ -168,13 +175,13 @@ class MALApi {
             }
         }
 
-        fun getUser(setSettings: Boolean = true): MalUser? {
+        fun Context.getUser(setSettings: Boolean = true): MalUser? {
             checkToken()
             return try {
                 val res = khttp.get(
                     "https://api.myanimelist.net/v2/users/@me",
                     headers = mapOf(
-                        "Authorization" to "Bearer " + DataStore.getKey<String>(
+                        "Authorization" to "Bearer " + getKey<String>(
                             MAL_TOKEN_KEY,
                             MAL_ACCOUNT_ID
                         )!!
@@ -183,7 +190,7 @@ class MALApi {
 
                 val user = mapper.readValue<MalUser>(res)
                 if (setSettings) {
-                    DataStore.setKey(MAL_USER_KEY, MAL_ACCOUNT_ID, user)
+                    setKey(MAL_USER_KEY, MAL_ACCOUNT_ID, user)
                 }
                 user
             } catch (e: Exception) {
@@ -216,7 +223,7 @@ class MALApi {
             }
         }
 
-        fun setScoreRequest(
+        fun Context.setScoreRequest(
             id: Int,
             status: MalStatusType? = null,
             score: Int? = null,
@@ -247,7 +254,7 @@ class MALApi {
             }
         }
 
-        private fun setScoreRequest(
+        private fun Context.setScoreRequest(
             id: Int,
             status: String? = null,
             score: Int? = null,
@@ -257,7 +264,7 @@ class MALApi {
                 khttp.put(
                     "https://api.myanimelist.net/v2/anime/$id/my_list_status",
                     headers = mapOf(
-                        "Authorization" to "Bearer " + DataStore.getKey<String>(
+                        "Authorization" to "Bearer " + getKey<String>(
                             MAL_TOKEN_KEY,
                             MAL_ACCOUNT_ID
                         )!!

@@ -1,5 +1,11 @@
 package com.lagradost.shiro.utils
 
+import ANILIST_TOKEN_KEY
+import ANILIST_UNIXTIME_KEY
+import ANILIST_USER_KEY
+import DataStore.getKey
+import DataStore.setKey
+import DataStore.toKotlinObject
 import android.app.Activity
 import androidx.appcompat.app.AlertDialog
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -13,7 +19,6 @@ import com.lagradost.shiro.ui.settings.SettingsFragmentNew.Companion.settingsVie
 import com.lagradost.shiro.utils.AppUtils.openBrowser
 import com.lagradost.shiro.utils.AppUtils.splitQuery
 import com.lagradost.shiro.utils.AppUtils.unixTime
-import com.lagradost.shiro.utils.DataStore.toKotlinObject
 import java.net.URL
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
@@ -59,7 +64,7 @@ class AniListApi {
         }
 
         fun Activity.initGetUser() {
-            if (DataStore.getKey<String>(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, null) == null) return
+            if (getKey<String>(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, null) == null) return
             thread {
                 getUser()
             }
@@ -74,8 +79,8 @@ class AniListApi {
 
                 val endTime = unixTime() + expiresIn.toLong()
 
-                DataStore.setKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, endTime)
-                DataStore.setKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, token)
+                setKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, endTime)
+                setKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, token)
 
                 println("ANILIST LOGIN DONE")
                 thread {
@@ -88,7 +93,7 @@ class AniListApi {
         }
 
         private fun Activity.checkToken(): Boolean {
-            if (unixTime() > DataStore.getKey(
+            if (unixTime() > getKey(
                     ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, 0L
                 )!!
             ) {
@@ -189,7 +194,7 @@ class AniListApi {
                     khttp.post(
                         "https://graphql.anilist.co/",
                         headers = mapOf(
-                            "Authorization" to "Bearer " + DataStore.getKey(
+                            "Authorization" to "Bearer " + getKey(
                                 ANILIST_TOKEN_KEY,
                                 ANILIST_ACCOUNT_ID,
                                 ""
@@ -332,7 +337,7 @@ class AniListApi {
                     u.avatar.large,
                 )
                 if (setSettings) {
-                    DataStore.setKey(ANILIST_USER_KEY, ANILIST_ACCOUNT_ID, user)
+                    setKey(ANILIST_USER_KEY, ANILIST_ACCOUNT_ID, user)
                 }
                 /* // TODO FIX FAVS
                 for(i in u.favourites.anime.nodes) {

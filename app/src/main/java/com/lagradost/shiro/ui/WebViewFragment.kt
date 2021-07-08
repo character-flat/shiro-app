@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import com.lagradost.shiro.R
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
 import com.lagradost.shiro.utils.Event
-import com.lagradost.shiro.utils.MALApi
+import com.lagradost.shiro.utils.MALApi.Companion.authenticateMalLogin
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 import kotlinx.android.synthetic.main.fragment_web_view.*
 
@@ -39,7 +39,7 @@ class WebViewFragment : Fragment() {
                             if (url.contains("/anilistlogin")) {
                                 activity?.authenticateLogin(url)
                             } else if (url.contains("/mallogin")) {
-                                MALApi.authenticateLogin(url)
+                                activity?.authenticateMalLogin(url)
                             }
                             activity?.onBackPressed()
                         }

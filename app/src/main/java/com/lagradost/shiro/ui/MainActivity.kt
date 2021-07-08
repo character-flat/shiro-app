@@ -18,8 +18,6 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.KeyEvent
 import android.view.WindowManager
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -39,17 +37,17 @@ import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
 import com.lagradost.shiro.utils.AniListApi.Companion.initGetUser
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
-import com.lagradost.shiro.utils.AppUtils.checkWrite
 import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.hasPIPPermission
 import com.lagradost.shiro.utils.AppUtils.hideSystemUI
 import com.lagradost.shiro.utils.AppUtils.init
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
-import com.lagradost.shiro.utils.AppUtils.requestRW
 import com.lagradost.shiro.utils.AppUtils.shouldShowPIPMode
 import com.lagradost.shiro.utils.AppUtils.transparentStatusAndNavigation
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
+import com.lagradost.shiro.utils.MALApi.Companion.authenticateMalLogin
+import com.lagradost.shiro.utils.ShiroApi.Companion.initShiroApi
 import kotlin.concurrent.thread
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
@@ -127,7 +125,7 @@ class MainActivity : CyaneaAppCompatActivity() {
                     if (dataString.contains("/anilistlogin")) {
                         authenticateLogin(dataString)
                     } else if (dataString.contains("/mallogin")) {
-                        MALApi.authenticateLogin(dataString)
+                        authenticateMalLogin(dataString)
                     }
                 }
             }
@@ -186,7 +184,6 @@ class MainActivity : CyaneaAppCompatActivity() {
         super.onResume()
         println("RESUMED!!!")
         // This is needed to avoid NPE crash due to missing context
-        DataStore.init(this)
         init()
         if (isInPlayer) {
             hideSystemUI()
@@ -246,7 +243,6 @@ class MainActivity : CyaneaAppCompatActivity() {
         masterViewModel = masterViewModel ?: ViewModelProvider(this).get(MasterViewModel::class.java)
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
         init()
-        DataStore.init(this)
         // Hack to make tinting work
         //if (Cyanea.instance.isLight) delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
 
@@ -306,7 +302,7 @@ class MainActivity : CyaneaAppCompatActivity() {
         }*/
 
         thread {
-            ShiroApi.init()
+            initShiroApi()
         }
         // Hardcoded for now since it fails for some people :|
         isDonor = true //getDonorStatus() == androidId
@@ -502,7 +498,7 @@ class MainActivity : CyaneaAppCompatActivity() {
                     if (dataString.contains("/anilistlogin")) {
                         authenticateLogin(dataString)
                     } else if (dataString.contains("/mallogin")) {
-                        MALApi.authenticateLogin(dataString)
+                        authenticateMalLogin(dataString)
                     }
                 }
             }

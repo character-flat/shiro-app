@@ -1,5 +1,9 @@
 package com.lagradost.shiro.ui.search
 
+import BOOKMARK_KEY
+import DataStore.containsKey
+import DataStore.removeKey
+import DataStore.setKey
 import android.content.Context
 import android.content.res.ColorStateList
 import android.view.LayoutInflater
@@ -27,8 +31,6 @@ import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.onLongCardClick
 import com.lagradost.shiro.utils.AppUtils.settingsManager
-import com.lagradost.shiro.utils.BOOKMARK_KEY
-import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFav
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
@@ -89,7 +91,7 @@ class ResAdapter(
         fun bind(card: ShiroApi.CommonAnimePage) {
             if (compactView) {
                 // COPIED -----------------------------------------
-                var isBookmarked = DataStore.containsKey(BOOKMARK_KEY, card.slug)
+                var isBookmarked = context.containsKey(BOOKMARK_KEY, card.slug)
                 fun toggleHeartVisual(_isBookmarked: Boolean) {
                     if (_isBookmarked) {
                         itemView.title_bookmark.setImageResource(R.drawable.filled_heart)
@@ -106,7 +108,7 @@ class ResAdapter(
                     toggleHeartVisual(_isBookmarked)
                     /*Saving the new bookmark in the database*/
                     if (_isBookmarked) {
-                        DataStore.setKey(
+                        context.setKey(
                             BOOKMARK_KEY,
                             card.slug,
                             BookmarkedTitle(
@@ -117,10 +119,10 @@ class ResAdapter(
                             )
                         )
                     } else {
-                        DataStore.removeKey(BOOKMARK_KEY, card.slug)
+                        context.removeKey(BOOKMARK_KEY, card.slug)
                     }
                     thread {
-                        homeViewModel?.favorites?.postValue(getFav())
+                        homeViewModel?.favorites?.postValue(context.getFav())
                     }
                 }
                 toggleHeartVisual(isBookmarked)

@@ -1,5 +1,10 @@
 package com.lagradost.shiro.utils
 
+import DataStore.getDefaultSharedPrefs
+import DataStore.getSharedPrefs
+import DataStore.mapper
+import DataStore.setKeyRaw
+import android.content.Context
 import android.os.Environment
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
@@ -7,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.shiro.ui.settings.SettingsFragment.Companion.restoreFileSelector
 import com.lagradost.shiro.utils.AppUtils.checkWrite
 import com.lagradost.shiro.utils.AppUtils.requestRW
-import com.lagradost.shiro.utils.DataStore.mapper
 import java.io.File
 import java.lang.System.currentTimeMillis
 import java.text.SimpleDateFormat
@@ -39,8 +43,8 @@ object BackupUtils {
                 val allDataFile = File(downloadDir + "Shiro_Backup_${date}.xml")
                 allDataFile.parentFile.mkdirs()
 
-                val allData = DataStore.getSharedPrefs().all
-                val allSettings = DataStore.getDefaultSharedPrefs().all
+                val allData = getSharedPrefs().all
+                val allSettings = getDefaultSharedPrefs().all
 
                 val allDataSorted = BackupVars(
                     allData.filter { it.value is Boolean } as? Map<String, Boolean>,
@@ -95,7 +99,7 @@ object BackupUtils {
         }
     }
 
-    private fun <T> restoreMap(map: Map<String, T>?, isEditingAppSettings: Boolean = false) {
+    private fun <T> Context.restoreMap(map: Map<String, T>?, isEditingAppSettings: Boolean = false) {
         val blackList = listOf(
             "cool_mode",
             "beta_theme",
@@ -109,11 +113,11 @@ object BackupUtils {
         )
         val filterRegex = Regex("""^(${blackList.joinToString(separator = "|")})""")
         map?.filter { !filterRegex.containsMatchIn(it.key) }?.forEach {
-            DataStore.setKeyRaw(it.key, it.value, isEditingAppSettings)
+            setKeyRaw(it.key, it.value, isEditingAppSettings)
         }
     }
 
-    fun restore(backupFile: BackupFile, restoreSettings: Boolean, restoreDataStore: Boolean) {
+    fun Context.restore(backupFile: BackupFile, restoreSettings: Boolean, restoreDataStore: Boolean) {
         try {
             if (restoreSettings) {
                 restoreMap(backupFile.settings._Bool, true)

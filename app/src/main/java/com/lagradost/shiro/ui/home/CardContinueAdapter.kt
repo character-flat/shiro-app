@@ -1,5 +1,7 @@
 package com.lagradost.shiro.ui.home
 
+import DataStore.removeKey
+import VIEW_LST_KEY
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -27,10 +29,8 @@ import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.onLongCardClick
-import com.lagradost.shiro.utils.DataStore
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
-import com.lagradost.shiro.utils.VIEW_LST_KEY
 import kotlinx.android.synthetic.main.home_card.view.home_card_root
 import kotlinx.android.synthetic.main.home_card.view.imageText
 import kotlinx.android.synthetic.main.home_card.view.imageView
@@ -183,14 +183,14 @@ class CardContinueAdapter(
                         itemView.home_card_root.requestFocus()
                     }
                     itemView.tv_button_remove.setOnClickListener {
-                        DataStore.removeKey(VIEW_LST_KEY, cardInfo.aniListId)
-                        requestHome(true)
+                        activity.removeKey(VIEW_LST_KEY, cardInfo.aniListId)
+                        activity.requestHome(true)
                     }
                 } else {
                     itemView.removeButton.visibility = VISIBLE
                     itemView.removeButton.setOnClickListener {
-                        DataStore.removeKey(VIEW_LST_KEY, cardInfo.aniListId)
-                        requestHome(true)
+                        activity.removeKey(VIEW_LST_KEY, cardInfo.aniListId)
+                        activity.requestHome(true)
                     }
                 }
                 if (cardInfo.dur > 0 && cardInfo.pos > 0) {
