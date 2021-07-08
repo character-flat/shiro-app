@@ -143,7 +143,7 @@ class EpisodeAdapter(
             card.cardRemoveIcon.visibility = GONE
 
             // Sets loading icon on queued items
-            if (downloadQueue.any { it.item.ep.episode == episodePos }) {
+            if (downloadQueue.any { it.item.ep.episode == episodePos + 1 + episodeOffset }) {
                 card.cdi_loading.visibility = VISIBLE
                 card.cdi.visibility = GONE
             } else {

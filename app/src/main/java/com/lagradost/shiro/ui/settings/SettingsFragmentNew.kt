@@ -8,7 +8,7 @@ import android.view.View
 import android.view.View.*
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.RelativeLayout
+import android.widget.LinearLayout
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -62,8 +62,8 @@ class SettingsFragmentNew : Fragment() {
                 )
             }
 
-        val topParams: RelativeLayout.LayoutParams = RelativeLayout.LayoutParams(
-            RelativeLayout.LayoutParams.MATCH_PARENT, // view width
+        val topParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, // view width
             MainActivity.statusHeight // view height
         )
         top_padding_settings?.layoutParams = topParams
