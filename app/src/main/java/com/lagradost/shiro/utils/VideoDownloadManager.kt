@@ -3,6 +3,7 @@ package com.lagradost.shiro.utils
 import DataStore.getKey
 import DataStore.removeKey
 import DataStore.setKey
+import android.app.ActivityManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -118,6 +119,11 @@ object VideoDownloadManager {
         val path: Uri,
     )
 
+    data class DownloadQueueResumePackage(
+        val index: Int,
+        val pkg: DownloadResumePackage,
+    )
+
     private const val SUCCESS_DOWNLOAD_DONE = 1
     private const val SUCCESS_STOPPED = 2
     private const val ERROR_DELETING_FILE = -1
@@ -130,8 +136,9 @@ object VideoDownloadManager {
     private const val ERROR_CONTENT_RESOLVER_CANT_OPEN_STREAM = -8
     private const val ERROR_CONTENT_RESOLVER_NOT_FOUND = -9
 
-    private const val KEY_RESUME_PACKAGES = "download_resume"
-    private const val KEY_DOWNLOAD_INFO = "download_info"
+    const val KEY_RESUME_PACKAGES = "download_resume"
+    const val KEY_DOWNLOAD_INFO = "download_info"
+    const val KEY_RESUME_QUEUE_PACKAGES = "download_q_resume"
 
     val downloadStatus = HashMap<Int, DownloadType>()
     val downloadStatusEvent = Event<Pair<Int, DownloadType>>()
@@ -139,9 +146,9 @@ object VideoDownloadManager {
     val downloadProgressEvent = Event<Pair<Int, Long>>()
     val downloadQueue = LinkedList<DownloadResumePackage>()
 
-    private var hasCreatedNotChannel = false
+    private var hasCreatedNotChanel = false
     private fun Context.createNotificationChannel() {
-        hasCreatedNotChannel = true
+        hasCreatedNotChanel = true
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -248,7 +255,7 @@ object VideoDownloadManager {
                     } else if (state == DownloadType.IsDone) {
                         "Download Done - $rowTwo"
                     } else {
-                        "Download Stopped - $rowTwo"
+                        "Download Canceled - $rowTwo"
                     }
 
                 val bodyStyle = NotificationCompat.BigTextStyle()
@@ -262,7 +269,7 @@ object VideoDownloadManager {
                 } else if (state == DownloadType.IsDone) {
                     "Download Done - $rowTwo"
                 } else {
-                    "Download Stopped - $rowTwo"
+                    "Download Canceled - $rowTwo"
                 }
 
                 builder.setContentText(txt)
@@ -311,14 +318,14 @@ object VideoDownloadManager {
                             }, when (i) {
                                 DownloadActionType.Resume -> "Resume"
                                 DownloadActionType.Pause -> "Pause"
-                                DownloadActionType.Stop -> "Stop"
+                                DownloadActionType.Stop -> "Cancel"
                             }, pending
                         )
                     )
                 }
             }
 
-            if (!hasCreatedNotChannel) {
+            if (!hasCreatedNotChanel) {
                 context.createNotificationChannel()
             }
 
@@ -488,7 +495,6 @@ object VideoDownloadManager {
         val bytesTotal = contentLength + resumeLength
         if (bytesTotal < 5000000) return ERROR_TOO_SMALL_CONNECTION // DATA IS LESS THAN 5MB, SOMETHING IS WRONG
 
-        //context.
         context.setKey(KEY_DOWNLOAD_INFO, ep.id.toString(), DownloadedFileInfo(bytesTotal, relativePath, displayName))
 
         // Could use connection.contentType for mime types when creating the file,
@@ -568,13 +574,14 @@ object VideoDownloadManager {
             }
         }
 
+        val id = ep.id
         // THE REAL READ
         try {
             while (true) {
                 count = connectionInputStream.read(buffer)
                 if (count < 0) break
                 bytesDownloaded += count
-                downloadProgressEvent.invoke(Pair(ep.id, bytesDownloaded))
+                downloadProgressEvent.invoke(Pair(id, bytesDownloaded))
                 while (isPaused) {
                     sleep(100)
                     if (isStopped) {
@@ -621,13 +628,15 @@ object VideoDownloadManager {
     private fun downloadCheck(context: Context) {
         if (currentDownloads.size < maxConcurrentDownloads && downloadQueue.size > 0) {
             val pkg = downloadQueue.removeFirst()
-            masterViewModel?.downloadQueue?.postValue(downloadQueue)
             val item = pkg.item
             val id = item.ep.id
             if (currentDownloads.contains(id)) { // IF IT IS ALREADY DOWNLOADING, RESUME IT
                 downloadEvent.invoke(Pair(id, DownloadActionType.Resume))
                 return
             }
+
+            val dQueue = downloadQueue.toList().mapIndexed { index, any -> DownloadQueueResumePackage(index, any) }
+            context.setKey(KEY_RESUME_QUEUE_PACKAGES, dQueue)
             currentDownloads.add(id)
 
             main {
@@ -643,7 +652,6 @@ object VideoDownloadManager {
                             }
                         }
                         if (connectionResult != null && connectionResult > 0) { // SUCCESS
-                            //context.
                             context.removeKey(KEY_RESUME_PACKAGES, id.toString())
                             break
                         }
@@ -660,12 +668,12 @@ object VideoDownloadManager {
 
     fun getDownloadFileInfoAndUpdateSettings(context: Context, id: Int): DownloadedFileInfoResult? {
         val res = getDownloadFileInfo(context, id)
-        if (res == null) context.removeKey(KEY_DOWNLOAD_INFO, id.toString()) //context.
+        if (res == null) context.removeKey(KEY_DOWNLOAD_INFO, id.toString())
         return res
     }
 
     private fun getDownloadFileInfo(context: Context, id: Int): DownloadedFileInfoResult? {
-        val info = context.getKey<DownloadedFileInfo>(KEY_DOWNLOAD_INFO, id.toString()) ?: return null //context.
+        val info = context.getKey<DownloadedFileInfo>(KEY_DOWNLOAD_INFO, id.toString()) ?: return null
 
         if (isScopedStorage()) {
             val cr = context.contentResolver ?: return null
@@ -688,12 +696,12 @@ object VideoDownloadManager {
 
     fun deleteFileAndUpdateSettings(context: Context, id: Int): Boolean {
         val success = deleteFile(context, id)
-        if (success) context.removeKey(KEY_DOWNLOAD_INFO, id.toString()) //context.
+        if (success) context.removeKey(KEY_DOWNLOAD_INFO, id.toString())
         return success
     }
 
     private fun deleteFile(context: Context, id: Int): Boolean {
-        val info = context.getKey<DownloadedFileInfo>(KEY_DOWNLOAD_INFO, id.toString()) ?: return false //context.
+        val info = context.getKey<DownloadedFileInfo>(KEY_DOWNLOAD_INFO, id.toString()) ?: return false
 
         if (isScopedStorage()) {
             val cr = context.contentResolver ?: return false
@@ -715,13 +723,22 @@ object VideoDownloadManager {
     }
 
     fun getDownloadResumePackage(context: Context, id: Int): DownloadResumePackage? {
-        return context.getKey(KEY_RESUME_PACKAGES, id.toString()) //context.
+        return context.getKey(KEY_RESUME_PACKAGES, id.toString())
     }
 
     fun downloadFromResume(context: Context, pkg: DownloadResumePackage) {
         downloadQueue.addLast(pkg)
-        masterViewModel?.downloadQueue?.postValue(downloadQueue)
         downloadCheck(context)
+    }
+
+    fun isMyServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
+        val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager?
+        for (service in manager!!.getRunningServices(Int.MAX_VALUE)) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
     }
 
     fun downloadEpisode(

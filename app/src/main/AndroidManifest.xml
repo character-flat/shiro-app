@@ -81,8 +81,20 @@
                 android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
                 android:value="com.lagradost.shiro.utils.CastOptionsProvider"/>
 
+        <receiver
+                android:name=".receivers.VideoDownloadRestartReceiver"
+                android:enabled="true"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="restart_service" />
+            </intent-filter>
+        </receiver>
         <service
-                android:name=".utils.DownloadService"
+                android:name=".services.VideoDownloadKeepAliveService"
+                android:enabled="true" >
+        </service>
+        <service
+                android:name=".services.VideoDownloadService"
                 android:enabled="true"
                 android:exported="false">
         </service>
