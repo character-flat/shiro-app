@@ -23,6 +23,9 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.jaredrummler.cyanea.Cyanea
@@ -33,7 +36,6 @@ import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedVi
 import com.lagradost.shiro.ui.player.PlayerEventType
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
-import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
 import com.lagradost.shiro.utils.AniListApi.Companion.initGetUser
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
@@ -45,8 +47,11 @@ import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.shouldShowPIPMode
 import com.lagradost.shiro.utils.AppUtils.transparentStatusAndNavigation
+import com.lagradost.shiro.utils.DownloadFileWorkManager
+import com.lagradost.shiro.utils.Event
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import com.lagradost.shiro.utils.MALApi.Companion.authenticateMalLogin
+import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.initShiroApi
 import kotlin.concurrent.thread
 
@@ -230,6 +235,11 @@ class MainActivity : CyaneaAppCompatActivity() {
         }
 
     override fun onDestroy() {
+        println("DESTRYED!!!!!!!!!!!!!!!!!")
+        /*val workManager = WorkManager.getInstance(this)
+        val constraints = androidx.work.Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+        val task = OneTimeWorkRequest.Builder(DownloadFileWorkManager::class.java).setConstraints(constraints).build()
+        workManager.enqueue(task)*/
         mediaSession?.isActive = false
         super.onDestroy()
     }
@@ -342,6 +352,13 @@ class MainActivity : CyaneaAppCompatActivity() {
                 build()
             }
         }
+
+        /*if (!VideoDownloadManager.isMyServiceRunning(this, VideoDownloadKeepAliveService::class.java)) {
+            val mYourService = VideoDownloadKeepAliveService()
+            val mServiceIntent = Intent(this, mYourService::class.java).putExtra(START_VALUE_KEY, RESTART_ALL_DOWNLOADS_AND_QUEUE)
+            this.startService(mServiceIntent)
+        }*/
+
 
         // Setting the theme
         /*

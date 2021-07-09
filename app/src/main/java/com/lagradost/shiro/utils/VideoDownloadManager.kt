@@ -628,6 +628,7 @@ object VideoDownloadManager {
     private fun downloadCheck(context: Context) {
         if (currentDownloads.size < maxConcurrentDownloads && downloadQueue.size > 0) {
             val pkg = downloadQueue.removeFirst()
+            masterViewModel?.downloadQueue?.postValue(downloadQueue)
             val item = pkg.item
             val id = item.ep.id
             if (currentDownloads.contains(id)) { // IF IT IS ALREADY DOWNLOADING, RESUME IT
@@ -684,10 +685,18 @@ object VideoDownloadManager {
             return DownloadedFileInfoResult(fileLength, info.totalBytes, fileUri)
         } else {
             val normalPath =
-                "${Environment.getExternalStorageDirectory()}${File.separatorChar}${info.relativePath}${info.displayName}".replace(
-                    '/',
-                    File.separatorChar
-                )
+                if (info.relativePath.startsWith(context.filesDir.toString()) ||
+                    info.relativePath.startsWith(Environment.getExternalStorageDirectory().toString())
+                ) {
+                    "${info.relativePath}${File.separatorChar}${info.displayName}"
+                } else {
+                    "${Environment.getExternalStorageDirectory()}${File.separatorChar}${info.relativePath}${info.displayName}".replace(
+                        '/',
+                        File.separatorChar
+                    )
+                }
+
+            println("MNORMAL PATH $normalPath")
             val dFile = File(normalPath)
             if (!dFile.exists()) return null
             return DownloadedFileInfoResult(dFile.length(), info.totalBytes, dFile.toUri())
@@ -728,6 +737,7 @@ object VideoDownloadManager {
 
     fun downloadFromResume(context: Context, pkg: DownloadResumePackage) {
         downloadQueue.addLast(pkg)
+        masterViewModel?.downloadQueue?.postValue(downloadQueue)
         downloadCheck(context)
     }
 

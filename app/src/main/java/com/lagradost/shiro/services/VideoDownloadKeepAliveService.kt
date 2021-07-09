@@ -2,11 +2,16 @@ package com.lagradost.shiro.services
 
 import DataStore.getKey
 import DataStore.getKeys
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
+import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import com.lagradost.shiro.receivers.VideoDownloadRestartReceiver
+import androidx.core.app.NotificationCompat
 import com.lagradost.shiro.utils.VideoDownloadManager
 
 const val RESTART_ALL_DOWNLOADS_AND_QUEUE = 1
@@ -16,6 +21,27 @@ const val START_VALUE_KEY = "start_value"
 class VideoDownloadKeepAliveService : Service() {
     override fun onBind(p0: Intent?): IBinder? {
         return null
+    }
+
+    override fun onCreate() {
+        if (Build.VERSION.SDK_INT >= 26) {
+            val channelId = "persistent_notification";
+            val channel = NotificationChannel(
+                channelId,
+                "Download service notification",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+
+            (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(channel)
+
+            val notification = NotificationCompat.Builder(this, channelId)
+                .setContentTitle("")
+                .setPriority(Notification.PRIORITY_MIN)
+                .setContentText("").build()
+
+            startForeground(1, notification)
+        }
+        super.onCreate()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -45,10 +71,10 @@ class VideoDownloadKeepAliveService : Service() {
     }
 
     override fun onDestroy() {
-        val broadcastIntent = Intent()
+        /*val broadcastIntent = Intent()
         broadcastIntent.action = "restart_service"
         broadcastIntent.setClass(this, VideoDownloadRestartReceiver::class.java)
-        this.sendBroadcast(broadcastIntent)
+        this.sendBroadcast(broadcastIntent)*/
         super.onDestroy()
     }
 }

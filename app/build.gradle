@@ -184,4 +184,6 @@ dependencies {
     // Theme
     implementation 'com.jaredrummler:cyanea:1.0.2'
 
+    // Downloading
+    implementation "androidx.work:work-runtime:2.7.0-alpha04"
 }

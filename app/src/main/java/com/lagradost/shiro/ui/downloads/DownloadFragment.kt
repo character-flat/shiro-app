@@ -9,6 +9,7 @@ import DataStore.setKey
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -29,7 +30,9 @@ import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
+import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.loadPage
+import com.lagradost.shiro.utils.VideoDownloadManager.KEY_DOWNLOAD_INFO
 import com.lagradost.shiro.utils.VideoDownloadManager.downloadQueue
 import com.lagradost.shiro.utils.mvvm.observe
 import kotlinx.android.synthetic.main.download_card.view.*
@@ -50,7 +53,7 @@ class DownloadFragment : Fragment() {
 
         activity?.runOnUiThread {
             childMetadataKeys.clear()
-            val childKeys = getChildren()
+            val childKeys = context?.getChildren() ?: listOf()
             downloadRoot.removeAllViews()
             val inflater = activity?.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
@@ -69,17 +72,19 @@ class DownloadFragment : Fragment() {
                         )
 
                         if (fileInfo == null) {
-                            // FILE DOESN'T EXIT
-                            try {
-                                child.thumbPath?.let {
-                                    val thumbFile = File(it)
-                                    if (thumbFile.exists()) {
-                                        thumbFile.delete()
+                            println(child.slug)
+                            if (!downloadQueue.toList().any { it.item.ep.poster == child.thumbPath }) {
+                                /*try {
+                                    child.thumbPath?.let {
+                                        val thumbFile = File(it)
+                                        if (thumbFile.exists()) {
+                                            thumbFile.delete()
+                                        }
                                     }
+                                } catch (e: Exception) {
                                 }
-                            } catch (e: Exception) {
+                                context?.removeKey(k)*/
                             }
-                            context?.removeKey(k)
                         } else {
                             if (childMetadataKeys.containsKey(child.slug)) {
                                 childMetadataKeys[child.slug]?.add(k)
@@ -121,14 +126,26 @@ class DownloadFragment : Fragment() {
 
                             cardView.cardTitle.text = parent.title
                             //cardView.imageView.setImageURI(Uri.parse(parent.coverImagePath))
-                            val glideUrlMain =
-                                GlideUrl(ShiroApi.getFullUrlCdn(parent.coverImagePath)) { ShiroApi.currentHeaders }
-                            context?.let {
-                                GlideApp.with(it)
-                                    .load(glideUrlMain)
-                                    .transition(DrawableTransitionOptions.withCrossFade(200))
-                                    .into(cardView.imageView)
+
+                            // Legacy
+                            if (parent.coverImagePath.startsWith(getCurrentActivity()!!.filesDir.toString())) {
+                                context?.let {
+                                    GlideApp.with(it)
+                                        .load(Uri.fromFile(File(parent.coverImagePath)))
+                                        .transition(DrawableTransitionOptions.withCrossFade(200))
+                                        .into(cardView.imageView)
+                                }
+                            } else {
+                                val glideUrlMain =
+                                    GlideUrl(ShiroApi.getFullUrlCdn(parent.coverImagePath)) { ShiroApi.currentHeaders }
+                                context?.let {
+                                    GlideApp.with(it)
+                                        .load(glideUrlMain)
+                                        .transition(DrawableTransitionOptions.withCrossFade(200))
+                                        .into(cardView.imageView)
+                                }
                             }
+
                             val childData = epData[parent.slug]!!
                             val megaBytes = DownloadManager.convertBytesToAny(childData.countBytes, 0, 2.0).toInt()
                             cardView.cardInfo.text =
@@ -225,13 +242,13 @@ class DownloadFragment : Fragment() {
         const val LEGACY_DOWNLOADS = "legacy_downloads_2"
     }
 
-    private fun getChildren(): List<String> {
-        val legacyDownloads = context?.getKey(LEGACY_DOWNLOADS, true)
+    private fun Context.getChildren(): List<String> {
+        val legacyDownloads = getKey(LEGACY_DOWNLOADS, true)
         if (legacyDownloads == true) {
             convertOldDownloads()
         }
 
-        return context?.getKeys(DOWNLOAD_CHILD_KEY) ?: listOf()
+        return getKeys(DOWNLOAD_CHILD_KEY) ?: listOf()
     }
 
     override fun onResume() {
@@ -244,18 +261,30 @@ class DownloadFragment : Fragment() {
         super.onDestroy()
     }
 
-    private fun convertOldDownloads() {
+    private fun Context.convertOldDownloads() {
         try {
-            val keys = context?.getKeys(DOWNLOAD_CHILD_KEY)
-            keys?.pmap {
-                context?.getKey<DownloadManager.DownloadFileMetadataSemiLegacy>(it)
+            val keys = getKeys(DOWNLOAD_CHILD_KEY)
+            keys.pmap {
+                getKey<DownloadManager.DownloadFileMetadataSemiLegacy>(it)
             }
-            keys?.forEach {
-                val data = context?.getKey<DownloadManager.DownloadFileMetadataSemiLegacy>(it)
+            keys.forEach {
+                val data = getKey<DownloadManager.DownloadFileMetadataSemiLegacy>(it)
                 if (data != null) {
                     // NEEDS REMOVAL TO PREVENT DUPLICATES
-                    context?.removeKey(it)
-                    context?.setKey(
+                    removeKey(it)
+                    val file = File(data.videoPath)
+                    setKey(
+                        KEY_DOWNLOAD_INFO, data.internalId.toString(),
+                        file.parent?.toString()
+                            ?.let { parentPath ->
+                                VideoDownloadManager.DownloadedFileInfo(
+                                    data.maxFileSize,
+                                    parentPath,
+                                    file.name
+                                )
+                            }
+                    )
+                    setKey(
                         it, DownloadManager.DownloadFileMetadata(
                             data.internalId,
                             data.slug,
@@ -268,7 +297,7 @@ class DownloadFragment : Fragment() {
                     )
                 }
             }
-            context?.setKey(LEGACY_DOWNLOADS, false)
+            setKey(LEGACY_DOWNLOADS, false)
         } catch (e: Exception) {
             println("Error IN convertOldDownloads")
         }
