@@ -379,6 +379,30 @@ object VideoDownloadManager {
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
+    private fun ContentResolver.getExistingDownloadPathOrNullQ(relativePath: String, displayName: String): String? {
+        val projection = arrayOf(
+            MediaStore.MediaColumns.DATA,
+        )
+
+        val selection =
+            "${MediaStore.MediaColumns.RELATIVE_PATH}='$relativePath' AND " + "${MediaStore.MediaColumns.DISPLAY_NAME}='$displayName'"
+
+        val result = this.query(
+            MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
+            projection, selection, null, null
+        )
+
+        result.use { c ->
+            if (c != null && c.count >= 1) {
+                c.moveToFirst().let {
+                    return c.getString(c.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))
+                }
+            }
+        }
+        return null
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
     fun ContentResolver.getFileLength(fileUri: Uri): Long {
         return this.openFileDescriptor(fileUri, "r")
             .use { it?.statSize ?: 0 }
