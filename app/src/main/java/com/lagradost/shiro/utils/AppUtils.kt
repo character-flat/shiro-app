@@ -805,53 +805,56 @@ object AppUtils {
 
     fun FragmentActivity.popCurrentPage(isInPlayer: Boolean, isInExpandedView: Boolean, isInResults: Boolean) {
         println("POPPED CURRENT FRAGMENT")
-        //supportFragmentManager.executePendingTransactions()
-        thread {
-            val currentFragment = supportFragmentManager.fragments.lastOrNull {
-                it.isVisible
-            }
-
-            if (tvActivity == null) {
-                requestedOrientation = if (settingsManager?.getBoolean("force_landscape", false) == true) {
-                    ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
-                } else {
-                    ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        runOnUiThread {
+            supportFragmentManager.executePendingTransactions()
+            thread {
+                val currentFragment = supportFragmentManager.fragments.lastOrNull {
+                    it.isVisible
                 }
-            }
 
-            if (currentFragment == null) {
-                //this.onBackPressed()
-                return@thread
-            }
+                if (tvActivity == null) {
+                    requestedOrientation = if (settingsManager?.getBoolean("force_landscape", false) == true) {
+                        ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+                    } else {
+                        ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                    }
+                }
 
-            // No fucked animations leaving the player :)
-            when {
-                isInPlayer -> {
-                    supportFragmentManager.beginTransaction()
-                        //.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                        .remove(currentFragment)
-                        .commitAllowingStateLoss()
+                if (currentFragment == null) {
+                    //this.onBackPressed()
+                    return@thread
                 }
-                isInExpandedView && !isInResults -> {
-                    supportFragmentManager.beginTransaction()
-                        .setCustomAnimations(
-                            R.anim.enter_from_right,
-                            R.anim.exit_to_right,
-                            R.anim.pop_enter,
-                            R.anim.pop_exit
-                        )
-                        .remove(currentFragment)
-                        .commitAllowingStateLoss()
-                }
-                else -> {
-                    supportFragmentManager.beginTransaction()
-                        .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                        .remove(currentFragment)
-                        .commitAllowingStateLoss()
+
+                // No fucked animations leaving the player :)
+                when {
+                    isInPlayer -> {
+                        supportFragmentManager.beginTransaction()
+                            //.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                            .remove(currentFragment)
+                            .commitAllowingStateLoss()
+                    }
+                    isInExpandedView && !isInResults -> {
+                        supportFragmentManager.beginTransaction()
+                            .setCustomAnimations(
+                                R.anim.enter_from_right,
+                                R.anim.exit_to_right,
+                                R.anim.pop_enter,
+                                R.anim.pop_exit
+                            )
+                            .remove(currentFragment)
+                            .commitAllowingStateLoss()
+                    }
+                    else -> {
+                        supportFragmentManager.beginTransaction()
+                            .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                            .remove(currentFragment)
+                            .commitAllowingStateLoss()
+                    }
                 }
             }
         }
     }
+
 
     fun Activity.hideSystemUI() {
         // Enables regular immersive mode.

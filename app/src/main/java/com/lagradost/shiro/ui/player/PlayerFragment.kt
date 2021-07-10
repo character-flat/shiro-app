@@ -358,6 +358,7 @@ class PlayerFragment : Fragment() {
 
 
     private fun getCurrentUrl(): ExtractorLink? {
+        println("GETTING CURREMT URL $data")
         if (data?.url != null) return ExtractorLink(
             "Downloaded",
             data?.url!!.removePrefix("file://").replace("%20", " "),
@@ -380,7 +381,9 @@ class PlayerFragment : Fragment() {
         // data?.card!!.cdndata?.seasons.size == 1 && data?.card!!.cdndata?.seasons[0].episodes.size == 1
         var preTitle = ""
         if (!isMovie) {
-            preTitle = "Episode ${data?.episodeIndex!! + 1 + episodeOffset} · "
+            preTitle = data?.episodeIndex?.let {
+                "Episode ${it + 1 + episodeOffset} · "
+            } ?: ""
         }
 
         // Replaces with "" if it's null
@@ -1042,7 +1045,7 @@ class PlayerFragment : Fragment() {
 
         video_go_back.setOnClickListener {
             // Local player
-            if (playerActivity != null && data?.title != null && data?.title == data?.url) {
+            if (playerActivity != null && data?.title != null) {
                 playerActivity!!.finish()
                 playerActivity = null
             } else {
@@ -1133,7 +1136,7 @@ class PlayerFragment : Fragment() {
         playback_speed_btt.setOnClickListener {
             updateHideTime()
             // Lmao kind bad
-            val dialog = Dialog(getCurrentActivity()!!, R.style.AlertDialogCustom)
+            val dialog = Dialog(it.context, R.style.AlertDialogCustom)
             val speedsText = arrayOf("0.5x", "0.75x", "1x", "1.25x", "1.5x", "1.75x", "2x")
             val speedsNumbers = arrayOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f)
 
@@ -1143,7 +1146,7 @@ class PlayerFragment : Fragment() {
             val res = dialog.sort_click
 
             res.choiceMode = CHOICE_MODE_SINGLE
-            val arrayAdapter = ArrayAdapter<String>(getCurrentActivity()!!, R.layout.bottom_single_choice)
+            val arrayAdapter = ArrayAdapter<String>(it.context, R.layout.bottom_single_choice)
             arrayAdapter.addAll(ArrayList(speedsText.toList()))
             res.adapter = arrayAdapter
             res.setItemChecked(
@@ -1610,8 +1613,6 @@ class PlayerFragment : Fragment() {
                                 } else {
                                     //mediaItemBuilder.setUri(Uri.parse(currentUrl.url))
                                     val uri = getVideoContentUri(requireContext(), currentUrl.url)
-                                    println("CURRENT URL ${uri}")
-                                    println(uri)
                                     mediaItemBuilder.setUri(uri)
                                 }
                             } else {

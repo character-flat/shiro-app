@@ -56,10 +56,10 @@ class Vidstream(var providersActive: HashSet<String> = HashSet()) {
                         ))
                     }.pmap { api ->
                         if (link.startsWith(api.mainUrl)) {
-                            println("GETTING URL FOR ${api.mainUrl}")
                             val extractedLinks = api.getUrl(link, url)
                             if (extractedLinks?.isNotEmpty() == true) {
                                 extractedLinks.forEach {
+                                    println("URL FETCHED ${it.url}")
                                     callback.invoke(it)
                                 }
                             }
@@ -67,7 +67,6 @@ class Vidstream(var providersActive: HashSet<String> = HashSet()) {
                     }
                 }
             }
-            println("RETURNED URLS")
             return true
         } catch (e: Exception) {
             return false

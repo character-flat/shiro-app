@@ -13,6 +13,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
@@ -762,6 +763,11 @@ object VideoDownloadManager {
     }
 
     fun downloadFromResume(context: Context, pkg: DownloadResumePackage) {
+        if (currentDownloads.size == maxConcurrentDownloads) {
+            main {
+                Toast.makeText(context, "${pkg.item.ep.mainName} Episode ${pkg.item.ep.episode} queued", Toast.LENGTH_SHORT).show()
+            }
+        }
         downloadQueue.addLast(pkg)
         masterViewModel?.downloadQueue?.postValue(downloadQueue)
         downloadCheck(context)

@@ -70,12 +70,11 @@ class DownloadFragment : Fragment() {
                             requireContext(),
                             child.internalId
                         )
-                        println("FILE INFO ${fileInfo?.path}")
 
                         if (fileInfo == null) {
                             println(child.slug)
                             if (!downloadQueue.toList().any { it.item.ep.poster == child.thumbPath }) {
-                                /*try {
+                                try {
                                     child.thumbPath?.let {
                                         val thumbFile = File(it)
                                         if (thumbFile.exists()) {
@@ -84,7 +83,7 @@ class DownloadFragment : Fragment() {
                                     }
                                 } catch (e: Exception) {
                                 }
-                                context?.removeKey(k)*/
+                                context?.removeKey(k)
                             }
                         } else {
                             if (childMetadataKeys.containsKey(child.slug)) {

@@ -418,9 +418,18 @@ class EpisodeAdapter(
                                 popup.setOnMenuItemClickListener {
                                     when (it.itemId) {
                                         R.id.res_resumedload -> {
-                                            val id = child.internalId//(data.slug + "E${episodePos}").hashCode()
-                                            val pkg = VideoDownloadManager.getDownloadResumePackage(activity, id)
-
+                                            if (VideoDownloadManager.downloadStatus.containsKey(child.internalId)) {
+                                                VideoDownloadManager.downloadEvent.invoke(
+                                                    Pair(
+                                                        child.internalId,
+                                                        VideoDownloadManager.DownloadActionType.Resume
+                                                    )
+                                                )
+                                            }
+                                            val pkg = VideoDownloadManager.getDownloadResumePackage(
+                                                activity,
+                                                child.internalId
+                                            )
                                             if (pkg != null) {
                                                 VideoDownloadManager.downloadFromResume(activity, pkg)
                                             }

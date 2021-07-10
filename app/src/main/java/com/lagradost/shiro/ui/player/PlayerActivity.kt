@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
@@ -16,8 +17,10 @@ import com.jaredrummler.cyanea.prefs.CyaneaTheme
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.canShowPipMode
 import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
+import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.ui.MainActivity.Companion.onAudioFocusEvent
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
+import com.lagradost.shiro.ui.MasterViewModel
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.checkWrite
 import com.lagradost.shiro.utils.AppUtils.getUri
@@ -52,7 +55,7 @@ class PlayerActivity : CyaneaAppCompatActivity() {
             return
         }
         playerActivity = this
-
+        masterViewModel = masterViewModel ?: ViewModelProvider(this).get(MasterViewModel::class.java)
         init()
         supportActionBar?.hide()
         if (cyanea.isDark) {
@@ -129,7 +132,7 @@ class PlayerActivity : CyaneaAppCompatActivity() {
 
         val playerData = PlayerData(
             File(realPath).name,
-             realPath,
+            realPath,
             null,
             null,
             null,
@@ -138,7 +141,6 @@ class PlayerActivity : CyaneaAppCompatActivity() {
         )
         loadPlayer(playerData)
     }
-
 
 
 }
