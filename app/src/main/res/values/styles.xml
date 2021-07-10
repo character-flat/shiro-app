@@ -37,7 +37,6 @@
         <item name="background">@color/background</item>
                 -->
 
-
         <item name="textColorAlertDialogListItem">?attr/textColor</item>
         <item name="actionMenuTextColor">?attr/textColor</item>
         <item name="android:windowBackground">@drawable/splash_background</item>
@@ -65,10 +64,10 @@
         <!-- <item name="android:windowTranslucentNavigation">false</item>-->
 
         <!--
+        <item name="android:navigationBarColor">#00000000</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
-        <item name="android:navigationBarColor">#00000000</item>
 
         <item name="android:actionBarStyle">@style/FadingActionBarWidgetTransparent</item>
         <item name="android:windowActionBarOverlay">true</item>

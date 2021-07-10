@@ -16,6 +16,7 @@ import android.Manifest
 import android.app.Activity
 import android.app.AppOpsManager
 import android.app.UiModeManager
+import android.content.ContentValues
 import android.content.Context
 import android.content.Context.UI_MODE_SERVICE
 import android.content.Intent
@@ -144,6 +145,7 @@ object AppUtils {
 
     private fun getAppUsableScreenSize(context: Context): Point {
         val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        //windowManager.currentWindowMetrics.bounds
         val display = windowManager.defaultDisplay
         val size = Point()
         display.getSize(size)
@@ -203,6 +205,24 @@ object AppUtils {
             rect.right += extraPadding
             rect.bottom += extraPadding
             bigView.touchDelegate = TouchDelegate(rect, smallView)
+        }
+    }
+
+    fun getVideoContentUri(context: Context, videoFilePath: String): Uri? {
+        val cursor = context.contentResolver.query(
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI, arrayOf(MediaStore.Video.Media._ID),
+            MediaStore.Video.Media.DATA + "=? ", arrayOf(videoFilePath), null
+        )
+        return if (cursor != null && cursor.moveToFirst()) {
+            val id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID))
+            cursor.close()
+            Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, "" + id)
+        } else {
+            val values = ContentValues()
+            values.put(MediaStore.Video.Media.DATA, videoFilePath)
+            context.contentResolver.insert(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values
+            )
         }
     }
 
@@ -498,8 +518,12 @@ object AppUtils {
         }
     }
 
+    fun FragmentActivity.showNavigation() {
+        window.navigationBarColor = Cyanea.instance.backgroundColor
+    }
+
     // https://stackoverflow.com/questions/29069070/completely-transparent-status-bar-and-navigation-bar-on-lollipop
-    fun Activity.transparentStatusAndNavigation(
+    fun FragmentActivity.transparentStatusAndNavigation(
         systemUiScrim: Int = Color.parseColor("#40000000") // 25% black
     ) {
         var systemUiVisibility = 0

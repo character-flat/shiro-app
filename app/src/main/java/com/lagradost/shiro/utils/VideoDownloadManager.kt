@@ -346,7 +346,7 @@ object VideoDownloadManager {
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
-    private fun ContentResolver.getExistingDownloadUriOrNullQ(relativePath: String, displayName: String): Uri? {
+    fun ContentResolver.getExistingDownloadUriOrNullQ(relativePath: String, displayName: String): Uri? {
         val projection = arrayOf(
             MediaStore.MediaColumns._ID,
             //MediaStore.MediaColumns.DISPLAY_NAME,   // unused (for verification use only)
@@ -408,7 +408,7 @@ object VideoDownloadManager {
             .use { it?.statSize ?: 0 }
     }
 
-    private fun isScopedStorage(): Boolean {
+    fun isScopedStorage(): Boolean {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
     }
 
@@ -700,12 +700,14 @@ object VideoDownloadManager {
     private fun getDownloadFileInfo(context: Context, id: Int): DownloadedFileInfoResult? {
         val info = context.getKey<DownloadedFileInfo>(KEY_DOWNLOAD_INFO, id.toString()) ?: return null
 
-        if (isScopedStorage()) {
+        if (isScopedStorage() && !info.relativePath.startsWith(context.filesDir.toString())) {
             val cr = context.contentResolver ?: return null
             val fileUri =
                 cr.getExistingDownloadUriOrNullQ(info.relativePath, info.displayName) ?: return null
             val fileLength = cr.getFileLength(fileUri)
             if (fileLength == 0L) return null
+            //val path = cr.getExistingDownloadPathOrNullQ(info.relativePath, info.displayName)
+            //return if (path == null) path else DownloadedFileInfoResult(fileLength, info.totalBytes, path)
             return DownloadedFileInfoResult(fileLength, info.totalBytes, fileUri)
         } else {
             val normalPath =
@@ -720,9 +722,9 @@ object VideoDownloadManager {
                     )
                 }
 
-            println("MNORMAL PATH $normalPath")
             val dFile = File(normalPath)
             if (!dFile.exists()) return null
+            //return DownloadedFileInfoResult(dFile.length(), info.totalBytes, normalPath)
             return DownloadedFileInfoResult(dFile.length(), info.totalBytes, dFile.toUri())
         }
     }

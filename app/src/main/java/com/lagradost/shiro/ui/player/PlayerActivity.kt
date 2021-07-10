@@ -25,6 +25,7 @@ import com.lagradost.shiro.utils.AppUtils.hasPIPPermission
 import com.lagradost.shiro.utils.AppUtils.init
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.requestRW
+import java.io.File
 
 class PlayerActivity : CyaneaAppCompatActivity() {
     companion object {
@@ -127,8 +128,8 @@ class PlayerActivity : CyaneaAppCompatActivity() {
         setContentView(R.layout.activity_player)
 
         val playerData = PlayerData(
-            realPath,
-            realPath,
+            File(realPath).name,
+             realPath,
             null,
             null,
             null,

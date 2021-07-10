@@ -32,9 +32,10 @@ import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.MALApi
-import com.lagradost.shiro.utils.MALApi.Companion.getUser
+import com.lagradost.shiro.utils.MALApi.Companion.getMalUser
 import com.lagradost.shiro.utils.MAL_ACCOUNT_ID
 import kotlinx.android.synthetic.main.fragment_settings.*
+import kotlin.concurrent.thread
 
 class SettingsFragmentNew : Fragment() {
     companion object {
@@ -81,7 +82,9 @@ class SettingsFragmentNew : Fragment() {
         if (context?.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
             && context?.getKeys(MAL_USER_KEY)?.isEmpty() == true
         ) {
-            context?.getUser()
+            thread {
+                context?.getMalUser()
+            }
         }
 
         context?.let { context ->

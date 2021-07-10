@@ -77,7 +77,7 @@ class MALApi {
                         if (res != "") {
                             storeToken(res)
                             thread {
-                                getUser()
+                                getMalUser()
                                 settingsViewModel?.hasLoggedIntoMAL?.postValue(true)
                             }
                             //println("GOT MAL MASTER TOKEN:::: " + res)
@@ -175,7 +175,7 @@ class MALApi {
             }
         }
 
-        fun Context.getUser(setSettings: Boolean = true): MalUser? {
+        fun Context.getMalUser(setSettings: Boolean = true): MalUser? {
             checkToken()
             return try {
                 val res = khttp.get(

@@ -1,5 +1,6 @@
 package com.lagradost.shiro.ui.downloads
 
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +9,7 @@ import android.widget.LinearLayout
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
+import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
@@ -35,6 +37,8 @@ class QueueFragment : Fragment() {
         val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder> = QueueAdapter()
         queue_res_view?.adapter = adapter
         (queue_res_view?.adapter as? QueueAdapter)?.notifyDataSetChanged()
+
+        fragment_queue_root?.background = ColorDrawable(Cyanea.instance.backgroundColor)
 
         download_go_back?.setOnClickListener {
             activity?.onBackPressed()

@@ -70,6 +70,7 @@ class DownloadFragment : Fragment() {
                             requireContext(),
                             child.internalId
                         )
+                        println("FILE INFO ${fileInfo?.path}")
 
                         if (fileInfo == null) {
                             println(child.slug)

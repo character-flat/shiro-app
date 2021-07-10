@@ -70,7 +70,6 @@ import com.lagradost.shiro.utils.AppUtils.expandTouchArea
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getLatestSeenEpisode
-import com.lagradost.shiro.utils.AppUtils.getNavigationBarSize
 import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.hideKeyboard
@@ -80,6 +79,8 @@ import com.lagradost.shiro.utils.AppUtils.observe
 import com.lagradost.shiro.utils.AppUtils.openBrowser
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
+import com.lagradost.shiro.utils.AppUtils.showNavigation
+import com.lagradost.shiro.utils.AppUtils.transparentStatusAndNavigation
 import com.lagradost.shiro.utils.MALApi.Companion.getDataAboutMalId
 import com.lagradost.shiro.utils.MALApi.Companion.malStatusAsString
 import com.lagradost.shiro.utils.MALApi.Companion.setScoreRequest
@@ -229,6 +230,12 @@ class ResultFragment : Fragment() {
         if (tvActivity != null) {
             onWebViewNavigated += ::restoreState
         }
+
+        /*results_root.setOnApplyWindowInsetsListener { v, insets ->
+            println("INSETS!!!!!!!!!!")
+            insets?.systemWindowInsetBottom?.let { fragments_new_nav_view?.setPadding(0, 0, 0, it) }
+            insets.consumeSystemWindowInsets()
+        }*/
         onPlayerNavigated += ::handleVideoPlayerNavigation
         // DownloadManager.downloadStartEvent += ::onDownloadStarted
         isInResults = true
@@ -549,7 +556,11 @@ class ResultFragment : Fragment() {
                     )
                 } else null
                 val malHolder =
-                    if (hasMAL && holder == null) resultViewModel?.currentMalId?.value?.let { activity.getDataAboutMalId(it) } else null
+                    if (hasMAL && holder == null) resultViewModel?.currentMalId?.value?.let {
+                        activity.getDataAboutMalId(
+                            it
+                        )
+                    } else null
                 //setAllMalData()
                 //MALApi.allTitles.get(currentMalId)
 
@@ -1088,7 +1099,8 @@ class ResultFragment : Fragment() {
                 (episodes_res_view.adapter as MasterEpisodeAdapter).notifyDataSetChanged()
             } else {
                 (episodes_res_view.adapter as MasterEpisodeAdapter).data = data
-                (episodes_res_view.adapter as MasterEpisodeAdapter).items = context?.generateItems(data.episodes!!, data.slug) ?: mutableListOf()
+                (episodes_res_view.adapter as MasterEpisodeAdapter).items =
+                    context?.generateItems(data.episodes!!, data.slug) ?: mutableListOf()
                 (episodes_res_view.adapter as MasterEpisodeAdapter).isFiller = fillerEpisodes
                 (episodes_res_view.adapter as MasterEpisodeAdapter).notifyDataSetChanged()
             }
@@ -1103,6 +1115,8 @@ class ResultFragment : Fragment() {
         resultViewModel?.currentAniListId?.postValue(null)
         resultViewModel?.currentMalId?.postValue(null)
         resultViewModel?.visibleEpisodeProgress?.postValue(null)
+
+        activity?.transparentStatusAndNavigation()
 
         onWebViewNavigated -= ::restoreState
         onPlayerNavigated -= ::handleVideoPlayerNavigation
@@ -1143,10 +1157,14 @@ class ResultFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // ORIENTATION_PORTRAIT not working for some reason so I chose this
-        if (!settingsManager!!.getBoolean("force_landscape", false)) {
+        /*if (!settingsManager!!.getBoolean("force_landscape", false)) {
             val navBarSize = getCurrentActivity()!!.getNavigationBarSize()
             val min = minOf(navBarSize.y, navBarSize.x)
             fragments_new_nav_view?.setPadding(0, 0, 0, min)
+        }*/
+
+        fragments_new_nav_view?.let {
+            activity?.showNavigation()
         }
 
         fragments_new_nav_view?.background = ColorDrawable(Cyanea.instance.backgroundColor)

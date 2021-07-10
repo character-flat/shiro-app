@@ -78,6 +78,7 @@ import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.getDataAboutId
 import com.lagradost.shiro.utils.AniListApi.Companion.postDataAboutId
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
+import com.lagradost.shiro.utils.AppUtils.getVideoContentUri
 import com.lagradost.shiro.utils.AppUtils.getViewKey
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
 import com.lagradost.shiro.utils.AppUtils.hideKeyboard
@@ -92,6 +93,7 @@ import com.lagradost.shiro.utils.MALApi.Companion.setScoreRequest
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 import com.lagradost.shiro.utils.ShiroApi.Companion.fmod
 import com.lagradost.shiro.utils.ShiroApi.Companion.loadLinks
+import com.lagradost.shiro.utils.VideoDownloadManager.isScopedStorage
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_sheet.*
 import kotlinx.android.synthetic.main.player.*
@@ -1459,6 +1461,7 @@ class PlayerFragment : Fragment() {
         } // VERY IMPORTANT https://stackoverflow.com/questions/28818926/prevent-clicking-on-a-button-in-an-activity-while-showing-a-fragment
         thread {
             val currentUrl = inputUrl ?: getCurrentUrl()
+            println("CURRENT URL ${currentUrl?.url?.replace("/content:/", "content://")}")
             if (currentUrl == null) {
                 activity?.runOnUiThread {
                     Toast.makeText(activity, "No links found", LENGTH_LONG).show()
@@ -1592,6 +1595,7 @@ class PlayerFragment : Fragment() {
 
                         val mimeType =
                             if (currentUrl.isM3u8) MimeTypes.APPLICATION_M3U8 else MimeTypes.APPLICATION_MP4
+
                         val mediaItemBuilder = MediaItem.Builder()
                             //Replace needed for android 6.0.0  https://github.com/google/ExoPlayer/issues/5983
                             .setMimeType(mimeType)
@@ -1599,7 +1603,20 @@ class PlayerFragment : Fragment() {
                         if (isOnline) {
                             mediaItemBuilder.setUri(currentUrl.url)
                         } else {
-                            mediaItemBuilder.setUri(Uri.fromFile(File(currentUrl.url)))
+                            if (isScopedStorage()) {
+                                val uriPrimary = Uri.parse(currentUrl.url)
+                                if (uriPrimary.scheme == "content") {
+                                    mediaItemBuilder.setUri(uriPrimary)
+                                } else {
+                                    //mediaItemBuilder.setUri(Uri.parse(currentUrl.url))
+                                    val uri = getVideoContentUri(requireContext(), currentUrl.url)
+                                    println("CURRENT URL ${uri}")
+                                    println(uri)
+                                    mediaItemBuilder.setUri(uri)
+                                }
+                            } else {
+                                mediaItemBuilder.setUri(Uri.fromFile(File(currentUrl.url)))
+                            }
                         }
 
                         val mediaItem = mediaItemBuilder.build()
@@ -1778,7 +1795,8 @@ class PlayerFragment : Fragment() {
         } catch (e: Exception) {
             println("ERROR IN SSL")
         }*/
-        playerViewModel = playerViewModel ?: ViewModelProvider(getCurrentActivity()!!).get(PlayerViewModel::class.java)
+        playerViewModel =
+            playerViewModel ?: ViewModelProvider(getCurrentActivity()!!).get(PlayerViewModel::class.java)
         return inflater.inflate(R.layout.player, container, false)
     }
 }
