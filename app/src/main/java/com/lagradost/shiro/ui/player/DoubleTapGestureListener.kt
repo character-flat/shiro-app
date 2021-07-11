@@ -53,10 +53,10 @@ abstract class DoubleTapGestureListener(private val ctx: PlayerFragment) :
             if (event.rawX >= ctx.width / 2) {
                 //println("${event.rawX} ${ctx.width}")
                 clicksRight++
-                onDoubleClickRight(clicksRight, event.rawX, event.rawY)
+                onDoubleClickRight(clicksRight, event.x, event.y)
             } else {
                 clicksLeft++
-                onDoubleClickLeft(clicksLeft, event.rawX, event.rawY)
+                onDoubleClickLeft(clicksLeft, event.x, event.y)
             }
         }
     }

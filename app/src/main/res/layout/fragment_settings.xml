@@ -106,7 +106,6 @@
                     <View style="@style/Divider"/>
                     <TextView
                             android:id="@+id/settings_accounts"
-
                             android:text="Accounts"
                             style="@style/SettingsItem"
                     >

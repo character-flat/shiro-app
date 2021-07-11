@@ -1,8 +1,9 @@
 <resources>
     <string name="changelog">\n
-        - Added MAL/Anilist integration\n
-        - Added custom accent colors\n
-        - Added filler detection\n
+        - Added fully custom themes\n
+        - Redid the downloading system\n
+        - Redid settings\n
+        - Fixed tons of small issues\n
     </string>
     <string name="app_name">Shiro</string>
     <string name="title_home">Home</string>

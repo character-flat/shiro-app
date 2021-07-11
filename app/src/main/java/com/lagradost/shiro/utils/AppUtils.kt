@@ -342,15 +342,15 @@ object AppUtils {
     fun Context.onLongCardClick(card: ShiroApi.CommonAnimePage): Boolean {
         var isBookmarked: Boolean? = null
         val selected =
-            if (tvActivity != null && settingsManager?.getBoolean("hold_to_favorite", false) == true) "Favorite"
+            if (tvActivity != null && settingsManager?.getBoolean("hold_to_favorite", false) == true) "Toggle Favorite"
             else settingsManager?.getString("hold_behavior", "Show Toast")
 
-        if (selected == "Favorite" || selected == "Favorite and Subscribe") {
+        if (selected == "Toggle Favorite" || selected == "Toggle Favorite and Subscribe") {
             isBookmarked = toggleHeart(card.name, card.image, card.slug)
             val prefix = if (isBookmarked) "Added" else "Removed"
             Toast.makeText(this, "$prefix ${card.name}", Toast.LENGTH_SHORT).show()
         }
-        if (selected == "Subscribe" || selected == "Favorite and Subscribe") {
+        if (selected == "Toggle Subscribe" || selected == "Toggle Favorite and Subscribe") {
             subscribeToShow(card/*, isBookmarked*/)
         }
         if (selected == "Show Toast") {
@@ -552,8 +552,8 @@ object AppUtils {
                 WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             winParams.flags = winParams.flags and
-                    (WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS or
-                            WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION).inv()
+                    //(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS or
+                            WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION.inv()
             //window.statusBarColor = statusBarColor
             window.navigationBarColor = navigationBarColor
         }

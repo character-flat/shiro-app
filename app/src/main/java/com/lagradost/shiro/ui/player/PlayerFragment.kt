@@ -282,7 +282,7 @@ class PlayerFragment : Fragment() {
             return player_view?.width ?: 0
         }
 
-    private val height: Int
+    val height: Int
         get() {
             //Resources.getSystem().displayMetrics.widthPixels
             return player_view?.height ?: 0
@@ -337,7 +337,8 @@ class PlayerFragment : Fragment() {
             // Prevent duplicate urls
             // !safeLinks.map { it.url }.contains(link.url) &&
             // Add the link post url check
-            safeLinks.add(link)
+            safeLinks.add(link) &&
+            !link.name.startsWith("Shiro")
         ) {
             activity?.runOnUiThread {
                 links_loaded_text?.text = "${safeLinks.distinctBy { it.url }.size} - Loaded ${link.name}"
@@ -357,7 +358,6 @@ class PlayerFragment : Fragment() {
 
 
     private fun getCurrentUrl(): ExtractorLink? {
-        println("GETTING CURREMT URL $data")
         if (data?.url != null) return ExtractorLink(
             "Downloaded",
             data?.url!!.removePrefix("file://").replace("%20", " "),
@@ -1605,7 +1605,7 @@ class PlayerFragment : Fragment() {
                             mediaItemBuilder.setUri(currentUrl.url)
                             //video_title?.text = currentUrl.url
                         } else {
-                            if (isScopedStorage()) {
+                            if (isScopedStorage() && !currentUrl.url.startsWith(getCurrentActivity()!!.filesDir.toString())) {
                                 val uriPrimary = Uri.parse(currentUrl.url)
                                 if (uriPrimary.scheme == "content") {
                                     mediaItemBuilder.setUri(uriPrimary)
@@ -1618,7 +1618,6 @@ class PlayerFragment : Fragment() {
                                 }
                             } else {
                                 //video_title?.text = Uri.fromFile(File(currentUrl.url)).toString()
-
                                 mediaItemBuilder.setUri(Uri.fromFile(File(currentUrl.url)))
                             }
                         }
