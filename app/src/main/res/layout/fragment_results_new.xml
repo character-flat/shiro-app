@@ -6,6 +6,7 @@
         xmlns:tools="http://schemas.android.com/tools" xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/results_root"
         android:background="?attr/backgroundColor"
+        android:fitsSystemWindows="true"
         xmlns:android="http://schemas.android.com/apk/res/android">
     <ImageView
             android:layout_width="match_parent"
@@ -527,6 +528,21 @@
                     android:layout_height="20dp"
                     android:background="@drawable/gradient"
             />-->
+            <LinearLayout
+                    tools:layout_height="50dp"
+                    tools:layout_width="match_parent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+            >
+                <fragment
+                        app:castControlButtons="@array/cast_mini_controller_control_buttons"
+                        android:id="@+id/cast_mini_controller"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        class="com.lagradost.shiro.ui.MyMiniControllerFragment"
+                        tools:ignore="FragmentTagUsage"/>
+            </LinearLayout>
             <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -655,20 +671,7 @@
                     </ImageView>
                 </FrameLayout>
             </RelativeLayout>
-            <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom"
-            >
-                <fragment
-                        app:castControlButtons="@array/cast_mini_controller_control_buttons"
-                        android:id="@+id/cast_mini_controller"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:visibility="gone"
-                        class="com.lagradost.shiro.ui.MyMiniControllerFragment"
-                        tools:ignore="FragmentTagUsage"/>
-            </LinearLayout>
+
         </LinearLayout>
     </FrameLayout>
     <FrameLayout

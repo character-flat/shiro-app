@@ -13,7 +13,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.View.*
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.LinearLayout
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.view.isVisible
@@ -55,7 +54,8 @@ class SettingsFragmentNew : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val array = arrayOf(
+
+        /*val array = arrayOf(
             Pair("General", R.xml.settings_general),
             Pair("Style", R.xml.custom_pref_cyanea),
             Pair("Player", R.xml.settings_player),
@@ -63,7 +63,22 @@ class SettingsFragmentNew : Fragment() {
             Pair("History", R.xml.settings_history),
             Pair("Updates", R.xml.settings_update_info),
             Pair("About", R.xml.settings_about),
+        )*/
+        val array = arrayOf(
+            Pair(settings_general, R.xml.settings_general),
+            Pair(settings_style, R.xml.custom_pref_cyanea),
+            Pair(settings_player, R.xml.settings_player),
+            Pair(settings_accounts, R.xml.settings_accounts),
+            Pair(settings_history, R.xml.settings_history),
+            Pair(settings_updates, R.xml.settings_update_info),
+            Pair(settings_about, R.xml.settings_about),
         )
+
+        array.forEach { pair ->
+            pair.first?.setOnClickListener {
+                openSettingSubMenu(pair.second)
+            }
+        }
 
         settingsViewModel =
             settingsViewModel ?: activity?.let {
@@ -88,10 +103,10 @@ class SettingsFragmentNew : Fragment() {
         }
 
         context?.let { context ->
-            settings_listview?.adapter = ArrayAdapter(context, R.layout.listview_single_item, array.map { it.first })
+            /*settings_listview?.adapter = ArrayAdapter(context, R.layout.listview_single_item, array.map { it.first })
             settings_listview.setOnItemClickListener { _, _, position, _ ->
                 openSettingSubMenu(array[position].second)
-            }
+            }*/
             context.loadProfile()
             observe(settingsViewModel!!.hasLoggedIntoMAL) {
                 context.loadProfile()

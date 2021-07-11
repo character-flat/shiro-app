@@ -1163,9 +1163,7 @@ class ResultFragment : Fragment() {
             fragments_new_nav_view?.setPadding(0, 0, 0, min)
         }*/
 
-        fragments_new_nav_view?.let {
-            activity?.showNavigation()
-        }
+        activity?.showNavigation()
 
         fragments_new_nav_view?.background = ColorDrawable(Cyanea.instance.backgroundColor)
 

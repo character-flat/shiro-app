@@ -330,13 +330,12 @@ class PlayerFragment : Fragment() {
     private fun linkLoaded(link: ExtractorLink) {
         val safeLinks = extractorLinks
         extractorLinks.add(link)
-        println(extractorLinks.map { it.name })
-        println("LINK LOADED ${link.name}")
+
         if (
         // Prevent editing the text post-player
             !isCurrentlyPlaying &&
             // Prevent duplicate urls
-            !safeLinks.map { it.url }.contains(link.url) &&
+            // !safeLinks.map { it.url }.contains(link.url) &&
             // Add the link post url check
             safeLinks.add(link)
         ) {
@@ -1464,7 +1463,6 @@ class PlayerFragment : Fragment() {
         } // VERY IMPORTANT https://stackoverflow.com/questions/28818926/prevent-clicking-on-a-button-in-an-activity-while-showing-a-fragment
         thread {
             val currentUrl = inputUrl ?: getCurrentUrl()
-            println("CURRENT URL ${currentUrl?.url?.replace("/content:/", "content://")}")
             if (currentUrl == null) {
                 activity?.runOnUiThread {
                     Toast.makeText(activity, "No links found", LENGTH_LONG).show()
@@ -1605,17 +1603,22 @@ class PlayerFragment : Fragment() {
 
                         if (isOnline) {
                             mediaItemBuilder.setUri(currentUrl.url)
+                            //video_title?.text = currentUrl.url
                         } else {
                             if (isScopedStorage()) {
                                 val uriPrimary = Uri.parse(currentUrl.url)
                                 if (uriPrimary.scheme == "content") {
                                     mediaItemBuilder.setUri(uriPrimary)
+                                    //      video_title?.text = uriPrimary.toString()
                                 } else {
                                     //mediaItemBuilder.setUri(Uri.parse(currentUrl.url))
                                     val uri = getVideoContentUri(requireContext(), currentUrl.url)
+                                    //    video_title?.text = uri.toString()
                                     mediaItemBuilder.setUri(uri)
                                 }
                             } else {
+                                //video_title?.text = Uri.fromFile(File(currentUrl.url)).toString()
+
                                 mediaItemBuilder.setUri(Uri.fromFile(File(currentUrl.url)))
                             }
                         }
