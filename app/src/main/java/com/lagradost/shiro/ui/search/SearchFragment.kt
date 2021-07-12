@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.res.ColorStateList
 import android.content.res.Configuration
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.transition.ChangeBounds
 import android.transition.Transition
@@ -53,7 +54,6 @@ class SearchFragment : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         if (context?.getKey(HAS_DISMISSED_SEARCH_INFO, false) == false) {
             val builder: AlertDialog.Builder =
                 AlertDialog.Builder(getCurrentActivity()!!, R.style.AlertDialogCustom)
@@ -91,7 +91,10 @@ class SearchFragment : Fragment() {
         )
         top_padding.layoutParams = topParams
 
-        progress_bar.visibility = View.GONE
+        search_results_layout?.background = ColorDrawable(Cyanea.instance.backgroundColor)
+        main_search?.background = ColorDrawable(Cyanea.instance.backgroundColorDark)
+
+        progress_bar?.visibility = GONE
         val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
             ResAdapter(
                 it,

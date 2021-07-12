@@ -74,7 +74,7 @@ class MALApi {
                             e.printStackTrace()
                         }
 
-                        if (res != "") {
+                        if (res ?: "" != "") {
                             storeToken(res)
                             thread {
                                 getMalUser()

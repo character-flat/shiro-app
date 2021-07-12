@@ -98,6 +98,7 @@ import kotlinx.android.synthetic.main.fragment_results.anilist_btt_holder
 import kotlinx.android.synthetic.main.fragment_results.anilist_holder
 import kotlinx.android.synthetic.main.fragment_results.anilist_progress_txt
 import kotlinx.android.synthetic.main.fragment_results.edit_episodes_btt
+import kotlinx.android.synthetic.main.fragment_results.open_website_btt
 import kotlinx.android.synthetic.main.fragment_results.rating_btt
 import kotlinx.android.synthetic.main.fragment_results.rating_btt_holder
 import kotlinx.android.synthetic.main.fragment_results.rating_text
@@ -204,7 +205,6 @@ class ResultFragment : Fragment() {
         // TV has its own overlay
         val layout =
             if (tvActivity == null) (if (useNewLayout) R.layout.fragment_results_new else R.layout.fragment_results) else R.layout.fragment_results_tv
-        resultViewModel = resultViewModel ?: ViewModelProvider(getCurrentActivity()!!).get(ResultsViewModel::class.java)
 
         return inflater.inflate(layout, container, false)
 
@@ -431,7 +431,6 @@ class ResultFragment : Fragment() {
                     intent.type = "text/plain"
                     startActivity(Intent.createChooser(intent, "Share To:"))
                 }
-
 
                 data.slug.let { slug ->
                     if (title_subscribe_holder == null) return@let
@@ -713,6 +712,7 @@ class ResultFragment : Fragment() {
                             }
                         }
 
+                        aniList_progressbar?.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
                         anilist_btt_holder?.visibility = VISIBLE
                         status_text?.text =
                             if (info.type.value == AniListApi.Companion.AniListStatusType.None.value) "Status" else info.type.name
@@ -996,7 +996,11 @@ class ResultFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+
+        resultViewModel = resultViewModel ?: ViewModelProvider(getCurrentActivity()!!).get(ResultsViewModel::class.java)
+
         arguments?.getString(SLUG)?.let { slug ->
+            resultViewModel?.slug?.postValue(slug)
             thread {
                 if (currentToken != null) {
                     data = getAnimePage(slug)?.data
@@ -1068,6 +1072,8 @@ class ResultFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         if (savedInstanceState != null) {
             slug = savedInstanceState.getString(SLUG)
+            resultViewModel?.slug?.postValue(slug)
+
             thread {
                 data = slug?.let { getAnimePage(it)?.data }
                 initData()
@@ -1115,6 +1121,7 @@ class ResultFragment : Fragment() {
         resultViewModel?.currentAniListId?.postValue(null)
         resultViewModel?.currentMalId?.postValue(null)
         resultViewModel?.visibleEpisodeProgress?.postValue(null)
+        resultViewModel?.slug?.postValue(null)
 
         activity?.transparentStatusAndNavigation()
 
@@ -1165,6 +1172,7 @@ class ResultFragment : Fragment() {
 
         activity?.showNavigation()
 
+
         fragments_new_nav_view?.background = ColorDrawable(Cyanea.instance.backgroundColor)
 
         title_holder.backgroundTintList = ColorStateList.valueOf(
@@ -1194,6 +1202,15 @@ class ResultFragment : Fragment() {
                 loadGetDataAboutId()
             }
         }
+
+        observe(resultViewModel!!.slug) { slug ->
+            println("SLIG OBSERVERD $slug")
+            open_website_btt?.visibility = VISIBLE
+            open_website_btt?.setOnClickListener {
+                context?.openBrowser("https://shiro.is/anime/${slug}")
+            }
+        }
+
         //isViewState = false
 
         results_root.setPadding(0, MainActivity.statusHeight, 0, 0)

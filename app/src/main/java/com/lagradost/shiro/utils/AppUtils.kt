@@ -16,11 +16,8 @@ import android.Manifest
 import android.app.Activity
 import android.app.AppOpsManager
 import android.app.UiModeManager
-import android.content.ContentValues
-import android.content.Context
+import android.content.*
 import android.content.Context.UI_MODE_SERVICE
-import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -508,13 +505,18 @@ object AppUtils {
         }
     }
 
-    fun Activity.openBrowser(url: String) {
+    fun Context.openBrowser(url: String) {
         if (tvActivity != null) {
             tvActivity?.addFragmentOnlyOnce(android.R.id.content, WebViewFragment.newInstance(url), "WEB_VIEW")
         } else {
+            val components = arrayOf(ComponentName(applicationContext, MainActivity::class.java))
             val intent = Intent(Intent.ACTION_VIEW)
             intent.data = Uri.parse(url)
-            startActivity(intent)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                startActivity(Intent.createChooser(intent, null).putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, components))
+            else
+                startActivity(intent)
         }
     }
 
@@ -553,7 +555,7 @@ object AppUtils {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             winParams.flags = winParams.flags and
                     //(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS or
-                            WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION.inv()
+                    WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION.inv()
             //window.statusBarColor = statusBarColor
             window.navigationBarColor = navigationBarColor
         }

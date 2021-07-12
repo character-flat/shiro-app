@@ -5,7 +5,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="?attr/backgroundColor"
+        android:id="@+id/download_fragment_background"
 >
     <LinearLayout
             android:background="@color/transparent"
@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:elevation="10dp"
             android:id="@+id/queue_card"
-            app:cardBackgroundColor="?attr/backgroundColorDark">
+    >
         <!-- USING CROP RATIO (182/268), centerCrop for fill -->
 
         <TextView

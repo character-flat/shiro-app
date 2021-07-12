@@ -43,7 +43,7 @@ const val DOWNLOAD_CHANNEL_DESCRIPT = "The download notification channel"
 
 object VideoDownloadManager {
     var maxConcurrentDownloads = 1
-    private var currentDownloads = mutableListOf<Int>()
+    var currentDownloads = mutableListOf<Int>()
 
     private const val USER_AGENT =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
@@ -763,14 +763,20 @@ object VideoDownloadManager {
     }
 
     fun downloadFromResume(context: Context, pkg: DownloadResumePackage) {
-        if (currentDownloads.size == maxConcurrentDownloads) {
-            main {
-                Toast.makeText(context, "${pkg.item.ep.mainName} Episode ${pkg.item.ep.episode} queued", Toast.LENGTH_SHORT).show()
+        if (!currentDownloads.any { it == pkg.item.ep.id }) {
+            if (currentDownloads.size == maxConcurrentDownloads) {
+                main {
+                    Toast.makeText(
+                        context,
+                        "${pkg.item.ep.mainName} Episode ${pkg.item.ep.episode} queued",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
+            downloadQueue.addLast(pkg)
+            masterViewModel?.downloadQueue?.postValue(downloadQueue)
+            downloadCheck(context)
         }
-        downloadQueue.addLast(pkg)
-        masterViewModel?.downloadQueue?.postValue(downloadQueue)
-        downloadCheck(context)
     }
 
     fun isMyServiceRunning(context: Context, serviceClass: Class<*>): Boolean {

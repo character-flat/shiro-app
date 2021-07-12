@@ -1,9 +1,7 @@
 <resources>
     <string name="changelog">\n
-        - Added fully custom themes\n
-        - Redid the downloading system\n
-        - Redid settings\n
-        - Fixed tons of small issues\n
+        - Added an open website button to get less app complains when the site is down\n
+        - Tons of bugfixes\n
     </string>
     <string name="app_name">Shiro</string>
     <string name="title_home">Home</string>

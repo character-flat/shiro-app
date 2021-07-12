@@ -9,10 +9,9 @@
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/dashboardRoot"
+            android:id="@+id/search_results_layout"
             tools:context=".ui.search.SearchFragment"
             android:orientation="vertical"
-            android:background="?attr/backgroundColor"
     >
         <View
                 android:layout_width="wrap_content"
@@ -25,7 +24,6 @@
                 android:gravity="top"
                 app:queryBackground="@android:color/transparent"
                 android:iconifiedByDefault="false"
-                android:background="?attr/backgroundColorDark"
                 app:searchHintIcon="@drawable/search_icon"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"

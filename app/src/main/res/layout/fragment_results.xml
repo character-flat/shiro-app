@@ -658,18 +658,37 @@
     >
         <FrameLayout
                 android:background="?attr/backgroundColor"
-                tools:visibility="gone"
+                tools:visibility="visible"
                 android:id="@+id/loading_overlay"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
         >
-            <ProgressBar
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_gravity="center"
-                    android:id="@+id/main_load"
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center"
             >
-            </ProgressBar>
+                <ProgressBar
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:id="@+id/main_load"
+                >
+                </ProgressBar>
+                <Button
+                        android:visibility="gone"
+                        android:text="Open website"
+                        android:layout_margin="50dp"
+                        android:backgroundTint="?attr/textColor"
+                        android:textColor="?attr/backgroundColor"
+                        android:gravity="center"
+                        android:layout_gravity="center"
+                        android:id="@+id/open_website_btt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="50dp"
+                >
+                </Button>
+            </LinearLayout>
         </FrameLayout>
         <ImageView
                 android:layout_margin="20dp"

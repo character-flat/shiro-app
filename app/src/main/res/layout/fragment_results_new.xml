@@ -675,45 +675,38 @@
         </LinearLayout>
     </FrameLayout>
     <FrameLayout
+            android:background="?attr/backgroundColor"
+            tools:visibility="visible"
+            android:id="@+id/loading_overlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
     >
-        <FrameLayout
-                android:background="?attr/backgroundColor"
-                tools:visibility="gone"
-                android:id="@+id/loading_overlay"
+        <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
         >
             <ProgressBar
                     android:layout_width="50dp"
                     android:layout_height="50dp"
-                    android:layout_gravity="center"
                     android:id="@+id/main_load"
             >
             </ProgressBar>
-        </FrameLayout>
-        <!--<ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_marginStart="33dp"
-                android:layout_marginEnd="33dp"
-                android:layout_marginBottom="20dp"
-                android:layout_gravity="bottom|start"
-                android:src="@drawable/arrow_back">
-        </ImageView>
-        <ImageView
-                android:layout_marginStart="23dp"
-                android:layout_marginEnd="23dp"
-                android:id="@+id/title_go_back"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_gravity="bottom|start"
-                android:focusable="true"
-                android:clickable="true"
-                android:layout_marginBottom="10.8dp"
-                android:background="@drawable/video_tap_button">
-        </ImageView>-->
+            <Button
+                    android:visibility="gone"
+                    android:text="Open website"
+                    android:layout_margin="50dp"
+                    android:backgroundTint="?attr/textColor"
+                    android:textColor="?attr/backgroundColor"
+                    android:gravity="center"
+                    android:layout_gravity="center"
+                    android:id="@+id/open_website_btt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="50dp"
+            >
+            </Button>
+        </LinearLayout>
     </FrameLayout>
 
 </FrameLayout>

@@ -9,6 +9,7 @@ import DataStore.setKey
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -33,6 +34,7 @@ import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.VideoDownloadManager.KEY_DOWNLOAD_INFO
+import com.lagradost.shiro.utils.VideoDownloadManager.currentDownloads
 import com.lagradost.shiro.utils.VideoDownloadManager.downloadQueue
 import com.lagradost.shiro.utils.mvvm.observe
 import kotlinx.android.synthetic.main.download_card.view.*
@@ -72,8 +74,11 @@ class DownloadFragment : Fragment() {
                         )
 
                         if (fileInfo == null) {
-                            println(child.slug)
-                            if (!downloadQueue.toList().any { it.item.ep.poster == child.thumbPath }) {
+                            val id = (child.animeData.slug + "E${child.episodeIndex}").hashCode()
+                            if (!downloadQueue.toList()
+                                    .any { it.item.ep.id == id }
+                                && !currentDownloads.any { it == id }
+                            ) {
                                 try {
                                     child.thumbPath?.let {
                                         val thumbFile = File(it)
@@ -93,7 +98,6 @@ class DownloadFragment : Fragment() {
                             }
 
                             val id = child.slug
-                            println("EpisodeIndex: " + child.episodeIndex)
                             val isDownloading =
                                 VideoDownloadManager.downloadStatus.containsKey(child.internalId) &&
                                         VideoDownloadManager.downloadStatus[child.internalId] == VideoDownloadManager.DownloadType.IsDownloading
@@ -111,7 +115,6 @@ class DownloadFragment : Fragment() {
                         }
                     }
                 }
-
 
                 val keys = context?.getKeys(DOWNLOAD_PARENT_KEY)
                 for (k in keys ?: listOf()) {
@@ -175,11 +178,14 @@ class DownloadFragment : Fragment() {
 
                             downloadRoot.addView(cardView)
                         } else {
-                            val coverFile = File(parent.coverImagePath)
-                            if (coverFile.exists()) {
-                                coverFile.delete()
+                            if (currentDownloads.size == 0
+                            ) {
+                                val coverFile = File(parent.coverImagePath)
+                                if (coverFile.exists()) {
+                                    coverFile.delete()
+                                }
+                                context?.removeKey(k)
                             }
-                            context?.removeKey(k)
                         }
                     }
                 }
@@ -200,6 +206,7 @@ class DownloadFragment : Fragment() {
             MainActivity.statusHeight // view height
         )
 
+        download_fragment_background?.background = ColorDrawable(Cyanea.instance.backgroundColor)
         queue_card?.backgroundTintList = ColorStateList.valueOf(Cyanea.instance.backgroundColorDark)
         queue_card?.setOnClickListener {
             activity?.addFragmentOnlyOnce(

@@ -1160,6 +1160,7 @@ class PlayerFragment : Fragment() {
                 player_speed_text.text = "Speed (${playbackSpeed}x)".replace(".0x", "x")
                 dialog.dismiss()
             }
+            dialog.window?.setSoftInputMode(SOFT_INPUT_STATE_HIDDEN)
             dialog.show()
 
         }
@@ -1192,6 +1193,7 @@ class PlayerFragment : Fragment() {
 
                     dialog.dismiss()
                 }
+                dialog.window?.setSoftInputMode(SOFT_INPUT_STATE_HIDDEN)
                 dialog.show()
             }
         }
