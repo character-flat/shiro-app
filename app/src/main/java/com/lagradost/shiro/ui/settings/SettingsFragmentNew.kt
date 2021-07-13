@@ -8,6 +8,7 @@ import MAL_USER_KEY
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -20,6 +21,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.MainActivity
@@ -75,6 +77,7 @@ class SettingsFragmentNew : Fragment() {
         )
 
         array.forEach { pair ->
+            pair.first?.background = ColorDrawable(Cyanea.instance.backgroundColorDark)
             pair.first?.setOnClickListener {
                 openSettingSubMenu(pair.second)
             }

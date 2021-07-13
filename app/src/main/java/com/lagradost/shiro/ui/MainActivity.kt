@@ -1,5 +1,7 @@
 package com.lagradost.shiro.ui
 
+import DataStore.getKey
+import DataStore.getKeys
 import android.annotation.SuppressLint
 import android.app.PictureInPictureParams
 import android.content.Intent
@@ -53,6 +55,7 @@ import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import com.lagradost.shiro.utils.MALApi.Companion.authenticateMalLogin
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.initShiroApi
+import com.lagradost.shiro.utils.VideoDownloadManager
 import kotlin.concurrent.thread
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
@@ -325,6 +328,24 @@ class MainActivity : CyaneaAppCompatActivity() {
                 WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS,
                 WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
             )
+        }
+
+        val keys = getKeys(VideoDownloadManager.KEY_RESUME_PACKAGES)
+        val resumePkg = keys.mapNotNull { k -> getKey<VideoDownloadManager.DownloadResumePackage>(k) }
+
+        for (pkg in resumePkg) { // ADD ALL CURRENT DOWNLOADS
+            VideoDownloadManager.downloadFromResume(this, pkg, false)
+        }
+
+        // ADD QUEUE
+        // array needed because List gets cast exception to linkedList for some unknown reason
+        val resumeQueue =
+            getKey<Array<VideoDownloadManager.DownloadQueueResumePackage>>(VideoDownloadManager.KEY_RESUME_QUEUE_PACKAGES)
+
+        println("GETTTTT KEY ${resumeQueue?.map { it.index }}")
+
+        resumeQueue?.sortedBy { it.index }  ?.forEach {
+            VideoDownloadManager.downloadFromResume(this, it.pkg)
         }
 
         val statusBarHidden = settingsManager.getBoolean("statusbar_hidden", true)

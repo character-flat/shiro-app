@@ -290,19 +290,21 @@ class HomeFragment : Fragment() {
     }
 
     private fun displaySubbed() {
-        val subscribed = homeViewModel!!.subscribed.value
-        activity?.runOnUiThread {
-            if (subscribed?.isNotEmpty() == true) {
-                subscribedRoot.visibility = VISIBLE
-                //println(data.favorites!!.map { it?.title?.english})
-                activity?.displayCardData(
-                    subscribed.sortedWith(compareBy { it?.name }).toList(),
-                    subscribedScrollView,
-                    subscribed_text,
-                    overrideHideDubbed = true
-                )
-            } else {
-                subscribedRoot.visibility = GONE
+        if (settingsManager?.getBoolean("show_subscribed", true) == true) {
+            val subscribed = homeViewModel!!.subscribed.value
+            activity?.runOnUiThread {
+                if (subscribed?.isNotEmpty() == true) {
+                    subscribedRoot.visibility = VISIBLE
+                    //println(data.favorites!!.map { it?.title?.english})
+                    activity?.displayCardData(
+                        subscribed.sortedWith(compareBy { it?.name }).toList(),
+                        subscribedScrollView,
+                        subscribed_text,
+                        overrideHideDubbed = true
+                    )
+                } else {
+                    subscribedRoot.visibility = GONE
+                }
             }
         }
     }

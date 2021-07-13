@@ -301,6 +301,8 @@ class EpisodeAdapter(
             }
             card.progressBar.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
             fun updateIcon(megabytes: Int, fileInfo: VideoDownloadManager.DownloadedFileInfoResult?) {
+                card.cdi_loading.visibility = GONE
+
                 if (fileInfo == null) {
                     card.cdi.visibility = VISIBLE
                     card.progressBar.visibility = GONE

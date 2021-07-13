@@ -650,19 +650,18 @@ object VideoDownloadManager {
         }
     }
 
-    private fun downloadCheck(context: Context) {
+    private fun downloadCheck(context: Context, saveKey: Boolean = false) {
         if (currentDownloads.size < maxConcurrentDownloads && downloadQueue.size > 0) {
             val pkg = downloadQueue.removeFirst()
             masterViewModel?.downloadQueue?.postValue(downloadQueue)
+            if (saveKey) saveQueue(context)
+
             val item = pkg.item
             val id = item.ep.id
             if (currentDownloads.contains(id)) { // IF IT IS ALREADY DOWNLOADING, RESUME IT
                 downloadEvent.invoke(Pair(id, DownloadActionType.Resume))
                 return
             }
-
-            val dQueue = downloadQueue.toList().mapIndexed { index, any -> DownloadQueueResumePackage(index, any) }
-            context.setKey(KEY_RESUME_QUEUE_PACKAGES, dQueue)
             currentDownloads.add(id)
 
             main {
@@ -762,7 +761,7 @@ object VideoDownloadManager {
         return context.getKey(KEY_RESUME_PACKAGES, id.toString())
     }
 
-    fun downloadFromResume(context: Context, pkg: DownloadResumePackage) {
+    fun downloadFromResume(context: Context, pkg: DownloadResumePackage, setKey: Boolean = true) {
         if (!currentDownloads.any { it == pkg.item.ep.id }) {
             if (currentDownloads.size == maxConcurrentDownloads) {
                 main {
@@ -776,7 +775,17 @@ object VideoDownloadManager {
             downloadQueue.addLast(pkg)
             masterViewModel?.downloadQueue?.postValue(downloadQueue)
             downloadCheck(context)
+            if (setKey) saveQueue(context)
         }
+    }
+
+    private fun saveQueue(context: Context) {
+        println("save queueueue")
+        val dQueue =
+            downloadQueue.toList().mapIndexed { index, any -> DownloadQueueResumePackage(index, any) }
+                .toTypedArray()
+        context.setKey(KEY_RESUME_QUEUE_PACKAGES, dQueue)
+        println("SET KEY ${context.getKey<Array<VideoDownloadManager.DownloadQueueResumePackage>>(VideoDownloadManager.KEY_RESUME_QUEUE_PACKAGES)?.map { it.index }}")
     }
 
     fun isMyServiceRunning(context: Context, serviceClass: Class<*>): Boolean {

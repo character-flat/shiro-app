@@ -21,7 +21,13 @@
     <SwitchPreference
             android:icon="@drawable/quantum_ic_refresh_white_24"
             app:key="swipe_to_refresh"
-            android:title="Swipe to refresh in homepage"
+            android:title="Swipe to refresh in the homepage"
+            app:defaultValue="true"
+    />
+    <SwitchPreference
+            android:icon="@drawable/ic_baseline_notifications_none_24"
+            app:key="show_subscribed"
+            android:title="Show subscribed shows in the homepage"
             app:defaultValue="true"
     />
     <!--<SwitchPreference
@@ -41,7 +47,7 @@
 
     <ListPreference
             android:title="Hold behavior"
-            app:key="hold_behaviorhold_behavior"
+            app:key="hold_behavior"
             android:icon="@drawable/ic_baseline_touch_app_24"
             app:useSimpleSummaryProvider="true"
             android:entries="@array/LongClickOptions"

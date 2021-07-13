@@ -340,7 +340,7 @@ object AppUtils {
         var isBookmarked: Boolean? = null
         val selected =
             if (tvActivity != null && settingsManager?.getBoolean("hold_to_favorite", false) == true) "Toggle Favorite"
-            else settingsManager?.getString("hold_behavior", "Show Toast")
+            else settingsManager?.getString("hold_behavior", "Show Toast") ?: "Show Toast"
 
         if (selected == "Toggle Favorite" || selected == "Toggle Favorite and Subscribe") {
             isBookmarked = toggleHeart(card.name, card.image, card.slug)

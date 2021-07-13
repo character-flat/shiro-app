@@ -60,7 +60,6 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
     private var xmlFile: Int? = null
 
     companion object {
-
         fun newInstance(xml: Int) =
             SubSettingsFragment().apply {
                 arguments = Bundle().apply {
