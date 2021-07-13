@@ -264,6 +264,7 @@ class ResultFragment : Fragment() {
                 fadeAnimation.isFillEnabled = true
                 fadeAnimation.fillAfter = true
                 loading_overlay?.startAnimation(fadeAnimation)
+                open_website_btt?.isEnabled = false
                 loadSeason()
 
                 thread {
@@ -287,6 +288,7 @@ class ResultFragment : Fragment() {
                     Timer().schedule(500) {
                         activity?.runOnUiThread {
                             loading_overlay?.alpha = 0f
+                            open_website_btt?.isEnabled = false
                         }
                     }
                 }
@@ -1174,7 +1176,9 @@ class ResultFragment : Fragment() {
 
 
         fragments_new_nav_view?.background = ColorDrawable(Cyanea.instance.backgroundColor)
-
+        result_poster_blur?.background = ColorDrawable(Cyanea.instance.backgroundColor)
+        fragment_results_toolbar?.background = ColorDrawable(Cyanea.instance.backgroundColor)
+        fragment_results_nested_scrollview?.background = ColorDrawable(Cyanea.instance.backgroundColor)
         title_holder.backgroundTintList = ColorStateList.valueOf(
             Cyanea.instance.backgroundColor
         )

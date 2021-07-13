@@ -26,6 +26,7 @@ import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
 import com.lagradost.shiro.ui.toPx
+import com.lagradost.shiro.utils.AppUtils.filterCardList
 import com.lagradost.shiro.utils.AppUtils.fixCardTitle
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.loadPage
@@ -55,10 +56,7 @@ class ResAdapter(
         settingsManager?.getBoolean("compact_search_enabled", true) == true && !forceDisableCompact
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val hideDubbed = settingsManager?.getBoolean("hide_dubbed", false) == true
-        if (hideDubbed) {
-            cardList = cardList.filter { !it.name.endsWith("Dubbed") } as ArrayList<ShiroApi.CommonAnimePage>
-        }
+        cardList = filterCardList(cardList) as ArrayList<ShiroApi.CommonAnimePage>
 
         val layout = if (compactView) R.layout.search_result_compact else R.layout.search_result
         return CardViewHolder(

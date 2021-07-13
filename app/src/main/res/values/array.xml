@@ -35,6 +35,12 @@
         <item>Light Blue</item>
     </string-array>
 
+    <string-array name="HideBehavior">
+        <item>None</item>
+        <item>Hide dubbed</item>
+        <item>Hide subbed</item>
+    </string-array>
+
     <string-array name="AccentColorsFull">
         <item>Default Red</item>
         <item>Green</item>

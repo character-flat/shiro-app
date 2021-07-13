@@ -415,6 +415,17 @@ object AppUtils {
         return Color.argb(alpha, red, green, blue)
     }
 
+    fun filterCardList(cards: List<ShiroApi.CommonAnimePage?>?): List<ShiroApi.CommonAnimePage?>? {
+        return when (settingsManager!!.getString("hide_behavior", "None")){
+            "Hide dubbed" ->
+                cards?.filter { it?.slug?.endsWith("-dubbed")?.not() == true }
+            "Hide subbed" ->
+                cards?.filter { it?.slug?.endsWith("-dubbed") == true }
+            else ->
+                cards
+        }
+    }
+
     fun FragmentActivity.addFragmentOnlyOnce(location: Int, fragment: Fragment, tag: String) {
         // Make sure the current transaction finishes first
 
@@ -613,8 +624,7 @@ object AppUtils {
         //val snapHelper = PagerSnapHelper()
         //snapHelper.attachToRecyclerView(scrollView)
 
-        val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false) && !overrideHideDubbed
-        val filteredData = if (hideDubbed) data?.filter { it?.name?.endsWith("Dubbed") == false } else data
+        val filteredData = if (overrideHideDubbed) data else filterCardList(data)
         resView.adapter = newAdapter
 
         (ArrayList(filteredData) as? ArrayList<ShiroApi.CommonAnimePage?>)?.let {

@@ -147,15 +147,16 @@ class HomeFragment : Fragment() {
 
     private fun generateRandom(randomPage: ShiroApi.AnimePage? = null) {
         thread {
-            val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)
             val random: ShiroApi.AnimePage? = randomPage ?: getRandomAnimePage()
             cachedHome?.random = random
             val randomData = random?.data
             // Hack, assuming all dubbed shows have a normal equivalent
+            /*
+            val hideDubbed = settingsManager!!.getBoolean("hide_dubbed", false)
             if (hideDubbed && randomData != null) {
                 randomData.slug = randomData.slug.removeSuffix("-dubbed")
                 randomData.name = randomData.name.removeSuffix("Dubbed")
-            }
+            }*/
             activity?.runOnUiThread {
                 try {
                     if (randomData != null) {

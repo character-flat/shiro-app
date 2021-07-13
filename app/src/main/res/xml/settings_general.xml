@@ -11,12 +11,13 @@
             android:summary="Useful for tablets"
             app:defaultValue="false"
     />
+    <!--
     <SwitchPreference
             android:icon="@drawable/ic_baseline_language_24"
             app:key="hide_dubbed"
             android:title="Hide all dubbed shows"
             app:defaultValue="true"
-    />
+    />-->
     <SwitchPreference
             android:icon="@drawable/quantum_ic_refresh_white_24"
             app:key="swipe_to_refresh"
@@ -30,8 +31,17 @@
             app:defaultValue="false"
     />-->
     <ListPreference
+            android:title="Hide shows"
+            app:key="hide_behavior"
+            android:icon="@drawable/ic_baseline_language_24"
+            app:useSimpleSummaryProvider="true"
+            android:entries="@array/HideBehavior"
+            android:entryValues="@array/HideBehavior"
+    />
+
+    <ListPreference
             android:title="Hold behavior"
-            app:key="hold_behavior"
+            app:key="hold_behaviorhold_behavior"
             android:icon="@drawable/ic_baseline_touch_app_24"
             app:useSimpleSummaryProvider="true"
             android:entries="@array/LongClickOptions"
