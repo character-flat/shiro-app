@@ -2,6 +2,7 @@ package com.lagradost.shiro.ui
 
 import DataStore.getKey
 import DataStore.getKeys
+import DataStore.removeKeys
 import android.annotation.SuppressLint
 import android.app.PictureInPictureParams
 import android.content.Intent
@@ -333,7 +334,11 @@ class MainActivity : CyaneaAppCompatActivity() {
         val keys = getKeys(VideoDownloadManager.KEY_RESUME_PACKAGES)
         val resumePkg = keys.mapNotNull { k -> getKey<VideoDownloadManager.DownloadResumePackage>(k) }
 
+        // To remove a bug where this is permanent
+        removeKeys(VideoDownloadManager.KEY_RESUME_PACKAGES)
+
         for (pkg in resumePkg) { // ADD ALL CURRENT DOWNLOADS
+            println("CURRENT DOWNLOAD ${pkg.item.ep.mainName}")
             VideoDownloadManager.downloadFromResume(this, pkg, false)
         }
 
@@ -341,8 +346,6 @@ class MainActivity : CyaneaAppCompatActivity() {
         // array needed because List gets cast exception to linkedList for some unknown reason
         val resumeQueue =
             getKey<Array<VideoDownloadManager.DownloadQueueResumePackage>>(VideoDownloadManager.KEY_RESUME_QUEUE_PACKAGES)
-
-        println("GETTTTT KEY ${resumeQueue?.map { it.index }}")
 
         resumeQueue?.sortedBy { it.index }  ?.forEach {
             VideoDownloadManager.downloadFromResume(this, it.pkg)

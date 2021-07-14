@@ -579,6 +579,8 @@ object VideoDownloadManager {
                     }
                     DownloadActionType.Stop -> {
                         isStopped = true; updateNotification()
+                        context.removeKey(KEY_RESUME_PACKAGES, event.first.toString())
+                        saveQueue(context)
                     }
                     DownloadActionType.Resume -> {
                         isPaused = false; updateNotification()
@@ -780,12 +782,12 @@ object VideoDownloadManager {
     }
 
     private fun saveQueue(context: Context) {
-        println("save queueueue")
+        //context.setKey(KEY_RESUME_PACKAGES, id.toString(), DownloadResumePackage(item, index))
+        println("Save queue ${downloadQueue.map { it.item.ep.mainName }}")
         val dQueue =
             downloadQueue.toList().mapIndexed { index, any -> DownloadQueueResumePackage(index, any) }
                 .toTypedArray()
         context.setKey(KEY_RESUME_QUEUE_PACKAGES, dQueue)
-        println("SET KEY ${context.getKey<Array<VideoDownloadManager.DownloadQueueResumePackage>>(VideoDownloadManager.KEY_RESUME_QUEUE_PACKAGES)?.map { it.index }}")
     }
 
     fun isMyServiceRunning(context: Context, serviceClass: Class<*>): Boolean {

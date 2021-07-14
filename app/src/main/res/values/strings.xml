@@ -1,7 +1,9 @@
 <resources>
     <string name="changelog">\n
-        - Added an open website button to get less app complains when the site is down\n
-        - Tons of bugfixes\n
+        - Added an option to hide subscribed in the homepage\n
+        - Added an option to hide subbed shows\n
+        - All downloads are not automatically resumed when app is reopened\n
+        - Bugfixes\n
     </string>
     <string name="app_name">Shiro</string>
     <string name="title_home">Home</string>
