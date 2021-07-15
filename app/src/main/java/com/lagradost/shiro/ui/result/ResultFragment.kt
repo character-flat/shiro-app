@@ -186,10 +186,10 @@ class ResultFragment : Fragment() {
             return title
         }
 
-        fun newInstance(data: String, name: String) =
+        fun newInstance(slug: String, name: String) =
             ResultFragment().apply {
                 arguments = Bundle().apply {
-                    putString(SLUG, data)
+                    putString(SLUG, slug)
                     putString(NAME, name)
                 }
             }
@@ -465,7 +465,9 @@ class ResultFragment : Fragment() {
                                         homeViewModel?.subscribed?.postValue(context?.getSubbed())
                                     }
                                     //Log.d(TAG, msg)
-                                    Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                                    context?.let {
+                                        Toast.makeText(it, msg, Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                         } else {
                             Firebase.messaging.subscribeToTopic(slug)
@@ -489,7 +491,9 @@ class ResultFragment : Fragment() {
                                         homeViewModel?.subscribed?.postValue(context?.getSubbed())
                                     }
                                     //Log.d(TAG, msg)
-                                    Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                                    context?.let {
+                                        Toast.makeText(it, msg, Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                         }
                     }

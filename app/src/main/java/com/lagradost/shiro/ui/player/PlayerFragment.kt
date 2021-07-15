@@ -175,13 +175,13 @@ class PlayerFragment : Fragment() {
         var onPlayerNavigated = Event<Boolean>()
         val activity = getCurrentActivity()
 
-        fun newInstance(data: PlayerData) =
+        /*fun newInstance(data: PlayerData) =
             PlayerFragment().apply {
                 arguments = Bundle().apply {
                     //println(data)
                     putString("data", mapper.writeValueAsString(data))
                 }
-            }
+            }*/
 
         fun newInstance() =
             PlayerFragment().apply {
@@ -940,18 +940,18 @@ class PlayerFragment : Fragment() {
                         secondsView?.visibility = VISIBLE
                         secondsView?.start()
                         // First time tap or switched
-                        if (!secondsView.isForward) {
-                            secondsView.changeConstraints(true, rootLayout, secondsView)
-                            secondsView.apply {
-                                isForward = true
-                                seconds = 0
-                            }
+                        //if (!secondsView.isForward) {
+                        secondsView.changeConstraints(true, rootLayout, secondsView)
+                        secondsView.apply {
+                            isForward = true
+                            seconds = 0
                         }
+                        //}
 
                         // Cancel ripple and start new without triggering overlay disappearance
                         // (resetting instead of ending)
                         circleClipTapView.resetAnimation {
-                            circleClipTapView.updatePosition(posX, posY)
+                            circleClipTapView.updatePosition(posX, posY, false)
                         }
                         forwarding()
                     }
@@ -966,18 +966,18 @@ class PlayerFragment : Fragment() {
                         secondsView.start()
 
                         // First time tap or switched
-                        if (secondsView.isForward) {
-                            secondsView.changeConstraints(false, rootLayout, secondsView)
-                            secondsView.apply {
-                                isForward = false
-                                seconds = 0
-                            }
+                        //if (secondsView.isForward) {
+                        secondsView.changeConstraints(false, rootLayout, secondsView)
+                        secondsView.apply {
+                            isForward = false
+                            seconds = 0
                         }
+                        //}
 
                         // Cancel ripple and start new without triggering overlay disappearance
                         // (resetting instead of ending)
                         circleClipTapView.resetAnimation {
-                            circleClipTapView.updatePosition(posX, posY)
+                            circleClipTapView.updatePosition(posX, posY, true)
                         }
                         rewinding()
                     }

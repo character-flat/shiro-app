@@ -338,7 +338,6 @@ class MainActivity : CyaneaAppCompatActivity() {
         removeKeys(VideoDownloadManager.KEY_RESUME_PACKAGES)
 
         for (pkg in resumePkg) { // ADD ALL CURRENT DOWNLOADS
-            println("CURRENT DOWNLOAD ${pkg.item.ep.mainName}")
             VideoDownloadManager.downloadFromResume(this, pkg, false)
         }
 

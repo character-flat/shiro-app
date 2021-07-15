@@ -870,13 +870,13 @@ class PlayerFragmentTv : VideoSupportFragment() {
         private val SKIP_OP_MILLIS: Long = TimeUnit.SECONDS.toMillis(85)
         var isInPlayer: Boolean = false
 
-        fun newInstance(data: PlayerData) =
+        /*fun newInstance(data: PlayerData) =
             PlayerFragmentTv().apply {
                 arguments = Bundle().apply {
                     //println(data)
                     putString(DATA, mapper.writeValueAsString(data))
                 }
-            }
+            }*/
 
         fun newInstance() =
             PlayerFragmentTv().apply {

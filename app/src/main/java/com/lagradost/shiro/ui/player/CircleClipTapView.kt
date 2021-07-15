@@ -137,11 +137,11 @@ internal class CircleClipTapView(context: Context?, attrs: AttributeSet) :
         Circle
      */
 
-    fun updatePosition(x: Float, y: Float) {
+    fun updatePosition(x: Float, y: Float, isLeftArg: Boolean? = null) {
         cX = x
         cY = y
 
-        val newIsLeft = x <= resources.displayMetrics.widthPixels / 2
+        val newIsLeft = isLeftArg ?: (x <= resources.displayMetrics.widthPixels / 2)
         if (isLeft != newIsLeft) {
             isLeft = newIsLeft
             updatePathShape()

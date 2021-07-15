@@ -42,7 +42,7 @@
     <Preference
             android:title="Developers (to complain to)"
             android:icon="@drawable/ic_baseline_code_24"
-            app:summary="LagradOst#6230 &amp; Blue Fire#1471"
+            app:summary="Lag#5744 &amp; Blue Fire#1471"
     />
 
 </PreferenceScreen>

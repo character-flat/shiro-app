@@ -19,6 +19,7 @@
             android:icon="@drawable/ic_baseline_delete_24"
             app:key="clear_cache"
             android:title="Clear image cache"
+            android:summary="This will only free up storage, not fix any bugs"
     />
     <Preference
             android:title="Back up all data"

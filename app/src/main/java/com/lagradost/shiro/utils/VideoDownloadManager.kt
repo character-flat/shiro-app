@@ -137,7 +137,7 @@ object VideoDownloadManager {
     private const val ERROR_CONTENT_RESOLVER_CANT_OPEN_STREAM = -8
     private const val ERROR_CONTENT_RESOLVER_NOT_FOUND = -9
 
-    const val KEY_RESUME_PACKAGES = "download_resume"
+    const val KEY_RESUME_PACKAGES = "download_resume_current"
     const val KEY_DOWNLOAD_INFO = "download_info"
     const val KEY_RESUME_QUEUE_PACKAGES = "download_q_resume"
 
