@@ -11,6 +11,8 @@
         android:orientation="vertical"
         android:scaleX="0.9"
         android:scaleY="0.9"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
 
 >
     <!-- card gets scaled to 1.0 during runtime in CardAdapter -->
@@ -32,8 +34,8 @@
                     android:background="@color/transparent"
                     android:duplicateParentState="true"
                     android:foreground="?android:attr/selectableItemBackgroundBorderless"
-                    android:layout_width="127dp"
-                    android:layout_height="200dp"
+                    android:layout_width="114dp"
+                    android:layout_height="180dp"
                     android:scaleType="centerCrop"
                     android:id="@+id/imageView"
             >
@@ -41,8 +43,8 @@
             <ImageView
                     android:background="@color/transparent"
                     android:scaleType="centerInside"
-                    android:layout_width="127dp"
-                    android:layout_height="200dp"
+                    android:layout_width="114dp"
+                    android:layout_height="180dp"
                     android:scaleX="0.5"
                     android:scaleY="0.5"
                     android:src="@drawable/netflix_play_btt"
@@ -50,14 +52,14 @@
             </ImageView>
             <RelativeLayout
                     android:background="@color/transparent"
-                    android:layout_width="127dp"
-                    android:layout_height="200dp"
+                    android:layout_width="114dp"
+                    android:layout_height="180dp"
                     android:gravity="bottom"
             >
                 <androidx.core.widget.ContentLoadingProgressBar
                         android:background="@color/transparent"
                         android:id="@+id/video_progress"
-                        android:layout_width="127dp"
+                        android:layout_width="114dp"
                         android:indeterminate="false"
                         style="@android:style/Widget.Material.ProgressBar.Horizontal"
                         android:layout_height="wrap_content"
@@ -66,7 +68,7 @@
                 >
                 </androidx.core.widget.ContentLoadingProgressBar>
                 <TextView
-                        android:layout_width="127dp"
+                        android:layout_width="114dp"
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:layout_gravity="bottom"

@@ -69,6 +69,18 @@
             android:title="Compact search results"
             app:defaultValue="true"
     />
+    <SeekBarPreference
+            android:summary="Double in Landscape mode"
+            android:icon="@drawable/ic_baseline_view_column_24"
+            android:title="Expanded view column count"
+            android:defaultValue="3"
+            android:key="expanded_span_count"
+            app:showSeekBarValue="true"
+            app:seekBarIncrement="1"
+            android:max="6"
+            app:min="2"
+    >
+    </SeekBarPreference>
     <SwitchPreference
             android:icon="@drawable/ic_baseline_new_releases_24"
             app:key="new_results_page"

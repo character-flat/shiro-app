@@ -769,7 +769,7 @@ object VideoDownloadManager {
                 main {
                     Toast.makeText(
                         context,
-                        "${pkg.item.ep.mainName} Episode ${pkg.item.ep.episode} queued",
+                        "${pkg.item.ep.mainName}${pkg.item.ep.episode?.let { " Episode $it " } ?: " " }queued",
                         Toast.LENGTH_SHORT
                     ).show()
                 }

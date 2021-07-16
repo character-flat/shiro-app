@@ -662,7 +662,7 @@ class ResultFragment : Fragment() {
                                     status_text.text = type.name
                                 }
                             }
-                        var episodes = holder?.episodes ?: malHolder?.num_episodes ?: 1
+                        var episodes = holder?.episodes ?: malHolder?.num_episodes ?: 0
 
                         fun syncData() {
                             thread {
@@ -698,10 +698,11 @@ class ResultFragment : Fragment() {
                     }
 
                     val info = CardAniListInfo()
-                    info.episodes = maxOf(
-                        info.episodes,
-                        data?.episodes?.size ?: 1
-                    ) // TO REMOVE DIVIDE BY 0 ERROR
+
+                    // Because it can't set more episodes than what exists on MAL
+                    if (info.episodes == 0){
+                        info.episodes = maxOf(1, data?.episodes?.size ?: 1)
+                    }
                     activity.runOnUiThread {
                         val transition: Transition = ChangeBounds()
                         transition.duration = 100 // DURATION OF ANIMATION IN MS

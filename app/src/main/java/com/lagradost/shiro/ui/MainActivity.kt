@@ -26,9 +26,6 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequest
-import androidx.work.WorkManager
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.jaredrummler.cyanea.Cyanea
@@ -50,7 +47,6 @@ import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.shouldShowPIPMode
 import com.lagradost.shiro.utils.AppUtils.transparentStatusAndNavigation
-import com.lagradost.shiro.utils.DownloadFileWorkManager
 import com.lagradost.shiro.utils.Event
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import com.lagradost.shiro.utils.MALApi.Companion.authenticateMalLogin
@@ -239,7 +235,6 @@ class MainActivity : CyaneaAppCompatActivity() {
         }
 
     override fun onDestroy() {
-        println("DESTRYED!!!!!!!!!!!!!!!!!")
         /*val workManager = WorkManager.getInstance(this)
         val constraints = androidx.work.Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
         val task = OneTimeWorkRequest.Builder(DownloadFileWorkManager::class.java).setConstraints(constraints).build()
@@ -346,7 +341,7 @@ class MainActivity : CyaneaAppCompatActivity() {
         val resumeQueue =
             getKey<Array<VideoDownloadManager.DownloadQueueResumePackage>>(VideoDownloadManager.KEY_RESUME_QUEUE_PACKAGES)
 
-        resumeQueue?.sortedBy { it.index }  ?.forEach {
+        resumeQueue?.sortedBy { it.index }?.forEach {
             VideoDownloadManager.downloadFromResume(this, it.pkg)
         }
 

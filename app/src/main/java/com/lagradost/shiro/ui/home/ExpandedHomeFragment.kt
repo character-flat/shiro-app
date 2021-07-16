@@ -22,13 +22,14 @@ import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.search.ResAdapter
 import com.lagradost.shiro.utils.AppUtils.filterCardList
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
+import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.ShiroApi
 import kotlinx.android.synthetic.main.fragment_expanded_home.*
 
 private const val CARD_LIST = "card_list"
 private const val TITLE = "title"
-private const val spanCountLandscape = 6
-private const val spanCountPortrait = 3
+
+// private const val spanCountLandscape = 6
 const val EXPANDED_HOME_FRAGMENT_TAG = "EXPANDED_HOME_FRAGMENT_TAG"
 
 class ExpandedHomeFragment : Fragment() {
@@ -86,9 +87,15 @@ class ExpandedHomeFragment : Fragment() {
         )
         top_padding_expanded_home.layoutParams = topParams
 
+        val spanCountPortrait = settingsManager?.getInt("expanded_span_count", 3) ?: 3
+
         val orientation = resources.configuration.orientation
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            expanded_card_list_view.spanCount = spanCountLandscape
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE || settingsManager!!.getBoolean(
+                "force_landscape",
+                false
+            )
+        ) {
+            expanded_card_list_view.spanCount = spanCountPortrait * 2
         } else {
             expanded_card_list_view.spanCount = spanCountPortrait
         }
@@ -102,7 +109,8 @@ class ExpandedHomeFragment : Fragment() {
             )
         }
         expanded_card_list_view.adapter = adapter
-        (expanded_card_list_view.adapter as ResAdapter).cardList = filterCardList(cardList) as ArrayList<ShiroApi.CommonAnimePage>
+        (expanded_card_list_view.adapter as ResAdapter).cardList =
+            filterCardList(cardList) as ArrayList<ShiroApi.CommonAnimePage>
         (expanded_card_list_view.adapter as ResAdapter).notifyDataSetChanged()
 
     }

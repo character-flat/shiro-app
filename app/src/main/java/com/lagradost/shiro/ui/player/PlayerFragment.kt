@@ -356,7 +356,6 @@ class PlayerFragment : Fragment() {
         }
     }
 
-
     private fun getCurrentUrl(): ExtractorLink? {
         if (data?.url != null) return ExtractorLink(
             "Downloaded",

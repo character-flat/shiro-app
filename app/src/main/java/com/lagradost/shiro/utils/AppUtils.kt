@@ -744,7 +744,7 @@ object AppUtils {
             }
         }
 
-        if (!isFound) return
+        //if (!isFound) return
 
         if (settingsManager?.getBoolean("save_history", true) == true) {
             setKey(

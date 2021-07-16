@@ -16,7 +16,6 @@ open class GrdLayoutManager(val context: Context, private val spanCoun: Int) : G
     ): View? {
         return try {
             val fromPos = getPosition(focused)
-            println("Search failed $fromPos")
             val nextPos = getNextViewPos(fromPos, focusDirection)
             findViewByPosition(nextPos)
         } catch (e: Exception) {
@@ -62,8 +61,6 @@ open class GrdLayoutManager(val context: Context, private val spanCoun: Int) : G
     }
 
     private fun calcOffsetToNextView(direction: Int): Int {
-        println("calc")
-
         val spanCount = this.spanCoun
         val orientation = this.orientation
 

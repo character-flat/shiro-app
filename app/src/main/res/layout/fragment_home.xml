@@ -65,14 +65,12 @@
                             android:nextFocusUp="@+id/nav_view"
                             android:nextFocusRight="@+id/main_info_button"
                             android:nextFocusLeft="@+id/main_watch_button">
-
-                        <requestFocus />
+                        <requestFocus/>
                     </ImageView>
-
                     <View
                             android:layout_width="match_parent"
                             android:layout_height="412dp"
-                            android:background="@drawable/gradient" />
+                            android:background="@drawable/gradient"/>
                     <!--
                     305 dp here (+ a new view) is needed to hide a
                     parallax scrolling bug making the gradient not cover the image
@@ -240,7 +238,7 @@
 
                         <RelativeLayout
                                 android:layout_width="wrap_content"
-                                android:layout_height="200dp"
+                                android:layout_height="180dp"
                                 android:layout_marginBottom="20dp"
                         >
                             <androidx.recyclerview.widget.RecyclerView
@@ -275,7 +273,7 @@
                         </TextView>
                         <RelativeLayout
                                 android:layout_width="wrap_content"
-                                android:layout_height="200dp"
+                                android:layout_height="180dp"
                                 android:layout_marginBottom="20dp"
                         >
                             <androidx.recyclerview.widget.RecyclerView
@@ -310,7 +308,7 @@
                         </TextView>
                         <RelativeLayout
                                 android:layout_width="wrap_content"
-                                android:layout_height="200dp"
+                                android:layout_height="180dp"
                                 android:layout_marginBottom="20dp"
                         >
                             <androidx.recyclerview.widget.RecyclerView
@@ -348,7 +346,7 @@
                     </TextView>
                     <RelativeLayout
                             android:layout_width="wrap_content"
-                            android:layout_height="200dp"
+                            android:layout_height="180dp"
                             android:layout_marginBottom="20dp"
                     >
 
@@ -403,7 +401,7 @@
                     </TextView>
                     <RelativeLayout
                             android:layout_width="wrap_content"
-                            android:layout_height="200dp"
+                            android:layout_height="180dp"
                             android:layout_marginBottom="20dp"
                     >
 
@@ -430,7 +428,7 @@
                     </TextView>
                     <RelativeLayout
                             android:layout_width="wrap_content"
-                            android:layout_height="200dp"
+                            android:layout_height="180dp"
                             android:layout_marginBottom="20dp"
                     >
 

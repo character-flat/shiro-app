@@ -123,7 +123,6 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
 
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         val notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
-
             .setColor(ContextCompat.getColor(this, R.color.white))
             .setContentTitle(message.title)
             .setContentText(message.body)
