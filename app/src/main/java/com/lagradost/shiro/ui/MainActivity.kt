@@ -21,6 +21,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.KeyEvent
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -43,6 +44,7 @@ import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.hasPIPPermission
 import com.lagradost.shiro.utils.AppUtils.hideSystemUI
 import com.lagradost.shiro.utils.AppUtils.init
+import com.lagradost.shiro.utils.AppUtils.isUsingMobileData
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.shouldShowPIPMode
@@ -53,6 +55,7 @@ import com.lagradost.shiro.utils.MALApi.Companion.authenticateMalLogin
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.initShiroApi
 import com.lagradost.shiro.utils.VideoDownloadManager
+import com.lagradost.shiro.utils.VideoDownloadManager.maxConcurrentDownloads
 import kotlin.concurrent.thread
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
@@ -326,24 +329,32 @@ class MainActivity : CyaneaAppCompatActivity() {
             )
         }
 
-        val keys = getKeys(VideoDownloadManager.KEY_RESUME_PACKAGES)
-        val resumePkg = keys.mapNotNull { k -> getKey<VideoDownloadManager.DownloadResumePackage>(k) }
+        // Only set on MainActivity starting to cause less confusion on when it's applied
+        maxConcurrentDownloads = settingsManager.getInt("concurrent_downloads", 1)
 
-        // To remove a bug where this is permanent
-        removeKeys(VideoDownloadManager.KEY_RESUME_PACKAGES)
+        if (settingsManager.getBoolean("disable_automatic_data_downloads", true) && isUsingMobileData()) {
+            Toast.makeText(this, "Downloads not resumed on mobile data", Toast.LENGTH_LONG).show()
+        } else {
+            val keys = getKeys(VideoDownloadManager.KEY_RESUME_PACKAGES)
+            val resumePkg = keys.mapNotNull { k -> getKey<VideoDownloadManager.DownloadResumePackage>(k) }
 
-        for (pkg in resumePkg) { // ADD ALL CURRENT DOWNLOADS
-            VideoDownloadManager.downloadFromResume(this, pkg, false)
+            // To remove a bug where this is permanent
+            removeKeys(VideoDownloadManager.KEY_RESUME_PACKAGES)
+
+            for (pkg in resumePkg) { // ADD ALL CURRENT DOWNLOADS
+                VideoDownloadManager.downloadFromResume(this, pkg, false)
+            }
+
+            // ADD QUEUE
+            // array needed because List gets cast exception to linkedList for some unknown reason
+            val resumeQueue =
+                getKey<Array<VideoDownloadManager.DownloadQueueResumePackage>>(VideoDownloadManager.KEY_RESUME_QUEUE_PACKAGES)
+
+            resumeQueue?.sortedBy { it.index }?.forEach {
+                VideoDownloadManager.downloadFromResume(this, it.pkg)
+            }
         }
 
-        // ADD QUEUE
-        // array needed because List gets cast exception to linkedList for some unknown reason
-        val resumeQueue =
-            getKey<Array<VideoDownloadManager.DownloadQueueResumePackage>>(VideoDownloadManager.KEY_RESUME_QUEUE_PACKAGES)
-
-        resumeQueue?.sortedBy { it.index }?.forEach {
-            VideoDownloadManager.downloadFromResume(this, it.pkg)
-        }
 
         val statusBarHidden = settingsManager.getBoolean("statusbar_hidden", true)
         statusHeight = changeStatusBarState(statusBarHidden)

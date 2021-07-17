@@ -84,12 +84,30 @@
             app:defaultValue="false"
     />
     <SwitchPreference
+            android:icon="@drawable/ic_baseline_data_saver_on_24"
+            app:key="disable_automatic_data_downloads"
+            android:title="Disable automatic downloading when on data"
+            app:defaultValue="true"
+    />
+    <SwitchPreference
             android:icon="@drawable/ic_baseline_filter_list_24"
             app:key="search_for_filler_episodes"
             android:title="Search and display filler episodes"
             app:defaultValue="true"
             app:summary="Using animefillerlist.com"
     />
+    <SeekBarPreference
+            android:icon="@drawable/netflix_download"
+            android:title="Max concurrent downloads"
+            android:defaultValue="1"
+            android:key="concurrent_downloads"
+            app:showSeekBarValue="true"
+            app:seekBarIncrement="1"
+            android:max="5"
+            app:min="1"
+            android:summary="More concurrent downloads will lag a lot on low-end phones. This will only be applied after an app restart."
+    >
+    </SeekBarPreference>
     <SwitchPreference android:key="acra.disable"
                       android:icon="@drawable/ic_baseline_bug_report_24"
                       android:title="@string/pref_disable_acra"

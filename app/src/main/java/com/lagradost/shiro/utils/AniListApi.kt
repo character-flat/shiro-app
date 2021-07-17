@@ -168,6 +168,7 @@ class AniListApi {
         fun getShowId(name: String, year: Int?): GetSearchMedia? {
             // Strips these from the name
             val blackList = listOf(
+                "TV Dubbed",
                 "Dubbed",
                 "Subbed",
                 "(TV)",

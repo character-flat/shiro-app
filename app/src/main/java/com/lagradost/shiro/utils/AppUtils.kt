@@ -27,6 +27,8 @@ import android.graphics.Point
 import android.graphics.Rect
 import android.media.AudioFocusRequest
 import android.media.AudioManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -111,6 +113,21 @@ object AppUtils {
             resources.getDimensionPixelSize(resourceId)
         } else
             0
+    }
+
+    fun Context.getNavigationBarHeight(): Int {
+        val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+        return if (resourceId > 0) {
+            resources.getDimensionPixelSize(resourceId)
+        } else 0
+    }
+
+    fun Context.isUsingMobileData(): Boolean {
+        val conManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = conManager.allNetworks
+        return networkInfo.any {
+            conManager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
+        }
     }
 
     fun Context.getNavigationBarSizeFake(): Int {
@@ -416,7 +433,7 @@ object AppUtils {
     }
 
     fun filterCardList(cards: List<ShiroApi.CommonAnimePage?>?): List<ShiroApi.CommonAnimePage?>? {
-        return when (settingsManager!!.getString("hide_behavior", "None")){
+        return when (settingsManager!!.getString("hide_behavior", "None")) {
             "Hide dubbed" ->
                 cards?.filter { it?.slug?.endsWith("-dubbed")?.not() == true }
             "Hide subbed" ->

@@ -158,7 +158,7 @@ class ResultFragment : Fragment() {
     private var hasLoadedAnilist = false
     private var anilistPage: AniListApi.GetSearchMedia? = null
     private var episodeOffset = 0
-
+    private var isEpisodesSyncBased = false
 
     companion object {
         //var lastSelectedEpisode = 0
@@ -222,6 +222,13 @@ class ResultFragment : Fragment() {
             results_root?.let {
                 TransitionManager.beginDelayedTransition(it, transition)
             }
+
+            val data = if (isDefaultData) dataOther else data
+            data?.episodes?.size?.plus(episodeOffset)?.let {
+                if (it > resultViewModel?.episodes?.value ?: 0) {
+                    resultViewModel?.episodes?.postValue(it)
+                }
+            }
         }
     }
 
@@ -246,6 +253,11 @@ class ResultFragment : Fragment() {
         if (isSucc) {
             val data = if (isDefaultData) data else dataOther
             episodeOffset = if (data?.episodes?.filter { it.episode_number == 0 }.isNullOrEmpty()) 0 else -1
+            data?.episodes?.size?.plus(episodeOffset)?.let {
+                if (it > resultViewModel?.episodes?.value ?: 0) {
+                    resultViewModel?.episodes?.postValue(it)
+                }
+            }
 
             activity?.runOnUiThread {
                 if (data == null) {
@@ -259,7 +271,6 @@ class ResultFragment : Fragment() {
                     }
                 }
                 val fadeAnimation = AlphaAnimation(1f, 0f)
-
                 fadeAnimation.duration = 300
                 fadeAnimation.isFillEnabled = true
                 fadeAnimation.fillAfter = true
@@ -698,11 +709,13 @@ class ResultFragment : Fragment() {
                     }
 
                     val info = CardAniListInfo()
-
+                    isEpisodesSyncBased = info.episodes != 0
                     // Because it can't set more episodes than what exists on MAL
-                    if (info.episodes == 0){
-                        info.episodes = maxOf(1, data?.episodes?.size ?: 1)
+                    if (!isEpisodesSyncBased) {
+                        info.episodes =
+                            maxOf(1, resultViewModel?.episodes?.value ?: data?.episodes?.size?.plus(episodeOffset) ?: 1)
                     }
+
                     activity.runOnUiThread {
                         val transition: Transition = ChangeBounds()
                         transition.duration = 100 // DURATION OF ANIMATION IN MS
@@ -717,8 +730,16 @@ class ResultFragment : Fragment() {
                                     info.progress = it
                                 }
                             }
+                            if (!isEpisodesSyncBased) {
+                                observe(viewModel.episodes) {
+                                    it?.let {
+                                        info.episodes = it
+                                        aniList_progressbar?.progress = info.progress * 100 / info.episodes
+                                        anilist_progress_txt?.text = "${info.progress}/${info.episodes}"
+                                    }
+                                }
+                            }
                         }
-
                         aniList_progressbar?.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
                         anilist_btt_holder?.visibility = VISIBLE
                         status_text?.text =
@@ -1129,6 +1150,7 @@ class ResultFragment : Fragment() {
         resultViewModel?.currentMalId?.postValue(null)
         resultViewModel?.visibleEpisodeProgress?.postValue(null)
         resultViewModel?.slug?.postValue(null)
+        resultViewModel?.episodes?.postValue(null)
 
         activity?.transparentStatusAndNavigation()
 

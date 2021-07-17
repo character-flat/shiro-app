@@ -1,8 +1,6 @@
 package com.lagradost.shiro.utils
 
 import org.jsoup.Jsoup
-import java.util.*
-import kotlin.collections.HashMap
 
 object FillerEpisodeCheck {
     private const val MAIN_URL = "https://www.animefillerlist.com"
@@ -57,6 +55,7 @@ object FillerEpisodeCheck {
 
             // Strips these from the name
             val blackList = listOf(
+                "TV Dubbed",
                 "Dubbed",
                 "Subbed",
                 "(TV)",

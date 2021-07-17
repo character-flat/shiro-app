@@ -78,6 +78,8 @@ import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.getDataAboutId
 import com.lagradost.shiro.utils.AniListApi.Companion.postDataAboutId
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
+import com.lagradost.shiro.utils.AppUtils.getNavigationBarHeight
+import com.lagradost.shiro.utils.AppUtils.getStatusBarHeight
 import com.lagradost.shiro.utils.AppUtils.getVideoContentUri
 import com.lagradost.shiro.utils.AppUtils.getViewKey
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
@@ -240,6 +242,9 @@ class PlayerFragment : Fragment() {
     private val fastForwardTime = settingsManager!!.getInt("fast_forward_button_time", 10)
     private val autoPlayEnabled = settingsManager!!.getBoolean("autoplay_enabled", true)
     private val fullscreenNotch = settingsManager!!.getBoolean("fullscreen_notch", true)
+
+    private var statusBarHeight by Delegates.notNull<Int>()
+    private var navigationBarHeight by Delegates.notNull<Int>()
 
     private var sources: Pair<Int?, List<ExtractorLink>?> = Pair(null, null)
 
@@ -630,6 +635,9 @@ class PlayerFragment : Fragment() {
         )
     }
 
+    // To prevent swiping gesture when using statusbar
+    private var isValidTouch = false
+
     private fun handleMotionEvent(motionEvent: MotionEvent) {
         // No swiping on unloaded
         // https://exoplayer.dev/doc/reference/constant-values.html
@@ -645,9 +653,18 @@ class PlayerFragment : Fragment() {
 
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
-                recordCoordinates()
+                // SO YOU CAN PULL DOWN STATUSBAR OR NAVBAR
+                if (motionEvent.rawY > statusBarHeight && motionEvent.rawX < width - navigationBarHeight) {
+                    isValidTouch = true
+                    recordCoordinates()
+                    //println("DOWN: " + currentX)
+                } else {
+                    isValidTouch = false
+                }
+
             }
             MotionEvent.ACTION_MOVE -> {
+                if (!isValidTouch) return
                 if (swipeVerticalEnabled) {
                     if (currentY == 0f && currentX == 0f) {
                         recordCoordinates()
@@ -706,7 +723,7 @@ class PlayerFragment : Fragment() {
                             val currentBrightness = if (lp?.screenBrightness ?: -1.0f <= 0f) (Settings.System.getInt(
                                 context?.contentResolver,
                                 Settings.System.SCREEN_BRIGHTNESS
-                            ) * (1 / 255).toFloat())
+                            ).toFloat() / 255)
                             else lp?.screenBrightness!!
 
                             val alpha = minOf(
@@ -760,6 +777,7 @@ class PlayerFragment : Fragment() {
                 }
             }
             MotionEvent.ACTION_UP -> {
+                if (!isValidTouch) return
                 currentX = 0f
                 currentY = 0f
                 val transition: Transition = Fade()
@@ -807,6 +825,9 @@ class PlayerFragment : Fragment() {
         playerViewModel!!.selectedSource.observe(viewLifecycleOwner) {
             playerViewModel?.videoSize?.postValue(null)
         }
+
+        navigationBarHeight = requireContext().getNavigationBarHeight()
+        statusBarHeight = requireContext().getStatusBarHeight()
 
         progressBarLeft.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
         progressBarRight.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
