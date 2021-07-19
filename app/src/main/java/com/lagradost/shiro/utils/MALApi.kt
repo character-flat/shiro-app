@@ -157,21 +157,16 @@ class MALApi {
         )
 
         fun Context.getMalAnimeListSmart(): Array<Data>? {
-            println("HERERHEHRHHEHHRHR")
             return if (getKey(MAL_SHOULD_UPDATE_LIST, true) == true) {
                 val list = getMalAnimeList()
                 if (list != null) {
                     setKey(MAL_CACHED_LIST, list)
                     setKey(MAL_SHOULD_UPDATE_LIST, false)
                 }
-                println("FFFFFFFFFFFFFFFHERERHEHRHHEHHRHR")
 
                 list
             } else {
-                println("BBBBBBBBBBBBBBBBBB ${getKey(MAL_CACHED_LIST) as? Array<Data>}")
-
                 getKey(MAL_CACHED_LIST) as? Array<Data>
-
             }
         }
 

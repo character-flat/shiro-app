@@ -10,6 +10,7 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.utils.VideoDownloadManager
 import com.lagradost.shiro.utils.VideoDownloadManager.downloadQueue
+import com.lagradost.shiro.utils.VideoDownloadManager.saveQueue
 import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
 
 class QueueAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -52,6 +53,7 @@ class QueueAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             itemView.cardRemoveIcon.setOnClickListener {
                 downloadQueue.removeAll { it == item }
                 masterViewModel?.downloadQueue?.postValue(downloadQueue)
+                saveQueue(itemView.context)
                 Toast.makeText(itemView.context, "Removed $title", Toast.LENGTH_SHORT).show()
             }
         }

@@ -85,9 +85,10 @@
     />
     <SwitchPreference
             android:icon="@drawable/ic_baseline_data_saver_on_24"
-            app:key="disable_automatic_data_downloads"
-            android:title="Disable automatic downloading when on data"
-            app:defaultValue="true"
+            app:key="disable_data_downloads"
+            android:title="Disable downloads on mobile data"
+            android:summary="The queue will be automatically paused when any downloads are made with data"
+            app:defaultValue="false"
     />
     <SwitchPreference
             android:icon="@drawable/ic_baseline_filter_list_24"

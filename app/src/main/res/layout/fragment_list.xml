@@ -6,33 +6,12 @@
         xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/fragment_list_root"
         android:orientation="vertical">
-
-    <com.google.android.material.tabs.TabLayout
+    <com.lagradost.shiro.ui.AutofitRecyclerView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/result_tabs"
-            android:layout_marginTop="10dp"
-            app:tabGravity="center"
-            style="@style/Theme.Widget.Tabs"
-            android:backgroundTint="@color/transparent"
-    >
-
-    </com.google.android.material.tabs.TabLayout>
-
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/swipe_container"
-            android:layout_width="match_parent"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:layout_height="match_parent">
-        <com.lagradost.shiro.ui.AutofitRecyclerView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clipToPadding="false"
-                android:paddingTop="5dp"
-                android:id="@+id/library_card_space"
-                android:orientation="vertical">
-        </com.lagradost.shiro.ui.AutofitRecyclerView>
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+            android:clipToPadding="false"
+            android:paddingTop="5dp"
+            android:id="@+id/library_card_space"
+            android:orientation="vertical">
+    </com.lagradost.shiro.ui.AutofitRecyclerView>
 </LinearLayout>

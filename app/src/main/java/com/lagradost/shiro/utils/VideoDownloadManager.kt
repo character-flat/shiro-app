@@ -25,6 +25,8 @@ import com.lagradost.shiro.services.VideoDownloadService
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.isUsingMobileData
+import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.Coroutines.main
 import com.lagradost.shiro.utils.mvvm.logError
 import com.lagradost.shiro.utils.mvvm.normalSafeApiCall
@@ -652,8 +654,22 @@ object VideoDownloadManager {
         }
     }
 
-    private fun downloadCheck(context: Context, saveKey: Boolean = false) {
-        if (currentDownloads.size < maxConcurrentDownloads && downloadQueue.size > 0) {
+    fun downloadCheck(context: Context, saveKey: Boolean = false) {
+        if (currentDownloads.size < maxConcurrentDownloads && downloadQueue.size > 0
+            && masterViewModel?.isQueuePaused?.value != true
+        ) {
+
+            // If on data => pause downloads
+            if (settingsManager?.getBoolean(
+                    "disable_data_downloads",
+                    false
+                ) == true && context.isUsingMobileData()
+            ) {
+                masterViewModel?.isQueuePaused?.postValue(true)
+                Toast.makeText(context, "Downloads on data are disabled, paused queue", Toast.LENGTH_LONG).show()
+                return
+            }
+
             val pkg = downloadQueue.removeFirst()
             masterViewModel?.downloadQueue?.postValue(downloadQueue)
             if (saveKey) saveQueue(context)
@@ -764,12 +780,12 @@ object VideoDownloadManager {
     }
 
     fun downloadFromResume(context: Context, pkg: DownloadResumePackage, setKey: Boolean = true) {
-        if (!currentDownloads.any { it == pkg.item.ep.id }) {
+        if (!currentDownloads.any { it == pkg.item.ep.id } && !downloadQueue.any { it.item.ep.id == pkg.item.ep.id }) {
             if (currentDownloads.size == maxConcurrentDownloads) {
                 main {
                     Toast.makeText(
                         context,
-                        "${pkg.item.ep.mainName}${pkg.item.ep.episode?.let { " Episode $it " } ?: " " }queued",
+                        "${pkg.item.ep.mainName}${pkg.item.ep.episode?.let { " Episode $it " } ?: " "}queued",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -781,9 +797,8 @@ object VideoDownloadManager {
         }
     }
 
-    private fun saveQueue(context: Context) {
+    fun saveQueue(context: Context) {
         //context.setKey(KEY_RESUME_PACKAGES, id.toString(), DownloadResumePackage(item, index))
-        println("Save queue ${downloadQueue.map { it.item.ep.mainName }}")
         val dQueue =
             downloadQueue.toList().mapIndexed { index, any -> DownloadQueueResumePackage(index, any) }
                 .toTypedArray()

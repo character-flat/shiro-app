@@ -47,18 +47,36 @@
                 android:id="@+id/queue_card_text"
                 android:layout_gravity="center"
                 android:text="Queue"
+                android:gravity="center"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
         </TextView>
 
-        <ImageView android:layout_width="40dp"
-                   android:layout_height="40dp"
-                   android:layout_margin="10dp"
-                   android:src="@drawable/ic_baseline_keyboard_arrow_right_24"
-                   android:layout_gravity="end|center_vertical"
-                   android:background="?android:attr/selectableItemBackgroundBorderless"
-                   android:contentDescription="@string/go_to_series"/>
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="end"
+        >
+
+            <ImageView android:layout_width="40dp"
+                       android:layout_height="40dp"
+                       android:layout_margin="10dp"
+                       android:src="@drawable/netflix_pause"
+                       android:id="@+id/queue_pause_play"
+                       android:layout_gravity="end|center_vertical"
+                       android:background="?android:attr/selectableItemBackgroundBorderless"
+                       android:contentDescription="Pause/Start queue"/>
+
+            <ImageView android:layout_width="40dp"
+                       android:layout_height="40dp"
+                       android:layout_margin="10dp"
+                       android:src="@drawable/ic_baseline_keyboard_arrow_right_24"
+                       android:layout_gravity="end|center_vertical"
+                       android:background="?android:attr/selectableItemBackgroundBorderless"
+                       android:contentDescription="@string/go_to_series"/>
+        </LinearLayout>
 
     </androidx.cardview.widget.CardView>
 

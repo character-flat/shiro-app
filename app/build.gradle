@@ -187,4 +187,7 @@ dependencies {
 
     // Downloading
     implementation "androidx.work:work-runtime:2.7.0-alpha04"
+
+    // For MAL list
+    implementation "androidx.viewpager2:viewpager2:1.0.0"
 }

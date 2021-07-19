@@ -6,7 +6,7 @@ import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.utils.ShiroApi
 
 class HomeViewModel : ViewModel() {
-    val apiData = MutableLiveData<ShiroApi.ShiroHomePage>().apply {
+    val apiData = MutableLiveData<ShiroApi.ShiroHomePage>().also {
         ShiroApi.onHomeFetched += ::homeLoaded
     }
 

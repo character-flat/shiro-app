@@ -18,6 +18,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.load.model.GlideUrl
@@ -32,7 +33,9 @@ import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
+import com.lagradost.shiro.utils.AppUtils.isUsingMobileData
 import com.lagradost.shiro.utils.AppUtils.loadPage
+import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.VideoDownloadManager.KEY_DOWNLOAD_INFO
 import com.lagradost.shiro.utils.VideoDownloadManager.currentDownloads
 import com.lagradost.shiro.utils.VideoDownloadManager.downloadQueue
@@ -178,7 +181,7 @@ class DownloadFragment : Fragment() {
 
                             downloadRoot.addView(cardView)
                         } else {
-                            if (currentDownloads.size == 0
+                            if (currentDownloads.isEmpty()  && downloadQueue.isEmpty()
                             ) {
                                 val coverFile = File(parent.coverImagePath)
                                 if (coverFile.exists()) {
@@ -219,14 +222,38 @@ class DownloadFragment : Fragment() {
         fun setQueueText() {
             val size = downloadQueue.toList().distinctBy { it.item.ep.id }.size
             val suffix = if (size == 1) "" else "s"
+            val pausedStatus = if (masterViewModel?.isQueuePaused?.value != false) "\nPaused" else ""
             queue_card_text?.text = "Queue (${
                 size
-            } item$suffix)"
+            } item$suffix) $pausedStatus"
         }
         setQueueText()
 
         observe(masterViewModel!!.downloadQueue) {
             setQueueText()
+        }
+
+        observe(masterViewModel!!.isQueuePaused) {
+            setQueueText()
+            if (it) {
+                queue_pause_play?.setImageResource(R.drawable.netflix_play)
+            } else {
+                queue_pause_play?.setImageResource(R.drawable.netflix_pause)
+            }
+        }
+
+        queue_pause_play?.setOnClickListener {
+            // If on data => pause downloads
+            if (settingsManager?.getBoolean(
+                    "disable_data_downloads",
+                    false
+                ) == true && it.context.isUsingMobileData() && masterViewModel?.isQueuePaused?.value == true
+            ) {
+                masterViewModel?.isQueuePaused?.postValue(true)
+                Toast.makeText(context, "Downloads on data are disabled", Toast.LENGTH_LONG).show()
+            } else {
+                masterViewModel?.isQueuePaused?.postValue(masterViewModel?.isQueuePaused?.value?.not() ?: true)
+            }
         }
 
         top_padding_download.layoutParams = topParams

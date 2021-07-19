@@ -7,8 +7,7 @@ import com.lagradost.shiro.utils.MALApi.Companion.fromIntToAnimeStatus
 import com.lagradost.shiro.utils.MALApi.Companion.malStatusAsString
 
 class LibraryViewModel : ViewModel() {
-    val fullMalList = MutableLiveData<Array<MALApi.Companion.Data>>()
-    val sortedMalList = MutableLiveData<Array<MALApi.Companion.Data>>()
+    val sortedMalList = MutableLiveData<Array<Array<MALApi.Companion.Data>>>()
 
     /**
     "All Anime",
@@ -23,19 +22,21 @@ class LibraryViewModel : ViewModel() {
         return fromIntToAnimeStatus(malStatusAsString.indexOf(string))
     }
 
-    fun generateListByTab(tab: Int) {
-        when (tab) {
-            0 -> sortedMalList.postValue(fullMalList.value)
-            1 -> sortedMalList.postValue(fullMalList.value?.filter { convertToStatus(it.list_status.status) == MALApi.Companion.MalStatusType.Watching }
-                ?.toTypedArray())
-            2 -> sortedMalList.postValue(fullMalList.value?.filter { convertToStatus(it.list_status.status) == MALApi.Companion.MalStatusType.Completed }
-                ?.toTypedArray())
-            3 -> sortedMalList.postValue(fullMalList.value?.filter { convertToStatus(it.list_status.status) == MALApi.Companion.MalStatusType.OnHold }
-                ?.toTypedArray())
-            4 -> sortedMalList.postValue(fullMalList.value?.filter { convertToStatus(it.list_status.status) == MALApi.Companion.MalStatusType.Dropped }
-                ?.toTypedArray())
-            5 -> sortedMalList.postValue(fullMalList.value?.filter { convertToStatus(it.list_status.status) == MALApi.Companion.MalStatusType.PlanToWatch }
-                ?.toTypedArray())
-        }
+    fun updateList(list: Array<MALApi.Companion.Data>) {
+        sortedMalList.postValue(
+            arrayOf(
+                list,
+                list.filter { convertToStatus(it.list_status.status) == MALApi.Companion.MalStatusType.Watching }
+                    .toTypedArray(),
+                list.filter { convertToStatus(it.list_status.status) == MALApi.Companion.MalStatusType.Completed }
+                    .toTypedArray(),
+                list.filter { convertToStatus(it.list_status.status) == MALApi.Companion.MalStatusType.OnHold }
+                    .toTypedArray(),
+                list.filter { convertToStatus(it.list_status.status) == MALApi.Companion.MalStatusType.Dropped }
+                    .toTypedArray(),
+                list.filter { convertToStatus(it.list_status.status) == MALApi.Companion.MalStatusType.PlanToWatch }
+                    .toTypedArray(),
+            )
+        )
     }
 }

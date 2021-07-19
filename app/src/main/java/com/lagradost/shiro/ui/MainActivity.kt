@@ -57,7 +57,10 @@ import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.getSlugFromMalId
 import com.lagradost.shiro.utils.ShiroApi.Companion.initShiroApi
 import com.lagradost.shiro.utils.VideoDownloadManager
+import com.lagradost.shiro.utils.VideoDownloadManager.downloadCheck
 import com.lagradost.shiro.utils.VideoDownloadManager.maxConcurrentDownloads
+import com.lagradost.shiro.utils.mvvm.observe
+import kotlinx.coroutines.flow.merge
 import kotlin.concurrent.thread
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
@@ -323,27 +326,43 @@ class MainActivity : CyaneaAppCompatActivity() {
         // Only set on MainActivity starting to cause less confusion on when it's applied
         maxConcurrentDownloads = settingsManager.getInt("concurrent_downloads", 1)
 
-        if (settingsManager.getBoolean("disable_automatic_data_downloads", true) && isUsingMobileData()) {
-            Toast.makeText(this, "Downloads not resumed on mobile data", Toast.LENGTH_LONG).show()
-        } else {
-            val keys = getKeys(VideoDownloadManager.KEY_RESUME_PACKAGES)
-            val resumePkg = keys.mapNotNull { k -> getKey<VideoDownloadManager.DownloadResumePackage>(k) }
-
-            // To remove a bug where this is permanent
-            removeKeys(VideoDownloadManager.KEY_RESUME_PACKAGES)
-
-            for (pkg in resumePkg) { // ADD ALL CURRENT DOWNLOADS
-                VideoDownloadManager.downloadFromResume(this, pkg, false)
+        observe(masterViewModel!!.isQueuePaused) {
+            if (!it) {
+                downloadCheck(this)
             }
+        }
 
-            // ADD QUEUE
-            // array needed because List gets cast exception to linkedList for some unknown reason
-            val resumeQueue =
-                getKey<Array<VideoDownloadManager.DownloadQueueResumePackage>>(VideoDownloadManager.KEY_RESUME_QUEUE_PACKAGES)
+        // Instant setting unlike posting
+        masterViewModel!!.isQueuePaused.value = false
 
-            resumeQueue?.sortedBy { it.index }?.forEach {
-                VideoDownloadManager.downloadFromResume(this, it.pkg)
-            }
+        val keys = getKeys(VideoDownloadManager.KEY_RESUME_PACKAGES)
+        val resumePkg = keys.mapNotNull { k -> getKey<VideoDownloadManager.DownloadResumePackage>(k) }
+
+        // To remove a bug where this is permanent
+        removeKeys(VideoDownloadManager.KEY_RESUME_PACKAGES)
+        // ADD QUEUE
+        // array needed because List gets cast exception to linkedList for some unknown reason
+        val resumeQueue =
+            getKey<Array<VideoDownloadManager.DownloadQueueResumePackage>>(VideoDownloadManager.KEY_RESUME_QUEUE_PACKAGES)
+
+        val allList = mutableListOf<Int>()
+        allList.addAll(resumePkg.map { it.item.ep.id })
+        allList.addAll(resumeQueue?.map { it.pkg.item.ep.id } ?: listOf())
+        val size = allList.distinctBy { it }.size
+        if (size > 0) {
+            Toast.makeText(
+                this,
+                "$size Download${if (size == 1) "" else "s"} restored from your previous session",
+                Toast.LENGTH_LONG
+            ).show()
+            masterViewModel!!.isQueuePaused.value = true
+        }
+
+        for (pkg in resumePkg) { // ADD ALL CURRENT DOWNLOADS
+            VideoDownloadManager.downloadFromResume(this, pkg, false)
+        }
+        resumeQueue?.sortedBy { it.index }?.forEach {
+            VideoDownloadManager.downloadFromResume(this, it.pkg)
         }
 
 
