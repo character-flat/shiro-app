@@ -81,13 +81,16 @@ import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.AppUtils.showNavigation
 import com.lagradost.shiro.utils.AppUtils.transparentStatusAndNavigation
+import com.lagradost.shiro.utils.Coroutines.main
 import com.lagradost.shiro.utils.MALApi.Companion.getDataAboutMalId
 import com.lagradost.shiro.utils.MALApi.Companion.malStatusAsString
 import com.lagradost.shiro.utils.MALApi.Companion.setScoreRequest
 import com.lagradost.shiro.utils.ShiroApi.Companion.currentToken
 import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFav
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFirstSearchResultSlug
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.utils.ShiroApi.Companion.getSlugFromMalId
 import com.lagradost.shiro.utils.ShiroApi.Companion.getSubbed
 import com.lagradost.shiro.utils.ShiroApi.Companion.onTokenFetched
 import jp.wasabeef.glide.transformations.BlurTransformation
@@ -144,6 +147,7 @@ import kotlin.concurrent.thread
 const val DESCRIPTION_LENGTH1 = 200
 const val SLUG = "slug"
 const val NAME = "name"
+const val IS_MAL_ID = "isMalId"
 const val RESULT_FRAGMENT_TAG = "RESULT_FRAGMENT_TAG"
 
 class ResultFragment : Fragment() {
@@ -186,11 +190,12 @@ class ResultFragment : Fragment() {
             return title
         }
 
-        fun newInstance(slug: String, name: String) =
+        fun newInstance(slug: String, name: String, isMalId: Boolean = false) =
             ResultFragment().apply {
                 arguments = Bundle().apply {
                     putString(SLUG, slug)
                     putString(NAME, name)
+                    putBoolean(IS_MAL_ID, isMalId)
                 }
             }
     }
@@ -1027,27 +1032,67 @@ class ResultFragment : Fragment() {
 
         resultViewModel = resultViewModel ?: ViewModelProvider(getCurrentActivity()!!).get(ResultsViewModel::class.java)
 
-        arguments?.getString(SLUG)?.let { slug ->
-            resultViewModel?.slug?.postValue(slug)
+        arguments?.getString(SLUG)?.let { primarySlug ->
             thread {
-                if (currentToken != null) {
-                    data = getAnimePage(slug)?.data
-                    initData()
+                val isMalId = arguments?.getBoolean(IS_MAL_ID) == true
+                if (isMalId) {
+                    slug?.toIntOrNull()?.let {
+                        resultViewModel?.currentMalId?.postValue(it)
+                    }
+                }
+
+                var hasSearchedForSlug = false
+                val slug = if (isMalId) {
+                    getSlugFromMalId(primarySlug, arguments?.getString(NAME))
+                        ?: getFirstSearchResultSlug(arguments?.getString(NAME)).also { hasSearchedForSlug = true }
+                } else primarySlug
+                if (slug != null) {
+                    // Needs check because it could be wrong otherwise, could work with hasSearchedForSlug, but would be inconsistent
+                    if (!isMalId) resultViewModel?.slug?.postValue(slug)
+
+                    if (currentToken != null) {
+                        data = getAnimePage(slug)?.data
+                        // Fallback on searching when the slug from the database isn't matching
+                        if (data == null && !hasSearchedForSlug && isMalId && arguments?.getString(
+                                NAME
+                            ) != null
+                        ) {
+                            data = getFirstSearchResultSlug(arguments?.getString(NAME))?.let { getAnimePage(it)?.data }
+                        }
+                        initData()
+                    } else {
+                        onTokenFetched += ::loadDataWhenTokenIsLoaded
+                    }
                 } else {
-                    onTokenFetched += ::loadDataWhenTokenIsLoaded
+                    main {
+                        Toast.makeText(context, "Error getting anime page for this ID", Toast.LENGTH_LONG).show()
+                        activity?.onBackPressed()
+                    }
                 }
             }
         }
-
-
         //isMovie = data!!.episodes == 1 && data!!.status == "FINISHED"
     }
 
     private fun loadDataWhenTokenIsLoaded(bool: Boolean) {
-        arguments?.getString(SLUG)?.let { slug ->
+        arguments?.getString(SLUG)?.let { primarySlug ->
             thread {
-                data = getAnimePage(slug)?.data
-                initData()
+                var hasSearchedForSlug = false
+                val slug = if (arguments?.getBoolean(IS_MAL_ID) == true) {
+                    getSlugFromMalId(primarySlug, arguments?.getString(NAME))
+                        ?: getFirstSearchResultSlug(arguments?.getString(NAME)).also { hasSearchedForSlug = true }
+                } else primarySlug
+                if (slug != null) {
+                    data = getAnimePage(slug)?.data
+                    // Fallback on searching when the slug from the database isn't matching
+                    if (data == null && !hasSearchedForSlug && arguments?.getBoolean(IS_MAL_ID) == true && arguments?.getString(
+                            NAME
+                        ) != null
+                    ) {
+                        data = getFirstSearchResultSlug(arguments?.getString(NAME))?.let { getAnimePage(it)?.data }
+                    }
+                    initData()
+                }
             }
         }
         onTokenFetched -= ::loadDataWhenTokenIsLoaded
@@ -1235,7 +1280,6 @@ class ResultFragment : Fragment() {
         }
 
         observe(resultViewModel!!.slug) { slug ->
-            println("SLIG OBSERVERD $slug")
             open_website_btt?.visibility = VISIBLE
             open_website_btt?.setOnClickListener {
                 context?.openBrowser("https://shiro.is/anime/${slug}")
@@ -1308,6 +1352,13 @@ class ResultFragment : Fragment() {
                     }
                 }
             }
+        }
+
+        // If request is faster than fragment is attached
+        if (data != null && open_website_btt?.isEnabled == true) {
+            loading_overlay?.alpha = 0f
+            open_website_btt?.isEnabled = false
+            onLoadEvent(true)
         }
 
         onLoadedOther += ::onLoadOtherEvent

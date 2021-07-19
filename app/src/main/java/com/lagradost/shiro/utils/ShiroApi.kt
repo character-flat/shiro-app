@@ -165,6 +165,7 @@ class ShiroApi {
 
     companion object {
         infix fun Int.fmod(other: Int) = ((this % other) + other) % other
+        const val maxStale = 60 * 10 // 10m
 
         const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
         private val mapper = JsonMapper.builder().addModule(KotlinModule())
@@ -174,7 +175,7 @@ class ShiroApi {
         fun getToken(): Token? {
             try {
                 val headers = mapOf("User-Agent" to USER_AGENT)
-                val shiro = khttp.get("https://shiro.is", headers = headers, timeout = 120.0)
+                val shiro = khttp.get("https://shiro.is", headers = headers, timeout = 30.0)
                 val jsMatch = Regex("""src="(/static/js/main.*?)"""").find(shiro.text)
                 val (destructed) = jsMatch!!.destructured
                 val jsLocation = "https://shiro.is$destructed"
@@ -236,10 +237,9 @@ class ShiroApi {
         }
 
         fun getRandomAnimePage(usedToken: Token? = currentToken): AnimePage? {
-            println("Called random")
             return try {
                 val url = "https://tapi.shiro.is/anime/random/TV?token=${usedToken?.token}"
-                val response = khttp.get(url, timeout = 120.0)
+                val response = khttp.get(url, timeout = 30.0)
                 val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
                 if (mapped.status == "Found")
                     mapped
@@ -252,8 +252,9 @@ class ShiroApi {
         fun getAnimePage(slug: String, usedToken: Token? = currentToken): AnimePage? {
             println("Get anime $slug")
             val url = "https://tapi.shiro.is/anime/slug/${slug}?token=${usedToken?.token}"
+            val headers = mapOf("Cache-Control" to "max-stale=$maxStale")
             return try {
-                val response = khttp.get(url, timeout = 120.0)
+                val response = khttp.get(url, timeout = 30.0, headers = headers)
                 val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
                 mapped.data.episodes =
                     mapped.data.episodes?.distinctBy { it.episode_number }?.sortedBy { it.episode_number }
@@ -272,7 +273,7 @@ class ShiroApi {
                 val url = "https://tapi.shiro.is/types/all?token=${usedToken?.token}".replace("+", "%20")
                 // Security headers
                 val headers = usedToken?.headers
-                val response = headers?.let { khttp.get(url, timeout = 120.0) }
+                val response = headers?.let { khttp.get(url, timeout = 30.0) }
                 val mapped = response?.let { mapper.readValue<AllSearchMethods>(it.text) }
 
                 if (mapped?.status == "Found") {
@@ -284,6 +285,47 @@ class ShiroApi {
             return null
         }
 
+        data class AllAnimeJson(
+            @JsonProperty("id") val id: String,
+            @JsonProperty("slug") val slug: String,
+            @JsonProperty("mal_id") val mal_id: String?,
+        )
+
+        fun getMalIDFromSlug(slug: String): String? {
+            try {
+                val oneDayStale = 60 * 60 * 24
+                val headers = mapOf("Cache-Control" to "max-stale=$oneDayStale")
+                val res =
+                    khttp.get("https://raw.githubusercontent.com/Blatzar/shiro-db/master/anime.json", headers = headers)
+                val json = mapper.readValue<List<AllAnimeJson>>(res.text)
+                return json.find { it.slug == slug }?.mal_id
+            } catch (e: Exception) {
+                println(e.printStackTrace().toString())
+            }
+            return null
+        }
+
+        fun getFirstSearchResultSlug(title: String?): String? {
+            // Fallback on search
+            val searchResults = title?.let { search(it) }
+            val first = searchResults?.get(0)?.slug
+            // Prioritizes non dub
+            return searchResults?.find { it.slug == first?.removeSuffix("-dubbed") }?.slug ?: first
+        }
+
+        fun getSlugFromMalId(malId: String, title: String?): String? {
+            try {
+                val oneDayStale = 60 * 60 * 24
+                val headers = mapOf("Cache-Control" to "max-stale=$oneDayStale")
+                val res =
+                    khttp.get("https://raw.githubusercontent.com/Blatzar/shiro-db/master/anime.json", headers = headers)
+                val json = mapper.readValue<List<AllAnimeJson>>(res.text)
+                return json.find { it.mal_id == malId }?.slug
+            } catch (e: Exception) {
+                println(e.printStackTrace().toString())
+            }
+            return null
+        }
 
         fun quickSearch(query: String, usedToken: Token? = currentToken): List<ShiroSearchResponseShow>? {
             try {
@@ -296,7 +338,7 @@ class ShiroApi {
                 }?token=${usedToken?.token}".replace("+", "%20")
                 // Security headers
                 val headers = usedToken?.headers
-                val response = headers?.let { khttp.get(url, timeout = 120.0) }
+                val response = headers?.let { khttp.get(url, timeout = 30.0) }
                 val mapped = response?.let { mapper.readValue<ShiroSearchResponse>(it.text) }
 
                 return if (mapped?.status == "Found")
@@ -325,7 +367,7 @@ class ShiroApi {
                 }$genresString&token=${usedToken?.token}".replace("+", "%20")
                 println(url)
                 val headers = usedToken?.headers
-                val response = headers?.let { khttp.get(url, timeout = 120.0) }
+                val response = headers?.let { khttp.get(url, timeout = 30.0) }
                 val mapped = response?.let { mapper.readValue<ShiroFullSearchResponse>(it.text) }
                 return if (mapped?.status == "Found")
                     mapped.data.nav.currentPage.items
@@ -420,7 +462,6 @@ class ShiroApi {
 
         private fun Context.getLastWatch(): List<LastEpisodeInfo?> {
             val keys = getKeys(VIEW_LST_KEY)
-            println("KEYS: $keys")
             thread {
                 keys.pmap {
                     getKey<LastEpisodeInfo>(it)?.id
@@ -432,7 +473,6 @@ class ShiroApi {
         }
 
         fun Context.requestHome(canBeCached: Boolean = true): ShiroHomePage? {
-            println("LOAD HOME $currentToken")
             if (currentToken == null) return null
             return getHome(canBeCached)
         }
@@ -440,7 +480,7 @@ class ShiroApi {
         fun getHomeOnly(usedToken: Token? = currentToken): ShiroHomePage? {
             return try {
                 val url = "https://tapi.shiro.is/latest?token=${usedToken!!.token}"
-                val response = khttp.get(url, timeout = 120.0)
+                val response = khttp.get(url, timeout = 30.0)
                 response.text.let { mapper.readValue(it) }
             } catch (e: Exception) {
                 println(e.message)
@@ -456,7 +496,8 @@ class ShiroApi {
             } else {
                 val url = "https://tapi.shiro.is/latest?token=${usedToken!!.token}"
                 try {
-                    val response = khttp.get(url, timeout = 120.0)
+                    val headers = mapOf("Cache-Control" to "max-stale=$maxStale")
+                    val response = khttp.get(url, timeout = 30.0, headers = headers)
                     res = response.text.let { mapper.readValue(it) }
                 } catch (e: Exception) {
                     println(e.message)

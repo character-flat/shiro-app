@@ -39,4 +39,10 @@
             android:name="com.lagradost.shiro.ui.result.ResultFragment"
             android:label="Results"
     />
+    <fragment
+            android:id="@+id/navigation_library"
+            android:layout_height="match_parent"
+            android:name="com.lagradost.shiro.ui.library.ListFragment"
+            android:label="Library"
+    />
 </navigation>

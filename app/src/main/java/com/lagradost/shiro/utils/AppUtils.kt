@@ -30,6 +30,7 @@ import android.media.AudioManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
+import android.net.http.HttpResponseCache
 import android.os.Build
 import android.os.Environment
 import android.os.ParcelFileDescriptor
@@ -136,6 +137,15 @@ object AppUtils {
             resources.getDimensionPixelSize(resourceId)
         } else
             0
+    }
+
+    fun Context.installCache() {
+        try {
+            val httpCacheDir = File(this.cacheDir, "http")
+            val httpCacheSize: Long = 10 * 1024 * 1024 // 10 MiB
+            HttpResponseCache.install(httpCacheDir, httpCacheSize)
+        } catch (e: Exception) {
+        }
     }
 
 
@@ -971,10 +981,10 @@ fun loadPlayer(title: String?, url: String, startAt: Long?) {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
     }
 
-    fun FragmentActivity.loadPage(slug: String, name: String) {
+    fun FragmentActivity.loadPage(slug: String, name: String, isMalId: Boolean = false) {
         this.addFragmentOnlyOnce(
             R.id.homeRoot,
-            ResultFragment.newInstance(slug, name),
+            ResultFragment.newInstance(slug, name, isMalId),
             RESULT_FRAGMENT_TAG
         )
         /*

@@ -2,7 +2,9 @@ package com.lagradost.shiro.utils
 
 import DataStore.getKey
 import DataStore.setKey
+import MAL_CACHED_LIST
 import MAL_REFRESH_TOKEN_KEY
+import MAL_SHOULD_UPDATE_LIST
 import MAL_TOKEN_KEY
 import MAL_UNIXTIME_KEY
 import MAL_USER_KEY
@@ -44,7 +46,6 @@ class MALApi {
                 Base64.encodeToString(codeVerifierBytes, Base64.DEFAULT).trimEnd('=').replace("+", "-")
                     .replace("/", "_").replace("\n", "")
             val codeChallenge = codeVerifier
-            println("codeVerifier$codeVerifier")
             val request =
                 "https://myanimelist.net/v1/oauth2/authorize?response_type=code&client_id=$MAL_CLIENT_ID&code_challenge=$codeChallenge&state=RequestID$requestId"
             openBrowser(request)
@@ -121,6 +122,95 @@ class MALApi {
         }
 
         private val allTitles = hashMapOf<Int, MalTitleHolder>()
+
+        data class MalList(
+            @JsonProperty("data") val data: List<Data>,
+            @JsonProperty("paging") val paging: Paging
+        )
+
+        data class MainPicture(
+            @JsonProperty("medium") val medium: String,
+            @JsonProperty("large") val large: String
+        )
+
+        data class Node(
+            @JsonProperty("id") val id: Int,
+            @JsonProperty("title") val title: String,
+            @JsonProperty("main_picture") val mainPicture: MainPicture
+        )
+
+        data class ListStatus(
+            @JsonProperty("status") val status: String,
+            @JsonProperty("score") val score: Int,
+            @JsonProperty("num_watched_episodes") val num_watched_episodes: Int,
+            @JsonProperty("is_rewatching") val is_rewatching: Boolean,
+            @JsonProperty("updated_at") val updated_at: String,
+        )
+
+        data class Data(
+            @JsonProperty("node") val node: Node,
+            @JsonProperty("list_status") val list_status: ListStatus
+        )
+
+        data class Paging(
+            @JsonProperty("next") val next: String
+        )
+
+        fun Context.getMalAnimeListSmart(): Array<Data>? {
+            println("HERERHEHRHHEHHRHR")
+            return if (getKey(MAL_SHOULD_UPDATE_LIST, true) == true) {
+                val list = getMalAnimeList()
+                if (list != null) {
+                    setKey(MAL_CACHED_LIST, list)
+                    setKey(MAL_SHOULD_UPDATE_LIST, false)
+                }
+                println("FFFFFFFFFFFFFFFHERERHEHRHHEHHRHR")
+
+                list
+            } else {
+                println("BBBBBBBBBBBBBBBBBB ${getKey(MAL_CACHED_LIST) as? Array<Data>}")
+
+                getKey(MAL_CACHED_LIST) as? Array<Data>
+
+            }
+        }
+
+        private fun Context.getMalAnimeList(): Array<Data>? {
+            return try {
+                var offset = 0
+                val fullList = mutableListOf<Data>()
+                val offsetRegex = Regex("""offset=(\d+)""")
+                while (true) {
+                    val data: MalList = getMalAnimeListSlice(offset) ?: break
+                    fullList.addAll(data.data)
+                    offset = offsetRegex.find(data.paging.next)?.groupValues?.get(1)?.toInt() ?: break
+                }
+                fullList.toTypedArray()
+                //mapper.readValue<MalAnime>(res)
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        private fun Context.getMalAnimeListSlice(offset: Int = 0): MalList? {
+            return try {
+                // https://myanimelist.net/apiconfig/references/api/v2#operation/users_user_id_animelist_get
+                val url = "https://api.myanimelist.net/v2/users/@me/animelist?fields=list_status&limit=100&offset=$offset"
+                val res = khttp.get(
+                    url, headers = mapOf(
+                        "Authorization" to "Bearer " + getKey<String>(
+                            MAL_TOKEN_KEY,
+                            MAL_ACCOUNT_ID
+                        )!!,
+                        //"Cache-Control" to "max-stale=$maxStale"
+                    )
+                ).text
+                mapper.readValue<MalList>(res)
+            } catch (e: Exception) {
+                null
+            }
+        }
+
 
         fun Context.getDataAboutMalId(id: Int): MalAnime? {
             return try {

@@ -44,6 +44,7 @@ import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.hasPIPPermission
 import com.lagradost.shiro.utils.AppUtils.hideSystemUI
 import com.lagradost.shiro.utils.AppUtils.init
+import com.lagradost.shiro.utils.AppUtils.installCache
 import com.lagradost.shiro.utils.AppUtils.isUsingMobileData
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
@@ -53,6 +54,7 @@ import com.lagradost.shiro.utils.Event
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
 import com.lagradost.shiro.utils.MALApi.Companion.authenticateMalLogin
 import com.lagradost.shiro.utils.ShiroApi
+import com.lagradost.shiro.utils.ShiroApi.Companion.getSlugFromMalId
 import com.lagradost.shiro.utils.ShiroApi.Companion.initShiroApi
 import com.lagradost.shiro.utils.VideoDownloadManager
 import com.lagradost.shiro.utils.VideoDownloadManager.maxConcurrentDownloads
@@ -126,18 +128,7 @@ class MainActivity : CyaneaAppCompatActivity() {
 
     // AUTH FOR LOGIN
     override fun onNewIntent(intent: Intent?) {
-        if (intent != null) {
-            val dataString = intent.dataString
-            if (dataString != null && dataString != "") {
-                if (dataString.contains("shiroapp")) {
-                    if (dataString.contains("/anilistlogin")) {
-                        authenticateLogin(dataString)
-                    } else if (dataString.contains("/mallogin")) {
-                        authenticateMalLogin(dataString)
-                    }
-                }
-            }
-        }
+        handleIntent(intent)
         super.onNewIntent(intent)
     }
 
@@ -382,6 +373,9 @@ class MainActivity : CyaneaAppCompatActivity() {
             }
         }
 
+        installCache()
+        handleIntent(intent)
+
         /*if (!VideoDownloadManager.isMyServiceRunning(this, VideoDownloadKeepAliveService::class.java)) {
             val mYourService = VideoDownloadKeepAliveService()
             val mServiceIntent = Intent(this, mYourService::class.java).putExtra(START_VALUE_KEY, RESTART_ALL_DOWNLOADS_AND_QUEUE)
@@ -534,12 +528,16 @@ class MainActivity : CyaneaAppCompatActivity() {
 
         window.setBackgroundDrawable(ColorDrawable(Cyanea.instance.backgroundColor))
         //val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+
+    }
+
+    private fun handleIntent(intent: Intent?) {
         val data: Uri? = intent?.data
+        println("INTENTE DATA ${intent?.data}")
 
         if (data != null) {
             val dataString = data.toString()
             if (dataString != "") {
-                println("GOT shiroapp auth awake: $dataString")
                 if (dataString.contains("shiroapp")) {
                     if (dataString.contains("/anilistlogin")) {
                         authenticateLogin(dataString)
@@ -550,16 +548,37 @@ class MainActivity : CyaneaAppCompatActivity() {
             }
 
             thread {
-                val urlRegex = Regex("""shiro\..{2,5}/anime/(.*)""")
-                val found = urlRegex.find(data.toString())
-                if (found != null) {
-                    val (slug) = found.destructured
-                    // Kinda hack using 2 slugs, but should work semi fine
-                    activity?.runOnUiThread {
-                        activity?.loadPage(slug, slug)
+                when {
+                    /** Shiro url */
+                    data.toString().contains("shiro.is") -> {
+                        val urlRegex = Regex("""shiro\.is/anime/(.*)""")
+                        val found = urlRegex.find(data.toString())
+                        if (found != null) {
+                            val (slug) = found.destructured
+                            // Kinda hack using 2 slugs, but should work semi fine
+                            activity?.runOnUiThread {
+                                activity?.loadPage(slug, slug)
+                            }
+                        }
+                    }
+                    /** MAL url */
+                    data.toString().contains("myanimelist.net") -> {
+                        val urlRegex = Regex("""myanimelist\.net/anime/(.*)/(.*)""")
+                        val found = urlRegex.find(data.toString())
+                        if (found != null) {
+                            val (malId, title) = found.destructured
+                            // Kinda hack using 2 slugs, but should work semi fine
+                            getSlugFromMalId(malId, title)?.let { slug ->
+                                activity?.runOnUiThread {
+                                    activity?.loadPage(slug, slug)
+                                }
+                            }
+                        }
                     }
                 }
             }
+
+
         } else {
             initGetUser()
         }

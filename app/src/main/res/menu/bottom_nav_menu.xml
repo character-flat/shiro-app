@@ -11,6 +11,11 @@
             android:icon="@drawable/search_white"
             android:title="@string/title_search"/>
     <item
+            android:id="@+id/navigation_library"
+            android:icon="@drawable/ic_baseline_collections_bookmark_24"
+            android:title="@string/library"/>
+
+    <item
             android:id="@+id/navigation_downloads"
             android:icon="@drawable/main_dload_icon_navview"
             android:title="@string/downloads"/>

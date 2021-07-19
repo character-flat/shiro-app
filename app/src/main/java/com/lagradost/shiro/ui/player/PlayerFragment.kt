@@ -132,7 +132,6 @@ data class PlayerData(
     @JsonProperty("card") val card: ShiroApi.AnimePageData?,
     @JsonProperty("startAt") val startAt: Long?,
     @JsonProperty("slug") val slug: String,
-
     @JsonProperty("anilistID") val anilistID: Int? = null,
     @JsonProperty("malID") val malID: Int? = null,
     @JsonProperty("fillerEpisodes") val fillerEpisodes: HashMap<Int, Boolean>? = null

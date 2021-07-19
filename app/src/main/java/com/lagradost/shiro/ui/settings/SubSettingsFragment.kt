@@ -8,7 +8,10 @@ import DataStore.getKeys
 import DataStore.mapper
 import DataStore.removeKey
 import DataStore.removeKeys
+import DataStore.setKey
+import MAL_CACHED_LIST
 import MAL_REFRESH_TOKEN_KEY
+import MAL_SHOULD_UPDATE_LIST
 import MAL_TOKEN_KEY
 import MAL_UNIXTIME_KEY
 import MAL_USER_KEY
@@ -20,6 +23,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.net.Uri
+import android.net.http.HttpResponseCache
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -43,6 +47,7 @@ import com.lagradost.shiro.utils.APIS
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
 import com.lagradost.shiro.utils.AppUtils.allApi
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
+import com.lagradost.shiro.utils.AppUtils.installCache
 import com.lagradost.shiro.utils.BackupUtils
 import com.lagradost.shiro.utils.BackupUtils.backup
 import com.lagradost.shiro.utils.BackupUtils.restore
@@ -338,6 +343,16 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                         updateFile.delete()
                     }
                     Toast.makeText(context, "Cleared image cache", Toast.LENGTH_LONG).show()
+                    return@setOnPreferenceClickListener true
+                }
+
+                val clearNetworkCache = findPreference("clear_network_cache") as Preference?
+                clearNetworkCache?.setOnPreferenceClickListener {
+                    HttpResponseCache.getInstalled()?.delete()
+                    getCurrentActivity()!!.installCache()
+                    context?.removeKey(MAL_CACHED_LIST)
+                    context?.setKey(MAL_SHOULD_UPDATE_LIST, true)
+                    Toast.makeText(context, "Cleared network cache", Toast.LENGTH_LONG).show()
                     return@setOnPreferenceClickListener true
                 }
 

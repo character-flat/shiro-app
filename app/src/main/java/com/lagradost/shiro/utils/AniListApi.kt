@@ -19,6 +19,7 @@ import com.lagradost.shiro.ui.settings.SettingsFragmentNew.Companion.settingsVie
 import com.lagradost.shiro.utils.AppUtils.openBrowser
 import com.lagradost.shiro.utils.AppUtils.splitQuery
 import com.lagradost.shiro.utils.AppUtils.unixTime
+import com.lagradost.shiro.utils.ShiroApi.Companion.maxStale
 import java.net.URL
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
@@ -188,7 +189,7 @@ class AniListApi {
             return filtered?.firstOrNull()
         }
 
-        private fun Activity.postApi(url: String, q: String): String {
+        private fun Activity.postApi(url: String, q: String, cache: Boolean = false): String {
             return try {
                 if (!checkToken()) {
                     // println("VARS_ " + vars)
@@ -199,7 +200,8 @@ class AniListApi {
                                 ANILIST_TOKEN_KEY,
                                 ANILIST_ACCOUNT_ID,
                                 ""
-                            )!!
+                            )!!,
+                            if (cache) "Cache-Control" to "max-stale=$maxStale" else "Cache-Control" to "no-cache"
                         ),
                         data = mapOf("query" to q),//(if (vars == null) mapOf("query" to q) else mapOf("query" to q, "variables" to vars))
                         timeout = 5.0 // REASONABLE TIMEOUT
@@ -229,7 +231,7 @@ class AniListApi {
             }"""
             try {
                 println("ID::::: $id")
-                val data = postApi("https://graphql.anilist.co", q)
+                val data = postApi("https://graphql.anilist.co", q, true)
                 var d: GetDataRoot? = null
                 try {
                     d = mapper.readValue<GetDataRoot>(data)

@@ -22,6 +22,12 @@
             android:summary="This will only free up storage, not fix any bugs"
     />
     <Preference
+            android:icon="@drawable/ic_baseline_delete_24"
+            app:key="clear_network_cache"
+            android:title="Clear network cache"
+    />
+
+    <Preference
             android:title="Back up all data"
             app:key="backup_btt"
             android:icon="@drawable/ic_baseline_settings_backup_restore_24"
