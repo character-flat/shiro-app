@@ -57,7 +57,7 @@ class StreamSB : ExtractorApi() {
                 }
             }
         } catch (e: Exception) {
-            println(e.printStackTrace())
+            e.printStackTrace()
         }
         return extractedLinksList
     }

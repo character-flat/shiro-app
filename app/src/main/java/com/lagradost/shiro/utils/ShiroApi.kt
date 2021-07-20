@@ -191,7 +191,7 @@ class ShiroApi {
                     token
                 )
             } catch (e: Exception) {
-                println(e.printStackTrace())
+                e.printStackTrace()
                 return null
             }
         }
@@ -262,7 +262,7 @@ class ShiroApi {
                     mapped
                 else null
             } catch (e: Exception) {
-                println(e.printStackTrace())
+                e.printStackTrace()
                 null
             }
         }
@@ -280,7 +280,7 @@ class ShiroApi {
                     return mapped.data
                 }
             } catch (e: Exception) {
-                println(e.printStackTrace())
+                e.printStackTrace()
             }
             return null
         }
@@ -300,7 +300,7 @@ class ShiroApi {
                 val json = mapper.readValue<List<AllAnimeJson>>(res.text)
                 return json.find { it.slug == slug }?.mal_id
             } catch (e: Exception) {
-                println(e.printStackTrace().toString())
+                e.printStackTrace()
             }
             return null
         }
@@ -322,7 +322,7 @@ class ShiroApi {
                 val json = mapper.readValue<List<AllAnimeJson>>(res.text)
                 return json.find { it.mal_id == malId }?.slug
             } catch (e: Exception) {
-                println(e.printStackTrace().toString())
+                e.printStackTrace()
             }
             return null
         }

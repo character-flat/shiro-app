@@ -401,7 +401,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                                 }
                                 builder.show()
                             } catch (e: Exception) {
-                                println(e.printStackTrace())
+                                e.printStackTrace()
                                 Toast.makeText(activity, "Error restoring backup file :(", Toast.LENGTH_LONG).show()
                             }
                         }

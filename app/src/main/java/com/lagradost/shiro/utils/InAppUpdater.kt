@@ -118,7 +118,7 @@ object InAppUpdater {
             }
 
         } catch (e: Exception) {
-            println(e.printStackTrace())
+            e.printStackTrace()
             return Update(false, null, null, null)
         }
     }
@@ -155,7 +155,7 @@ object InAppUpdater {
                     rFile.createNewFile()
                 }
             } catch (e: Exception) {
-                println(e.printStackTrace())
+                e.printStackTrace()
                 this.runOnUiThread {
                     Toast.makeText(localContext, "Permission error when downloading update", Toast.LENGTH_SHORT).show()
                 }

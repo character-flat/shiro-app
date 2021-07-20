@@ -1,5 +1,6 @@
 package com.lagradost.shiro.ui
 
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.Menu
 import android.view.View.INVISIBLE
@@ -14,6 +15,7 @@ import com.google.android.gms.cast.framework.CastSession
 import com.google.android.gms.cast.framework.media.uicontroller.UIController
 import com.google.android.gms.cast.framework.media.widget.ExpandedControllerActivity
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import kotlinx.android.synthetic.main.bottom_sheet.*
@@ -46,6 +48,10 @@ class SelectSourceController(val view: ImageView) : UIController() {
             if (items.isNotEmpty()) {
                 val bottomSheetDialog = BottomSheetDialog(view.context, R.style.AppBottomSheetDialogTheme)
                 bottomSheetDialog.setContentView(R.layout.bottom_sheet)
+                bottomSheetDialog.bottom_sheet_top_bar.backgroundTintList = ColorStateList.valueOf(
+                    Cyanea.instance.backgroundColorDark
+                )
+
                 val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
                 val arrayAdapter = ArrayAdapter<String>(view.context, R.layout.bottom_single_choice)
                 arrayAdapter.addAll(ArrayList(items.map { it.second }))

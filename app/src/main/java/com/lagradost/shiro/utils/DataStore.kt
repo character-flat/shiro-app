@@ -110,6 +110,7 @@ object DataStore {
             val json: String = getSharedPrefs().getString(path, null) ?: return defVal
             return json.toKotlinObject()
         } catch (e: Exception) {
+            e.printStackTrace()
             return null
         }
     }

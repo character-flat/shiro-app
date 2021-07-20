@@ -80,4 +80,12 @@
     -->
     <color name="cyanea_primary_reference">#FEFEFE</color>
     <color name="cyanea_accent_reference">#FEFEFE</color>
+
+    <!-- MAL -->
+    <color name="colorWatching">#00C853</color>
+    <color name="colorCompleted">#304FFE</color>
+    <color name="colorOnHold">#FFAB00</color>
+    <color name="colorDropped">#D50000</color>
+    <color name="colorPlanToWatch">#596364</color>
+
 </resources>

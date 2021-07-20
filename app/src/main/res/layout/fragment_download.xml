@@ -65,6 +65,7 @@
                        android:layout_margin="10dp"
                        android:src="@drawable/netflix_pause"
                        android:id="@+id/queue_pause_play"
+                       app:tint="?attr/white"
                        android:layout_gravity="end|center_vertical"
                        android:background="?android:attr/selectableItemBackgroundBorderless"
                        android:contentDescription="Pause/Start queue"/>

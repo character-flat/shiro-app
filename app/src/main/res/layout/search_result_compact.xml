@@ -6,7 +6,6 @@
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:orientation="vertical"
-        android:layoutDirection="rtl"
 >
     <androidx.cardview.widget.CardView
             android:id="@+id/backgroundCard"

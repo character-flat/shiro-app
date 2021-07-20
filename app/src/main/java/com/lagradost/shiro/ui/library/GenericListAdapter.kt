@@ -6,13 +6,18 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.lagradost.shiro.utils.MALApi
 
 class BaseViewHolder(container: ViewGroup) : RecyclerView.ViewHolder(container)
 
 class BaseItemCallback<T : Any> : DiffUtil.ItemCallback<T>() {
     override fun areItemsTheSame(oldItem: T, newItem: T) = oldItem.toString() == newItem.toString()
     @SuppressLint("DiffUtilEquals")
-    override fun areContentsTheSame(oldItem: T, newItem: T) = oldItem == newItem
+    override fun areContentsTheSame(oldItem: T, newItem: T): Boolean {
+        return if (oldItem is MALApi.Companion.Data && newItem is MALApi.Companion.Data){
+            oldItem.node.id == newItem.node.id
+        } else oldItem == newItem
+    }
 }
 
 

@@ -6,6 +6,7 @@ import DataStore.containsKey
 import DataStore.getKey
 import DataStore.removeKey
 import DataStore.setKey
+import MAL_SHOULD_UPDATE_LIST
 import MAL_TOKEN_KEY
 import SUBSCRIPTIONS_BOOKMARK_KEY
 import SUBSCRIPTIONS_KEY
@@ -681,6 +682,8 @@ class ResultFragment : Fragment() {
                         var episodes = holder?.episodes ?: malHolder?.num_episodes ?: 0
 
                         fun syncData() {
+                            context?.setKey(MAL_SHOULD_UPDATE_LIST, true)
+
                             thread {
                                 val anilistPost =
                                     if (hasAniList) resultViewModel?.currentAniListId?.value?.let {
@@ -867,6 +870,9 @@ class ResultFragment : Fragment() {
                             } else {
                                 val bottomSheetDialog = BottomSheetDialog(activity, R.style.AppBottomSheetDialogTheme)
                                 bottomSheetDialog.setContentView(R.layout.bottom_sheet)
+                                bottomSheetDialog.bottom_sheet_top_bar.backgroundTintList =
+                                    ColorStateList.valueOf(Cyanea.instance.backgroundColorDark)
+
                                 val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
                                 res.choiceMode = CHOICE_MODE_SINGLE
                                 res.adapter = arrayAdapter
@@ -887,6 +893,9 @@ class ResultFragment : Fragment() {
                         status_btt?.setOnClickListener {
                             val bottomSheetDialog = BottomSheetDialog(activity, R.style.AppBottomSheetDialogTheme)
                             bottomSheetDialog.setContentView(R.layout.bottom_sheet)
+                            bottomSheetDialog.bottom_sheet_top_bar.backgroundTintList =
+                                ColorStateList.valueOf(Cyanea.instance.backgroundColorDark)
+
                             val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
                             val arrayAdapter = ArrayAdapter<String>(activity, R.layout.bottom_single_choice)
                             val choices = listOf(

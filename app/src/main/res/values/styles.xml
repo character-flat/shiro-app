@@ -120,15 +120,16 @@
 
     <style name="Theme.Widget.Tabs" parent="Widget.MaterialComponents.TabLayout.Colored">
         <item name="tabGravity">center</item>
-        <item name="backgroundTint">@color/transparent</item>
         <item name="tabIndicator">@drawable/tab_selector</item>
-        <item name="tabIndicatorColor">?attr/colorPrimary</item>
-        <item name="tabTextColor">?attr/colorPrimary</item>
+        <item name="tabIndicatorColor">?attr/textColor</item>
+        <item name="tabTextColor">?attr/textColor</item>
+        <item name="tabBackground">@color/transparent</item>
         <item name="tabIndicatorFullWidth">false</item>
         <item name="tabIndicatorHeight">3dp</item>
         <item name="tabInlineLabel">true</item>
         <item name="tabMinWidth">75dp</item>
         <item name="tabMode">scrollable</item>
+
     </style>
 
     <style name="SettingsItem">

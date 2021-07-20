@@ -2,6 +2,7 @@ package com.lagradost.shiro.utils
 
 import DataStore.getKey
 import DataStore.setKey
+import DataStore.toKotlinObject
 import MAL_CACHED_LIST
 import MAL_REFRESH_TOKEN_KEY
 import MAL_SHOULD_UPDATE_LIST
@@ -136,24 +137,65 @@ class MALApi {
         data class Node(
             @JsonProperty("id") val id: Int,
             @JsonProperty("title") val title: String,
-            @JsonProperty("main_picture") val mainPicture: MainPicture
+            @JsonProperty("main_picture") val main_picture: MainPicture,
+            @JsonProperty("alternative_titles") val alternative_titles: AlternativeTitles,
+            @JsonProperty("media_type") val media_type: String,
+            @JsonProperty("num_episodes") val num_episodes: Int,
+            @JsonProperty("status") val status: String,
+            @JsonProperty("start_date") val start_date: String?,
+            @JsonProperty("end_date") val end_date: String?,
+            @JsonProperty("average_episode_duration") val average_episode_duration: Int,
+            @JsonProperty("synopsis") val synopsis: String,
+            @JsonProperty("mean") val mean: Double,
+            @JsonProperty("genres") val genres: List<Genres>,
+            @JsonProperty("rank") val rank: Int,
+            @JsonProperty("popularity") val popularity: Int,
+            @JsonProperty("num_list_users") val num_list_users: Int,
+            @JsonProperty("num_favorites") val num_favorites: Int,
+            @JsonProperty("num_scoring_users") val num_scoring_users: Int,
+            @JsonProperty("start_season") val start_season: StartSeason?,
+            @JsonProperty("broadcast") val broadcast: Broadcast?,
+            @JsonProperty("my_list_status") val my_list_status: ListStatus,
+            @JsonProperty("nsfw") val nsfw: String,
+            @JsonProperty("created_at") val created_at: String,
+            @JsonProperty("updated_at") val updated_at: String
         )
 
         data class ListStatus(
             @JsonProperty("status") val status: String,
             @JsonProperty("score") val score: Int,
-            @JsonProperty("num_watched_episodes") val num_watched_episodes: Int,
+            @JsonProperty("num_episodes_watched") val num_episodes_watched: Int,
             @JsonProperty("is_rewatching") val is_rewatching: Boolean,
             @JsonProperty("updated_at") val updated_at: String,
         )
 
         data class Data(
             @JsonProperty("node") val node: Node,
-            @JsonProperty("list_status") val list_status: ListStatus
         )
 
         data class Paging(
-            @JsonProperty("next") val next: String
+            @JsonProperty("next") val next: String?
+        )
+
+        data class AlternativeTitles(
+            @JsonProperty("synonyms") val synonyms: List<String>,
+            @JsonProperty("en") val en: String,
+            @JsonProperty("ja") val ja: String
+        )
+
+        data class Genres(
+            @JsonProperty("id") val id: Int,
+            @JsonProperty("name") val name: String
+        )
+
+        data class StartSeason(
+            @JsonProperty("year") val year: Int,
+            @JsonProperty("season") val season: String
+        )
+
+        data class Broadcast(
+            @JsonProperty("day_of_the_week") val day_of_the_week: String?,
+            @JsonProperty("start_time") val start_time: String?
         )
 
         fun Context.getMalAnimeListSmart(): Array<Data>? {
@@ -163,7 +205,6 @@ class MALApi {
                     setKey(MAL_CACHED_LIST, list)
                     setKey(MAL_SHOULD_UPDATE_LIST, false)
                 }
-
                 list
             } else {
                 getKey(MAL_CACHED_LIST) as? Array<Data>
@@ -178,7 +219,7 @@ class MALApi {
                 while (true) {
                     val data: MalList = getMalAnimeListSlice(offset) ?: break
                     fullList.addAll(data.data)
-                    offset = offsetRegex.find(data.paging.next)?.groupValues?.get(1)?.toInt() ?: break
+                    offset = data.paging.next?.let { offsetRegex.find(it)?.groupValues?.get(1)?.toInt() } ?: break
                 }
                 fullList.toTypedArray()
                 //mapper.readValue<MalAnime>(res)
@@ -187,10 +228,17 @@ class MALApi {
             }
         }
 
+        fun convertToStatus(string: String): MALApi.Companion.MalStatusType {
+            return fromIntToAnimeStatus(malStatusAsString.indexOf(string))
+        }
+
         private fun Context.getMalAnimeListSlice(offset: Int = 0): MalList? {
             return try {
+                // Very lackluster docs
                 // https://myanimelist.net/apiconfig/references/api/v2#operation/users_user_id_animelist_get
-                val url = "https://api.myanimelist.net/v2/users/@me/animelist?fields=list_status&limit=100&offset=$offset"
+                val url =
+                    "https://api.myanimelist.net/v2/users/@me/animelist?fields=num_episodes,media_type,status,start_date,end_date,synopsis,alternative_titles,mean,genres,rank,num_list_users,nsfw,average_episode_duration,num_favorites,popularity,num_scoring_users,start_season,favorites_info,broadcast,my_list_status{start_date,finish_date},created_at,updated_at&limit=100&offset=$offset"
+
                 val res = khttp.get(
                     url, headers = mapOf(
                         "Authorization" to "Bearer " + getKey<String>(
@@ -200,8 +248,9 @@ class MALApi {
                         //"Cache-Control" to "max-stale=$maxStale"
                     )
                 ).text
-                mapper.readValue<MalList>(res)
+                res.toKotlinObject()
             } catch (e: Exception) {
+                e.printStackTrace()
                 null
             }
         }

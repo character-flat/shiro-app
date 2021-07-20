@@ -30,7 +30,7 @@ class VideoDownloadRestartReceiver : BroadcastReceiver() {
                 )
             }
         } catch (e: Exception) {
-            println(e.printStackTrace())
+            e.printStackTrace()
         }
     }
 }

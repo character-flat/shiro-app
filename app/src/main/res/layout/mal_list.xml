@@ -12,6 +12,7 @@
             android:clipToPadding="false"
             android:paddingTop="5dp"
             android:id="@+id/library_card_space"
+            tools:listitem="@layout/list_card_compact"
             android:orientation="vertical">
     </com.lagradost.shiro.ui.AutofitRecyclerView>
 </LinearLayout>
