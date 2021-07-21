@@ -43,6 +43,7 @@ import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.DownloadManager
 import com.lagradost.shiro.utils.VideoDownloadManager
+import com.lagradost.shiro.utils.VideoDownloadManager.downloadStatus
 import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
 import kotlinx.android.synthetic.main.fragment_download_child.*
 
@@ -198,7 +199,6 @@ class DownloadFragmentChild : Fragment() {
                 // ================ DOWNLOAD STUFF ================
                 fun deleteFile() {
                     println("FIXED:::: " + child.internalId)
-
                     if (VideoDownloadManager.deleteFileAndUpdateSettings(requireContext(), child.internalId)) {
                         activity?.runOnUiThread {
                             card.visibility = GONE
@@ -308,7 +308,7 @@ class DownloadFragmentChild : Fragment() {
                         popup.setOnMenuItemClickListener {
                             when (it.itemId) {
                                 R.id.res_resumedload -> {
-                                    if (VideoDownloadManager.downloadStatus.containsKey(child.internalId)) {
+                                    if (downloadStatus.containsKey(child.internalId)) {
                                         VideoDownloadManager.downloadEvent.invoke(
                                             Pair(
                                                 child.internalId,
@@ -323,6 +323,7 @@ class DownloadFragmentChild : Fragment() {
                                     if (pkg != null) {
                                         VideoDownloadManager.downloadFromResume(requireContext(), pkg)
                                     }
+
                                 }
                                 R.id.res_stopdload -> {
                                     VideoDownloadManager.downloadEvent.invoke(

@@ -31,7 +31,7 @@
                     android:layout_width="125dp"
                     android:layout_height="125dp"
                     android:padding="10dp"
-                    app:cardCornerRadius="75dp"
+                    app:cardCornerRadius="62.5dp"
                     android:foreground="@drawable/circle"
                     app:cardElevation="20dp"
                     android:layout_marginBottom="10dp"

@@ -22,7 +22,9 @@ import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
+import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 import android.content.res.ColorStateList
+import android.content.res.Configuration
 import android.database.ContentObserver
 import android.graphics.Color
 import android.graphics.drawable.Icon
@@ -40,6 +42,7 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -476,6 +479,21 @@ class PlayerFragment : Fragment() {
         }
     }
 
+    private fun changePlayerTextVisibility(visible: Boolean) {
+        player_speed_text?.isVisible = visible
+        sources_text?.isVisible = visible
+        resize_text?.isVisible = visible
+        skip_op_text?.isVisible = visible
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        val isInMultiWindow = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+            activity?.isInMultiWindowMode ?: false
+        } else false
+
+        changePlayerTextVisibility(newConfig.orientation != SCREEN_ORIENTATION_PORTRAIT && !isInMultiWindow)
+        super.onConfigurationChanged(newConfig)
+    }
 
     private var receiver: BroadcastReceiver? = null
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
@@ -545,9 +563,9 @@ class PlayerFragment : Fragment() {
         actions.add(getRemoteAction(R.drawable.go_back_30, "Go Back", PlayerEventType.SeekBack))
 
         if (exoPlayer.isPlaying) {
-            actions.add(getRemoteAction(R.drawable.netflix_pause, "Pause", PlayerEventType.Pause))
+            actions.add(getRemoteAction(R.drawable.exo_controls_pause, "Pause", PlayerEventType.Pause))
         } else {
-            actions.add(getRemoteAction(R.drawable.netflix_play, "Play", PlayerEventType.Play))
+            actions.add(getRemoteAction(R.drawable.exo_controls_play, "Play", PlayerEventType.Play))
         }
 
         actions.add(getRemoteAction(R.drawable.go_forward_30, "Go Forward", PlayerEventType.SeekForward))

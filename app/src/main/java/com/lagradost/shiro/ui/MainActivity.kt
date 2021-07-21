@@ -2,6 +2,7 @@ package com.lagradost.shiro.ui
 
 import DataStore.getKey
 import DataStore.getKeys
+import DataStore.removeKey
 import DataStore.removeKeys
 import android.annotation.SuppressLint
 import android.app.PictureInPictureParams
@@ -58,6 +59,7 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.getSlugFromMalId
 import com.lagradost.shiro.utils.ShiroApi.Companion.initShiroApi
 import com.lagradost.shiro.utils.VideoDownloadManager
 import com.lagradost.shiro.utils.VideoDownloadManager.downloadCheck
+import com.lagradost.shiro.utils.VideoDownloadManager.downloadStatus
 import com.lagradost.shiro.utils.VideoDownloadManager.maxConcurrentDownloads
 import com.lagradost.shiro.utils.mvvm.observe
 import kotlinx.coroutines.flow.merge
@@ -334,19 +336,24 @@ class MainActivity : CyaneaAppCompatActivity() {
 
         // Instant setting unlike posting
         masterViewModel!!.isQueuePaused.value = false
-
-        val keys = getKeys(VideoDownloadManager.KEY_RESUME_PACKAGES)
-        val resumePkg = keys.mapNotNull { k -> getKey<VideoDownloadManager.DownloadResumePackage>(k) }
+        val keys = getKey<List<Int>>(VideoDownloadManager.KEY_RESUME_CURRENT)
+        val resumePkg = keys?.mapNotNull { k ->
+            VideoDownloadManager.getDownloadResumePackage(
+                this,
+                k
+            )
+        }
 
         // To remove a bug where this is permanent
-        removeKeys(VideoDownloadManager.KEY_RESUME_PACKAGES)
+        removeKey(VideoDownloadManager.KEY_RESUME_CURRENT)
+
         // ADD QUEUE
         // array needed because List gets cast exception to linkedList for some unknown reason
         val resumeQueue =
             getKey<Array<VideoDownloadManager.DownloadQueueResumePackage>>(VideoDownloadManager.KEY_RESUME_QUEUE_PACKAGES)
 
         val allList = mutableListOf<Int>()
-        allList.addAll(resumePkg.map { it.item.ep.id })
+        allList.addAll(resumePkg?.map { it.item.ep.id } ?: listOf())
         allList.addAll(resumeQueue?.map { it.pkg.item.ep.id } ?: listOf())
         val size = allList.distinctBy { it }.size
         if (size > 0) {
@@ -358,17 +365,15 @@ class MainActivity : CyaneaAppCompatActivity() {
             masterViewModel!!.isQueuePaused.value = true
         }
 
-        for (pkg in resumePkg) { // ADD ALL CURRENT DOWNLOADS
+        for (pkg in resumePkg ?: listOf()) { // ADD ALL CURRENT DOWNLOADS
             VideoDownloadManager.downloadFromResume(this, pkg, false)
         }
         resumeQueue?.sortedBy { it.index }?.forEach {
-            VideoDownloadManager.downloadFromResume(this, it.pkg)
+            VideoDownloadManager.downloadFromResume(this, it.pkg, false)
         }
-
 
         val statusBarHidden = settingsManager.getBoolean("statusbar_hidden", true)
         statusHeight = changeStatusBarState(statusBarHidden)
-
 
         //https://stackoverflow.com/questions/52594181/how-to-know-if-user-has-disabled-picture-in-picture-feature-permission
         //https://developer.android.com/guide/topics/ui/picture-in-picture

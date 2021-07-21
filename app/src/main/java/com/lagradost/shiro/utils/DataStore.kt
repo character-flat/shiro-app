@@ -33,7 +33,6 @@ const val MAL_USER_KEY: String = "mal_user" // user data like profile
 const val MAL_CACHED_LIST: String = "mal_cached_list"
 const val MAL_SHOULD_UPDATE_LIST: String = "mal_should_update_list"
 
-
 const val HAS_DISMISSED_SEARCH_INFO: String = "HAS_DISMISSED_SEARCH_INFO" // For the search tutorial
 
 object DataStore {

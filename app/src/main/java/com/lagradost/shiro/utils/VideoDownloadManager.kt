@@ -142,6 +142,8 @@ object VideoDownloadManager {
     const val KEY_RESUME_PACKAGES = "download_resume_current"
     const val KEY_DOWNLOAD_INFO = "download_info"
     const val KEY_RESUME_QUEUE_PACKAGES = "download_q_resume"
+    const val KEY_RESUME_CURRENT = "download_current_resume"
+
 
     val downloadStatus = HashMap<Int, DownloadType>()
     val downloadStatusEvent = Event<Pair<Int, DownloadType>>()
@@ -658,7 +660,6 @@ object VideoDownloadManager {
         if (currentDownloads.size < maxConcurrentDownloads && downloadQueue.size > 0
             && masterViewModel?.isQueuePaused?.value != true
         ) {
-
             // If on data => pause downloads
             if (settingsManager?.getBoolean(
                     "disable_data_downloads",
@@ -779,9 +780,12 @@ object VideoDownloadManager {
         return context.getKey(KEY_RESUME_PACKAGES, id.toString())
     }
 
-    fun downloadFromResume(context: Context, pkg: DownloadResumePackage, setKey: Boolean = true) {
+    fun downloadFromResume(context: Context, pkg: DownloadResumePackage, showToast: Boolean = true) {
         if (!currentDownloads.any { it == pkg.item.ep.id } && !downloadQueue.any { it.item.ep.id == pkg.item.ep.id }) {
-            if (currentDownloads.size == maxConcurrentDownloads) {
+            if (currentDownloads.size == maxConcurrentDownloads ||
+                // This makes it show toast when queue is paused too, but not when app is opened
+                (masterViewModel?.isQueuePaused?.value == true && showToast)
+            ) {
                 main {
                     Toast.makeText(
                         context,
@@ -793,7 +797,7 @@ object VideoDownloadManager {
             downloadQueue.addLast(pkg)
             masterViewModel?.downloadQueue?.postValue(downloadQueue)
             downloadCheck(context)
-            if (setKey) saveQueue(context)
+            saveQueue(context)
         }
     }
 
@@ -802,6 +806,7 @@ object VideoDownloadManager {
         val dQueue =
             downloadQueue.toList().mapIndexed { index, any -> DownloadQueueResumePackage(index, any) }
                 .toTypedArray()
+        context.setKey(KEY_RESUME_CURRENT, currentDownloads)
         context.setKey(KEY_RESUME_QUEUE_PACKAGES, dQueue)
     }
 

@@ -81,6 +81,18 @@
             app:min="2"
     >
     </SeekBarPreference>
+    <SeekBarPreference
+            android:summary="Double in Landscape mode"
+            android:icon="@drawable/ic_baseline_view_column_24"
+            android:title="Library list view column count"
+            android:defaultValue="1"
+            android:key="library_span_count"
+            app:showSeekBarValue="true"
+            app:seekBarIncrement="1"
+            android:max="3"
+            app:min="1"
+    >
+    </SeekBarPreference>
     <SwitchPreference
             android:icon="@drawable/ic_baseline_new_releases_24"
             app:key="new_results_page"

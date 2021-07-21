@@ -2,6 +2,7 @@ package com.lagradost.shiro.ui.library
 
 import DataStore.setKey
 import MAL_SHOULD_UPDATE_LIST
+import android.content.Context
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.os.Bundle
@@ -11,6 +12,8 @@ import android.view.ViewGroup
 import android.widget.AbsListView.CHOICE_MODE_SINGLE
 import android.widget.ArrayAdapter
 import android.widget.ListView
+import android.widget.Toast
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
@@ -19,11 +22,13 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.tabs.TabLayoutMediator
 import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.library.LibraryFragment.Companion.libraryViewModel
+import com.lagradost.shiro.ui.library.LibraryFragment.Companion.onMenuCollapsed
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.settingsManager
-import com.lagradost.shiro.utils.Coroutines.main
+import com.lagradost.shiro.utils.Event
 import com.lagradost.shiro.utils.MALApi
 import com.lagradost.shiro.utils.MALApi.Companion.getMalAnimeListSmart
 import com.lagradost.shiro.utils.mvvm.observe
@@ -33,13 +38,20 @@ import kotlinx.android.synthetic.main.mal_list.view.*
 import kotlin.concurrent.thread
 
 val tabs = listOf(
-    "All Anime",
     "Currently watching",
-    "Completed",
+    "Plan to Watch",
     "On Hold",
+    "Completed",
     "Dropped",
-    "Plan to Watch"
+    "All Anime",
 )
+
+class CustomSearchView(context: Context) : SearchView(context) {
+    override fun onActionViewCollapsed() {
+        onMenuCollapsed.invoke(true)
+        super.onActionViewCollapsed()
+    }
+}
 
 class LibraryFragment : Fragment() {
     data class SortingMethod(val name: String, val id: Int)
@@ -71,6 +83,37 @@ class LibraryFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_library, container, false)
     }
 
+    private fun sortCurrentList(sortingMethod: Int? = null, text: String? = null) {
+        result_tabs?.selectedTabPosition?.let { it ->
+            (sortingMethod ?: libraryViewModel?.sortMethods?.get(it))?.let { sortingMethodFixed ->
+                if (sortingMethodFixed != SEARCH) libraryViewModel?.sortMethods?.set(it, sortingMethodFixed)
+                libraryViewModel?.sortedMalList?.value?.let { fullArray ->
+                    libraryViewModel?.sortNormalArray(fullArray[it], sortingMethodFixed, text)?.let { sorted ->
+                        libraryViewModel?.sortedMalList?.postValue(libraryViewModel?.sortedMalList?.value?.apply {
+                            this[it] = sorted
+                        })
+                    }
+                }
+            }
+
+        }
+    }
+
+    private fun sortCurrentListEventFunction(boolean: Boolean) {
+        libraryViewModel?.sortedMalList?.value?.getOrNull(5)?.let {
+            libraryViewModel?.updateList(it)
+        }
+    }
+
+    override fun onResume() {
+        onMenuCollapsed += ::sortCurrentListEventFunction
+        super.onResume()
+    }
+
+    override fun onStop() {
+        onMenuCollapsed -= ::sortCurrentListEventFunction
+        super.onStop()
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -79,19 +122,42 @@ class LibraryFragment : Fragment() {
         /*tabs.forEach {
             result_tabs?.addTab(result_tabs.newTab().setText(it))
         }*/
+        fragment_list_root.setPadding(0, MainActivity.statusHeight, 0, 0)
 
-        swipe_container?.setOnRefreshListener {
-            context?.setKey(MAL_SHOULD_UPDATE_LIST, true)
-            requestMalList()
-        }
+//        swipe_container?.setOnRefreshListener {
+//            context?.setKey(MAL_SHOULD_UPDATE_LIST, true)
+//            requestMalList()
+//        }
+
+        val searchView: CustomSearchView =
+            library_toolbar.menu.findItem(R.id.action_search).actionView as CustomSearchView
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                sortCurrentList(SEARCH, query)
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                sortCurrentList(SEARCH, newText)
+                return true
+            }
+        })
+
 
         library_toolbar?.setOnMenuItemClickListener {
             when (it.itemId) {
+                R.id.action_reload -> {
+                    context?.setKey(MAL_SHOULD_UPDATE_LIST, true)
+                    requestMalList()
+                    Toast.makeText(context, "Refreshing your list", Toast.LENGTH_SHORT).show()
+                }
+
                 R.id.action_sort -> {
                     val bottomSheetDialog = BottomSheetDialog(getCurrentActivity()!!, R.style.AppBottomSheetDialogTheme)
                     bottomSheetDialog.setContentView(R.layout.bottom_sheet)
                     bottomSheetDialog.main_text.text = "Sort by"
-                    bottomSheetDialog.bottom_sheet_top_bar.backgroundTintList = ColorStateList.valueOf(Cyanea.instance.backgroundColorDark)
+                    bottomSheetDialog.bottom_sheet_top_bar.backgroundTintList =
+                        ColorStateList.valueOf(Cyanea.instance.backgroundColorDark)
 
                     val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
                     val arrayAdapter = ArrayAdapter<String>(
@@ -113,19 +179,7 @@ class LibraryFragment : Fragment() {
                     )
                     res.setOnItemClickListener { _, _, position, _ ->
                         val sel = normalSortingMethods[position].id
-
-                        context?.let { ctx ->
-                            result_tabs?.selectedTabPosition?.let { it ->
-                                libraryViewModel?.sortMethods?.set(it, sel)
-                                libraryViewModel?.sortedMalList?.value?.let { fullArray ->
-                                    libraryViewModel?.sortNormalArray(fullArray[it], sel)?.let { sorted ->
-                                        libraryViewModel?.sortedMalList?.postValue(libraryViewModel?.sortedMalList?.value?.apply {
-                                            this[it] = sorted
-                                        })
-                                    }
-                                }
-                            }
-                        }
+                        sortCurrentList(sel)
                         bottomSheetDialog.dismiss()
                     }
 
@@ -150,6 +204,14 @@ class LibraryFragment : Fragment() {
             tab.text = tabs.getOrNull(position) ?: ""
         }.attach()
 
+
+        observe(libraryViewModel!!.sortedMalList) { list ->
+            for (i in 0..tabs.size){
+                val size = list?.getOrNull(i)?.size ?: 0
+                result_tabs?.getTabAt(i)?.text = tabs[i] + "($size)"
+            }
+
+        }
         /*result_tabs?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 val pos = tab?.position
@@ -169,15 +231,13 @@ class LibraryFragment : Fragment() {
             context?.getMalAnimeListSmart()?.let {
                 libraryViewModel?.updateList(it)
             }
-            main {
-                swipe_container?.isRefreshing = false
-            }
         }
 
     }
 
     companion object {
         var libraryViewModel: LibraryViewModel? = null
+        val onMenuCollapsed = Event<Boolean>()
 
         fun newInstance() =
             LibraryFragment().apply {
@@ -213,8 +273,7 @@ class CustomPagerAdapter(val context: FragmentActivity) :
     class CardViewHolder
     constructor(itemView: View, val context: FragmentActivity) :
         RecyclerView.ViewHolder(itemView) {
-        private val spanCountLandscape = 2
-        private val spanCountPortrait = 1
+        private val spanCountPortrait = settingsManager?.getInt("library_span_count", 1) ?: 1
 
         fun bind(position: Int) {
             val orientation = context.resources.configuration.orientation
@@ -223,7 +282,7 @@ class CustomPagerAdapter(val context: FragmentActivity) :
                     false
                 ) == true
             ) {
-                itemView.library_card_space?.spanCount = spanCountLandscape
+                itemView.library_card_space?.spanCount = spanCountPortrait * 2
             } else {
                 itemView.library_card_space?.spanCount = spanCountPortrait
             }

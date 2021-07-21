@@ -34,13 +34,13 @@
         </com.google.android.material.tabs.TabLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/swipe_container"
-            android:layout_width="match_parent"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:layout_height="match_parent">
+<!--    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout-->
+<!--            android:id="@+id/swipe_container"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:paddingLeft="5dp"-->
+<!--            android:paddingRight="5dp"-->
+<!--            app:layout_behavior="@string/appbar_scrolling_view_behavior"-->
+<!--            android:layout_height="match_parent">-->
 
 
     <androidx.viewpager2.widget.ViewPager2
@@ -49,7 +49,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
     </androidx.viewpager2.widget.ViewPager2>
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+<!--    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>-->
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

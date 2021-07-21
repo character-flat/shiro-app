@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.lagradost.shiro.utils.MALApi
 import com.lagradost.shiro.utils.MALApi.Companion.convertToStatus
+import me.xdrop.fuzzywuzzy.FuzzySearch
 
 const val DEFAULT_SORT = 0
 const val ALPHA_SORT = 1
@@ -12,6 +13,7 @@ const val SCORE_SORT = 3
 const val SCORE_SORT_REVERSED = 4
 const val RANK_SORT = 5
 const val RANK_SORT_REVERSED = 6
+const val SEARCH = 7
 
 
 class LibraryViewModel : ViewModel() {
@@ -30,6 +32,7 @@ class LibraryViewModel : ViewModel() {
     fun sortNormalArray(
         array: Array<MALApi.Companion.Data>,
         sortMethod: Int? = null,
+        searchText: String? = null
     ): Array<MALApi.Companion.Data> {
 
         return when (sortMethod) {
@@ -62,6 +65,12 @@ class LibraryViewModel : ViewModel() {
                 array.sortBy { -it.node.rank }
                 array
             }
+            SEARCH -> {
+                if (searchText != null) {
+                    array.sortBy { -FuzzySearch.partialRatio(searchText, it.node.title) }
+                }
+                array
+            }
             else -> array
         }
 
@@ -70,17 +79,17 @@ class LibraryViewModel : ViewModel() {
     fun updateList(list: Array<MALApi.Companion.Data>) {
         sortedMalList.postValue(
             arrayOf(
-                sortNormalArray(list, sortMethods[0]),
                 sortNormalArray(list.filter { convertToStatus(it.node.my_list_status.status) == MALApi.Companion.MalStatusType.Watching }
+                    .toTypedArray(), sortMethods[0]),
+                sortNormalArray(list.filter { convertToStatus(it.node.my_list_status.status) == MALApi.Companion.MalStatusType.PlanToWatch }
                     .toTypedArray(), sortMethods[1]),
-                sortNormalArray(list.filter { convertToStatus(it.node.my_list_status.status) == MALApi.Companion.MalStatusType.Completed }
-                    .toTypedArray(), sortMethods[2]),
                 sortNormalArray(list.filter { convertToStatus(it.node.my_list_status.status) == MALApi.Companion.MalStatusType.OnHold }
+                    .toTypedArray(), sortMethods[2]),
+                sortNormalArray(list.filter { convertToStatus(it.node.my_list_status.status) == MALApi.Companion.MalStatusType.Completed }
                     .toTypedArray(), sortMethods[3]),
                 sortNormalArray(list.filter { convertToStatus(it.node.my_list_status.status) == MALApi.Companion.MalStatusType.Dropped }
                     .toTypedArray(), sortMethods[4]),
-                sortNormalArray(list.filter { convertToStatus(it.node.my_list_status.status) == MALApi.Companion.MalStatusType.PlanToWatch }
-                    .toTypedArray(), sortMethods[5]),
+                sortNormalArray(list, sortMethods[5]),
             )
         )
     }

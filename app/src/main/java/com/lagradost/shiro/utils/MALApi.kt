@@ -81,6 +81,7 @@ class MALApi {
                             thread {
                                 getMalUser()
                                 settingsViewModel?.hasLoggedIntoMAL?.postValue(true)
+                                setKey(MAL_SHOULD_UPDATE_LIST, true)
                             }
                             //println("GOT MAL MASTER TOKEN:::: " + res)
                         }
