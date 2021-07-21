@@ -281,8 +281,8 @@ class DownloadFragmentChild : Fragment() {
                 }
 
                 fun getStatus(): Boolean { // IF CAN RESUME
-                    return if (VideoDownloadManager.downloadStatus.containsKey(child.internalId)) {
-                        VideoDownloadManager.downloadStatus[child.internalId] == VideoDownloadManager.DownloadType.IsPaused
+                    return if (downloadStatus.containsKey(child.internalId)) {
+                        downloadStatus[child.internalId] == VideoDownloadManager.DownloadType.IsPaused
                     } else {
                         true
                     }
@@ -376,6 +376,7 @@ class DownloadFragmentChild : Fragment() {
                             card.cardTitleExtra.text = "$megaBytes / $megaBytesTotal MB"
                             card.progressBar.progress = maxOf(minOf(megaBytes * 100 / megaBytesTotal, 100), 0)
                             updateIcon(megaBytes)
+                            setStatus()
                         }
                     }
                 }

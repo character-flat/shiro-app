@@ -16,14 +16,21 @@
 
 package com.lagradost.shiro.ui.settings
 
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
+import android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
+import androidx.annotation.ColorInt
 import androidx.preference.PreferenceManager
+import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
 import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
+import com.lagradost.shiro.utils.AppUtils.showNavigation
 
 /**
  * Activity to show Cyanea preferences allowing the user to modify the primary, accent and background color of the app.
@@ -39,6 +46,18 @@ open class SettingsActivity : CyaneaAppCompatActivity() {
             theme.applyStyle(R.style.lightText, true)
         } else {
             theme.applyStyle(R.style.darkText, true)
+        }
+
+        // Correct color
+        if (Build.VERSION.SDK_INT >= 27) {
+            showNavigation()
+            if (cyanea.isDark) {
+                window.decorView.systemUiVisibility = FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
+            } else {
+                window.decorView.systemUiVisibility = FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS or
+                        View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
+                        View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            }
         }
         //transparentStatusAndNavigation()
 

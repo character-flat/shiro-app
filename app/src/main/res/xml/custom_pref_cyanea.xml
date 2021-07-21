@@ -93,6 +93,18 @@
             app:min="1"
     >
     </SeekBarPreference>
+    <SeekBarPreference
+            android:icon="@drawable/ic_baseline_view_column_24"
+            android:title="Library list view height (dp)"
+            android:defaultValue="80"
+            android:key="library_view_height"
+            app:showSeekBarValue="true"
+            app:seekBarIncrement="5"
+            android:max="150"
+            app:defaultValue="80"
+            app:min="60"
+    >
+    </SeekBarPreference>
     <SwitchPreference
             android:icon="@drawable/ic_baseline_new_releases_24"
             app:key="new_results_page"

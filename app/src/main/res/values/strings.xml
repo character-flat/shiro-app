@@ -1,14 +1,11 @@
 <resources>
     <string name="changelog">\n
-        - Added fully custom themes\n
-        - Redid the downloading system (should now work on Android 10+)\n
-        (All downloaded files will now be found in Download/Anime)\n
-        - Redid settings\n
-        - Added an option to hide subscribed in the homepage\n
-        - Added an option to hide subbed shows\n
-        - Added an option to change column count in the expanded view page\n
-        - Added an open website button to get less app complains when the site is down\n
-        - Made cards smaller with gaps after a discord vote\n
+        - Added MAL list (Some animes are wrong because of bad cross referencing, Anilist coming soon!)\n
+        - Resumed downloads when reopening the app will now be paused\n
+        - Added an option to disable downloads on data (not tested much though, please report results)\n
+        - Added an option to increase the concurrent downloads\n
+        - Cached all anime info pages for 10m for fast reopening\n
+        - Tons of bugfixes\n
     </string>
     <string name="app_name">Shiro</string>
     <string name="title_home">Home</string>

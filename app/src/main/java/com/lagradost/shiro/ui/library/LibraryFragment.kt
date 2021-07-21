@@ -58,6 +58,8 @@ class LibraryFragment : Fragment() {
 
     private val normalSortingMethods = arrayOf(
         //SortingMethod("Default", DEFAULT_SORT),
+        SortingMethod("Recently updated (New to Old)", LATEST_UPDATE),
+        SortingMethod("Recently updated (Old to New)", LATEST_UPDATE_REVERSED),
         SortingMethod("Alphabetical (A-Z)", ALPHA_SORT),
         SortingMethod("Alphabetical (Z-A)", REVERSE_ALPHA_SORT),
         SortingMethod("Score (High to Low)", SCORE_SORT),
@@ -206,11 +208,10 @@ class LibraryFragment : Fragment() {
 
 
         observe(libraryViewModel!!.sortedMalList) { list ->
-            for (i in 0..tabs.size){
+            for (i in 0..tabs.size) {
                 val size = list?.getOrNull(i)?.size ?: 0
-                result_tabs?.getTabAt(i)?.text = tabs[i] + "($size)"
+                result_tabs?.getTabAt(i)?.text = tabs[i] + " ($size)"
             }
-
         }
         /*result_tabs?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {

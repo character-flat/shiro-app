@@ -7,7 +7,9 @@ import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.widget.FrameLayout
 import android.widget.LinearLayout
+import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
@@ -19,12 +21,16 @@ import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.loadPage
+import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.MALApi
 import com.lagradost.shiro.utils.MALApi.Companion.convertToStatus
 import kotlinx.android.synthetic.main.list_card_compact.view.*
 import java.util.*
+import kotlin.math.ceil
+import kotlin.math.sqrt
 
-class LibraryCardAdapter(val context: Context, var list: Array<MALApi.Companion.Data>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class LibraryCardAdapter(val context: Context, var list: Array<MALApi.Companion.Data>) :
+    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return LibraryCardViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.list_card_compact, parent, false),
@@ -47,7 +53,7 @@ class LibraryCardAdapter(val context: Context, var list: Array<MALApi.Companion.
     class LibraryCardViewHolder
     constructor(itemView: View, val context: Context) : RecyclerView.ViewHolder(itemView) {
         fun bind(item: MALApi.Companion.Data) {
-            val coverHeight: Int = 80.toPx
+            val coverHeight: Int = (settingsManager?.getInt("library_view_height", 80) ?: 80).toPx
 
             // ------------------------------------------------
             itemView.backgroundCard.backgroundTintList = ColorStateList.valueOf(
@@ -64,6 +70,19 @@ class LibraryCardAdapter(val context: Context, var list: Array<MALApi.Companion.
                     coverHeight
                 )
             }
+            itemView.imageView.apply {
+                layoutParams = FrameLayout.LayoutParams(
+                    ceil(coverHeight / sqrt(2.0)).toInt(),
+                    coverHeight
+                )
+            }
+            val marginParams = FrameLayout.LayoutParams(
+                LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
+                LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view height
+            )
+            marginParams.setMargins(ceil(coverHeight / sqrt(2.0)).toInt(), 0, 0, 0)
+            itemView.text_holder.layoutParams = marginParams
+
             itemView.imageText?.text = item.node.title
             itemView.imageSubText?.visibility = VISIBLE
 
@@ -81,7 +100,8 @@ class LibraryCardAdapter(val context: Context, var list: Array<MALApi.Companion.
             /*episode_progress?.progressDrawable?.setColorFilter(
                 ContextCompat.getColor(context, statusColor), android.graphics.PorterDuff.Mode.SRC_IN
             )*/
-            itemView.episode_progress?.progressTintList = ColorStateList.valueOf(ContextCompat.getColor(context, statusColor))
+            itemView.episode_progress?.progressTintList =
+                ColorStateList.valueOf(ContextCompat.getColor(context, statusColor))
 
             val scoreText = if (item.node.my_list_status.score != 0) "★" + item.node.my_list_status.score else ""
             val seasonText = item.node.start_season?.let {
