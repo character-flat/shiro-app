@@ -1,12 +1,16 @@
 package com.lagradost.shiro.utils
 
+import ANILIST_CACHED_LIST
+import ANILIST_SHOULD_UPDATE_LIST
 import ANILIST_TOKEN_KEY
 import ANILIST_UNIXTIME_KEY
 import ANILIST_USER_KEY
 import DataStore.getKey
+import DataStore.getKeys
 import DataStore.setKey
 import DataStore.toKotlinObject
 import android.app.Activity
+import android.content.Context
 import androidx.appcompat.app.AlertDialog
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -15,11 +19,14 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
+import com.lagradost.shiro.ui.library.LibraryFragment.Companion.libraryViewModel
 import com.lagradost.shiro.ui.settings.SettingsFragmentNew.Companion.settingsViewModel
+import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.openBrowser
 import com.lagradost.shiro.utils.AppUtils.splitQuery
 import com.lagradost.shiro.utils.AppUtils.unixTime
 import com.lagradost.shiro.utils.ShiroApi.Companion.maxStale
+import com.lagradost.shiro.utils.mvvm.logError
 import java.net.URL
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
@@ -59,12 +66,16 @@ class AniListApi {
             }
         }
 
-        fun Activity.authenticateAniList() {
+        fun convertAnilistStringToStatus(string: String): AniListStatusType {
+            return fromIntToAnimeStatus(aniListStatusString.indexOf(string))
+        }
+
+        fun Context.authenticateAniList() {
             val request = "https://anilist.co/api/v2/oauth/authorize?client_id=$ANILIST_CLIENT_ID&response_type=token"
             openBrowser(request)
         }
 
-        fun Activity.initGetUser() {
+        fun Context.initGetUser() {
             if (getKey<String>(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, null) == null) return
             thread {
                 getUser()
@@ -82,6 +93,8 @@ class AniListApi {
 
                 setKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, endTime)
                 setKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, token)
+                setKey(ANILIST_SHOULD_UPDATE_LIST, true)
+                libraryViewModel?.requestAnilistList(this)
 
                 println("ANILIST LOGIN DONE")
                 thread {
@@ -93,12 +106,12 @@ class AniListApi {
             }
         }
 
-        private fun Activity.checkToken(): Boolean {
+        private fun Context.checkToken(): Boolean {
             if (unixTime() > getKey(
                     ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, 0L
                 )!!
             ) {
-                activity?.runOnUiThread {
+                getCurrentActivity()?.runOnUiThread {
                     val alertDialog: AlertDialog? = activity?.let {
                         val builder = AlertDialog.Builder(it, R.style.AlertDialogCustom)
                         builder.apply {
@@ -189,7 +202,7 @@ class AniListApi {
             return filtered?.firstOrNull()
         }
 
-        private fun Activity.postApi(url: String, q: String, cache: Boolean = false): String {
+        private fun Context.postApi(url: String, q: String, cache: Boolean = false): String {
             return try {
                 if (!checkToken()) {
                     // println("VARS_ " + vars)
@@ -210,7 +223,7 @@ class AniListApi {
                     ""
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                logError(e)
                 ""
             }
         }
@@ -269,7 +282,147 @@ class AniListApi {
 
         }
 
-        fun Activity.toggleLike(id: Int): Boolean {
+        data class FullAnilistList(
+            @JsonProperty("data") val data: Data
+        )
+
+        data class CompletedAt(
+            @JsonProperty("year") val year: Int,
+            @JsonProperty("month") val month: Int,
+            @JsonProperty("day") val day: Int
+        )
+
+        data class StartedAt(
+            @JsonProperty("year") val year: String?,
+            @JsonProperty("month") val month: String?,
+            @JsonProperty("day") val day: String?
+        )
+
+        data class Title(
+            @JsonProperty("english") val english: String,
+            @JsonProperty("romaji") val romaji: String
+        )
+
+        data class CoverImage(
+            @JsonProperty("medium") val medium: String
+        )
+
+        data class Media(
+            @JsonProperty("id") val id: Int,
+            @JsonProperty("idMal") val idMal: Int?,
+            @JsonProperty("season") val season: String,
+            @JsonProperty("seasonYear") val seasonYear: Int,
+            @JsonProperty("format") val format: String,
+            @JsonProperty("source") val source: String,
+            @JsonProperty("episodes") val episodes: Int,
+            @JsonProperty("title") val title: Title,
+            //@JsonProperty("description") val description: String,
+            @JsonProperty("coverImage") val coverImage: CoverImage,
+            @JsonProperty("synonyms") val synonyms: List<String>,
+            @JsonProperty("nextAiringEpisode") val nextAiringEpisode: SeasonNextAiringEpisode?,
+        )
+
+        data class Entries(
+            @JsonProperty("status") val status: String,
+            @JsonProperty("completedAt") val completedAt: CompletedAt,
+            @JsonProperty("startedAt") val startedAt: StartedAt,
+            @JsonProperty("updatedAt") val updatedAt: Int,
+            @JsonProperty("progress") val progress: Int,
+            @JsonProperty("score") val score: Int,
+            @JsonProperty("private") val private: Boolean,
+            @JsonProperty("media") val media: Media
+        )
+
+        data class Lists(
+            @JsonProperty("status") val status: String,
+            @JsonProperty("entries") val entries: List<Entries>
+        )
+
+        data class MediaListCollection(
+            @JsonProperty("lists") val lists: List<Lists>
+        )
+
+        data class Data(
+            @JsonProperty("MediaListCollection") val MediaListCollection: MediaListCollection
+        )
+
+
+        fun Context.getAnilistAnimeListSmart(): Array<Lists>? {
+            return if (getKey(ANILIST_SHOULD_UPDATE_LIST, true) == true) {
+                val list = getFullAnilistList()?.data?.MediaListCollection?.lists?.toTypedArray()
+                if (list != null) {
+                    setKey(ANILIST_CACHED_LIST, list)
+                    setKey(ANILIST_SHOULD_UPDATE_LIST, false)
+                }
+                list
+            } else {
+                getKey(ANILIST_CACHED_LIST) as? Array<Lists>
+            }
+        }
+
+        private fun Context.getFullAnilistList(): FullAnilistList? {
+            try {
+                var userID: Int? = null
+                /** WARNING ASSUMES ONE USER! **/
+                getKeys(ANILIST_USER_KEY).forEach { key ->
+                    getKey<AniListUser>(key, null)?.let {
+                        userID = it.id
+                    }
+                }
+
+                val fixedUserID = userID ?: return null
+                val mediaType = "ANIME"
+
+                val query = """
+                query (${'$'}userID: Int = $fixedUserID, ${'$'}MEDIA: MediaType = $mediaType) {
+                    MediaListCollection (userId: ${'$'}userID, type: ${'$'}MEDIA) { 
+                        lists {
+                            status
+                            entries
+                            {
+                                status
+                                completedAt { year month day }
+                                startedAt { year month day }
+                                updatedAt
+                                progress
+                                score
+                                private
+                                media
+                                {
+                                    id
+                                    idMal
+                                    season
+                                    seasonYear
+                                    format
+                                    source
+                                    episodes
+                                    chapters
+                                    title
+                                    {
+                                        english
+                                        romaji
+                                    }
+                                    coverImage { medium }
+                                    synonyms
+                                    nextAiringEpisode {
+                                        timeUntilAiring
+                                        episode
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    }
+            """
+                return postApi("https://graphql.anilist.co", query).toKotlinObject()
+
+            } catch (e: Exception) {
+                logError(e)
+                return null
+            }
+        }
+
+        fun Context.toggleLike(id: Int): Boolean {
             val q = """mutation (${'$'}animeId: Int = $id) {
 				ToggleFavourite (animeId: ${'$'}animeId) {
 					anime {
@@ -286,7 +439,7 @@ class AniListApi {
             return data != ""
         }
 
-        fun Activity.postDataAboutId(id: Int, type: AniListStatusType, score: Int, progress: Int): Boolean {
+        fun Context.postDataAboutId(id: Int, type: AniListStatusType, score: Int, progress: Int): Boolean {
             try {
                 val q =
                     """mutation (${'$'}id: Int = $id, ${'$'}status: MediaListStatus = ${
@@ -303,14 +456,13 @@ class AniListApi {
                 }
                 }"""
                 val data = postApi("https://graphql.anilist.co", q)
-                println("POST:$data")
                 return data != ""
             } catch (e: Exception) {
                 return false
             }
         }
 
-        private fun Activity.getUser(setSettings: Boolean = true): AniListUser? {
+        private fun Context.getUser(setSettings: Boolean = true): AniListUser? {
             val q = """
 				{
   					Viewer {

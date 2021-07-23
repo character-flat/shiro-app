@@ -1,19 +1,29 @@
 package com.lagradost.shiro.ui.library
 
+import ANILIST_SHOULD_UPDATE_LIST
+import ANILIST_TOKEN_KEY
+import DataStore.getKey
 import DataStore.setKey
+import LIBRARY_IS_MAL
 import MAL_SHOULD_UPDATE_LIST
+import MAL_TOKEN_KEY
 import android.content.Context
 import android.content.res.ColorStateList
 import android.content.res.Configuration
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AbsListView.CHOICE_MODE_SINGLE
 import android.widget.ArrayAdapter
+import android.widget.ImageButton
 import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
+import androidx.core.view.children
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
@@ -25,26 +35,19 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.library.LibraryFragment.Companion.libraryViewModel
 import com.lagradost.shiro.ui.library.LibraryFragment.Companion.onMenuCollapsed
+import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.AniListApi.Companion.convertAnilistStringToStatus
+import com.lagradost.shiro.utils.AniListApi.Companion.secondsToReadable
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.settingsManager
-import com.lagradost.shiro.utils.Event
-import com.lagradost.shiro.utils.MALApi
-import com.lagradost.shiro.utils.MALApi.Companion.getMalAnimeListSmart
+import com.lagradost.shiro.utils.Coroutines.main
+import com.lagradost.shiro.utils.MALApi.Companion.convertJapanTimeToTimeRemaining
+import com.lagradost.shiro.utils.MALApi.Companion.convertToStatus
 import com.lagradost.shiro.utils.mvvm.observe
 import kotlinx.android.synthetic.main.bottom_sheet.*
 import kotlinx.android.synthetic.main.fragment_library.*
 import kotlinx.android.synthetic.main.mal_list.view.*
-import kotlin.concurrent.thread
-
-val tabs = listOf(
-    "Currently watching",
-    "Plan to Watch",
-    "On Hold",
-    "Completed",
-    "Dropped",
-    "All Anime",
-)
 
 class CustomSearchView(context: Context) : SearchView(context) {
     override fun onActionViewCollapsed() {
@@ -53,10 +56,19 @@ class CustomSearchView(context: Context) : SearchView(context) {
     }
 }
 
+val tabs = listOf(
+    Pair("Currently watching", 0),
+    Pair("Plan to Watch", 1),
+    Pair("On Hold", 2),
+    Pair("Completed", 3),
+    Pair("Dropped", 4),
+    Pair("All Anime", 5),
+)
+
 class LibraryFragment : Fragment() {
     data class SortingMethod(val name: String, val id: Int)
 
-    private val normalSortingMethods = arrayOf(
+    private val malSortingMethods = arrayOf(
         //SortingMethod("Default", DEFAULT_SORT),
         SortingMethod("Recently updated (New to Old)", LATEST_UPDATE),
         SortingMethod("Recently updated (Old to New)", LATEST_UPDATE_REVERSED),
@@ -66,6 +78,16 @@ class LibraryFragment : Fragment() {
         SortingMethod("Score (Low to High)", SCORE_SORT_REVERSED),
         SortingMethod("Rank (High to Low)", RANK_SORT),
         SortingMethod("Rank (Low to High)", RANK_SORT_REVERSED),
+    )
+
+    private val anilistSortingMethods = arrayOf(
+        //SortingMethod("Default", DEFAULT_SORT),
+        SortingMethod("Recently updated (New to Old)", LATEST_UPDATE),
+        SortingMethod("Recently updated (Old to New)", LATEST_UPDATE_REVERSED),
+        SortingMethod("Alphabetical (A-Z)", ALPHA_SORT),
+        SortingMethod("Alphabetical (Z-A)", REVERSE_ALPHA_SORT),
+        SortingMethod("Score (High to Low)", SCORE_SORT),
+        SortingMethod("Score (Low to High)", SCORE_SORT_REVERSED),
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,30 +103,24 @@ class LibraryFragment : Fragment() {
     ): View? {
         libraryViewModel =
             libraryViewModel ?: ViewModelProvider(getCurrentActivity()!!).get(LibraryViewModel::class.java)
+        val hasMAL = getCurrentActivity()!!.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+        val hasAniList = getCurrentActivity()!!.getKey<String>(
+            ANILIST_TOKEN_KEY,
+            ANILIST_ACCOUNT_ID,
+            null
+        ) != null
+
+        libraryViewModel?.isMal = (getCurrentActivity()!!.getKey(LIBRARY_IS_MAL, true) == true && hasMAL) || !hasAniList
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_library, container, false)
     }
 
-    private fun sortCurrentList(sortingMethod: Int? = null, text: String? = null) {
-        result_tabs?.selectedTabPosition?.let { it ->
-            (sortingMethod ?: libraryViewModel?.sortMethods?.get(it))?.let { sortingMethodFixed ->
-                if (sortingMethodFixed != SEARCH) libraryViewModel?.sortMethods?.set(it, sortingMethodFixed)
-                libraryViewModel?.sortedMalList?.value?.let { fullArray ->
-                    libraryViewModel?.sortNormalArray(fullArray[it], sortingMethodFixed, text)?.let { sorted ->
-                        libraryViewModel?.sortedMalList?.postValue(libraryViewModel?.sortedMalList?.value?.apply {
-                            this[it] = sorted
-                        })
-                    }
-                }
-            }
-
-        }
+    private fun getCurrentTabCorrected(): Int {
+        return tabs[(result_tabs?.selectedTabPosition ?: 0)].second
     }
 
     private fun sortCurrentListEventFunction(boolean: Boolean) {
-        libraryViewModel?.sortedMalList?.value?.getOrNull(5)?.let {
-            libraryViewModel?.updateList(it)
-        }
+        libraryViewModel?.displayList()
     }
 
     override fun onResume() {
@@ -126,31 +142,51 @@ class LibraryFragment : Fragment() {
         }*/
         fragment_list_root.setPadding(0, MainActivity.statusHeight, 0, 0)
 
-//        swipe_container?.setOnRefreshListener {
-//            context?.setKey(MAL_SHOULD_UPDATE_LIST, true)
-//            requestMalList()
-//        }
+        val hasAniList = getCurrentActivity()!!.getKey<String>(
+            ANILIST_TOKEN_KEY,
+            ANILIST_ACCOUNT_ID,
+            null
+        ) != null
+        val hasMAL = getCurrentActivity()!!.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+        login_overlay?.background = ColorDrawable(Cyanea.instance.backgroundColor)
+        login_overlay?.isVisible = !hasAniList && !hasMAL
+        library_toolbar?.navigationIcon = if (hasAniList && hasMAL) ContextCompat.getDrawable(
+            getCurrentActivity()!!,
+            R.drawable.ic_baseline_swap_vert_24
+        ) else null
+        library_toolbar?.children?.forEach {
+            if (it is ImageButton) {
+                it.setOnClickListener {
+                    val newIsMal = !(libraryViewModel?.isMal ?: true)
+                    libraryViewModel?.isMal = newIsMal
+                    context?.setKey(LIBRARY_IS_MAL, newIsMal)
+                    libraryViewModel?.displayList()
+                }
+                return@forEach
+            }
+        }
 
         val searchView: CustomSearchView =
             library_toolbar.menu.findItem(R.id.action_search).actionView as CustomSearchView
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                sortCurrentList(SEARCH, query)
+                libraryViewModel?.sortCurrentList(getCurrentTabCorrected(), SEARCH, query)
                 return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                sortCurrentList(SEARCH, newText)
+                libraryViewModel?.sortCurrentList(getCurrentTabCorrected(), SEARCH, newText)
                 return true
             }
         })
-
 
         library_toolbar?.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.action_reload -> {
                     context?.setKey(MAL_SHOULD_UPDATE_LIST, true)
-                    requestMalList()
+                    context?.setKey(ANILIST_SHOULD_UPDATE_LIST, true)
+                    libraryViewModel?.requestMalList(context)
+                    libraryViewModel?.requestAnilistList(context)
                     Toast.makeText(context, "Refreshing your list", Toast.LENGTH_SHORT).show()
                 }
 
@@ -168,11 +204,14 @@ class LibraryFragment : Fragment() {
                     ) // checkmark_select_dialog
                     res.choiceMode = CHOICE_MODE_SINGLE
 
-                    arrayAdapter.addAll(ArrayList(normalSortingMethods.map { t -> t.name }))
+                    val sortingMethods =
+                        if (libraryViewModel?.isMal == true) malSortingMethods else anilistSortingMethods
+
+                    arrayAdapter.addAll(ArrayList(sortingMethods.map { t -> t.name }))
                     res.adapter = arrayAdapter
 
                     res.setItemChecked(
-                        normalSortingMethods.indexOfFirst { t ->
+                        sortingMethods.indexOfFirst { t ->
                             t.id == libraryViewModel?.sortMethods?.getOrNull(
                                 result_tabs?.selectedTabPosition ?: -1
                             ) ?: 0
@@ -180,8 +219,8 @@ class LibraryFragment : Fragment() {
                         true
                     )
                     res.setOnItemClickListener { _, _, position, _ ->
-                        val sel = normalSortingMethods[position].id
-                        sortCurrentList(sel)
+                        val sel = sortingMethods[position].id
+                        libraryViewModel?.sortCurrentList(getCurrentTabCorrected(), sel)
                         bottomSheetDialog.dismiss()
                     }
 
@@ -203,15 +242,19 @@ class LibraryFragment : Fragment() {
             result_tabs,
             viewpager,
         ) { tab, position ->
-            tab.text = tabs.getOrNull(position) ?: ""
+            tab.text = tabs.getOrNull(position)?.first ?: ""
         }.attach()
 
-
-        observe(libraryViewModel!!.sortedMalList) { list ->
-            for (i in 0..tabs.size) {
-                val size = list?.getOrNull(i)?.size ?: 0
-                result_tabs?.getTabAt(i)?.text = tabs[i] + " ($size)"
+        library_toolbar?.title = if (libraryViewModel?.isMal == true) "MAL" else "Anilist"
+        observe(libraryViewModel!!.currentList) { list ->
+            for (i in tabs.indices) {
+                val size = list.getOrNull(tabs[i].second)?.size ?: 0
+                main {
+                    result_tabs?.getTabAt(i)?.text = tabs[i].first + " ($size)"
+                }
             }
+            viewpager?.adapter?.notifyDataSetChanged()
+            library_toolbar?.title = if (libraryViewModel?.isMal == true) "MAL" else "Anilist"
         }
         /*result_tabs?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
@@ -224,16 +267,8 @@ class LibraryFragment : Fragment() {
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })*/
-        requestMalList()
-    }
-
-    private fun requestMalList() {
-        thread {
-            context?.getMalAnimeListSmart()?.let {
-                libraryViewModel?.updateList(it)
-            }
-        }
-
+        libraryViewModel?.requestMalList(context)
+        libraryViewModel?.requestAnilistList(context)
     }
 
     companion object {
@@ -251,7 +286,6 @@ class LibraryFragment : Fragment() {
 
 class CustomPagerAdapter(val context: FragmentActivity) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
     override fun getItemCount(): Int {
         return tabs.size
     }
@@ -275,6 +309,48 @@ class CustomPagerAdapter(val context: FragmentActivity) :
     constructor(itemView: View, val context: FragmentActivity) :
         RecyclerView.ViewHolder(itemView) {
         private val spanCountPortrait = settingsManager?.getInt("library_span_count", 1) ?: 1
+        private fun generateLibraryObject(list: List<Any>): List<LibraryObject> {
+            if (list.firstOrNull() is MALApi.Companion.Data) {
+                (list as? List<MALApi.Companion.Data>)?.let {
+                    return it.map { data ->
+                        LibraryObject(
+                            data.node.title,
+                            data.node.main_picture.medium,
+                            data.node.id.toString(),
+                            data.list_status?.score ?: 0,
+                            data.list_status?.num_episodes_watched ?: 0,
+                            data.node.num_episodes,
+                            data.node.start_season?.season,
+                            data.node.start_season?.year,
+                            convertToStatus(data.list_status?.status ?: "").value,
+                            data.node.broadcast?.day_of_the_week?.plus(" ")?.plus(data.node.broadcast.start_time)?.let {
+                                convertJapanTimeToTimeRemaining(it, data.node.end_date)
+                            }
+                        )
+                    }
+                }
+            } else if (list.firstOrNull() is AniListApi.Companion.Entries) {
+                (list as? List<AniListApi.Companion.Entries>)?.let {
+                    return it.map {
+                        println()
+                        LibraryObject(
+                            it.media.title.english,
+                            it.media.coverImage.medium,
+                            it.media.idMal.toString(),
+                            it.score,
+                            it.progress,
+                            it.media.episodes,
+                            it.media.season,
+                            it.media.seasonYear,
+                            convertAnilistStringToStatus(it.status).value,
+                            it.media.nextAiringEpisode?.timeUntilAiring?.let { it -> secondsToReadable(it, "Now") }
+                        )
+                    }
+                }
+            }
+
+            return listOf()
+        }
 
         fun bind(position: Int) {
             val orientation = context.resources.configuration.orientation
@@ -287,8 +363,7 @@ class CustomPagerAdapter(val context: FragmentActivity) :
             } else {
                 itemView.library_card_space?.spanCount = spanCountPortrait
             }
-
-            fun generateList(list: Array<MALApi.Companion.Data>) {
+            fun displayList(list: List<LibraryObject>) {
                 if (itemView.library_card_space?.adapter == null) {
                     itemView.library_card_space?.adapter = LibraryCardAdapter(context, list)
                 } else {
@@ -297,13 +372,11 @@ class CustomPagerAdapter(val context: FragmentActivity) :
                 }
             }
 
-            libraryViewModel?.sortedMalList?.value?.getOrNull(position)?.let {
-                if (!(itemView.library_card_space?.adapter as? LibraryCardAdapter)?.list.contentEquals(it)) {
-                    generateList(it)
+            libraryViewModel?.currentList?.value?.getOrNull(tabs[position].second)?.let {
+                val list = generateLibraryObject(it)
+                if ((itemView.library_card_space?.adapter as? LibraryCardAdapter)?.list != list) {
+                    displayList(list)
                 }
-            }
-            context.observe(libraryViewModel!!.sortedMalList) { list ->
-                list?.getOrNull(position)?.let { generateList(it) }
             }
         }
     }

@@ -22,14 +22,36 @@ import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
-import com.lagradost.shiro.utils.MALApi
-import com.lagradost.shiro.utils.MALApi.Companion.convertToStatus
 import kotlinx.android.synthetic.main.list_card_compact.view.*
 import java.util.*
 import kotlin.math.ceil
 import kotlin.math.sqrt
 
-class LibraryCardAdapter(val context: Context, var list: Array<MALApi.Companion.Data>) :
+
+enum class LibraryStatusType(var value: Int) {
+    Watching(0),
+    Completed(1),
+    Paused(2),
+    Dropped(3),
+    Planning(4),
+    Rewatching(5),
+    None(-1)
+}
+
+data class LibraryObject(
+    val title: String,
+    val poster: String,
+    val id: String,
+    val score: Int,
+    val progress: Int,
+    val episodes: Int,
+    val season: String?,
+    val year: Int?,
+    val status: Int,
+    val nextEpisode: String?,
+)
+
+class LibraryCardAdapter(val context: Context, var list: List<LibraryObject>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return LibraryCardViewHolder(
@@ -52,18 +74,8 @@ class LibraryCardAdapter(val context: Context, var list: Array<MALApi.Companion.
 
     class LibraryCardViewHolder
     constructor(itemView: View, val context: Context) : RecyclerView.ViewHolder(itemView) {
-        fun bind(item: MALApi.Companion.Data) {
+        fun bind(item: LibraryObject) {
             val coverHeight: Int = (settingsManager?.getInt("library_view_height", 80) ?: 80).toPx
-
-            // ------------------------------------------------
-            itemView.backgroundCard.backgroundTintList = ColorStateList.valueOf(
-                Cyanea.instance.backgroundColorDark
-            )
-
-            itemView.backgroundCard.setOnClickListener {
-                getCurrentActivity()?.loadPage(item.node.id.toString(), item.node.title, true)
-            }
-
             itemView.apply {
                 layoutParams = LinearLayout.LayoutParams(
                     MATCH_PARENT,
@@ -81,56 +93,64 @@ class LibraryCardAdapter(val context: Context, var list: Array<MALApi.Companion.
                 LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view height
             )
             marginParams.setMargins(ceil(coverHeight / sqrt(2.0)).toInt(), 0, 0, 0)
-            itemView.text_holder.layoutParams = marginParams
 
-            itemView.imageText?.text = item.node.title
+            itemView.text_holder.layoutParams = marginParams
+            itemView.backgroundCard.backgroundTintList = ColorStateList.valueOf(
+                Cyanea.instance.backgroundColorDark
+            )
+
+            itemView.backgroundCard.setOnClickListener {
+                getCurrentActivity()?.loadPage(item.id, item.title, true)
+            }
+
+            itemView.imageText?.text = item.title
             itemView.imageSubText?.visibility = VISIBLE
 
-            val statusColor = when (convertToStatus(item.node.my_list_status.status)) {
-                MALApi.Companion.MalStatusType.Watching -> R.color.colorWatching
-                MALApi.Companion.MalStatusType.Completed -> R.color.colorCompleted
-                MALApi.Companion.MalStatusType.OnHold -> R.color.colorOnHold
-                MALApi.Companion.MalStatusType.Dropped -> R.color.colorDropped
-                MALApi.Companion.MalStatusType.PlanToWatch -> R.color.colorPlanToWatch
+            val statusColor = when (item.status) {
+                LibraryStatusType.Watching.value -> R.color.colorWatching
+                LibraryStatusType.Completed.value -> R.color.colorCompleted
+                LibraryStatusType.Paused.value -> R.color.colorOnHold
+                LibraryStatusType.Dropped.value -> R.color.colorDropped
+                LibraryStatusType.Planning.value -> R.color.colorPlanToWatch
                 else -> R.color.colorWatching
             }
 
-            itemView.episode_progress?.max = item.node.num_episodes
-            itemView.episode_progress?.progress = item.node.my_list_status.num_episodes_watched
+            itemView.episode_progress?.max = item.episodes
+            itemView.episode_progress?.progress = item.progress
             /*episode_progress?.progressDrawable?.setColorFilter(
                 ContextCompat.getColor(context, statusColor), android.graphics.PorterDuff.Mode.SRC_IN
             )*/
             itemView.episode_progress?.progressTintList =
                 ColorStateList.valueOf(ContextCompat.getColor(context, statusColor))
 
-            val scoreText = if (item.node.my_list_status.score != 0) "★" + item.node.my_list_status.score else ""
-            val seasonText = item.node.start_season?.let {
-                "${
-                    it.season.replaceFirstChar {
-                        if (it.isLowerCase()) it.titlecase(
-                            Locale.getDefault()
-                        ) else it.toString()
-                    }
-                } ${it.year}"
-            } ?: ""
+            val scoreText = if (item.score != 0) "★ " + item.score else null
+            val separator = if (scoreText != null && item.nextEpisode != null) " - " else ""
+
+            val seasonText = (item.season?.let {
+                it.lowercase().replaceFirstChar {
+                    if (it.isLowerCase()) it.titlecase(
+                        Locale.getDefault()
+                    ) else it.toString()
+                }
+            } ?: "") + " " + (item.year ?: "")
             val episodeText =
-                "${item.node.my_list_status.num_episodes_watched}/${if (item.node.num_episodes != 0) item.node.num_episodes else "???"}"
+                "${item.progress}/${if (item.episodes != 0) item.episodes else "???"}"
 
             itemView.imageTextSecond?.text = episodeText
-            itemView.imageSubText?.text = scoreText
+            itemView.imageSubText?.text = "${scoreText ?: ""}$separator${item.nextEpisode ?: ""}"
             itemView.imageSubTextSecond?.text = seasonText
             itemView.setOnClickListener {
-                getCurrentActivity()?.loadPage(item.node.id.toString(), item.node.title, true)
+                getCurrentActivity()?.loadPage(item.id, item.title, true)
             }
 
             itemView.imageView.setOnClickListener {
-                getCurrentActivity()?.loadPage(item.node.id.toString(), item.node.title, true)
+                getCurrentActivity()?.loadPage(item.id, item.title, true)
                 //activity?.loadPage(card.slug, card.name)
                 /*MainActivity.loadPage(card)*/
             }
 
             val glideUrl =
-                GlideUrl(item.node.main_picture.medium)
+                GlideUrl(item.poster)
             context.let {
                 val settingsManager = PreferenceManager.getDefaultSharedPreferences(it)
                 val savingData = settingsManager.getBoolean("data_saving", false)

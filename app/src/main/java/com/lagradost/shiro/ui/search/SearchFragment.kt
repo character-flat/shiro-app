@@ -107,13 +107,17 @@ class SearchFragment : Fragment() {
         search_fab_button.backgroundTintList = ColorStateList.valueOf(
             Cyanea.instance.primaryDark
         )
+
+        var isGenresOpen = false
         search_fab_button.setOnClickListener {
+            if (isGenresOpen) return@setOnClickListener
             activity?.let { activity ->
                 if (searchViewModel!!.searchOptions.value == null) {
                     thread {
                         searchViewModel!!.searchOptions.postValue(getSearchMethods())
                     }
                 }
+                isGenresOpen = true
 
                 val tags = searchViewModel!!.searchOptions.value?.genres?.sortedBy { it.name }
                 val bottomSheetDialog = BottomSheetDialog(activity, R.style.AppBottomSheetDialogTheme)
@@ -143,9 +147,8 @@ class SearchFragment : Fragment() {
                     searchViewModel!!.selectedGenres.postValue(listOf())
                     bottomSheetDialog.dismiss()
                 }
-
                 bottomSheetDialog.setOnDismissListener {
-                    //  MainActivity.semihideNavbar()
+                    isGenresOpen = false
                 }
                 bottomSheetDialog.show()
                 //  MainActivity.showNavbar()

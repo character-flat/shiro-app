@@ -59,14 +59,14 @@
                         android:maxLines="3"
                         tools:ignore="RtlHardcoded"/>
                 <TextView
-                        android:layout_weight="5"
+                        android:layout_weight="4"
                         android:gravity="right"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:textColor="?attr/white"
                         android:id="@+id/imageTextSecond"
-                        android:maxLines="1"
+                        android:maxLines="2"
                         tools:ignore="RtlHardcoded"/>
             </LinearLayout>
             <LinearLayout

@@ -1,5 +1,7 @@
 package com.lagradost.shiro.ui.settings
 
+import ANILIST_CACHED_LIST
+import ANILIST_SHOULD_UPDATE_LIST
 import ANILIST_TOKEN_KEY
 import ANILIST_UNIXTIME_KEY
 import ANILIST_USER_KEY
@@ -40,6 +42,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 import com.lagradost.shiro.BuildConfig
 import com.lagradost.shiro.R
+import com.lagradost.shiro.ui.library.LibraryFragment.Companion.libraryViewModel
 import com.lagradost.shiro.ui.settings.SettingsFragment.Companion.restoreFileSelector
 import com.lagradost.shiro.ui.settings.SettingsFragmentNew.Companion.settingsViewModel
 import com.lagradost.shiro.utils.ANILIST_ACCOUNT_ID
@@ -215,6 +218,11 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                                     context?.removeKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID)
                                     context?.removeKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID)
                                     context?.removeKey(ANILIST_USER_KEY, ANILIST_ACCOUNT_ID)
+                                    context?.setKey(ANILIST_SHOULD_UPDATE_LIST, true)
+                                    context?.removeKey(ANILIST_CACHED_LIST)
+
+                                    libraryViewModel?.requestAnilistList(context)
+
                                     anilistButton.summary = if (isLoggedIntoMal()) "Logged in" else "Not logged in"
                                     settingsViewModel?.hasLoggedIntoAnilist?.postValue(false)
                                 }
@@ -252,6 +260,11 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                                     context?.removeKey(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID)
                                     context?.removeKey(MAL_USER_KEY, MAL_ACCOUNT_ID)
                                     context?.removeKey(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID)
+                                    context?.setKey(MAL_SHOULD_UPDATE_LIST, true)
+                                    context?.removeKey(MAL_CACHED_LIST)
+
+                                    libraryViewModel?.requestMalList(context)
+
                                     malButton.summary = if (isLoggedIntoMal()) "Logged in" else "Not logged in"
                                     settingsViewModel?.hasLoggedIntoMAL?.postValue(false)
                                 }
@@ -352,6 +365,8 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                     getCurrentActivity()!!.installCache()
                     context?.removeKey(MAL_CACHED_LIST)
                     context?.setKey(MAL_SHOULD_UPDATE_LIST, true)
+                    context?.removeKey(ANILIST_CACHED_LIST)
+                    context?.setKey(ANILIST_SHOULD_UPDATE_LIST, true)
                     Toast.makeText(context, "Cleared network cache", Toast.LENGTH_LONG).show()
                     return@setOnPreferenceClickListener true
                 }

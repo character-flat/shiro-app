@@ -9,7 +9,6 @@ import MAL_SHOULD_UPDATE_LIST
 import MAL_TOKEN_KEY
 import MAL_UNIXTIME_KEY
 import MAL_USER_KEY
-import android.app.Activity
 import android.content.Context
 import android.util.Base64
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -17,12 +16,17 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.lagradost.shiro.ui.library.LibraryFragment.Companion.libraryViewModel
 import com.lagradost.shiro.ui.settings.SettingsFragmentNew.Companion.settingsViewModel
+import com.lagradost.shiro.utils.AniListApi.Companion.secondsToReadable
 import com.lagradost.shiro.utils.AppUtils.openBrowser
 import com.lagradost.shiro.utils.AppUtils.splitQuery
 import com.lagradost.shiro.utils.AppUtils.unixTime
+import com.lagradost.shiro.utils.mvvm.logError
 import java.net.URL
 import java.security.SecureRandom
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.concurrent.thread
 
 const val MAL_CLIENT_ID: String = "8c25dbc2c2ea8adb0e1901c7e923aa78"
@@ -36,7 +40,7 @@ class MALApi {
         private var requestId = 0
         private var codeVerifier = ""
 
-        fun Activity.authenticateMAL() {
+        fun Context.authenticateMAL() {
             // It is recommended to use a URL-safe string as code_verifier.
             // See section 4 of RFC 7636 for more details.
 
@@ -82,6 +86,7 @@ class MALApi {
                                 getMalUser()
                                 settingsViewModel?.hasLoggedIntoMAL?.postValue(true)
                                 setKey(MAL_SHOULD_UPDATE_LIST, true)
+                                libraryViewModel?.requestMalList(this)
                             }
                             //println("GOT MAL MASTER TOKEN:::: " + res)
                         }
@@ -156,7 +161,6 @@ class MALApi {
             @JsonProperty("num_scoring_users") val num_scoring_users: Int,
             @JsonProperty("start_season") val start_season: StartSeason?,
             @JsonProperty("broadcast") val broadcast: Broadcast?,
-            @JsonProperty("my_list_status") val my_list_status: ListStatus,
             @JsonProperty("nsfw") val nsfw: String,
             @JsonProperty("created_at") val created_at: String,
             @JsonProperty("updated_at") val updated_at: String
@@ -172,6 +176,7 @@ class MALApi {
 
         data class Data(
             @JsonProperty("node") val node: Node,
+            @JsonProperty("list_status") val list_status: ListStatus?,
         )
 
         data class Paging(
@@ -200,6 +205,11 @@ class MALApi {
         )
 
         fun Context.getMalAnimeListSmart(): Array<Data>? {
+            if (getKey<String>(
+                    MAL_TOKEN_KEY,
+                    MAL_ACCOUNT_ID
+                ) == null
+            ) return null
             return if (getKey(MAL_SHOULD_UPDATE_LIST, true) == true) {
                 val list = getMalAnimeList()
                 if (list != null) {
@@ -238,8 +248,13 @@ class MALApi {
                 // Very lackluster docs
                 // https://myanimelist.net/apiconfig/references/api/v2#operation/users_user_id_animelist_get
                 val url =
-                    "https://api.myanimelist.net/v2/users/@me/animelist?fields=num_episodes,media_type,status,start_date,end_date,synopsis,alternative_titles,mean,genres,rank,num_list_users,nsfw,average_episode_duration,num_favorites,popularity,num_scoring_users,start_season,favorites_info,broadcast,my_list_status{start_date,finish_date},created_at,updated_at&limit=100&offset=$offset"
-
+                    "https://api.myanimelist.net/v2/users/@me/animelist?fields=list_status,num_episodes,media_type,status,start_date,end_date,synopsis,alternative_titles,mean,genres,rank,num_list_users,nsfw,average_episode_duration,num_favorites,popularity,num_scoring_users,start_season,favorites_info,broadcast,created_at,updated_at&nsfw=1&limit=100&offset=$offset"
+                println(
+                    getKey<String>(
+                        MAL_TOKEN_KEY,
+                        MAL_ACCOUNT_ID
+                    )!!
+                )
                 val res = khttp.get(
                     url, headers = mapOf(
                         "Authorization" to "Bearer " + getKey<String>(
@@ -251,7 +266,7 @@ class MALApi {
                 ).text
                 res.toKotlinObject()
             } catch (e: Exception) {
-                e.printStackTrace()
+                logError(e)
                 null
             }
         }
@@ -280,7 +295,7 @@ class MALApi {
             var isDone = false
             var index = 0
             allTitles.clear()
-            checkToken()
+            checkMalToken()
             while (!isDone) {
                 val res = khttp.get(
                     "https://api.myanimelist.net/v2/users/$user/animelist?fields=list_status&limit=1000&offset=${index * 1000}",
@@ -301,7 +316,34 @@ class MALApi {
             }
         }
 
-        private fun Context.checkToken() {
+        fun convertJapanTimeToTimeRemaining(date: String, endDate: String? = null): String? {
+            try {
+                // No time remaining if the show has already ended
+                endDate?.let {
+                    if (SimpleDateFormat("yyyy-MM-dd").parse(it).time < System.currentTimeMillis()) return@convertJapanTimeToTimeRemaining null
+                }
+                val currentDate = Calendar.getInstance()
+                val currentMonth = currentDate.get(Calendar.MONTH) + 1
+                val currentWeek = currentDate.get(Calendar.WEEK_OF_MONTH)
+                val currentYear = currentDate.get(Calendar.YEAR)
+
+                val dateFormat = SimpleDateFormat("yyyy MM W EEEE HH:mm")
+                dateFormat.timeZone = TimeZone.getTimeZone("Japan")
+                val parsedDate = dateFormat.parse("$currentYear $currentMonth $currentWeek $date")
+                val timeDiff = (parsedDate.time - System.currentTimeMillis()) / 1000
+
+                // if it has already aired this week add a week to the timer
+                val updatedTimeDiff =
+                    if (timeDiff > -60 * 60 * 24 * 7 && timeDiff < 0) timeDiff + 60 * 60 * 24 * 7 else timeDiff
+                return secondsToReadable(updatedTimeDiff.toInt(), "Now")
+
+            } catch (e: Exception) {
+                logError(e)
+            }
+            return null
+        }
+
+        private fun Context.checkMalToken() {
             if (unixTime() > getKey<Long>(
                     MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID
                 )!!
@@ -311,7 +353,7 @@ class MALApi {
         }
 
         fun Context.getMalUser(setSettings: Boolean = true): MalUser? {
-            checkToken()
+            checkMalToken()
             return try {
                 val res = khttp.get(
                     "https://api.myanimelist.net/v2/users/@me",

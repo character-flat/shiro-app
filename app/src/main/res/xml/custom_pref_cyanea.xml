@@ -64,6 +64,12 @@
             app:defaultValue="true"
     />
     <SwitchPreference
+            android:icon="@drawable/ic_baseline_open_in_browser_24"
+            app:key="hide_open_website"
+            android:title="Hide the open website button"
+            app:defaultValue="false"
+    />
+    <SwitchPreference
             android:icon="@drawable/ic_baseline_view_list_24"
             app:key="compact_search_enabled"
             android:title="Compact search results"

@@ -24,6 +24,9 @@ const val SUBSCRIPTIONS_BOOKMARK_KEY: String = "subscriptions_bookmarked"
 const val ANILIST_UNIXTIME_KEY: String = "anilist_unixtime" // When token expires
 const val MAL_UNIXTIME_KEY: String = "mal_unixtime" // When token expires
 
+const val ANILIST_CACHED_LIST: String = "anilist_cached_list"
+const val ANILIST_SHOULD_UPDATE_LIST: String = "anilist_should_update_list"
+
 const val ANILIST_TOKEN_KEY: String = "anilist_token" // anilist token for api
 const val MAL_TOKEN_KEY: String = "mal_token" // anilist token for api
 const val MAL_REFRESH_TOKEN_KEY: String = "mal_refresh_token" // refresh token
@@ -34,6 +37,9 @@ const val MAL_CACHED_LIST: String = "mal_cached_list"
 const val MAL_SHOULD_UPDATE_LIST: String = "mal_should_update_list"
 
 const val HAS_DISMISSED_SEARCH_INFO: String = "HAS_DISMISSED_SEARCH_INFO" // For the search tutorial
+
+const val LIBRARY_IS_MAL: String = "library_is_mal"
+
 
 object DataStore {
     val mapper: JsonMapper = JsonMapper.builder().addModule(KotlinModule())

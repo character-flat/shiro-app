@@ -25,6 +25,8 @@ import khttp.structures.cookie.CookieJar
 import java.net.URLEncoder
 import kotlin.concurrent.thread
 
+const val SHIRO_TIMEOUT_TIME = 60.0
+
 class ShiroApi {
 
     data class Token(
@@ -175,7 +177,7 @@ class ShiroApi {
         fun getToken(): Token? {
             try {
                 val headers = mapOf("User-Agent" to USER_AGENT)
-                val shiro = khttp.get("https://shiro.is", headers = headers, timeout = 30.0)
+                val shiro = khttp.get("https://shiro.is", headers = headers, timeout = SHIRO_TIMEOUT_TIME)
                 val jsMatch = Regex("""src="(/static/js/main.*?)"""").find(shiro.text)
                 val (destructed) = jsMatch!!.destructured
                 val jsLocation = "https://shiro.is$destructed"
@@ -239,7 +241,7 @@ class ShiroApi {
         fun getRandomAnimePage(usedToken: Token? = currentToken): AnimePage? {
             return try {
                 val url = "https://tapi.shiro.is/anime/random/TV?token=${usedToken?.token}"
-                val response = khttp.get(url, timeout = 30.0)
+                val response = khttp.get(url, timeout = SHIRO_TIMEOUT_TIME)
                 val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
                 if (mapped.status == "Found")
                     mapped
@@ -254,7 +256,7 @@ class ShiroApi {
             val url = "https://tapi.shiro.is/anime/slug/${slug}?token=${usedToken?.token}"
             val headers = mapOf("Cache-Control" to "max-stale=$maxStale")
             return try {
-                val response = khttp.get(url, timeout = 30.0, headers = headers)
+                val response = khttp.get(url, timeout = SHIRO_TIMEOUT_TIME, headers = headers)
                 val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
                 mapped.data.episodes =
                     mapped.data.episodes?.distinctBy { it.episode_number }?.sortedBy { it.episode_number }
@@ -273,7 +275,7 @@ class ShiroApi {
                 val url = "https://tapi.shiro.is/types/all?token=${usedToken?.token}".replace("+", "%20")
                 // Security headers
                 val headers = usedToken?.headers
-                val response = headers?.let { khttp.get(url, timeout = 30.0) }
+                val response = headers?.let { khttp.get(url, timeout = SHIRO_TIMEOUT_TIME) }
                 val mapped = response?.let { mapper.readValue<AllSearchMethods>(it.text) }
 
                 if (mapped?.status == "Found") {
@@ -338,7 +340,7 @@ class ShiroApi {
                 }?token=${usedToken?.token}".replace("+", "%20")
                 // Security headers
                 val headers = usedToken?.headers
-                val response = headers?.let { khttp.get(url, timeout = 30.0) }
+                val response = headers?.let { khttp.get(url, timeout = SHIRO_TIMEOUT_TIME) }
                 val mapped = response?.let { mapper.readValue<ShiroSearchResponse>(it.text) }
 
                 return if (mapped?.status == "Found")
@@ -367,7 +369,7 @@ class ShiroApi {
                 }$genresString&token=${usedToken?.token}".replace("+", "%20")
                 println(url)
                 val headers = usedToken?.headers
-                val response = headers?.let { khttp.get(url, timeout = 30.0) }
+                val response = headers?.let { khttp.get(url, timeout = SHIRO_TIMEOUT_TIME) }
                 val mapped = response?.let { mapper.readValue<ShiroFullSearchResponse>(it.text) }
                 return if (mapped?.status == "Found")
                     mapped.data.nav.currentPage.items
@@ -480,7 +482,7 @@ class ShiroApi {
         fun getHomeOnly(usedToken: Token? = currentToken): ShiroHomePage? {
             return try {
                 val url = "https://tapi.shiro.is/latest?token=${usedToken!!.token}"
-                val response = khttp.get(url, timeout = 30.0)
+                val response = khttp.get(url, timeout = SHIRO_TIMEOUT_TIME)
                 response.text.let { mapper.readValue(it) }
             } catch (e: Exception) {
                 println(e.message)
@@ -490,14 +492,13 @@ class ShiroApi {
 
         private fun Context.getHome(canBeCached: Boolean, usedToken: Token? = currentToken): ShiroHomePage? {
             var res: ShiroHomePage? = null
-            println("HOME GETTING FETCHED ")
             if (canBeCached && cachedHome != null) {
                 res = cachedHome
             } else {
                 val url = "https://tapi.shiro.is/latest?token=${usedToken!!.token}"
                 try {
                     val headers = mapOf("Cache-Control" to "max-stale=$maxStale")
-                    val response = khttp.get(url, timeout = 30.0, headers = headers)
+                    val response = khttp.get(url, timeout = SHIRO_TIMEOUT_TIME, headers = headers)
                     res = response.text.let { mapper.readValue(it) }
                 } catch (e: Exception) {
                     println(e.message)

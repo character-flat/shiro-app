@@ -1,5 +1,6 @@
 package com.lagradost.shiro.ui.result
 
+import ANILIST_SHOULD_UPDATE_LIST
 import ANILIST_TOKEN_KEY
 import BOOKMARK_KEY
 import DataStore.containsKey
@@ -55,6 +56,7 @@ import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.WebViewFragment.Companion.onWebViewNavigated
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
+import com.lagradost.shiro.ui.library.LibraryFragment.Companion.libraryViewModel
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.toPx
@@ -683,6 +685,9 @@ class ResultFragment : Fragment() {
 
                         fun syncData() {
                             context?.setKey(MAL_SHOULD_UPDATE_LIST, true)
+                            context?.setKey(ANILIST_SHOULD_UPDATE_LIST, true)
+                            libraryViewModel?.requestMalList(context)
+                            libraryViewModel?.requestAnilistList(context)
 
                             thread {
                                 val anilistPost =
@@ -1288,10 +1293,12 @@ class ResultFragment : Fragment() {
             }
         }
 
-        observe(resultViewModel!!.slug) { slug ->
-            open_website_btt?.visibility = VISIBLE
-            open_website_btt?.setOnClickListener {
-                context?.openBrowser("https://shiro.is/anime/${slug}")
+        if (settingsManager?.getBoolean("hide_open_website", false) == true) {
+            observe(resultViewModel!!.slug) { slug ->
+                open_website_btt?.visibility = VISIBLE
+                open_website_btt?.setOnClickListener {
+                    context?.openBrowser("https://shiro.is/anime/${slug}")
+                }
             }
         }
 
