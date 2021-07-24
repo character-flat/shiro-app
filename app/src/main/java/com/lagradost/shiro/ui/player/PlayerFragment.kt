@@ -244,6 +244,8 @@ class PlayerFragment : Fragment() {
     private val fastForwardTime = settingsManager!!.getInt("fast_forward_button_time", 10)
     private val autoPlayEnabled = settingsManager!!.getBoolean("autoplay_enabled", true)
     private val fullscreenNotch = settingsManager!!.getBoolean("fullscreen_notch", true)
+    private val hidePlayerFFWD = settingsManager!!.getBoolean("hide_player_ffwd", false)
+    private val skipFillers = settingsManager!!.getBoolean("skip_fillers", false)
 
     private var statusBarHeight by Delegates.notNull<Int>()
     private var navigationBarHeight by Delegates.notNull<Int>()
@@ -487,7 +489,7 @@ class PlayerFragment : Fragment() {
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
-        val isInMultiWindow = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+        val isInMultiWindow = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             activity?.isInMultiWindowMode ?: false
         } else false
 
@@ -900,6 +902,9 @@ class PlayerFragment : Fragment() {
             }
 
         })
+
+        ffwd_holder?.isVisible = !hidePlayerFFWD
+        rew_holder?.isVisible = !hidePlayerFFWD
 
         /*
         player_holder.setOnTouchListener(OnTouchListener { v, event -> // ignore all touch events
@@ -1621,8 +1626,18 @@ class PlayerFragment : Fragment() {
                                 context?.removeKey(VIEW_POS_KEY, key)
                                 context?.removeKey(VIEW_DUR_KEY, key)
 
+                                val next = data?.fillerEpisodes?.filterKeys { it > data!!.episodeIndex!! + 1 }
+                                    ?.filterValues { !it }?.keys?.minByOrNull { it }?.minus(1)
+                                next?.let {
+                                    Toast.makeText(
+                                        context,
+                                        "Skipped ${it - data!!.episodeIndex!! - 1} filler episodes",
+                                        LENGTH_LONG
+                                    ).show()
+                                }
+
                                 data?.seasonIndex = 0
-                                data?.episodeIndex = data!!.episodeIndex!! + 1
+                                data?.episodeIndex = next ?: data!!.episodeIndex!! + 1
                                 releasePlayer()
                                 loadAndPlay()
                                 handler.postDelayed(checkProgressAction, 5000L)

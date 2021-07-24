@@ -25,6 +25,7 @@ import com.lagradost.shiro.utils.AppUtils.unixTime
 import com.lagradost.shiro.utils.mvvm.logError
 import java.net.URL
 import java.security.SecureRandom
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.concurrent.thread
@@ -143,7 +144,7 @@ class MALApi {
         data class Node(
             @JsonProperty("id") val id: Int,
             @JsonProperty("title") val title: String,
-            @JsonProperty("main_picture") val main_picture: MainPicture,
+            @JsonProperty("main_picture") val main_picture: MainPicture?,
             @JsonProperty("alternative_titles") val alternative_titles: AlternativeTitles,
             @JsonProperty("media_type") val media_type: String,
             @JsonProperty("num_episodes") val num_episodes: Int,
@@ -224,6 +225,7 @@ class MALApi {
 
         private fun Context.getMalAnimeList(): Array<Data>? {
             return try {
+                checkMalToken()
                 var offset = 0
                 val fullList = mutableListOf<Data>()
                 val offsetRegex = Regex("""offset=(\d+)""")
@@ -249,12 +251,6 @@ class MALApi {
                 // https://myanimelist.net/apiconfig/references/api/v2#operation/users_user_id_animelist_get
                 val url =
                     "https://api.myanimelist.net/v2/users/@me/animelist?fields=list_status,num_episodes,media_type,status,start_date,end_date,synopsis,alternative_titles,mean,genres,rank,num_list_users,nsfw,average_episode_duration,num_favorites,popularity,num_scoring_users,start_season,favorites_info,broadcast,created_at,updated_at&nsfw=1&limit=100&offset=$offset"
-                println(
-                    getKey<String>(
-                        MAL_TOKEN_KEY,
-                        MAL_ACCOUNT_ID
-                    )!!
-                )
                 val res = khttp.get(
                     url, headers = mapOf(
                         "Authorization" to "Bearer " + getKey<String>(
@@ -319,9 +315,19 @@ class MALApi {
         fun convertJapanTimeToTimeRemaining(date: String, endDate: String? = null): String? {
             try {
                 // No time remaining if the show has already ended
-                endDate?.let {
-                    if (SimpleDateFormat("yyyy-MM-dd").parse(it).time < System.currentTimeMillis()) return@convertJapanTimeToTimeRemaining null
+                try {
+                    endDate?.let {
+                        if (SimpleDateFormat("yyyy-MM-dd").parse(it).time < System.currentTimeMillis()) return@convertJapanTimeToTimeRemaining null
+                    }
+                } catch (e: ParseException) {
                 }
+
+                // Unparseable date: "2021 7 4 other null"
+                // Weekday: other, date: null
+                if (date.contains("null") || date.contains("other")) {
+                    return null
+                }
+
                 val currentDate = Calendar.getInstance()
                 val currentMonth = currentDate.get(Calendar.MONTH) + 1
                 val currentWeek = currentDate.get(Calendar.WEEK_OF_MONTH)

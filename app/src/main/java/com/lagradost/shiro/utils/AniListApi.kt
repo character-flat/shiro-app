@@ -95,8 +95,6 @@ class AniListApi {
                 setKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, token)
                 setKey(ANILIST_SHOULD_UPDATE_LIST, true)
                 libraryViewModel?.requestAnilistList(this)
-
-                println("ANILIST LOGIN DONE")
                 thread {
                     getUser()
                     settingsViewModel?.hasLoggedIntoAnilist?.postValue(true)
@@ -218,7 +216,7 @@ class AniListApi {
                         ),
                         data = mapOf("query" to q),//(if (vars == null) mapOf("query" to q) else mapOf("query" to q, "variables" to vars))
                         timeout = 5.0 // REASONABLE TIMEOUT
-                    ).text.replace("\\", "")
+                    ).text.replace("\\/", "/")
                 } else {
                     ""
                 }
@@ -299,8 +297,8 @@ class AniListApi {
         )
 
         data class Title(
-            @JsonProperty("english") val english: String,
-            @JsonProperty("romaji") val romaji: String
+            @JsonProperty("english") val english: String?,
+            @JsonProperty("romaji") val romaji: String?
         )
 
         data class CoverImage(
@@ -310,10 +308,10 @@ class AniListApi {
         data class Media(
             @JsonProperty("id") val id: Int,
             @JsonProperty("idMal") val idMal: Int?,
-            @JsonProperty("season") val season: String,
+            @JsonProperty("season") val season: String?,
             @JsonProperty("seasonYear") val seasonYear: Int,
-            @JsonProperty("format") val format: String,
-            @JsonProperty("source") val source: String,
+            @JsonProperty("format") val format: String?,
+            //@JsonProperty("source") val source: String,
             @JsonProperty("episodes") val episodes: Int,
             @JsonProperty("title") val title: Title,
             //@JsonProperty("description") val description: String,
@@ -323,7 +321,7 @@ class AniListApi {
         )
 
         data class Entries(
-            @JsonProperty("status") val status: String,
+            @JsonProperty("status") val status: String?,
             @JsonProperty("completedAt") val completedAt: CompletedAt,
             @JsonProperty("startedAt") val startedAt: StartedAt,
             @JsonProperty("updatedAt") val updatedAt: Int,
@@ -334,7 +332,7 @@ class AniListApi {
         )
 
         data class Lists(
-            @JsonProperty("status") val status: String,
+            @JsonProperty("status") val status: String?,
             @JsonProperty("entries") val entries: List<Entries>
         )
 
@@ -348,6 +346,12 @@ class AniListApi {
 
 
         fun Context.getAnilistAnimeListSmart(): Array<Lists>? {
+            if (getKey<String>(
+                ANILIST_TOKEN_KEY,
+                ANILIST_ACCOUNT_ID,
+                null
+            ) == null) return null
+            if (checkToken()) return null
             return if (getKey(ANILIST_SHOULD_UPDATE_LIST, true) == true) {
                 val list = getFullAnilistList()?.data?.MediaListCollection?.lists?.toTypedArray()
                 if (list != null) {
@@ -394,7 +398,6 @@ class AniListApi {
                                     season
                                     seasonYear
                                     format
-                                    source
                                     episodes
                                     chapters
                                     title
@@ -414,7 +417,9 @@ class AniListApi {
                     }
                     }
             """
-                return postApi("https://graphql.anilist.co", query).toKotlinObject()
+                val text = postApi("https://graphql.anilist.co", query)
+                println(text)
+                return text.toKotlinObject()
 
             } catch (e: Exception) {
                 logError(e)

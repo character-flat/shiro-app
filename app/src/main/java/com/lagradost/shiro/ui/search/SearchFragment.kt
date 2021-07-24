@@ -181,7 +181,8 @@ class SearchFragment : Fragment() {
         }
 
         main_search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String): Boolean {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                if (query == null) return false
                 progress_bar.visibility = View.VISIBLE
                 (cardSpace?.adapter as ResAdapter).cardList.clear()
                 thread {
@@ -204,7 +205,8 @@ class SearchFragment : Fragment() {
                 return true
             }
 
-            override fun onQueryTextChange(newText: String): Boolean {
+            override fun onQueryTextChange(newText: String?): Boolean {
+                if (newText == null) return false
                 (cardSpace?.adapter as ResAdapter).cardList.clear()
                 if (newText != "" && searchViewModel!!.selectedGenres.value?.isNullOrEmpty() != false) {
                     progress_bar.visibility = View.VISIBLE

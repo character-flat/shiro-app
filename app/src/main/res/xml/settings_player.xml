@@ -33,11 +33,24 @@
             app:defaultValue="false"
     />
     <SwitchPreference
+            android:icon="@drawable/netflix_skip_forward"
+            app:key="hide_player_ffwd"
+            android:title="Hide rewind and fast forward buttons"
+            app:defaultValue="false"
+    />
+    <SwitchPreference
             android:icon="@drawable/ic_baseline_queue_play_next_24"
             app:key="autoplay_enabled"
             android:title="Autoplay next episode"
             android:summary="Does not work if there's no player interaction during 3 episodes in a row"
             app:defaultValue="true"
+    />
+    <SwitchPreference
+            android:icon="@drawable/ic_baseline_skip_next_24"
+            app:key="skip_fillers"
+            android:title="Automatically skip fillers"
+            android:summary="Skips all filler episodes when pressing next episode. Does not apply to downloaded episodes"
+            app:defaultValue="false"
     />
     <SwitchPreference
             android:icon="@drawable/ic_baseline_fullscreen_24"

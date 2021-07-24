@@ -1,15 +1,20 @@
 package com.lagradost.shiro.ui.library
 
+import ANILIST_TOKEN_KEY
+import DataStore.getKey
+import MAL_TOKEN_KEY
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.lagradost.shiro.utils.ANILIST_ACCOUNT_ID
 import com.lagradost.shiro.utils.AniListApi
 import com.lagradost.shiro.utils.AniListApi.Companion.convertAnilistStringToStatus
 import com.lagradost.shiro.utils.AniListApi.Companion.getAnilistAnimeListSmart
 import com.lagradost.shiro.utils.MALApi
 import com.lagradost.shiro.utils.MALApi.Companion.convertToStatus
 import com.lagradost.shiro.utils.MALApi.Companion.getMalAnimeListSmart
+import com.lagradost.shiro.utils.MAL_ACCOUNT_ID
 import me.xdrop.fuzzywuzzy.FuzzySearch
 import java.text.SimpleDateFormat
 import kotlin.concurrent.thread
@@ -56,14 +61,14 @@ class LibraryViewModel : ViewModel() {
 
     fun sortCurrentList(tab: Int, sortMethod: Int, query: String? = null) {
         if (sortMethod != SEARCH) sortMethods[tab] = sortMethod
-        if (isMal) {
+        if (isMal && malList.size > tab) {
             val sortedMalList = malList.toMutableList().apply {
                 this[tab] = sortMalLis(this[tab], sortMethod, query)
             }
             _currentList.postValue(
                 sortedMalList
             )
-        } else {
+        } else if (!isMal && anilistList.size > tab) {
             val sortedAnilistList = anilistList.toMutableList().apply {
                 this[tab] = sortAnilistList(this[tab], sortMethod, query)
             }
@@ -82,15 +87,15 @@ class LibraryViewModel : ViewModel() {
         val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
         return when (sortMethod) {
             DEFAULT_SORT -> {
-                array.sortBy { it.node.title }
+                array.sortBy { it.node.title.lowercase() }
                 array.toList()
             }
             ALPHA_SORT -> {
-                array.sortBy { it.node.title.also { println() } }
+                array.sortBy { it.node.title.lowercase() }
                 array.toList()
             }
             REVERSE_ALPHA_SORT -> {
-                array.sortBy { it.node.title }
+                array.sortBy { it.node.title.lowercase() }
                 array.reverse()
                 array.toList()
             }
@@ -128,7 +133,7 @@ class LibraryViewModel : ViewModel() {
             }
             SEARCH -> {
                 if (searchText != null) {
-                    array.sortBy { -FuzzySearch.partialRatio(searchText, it.node.title) }
+                    array.sortBy { -FuzzySearch.partialRatio(searchText.lowercase(), it.node.title.lowercase()) }
                 }
                 array.toList()
             }
@@ -144,15 +149,15 @@ class LibraryViewModel : ViewModel() {
         val array = array?.toTypedArray() ?: return listOf()
         return when (sortMethod) {
             DEFAULT_SORT -> {
-                array.sortBy { it.media.title.english }
+                array.sortBy { (it.media.title.english ?: it.media.title.romaji ?: "").lowercase() }
                 array.toList()
             }
             ALPHA_SORT -> {
-                array.sortBy { it.media.title.english }
+                array.sortBy { (it.media.title.english ?: it.media.title.romaji ?: "").lowercase() }
                 array.toList()
             }
             REVERSE_ALPHA_SORT -> {
-                array.sortBy { it.media.title.english }
+                array.sortBy { (it.media.title.english ?: it.media.title.romaji ?: "").lowercase() }
                 array.reverse()
                 array.toList()
             }
@@ -180,7 +185,12 @@ class LibraryViewModel : ViewModel() {
             }
             SEARCH -> {
                 if (searchText != null) {
-                    array.sortBy { -FuzzySearch.partialRatio(searchText, it.media.title.english) }
+                    array.sortBy {
+                        -FuzzySearch.partialRatio(
+                            searchText.lowercase(),
+                            (it.media.title.english ?: it.media.title.romaji ?: "").lowercase()
+                        )
+                    }
                 }
                 array.toList()
             }
@@ -204,24 +214,26 @@ class LibraryViewModel : ViewModel() {
         }
     }
 
-    fun updateAnilistList(list: List<AniListApi.Companion.Lists>) {
+    private fun updateAnilistList(list: List<AniListApi.Companion.Lists>) {
         anilistList =
             listOf(
                 list.firstOrNull {
-                    convertAnilistStringToStatus(it.status) == AniListApi.Companion.AniListStatusType.Watching
-                            || convertAnilistStringToStatus(it.status) == AniListApi.Companion.AniListStatusType.Rewatching
+                    convertAnilistStringToStatus(it.status ?: "") == AniListApi.Companion.AniListStatusType.Watching
+                            || convertAnilistStringToStatus(
+                        it.status ?: ""
+                    ) == AniListApi.Companion.AniListStatusType.Rewatching
                 }?.entries,
                 list.firstOrNull {
-                    convertAnilistStringToStatus(it.status) == AniListApi.Companion.AniListStatusType.Planning
+                    convertAnilistStringToStatus(it.status ?: "") == AniListApi.Companion.AniListStatusType.Planning
                 }?.entries,
                 list.firstOrNull {
-                    convertAnilistStringToStatus(it.status) == AniListApi.Companion.AniListStatusType.Paused
+                    convertAnilistStringToStatus(it.status ?: "") == AniListApi.Companion.AniListStatusType.Paused
                 }?.entries,
                 list.firstOrNull {
-                    convertAnilistStringToStatus(it.status) == AniListApi.Companion.AniListStatusType.Completed
+                    convertAnilistStringToStatus(it.status ?: "") == AniListApi.Companion.AniListStatusType.Completed
                 }?.entries,
                 list.firstOrNull {
-                    convertAnilistStringToStatus(it.status) == AniListApi.Companion.AniListStatusType.Dropped
+                    convertAnilistStringToStatus(it.status ?: "") == AniListApi.Companion.AniListStatusType.Dropped
                 }?.entries,
                 list.map { it.entries }.flatten()
             )
@@ -236,6 +248,7 @@ class LibraryViewModel : ViewModel() {
 
     fun requestMalList(context: Context?) {
         thread {
+            val hasMAL = context?.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
             context?.getMalAnimeListSmart()?.let {
                 updateMALList(it)
             }
@@ -244,8 +257,15 @@ class LibraryViewModel : ViewModel() {
 
     fun requestAnilistList(context: Context?) {
         thread {
-            context?.getAnilistAnimeListSmart()?.let {
-                updateAnilistList(it.toList())
+            val hasAniList = context?.getKey<String>(
+                ANILIST_TOKEN_KEY,
+                ANILIST_ACCOUNT_ID,
+                null
+            ) != null
+            if (hasAniList) {
+                context?.getAnilistAnimeListSmart()?.let {
+                    updateAnilistList(it.toList())
+                }
             }
         }
     }

@@ -90,13 +90,6 @@ class LibraryFragment : Fragment() {
         SortingMethod("Score (Low to High)", SCORE_SORT_REVERSED),
     )
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        /*arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-        }*/
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -315,7 +308,7 @@ class CustomPagerAdapter(val context: FragmentActivity) :
                     return it.map { data ->
                         LibraryObject(
                             data.node.title,
-                            data.node.main_picture.medium,
+                            data.node.main_picture?.medium ?: "",
                             data.node.id.toString(),
                             data.list_status?.score ?: 0,
                             data.list_status?.num_episodes_watched ?: 0,
@@ -332,17 +325,16 @@ class CustomPagerAdapter(val context: FragmentActivity) :
             } else if (list.firstOrNull() is AniListApi.Companion.Entries) {
                 (list as? List<AniListApi.Companion.Entries>)?.let {
                     return it.map {
-                        println()
                         LibraryObject(
-                            it.media.title.english,
+                            it.media.title.english ?: it.media.title.romaji ?: "",
                             it.media.coverImage.medium,
                             it.media.idMal.toString(),
                             it.score,
                             it.progress,
                             it.media.episodes,
                             it.media.season,
-                            it.media.seasonYear,
-                            convertAnilistStringToStatus(it.status).value,
+                            if (it.media.seasonYear == 0) null else it.media.seasonYear,
+                            convertAnilistStringToStatus(it.status ?: "").value,
                             it.media.nextAiringEpisode?.timeUntilAiring?.let { it -> secondsToReadable(it, "Now") }
                         )
                     }

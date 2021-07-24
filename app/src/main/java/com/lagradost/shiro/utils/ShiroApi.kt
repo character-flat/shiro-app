@@ -21,6 +21,7 @@ import com.lagradost.shiro.ui.LastEpisodeInfo
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.utils.AppUtils.allApi
 import com.lagradost.shiro.utils.AppUtils.md5
+import com.lagradost.shiro.utils.AppUtils.settingsManager
 import khttp.structures.cookie.CookieJar
 import java.net.URLEncoder
 import kotlin.concurrent.thread
@@ -311,8 +312,12 @@ class ShiroApi {
             // Fallback on search
             val searchResults = title?.let { search(it) }
             val first = searchResults?.get(0)?.slug
-            // Prioritizes non dub
-            return searchResults?.find { it.slug == first?.removeSuffix("-dubbed") }?.slug ?: first
+            // Prioritizes sub if sub isn't hidden
+            return if (settingsManager!!.getString("hide_behavior", "None") != "Hide subbed") {
+                searchResults?.find { it.slug == first?.removeSuffix("-dubbed") }?.slug ?: first
+            } else {
+                searchResults?.find { it.slug == "$first-dubbed" }?.slug ?: first
+            }
         }
 
         fun getSlugFromMalId(malId: String, title: String?): String? {

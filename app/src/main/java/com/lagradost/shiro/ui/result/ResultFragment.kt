@@ -1260,7 +1260,6 @@ class ResultFragment : Fragment() {
 
         activity?.showNavigation()
 
-
         fragments_new_nav_view?.background = ColorDrawable(Cyanea.instance.backgroundColor)
         result_poster_blur?.background = ColorDrawable(Cyanea.instance.backgroundColor)
         fragment_results_toolbar?.background = ColorDrawable(Cyanea.instance.backgroundColor)
@@ -1293,7 +1292,7 @@ class ResultFragment : Fragment() {
             }
         }
 
-        if (settingsManager?.getBoolean("hide_open_website", false) == true) {
+        if (settingsManager?.getBoolean("hide_open_website", false) != true) {
             observe(resultViewModel!!.slug) { slug ->
                 open_website_btt?.visibility = VISIBLE
                 open_website_btt?.setOnClickListener {
