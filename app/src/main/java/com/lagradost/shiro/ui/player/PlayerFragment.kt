@@ -1626,8 +1626,9 @@ class PlayerFragment : Fragment() {
                                 context?.removeKey(VIEW_POS_KEY, key)
                                 context?.removeKey(VIEW_DUR_KEY, key)
 
-                                val next = data?.fillerEpisodes?.filterKeys { it > data!!.episodeIndex!! + 1 }
-                                    ?.filterValues { !it }?.keys?.minByOrNull { it }?.minus(1)
+                                val next =
+                                    if (skipFillers) data?.fillerEpisodes?.filterKeys { it > data!!.episodeIndex!! + 1 }
+                                        ?.filterValues { !it }?.keys?.minByOrNull { it }?.minus(1) else null
                                 next?.let {
                                     Toast.makeText(
                                         context,

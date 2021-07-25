@@ -45,6 +45,7 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.library.LibraryFragment.Companion.libraryViewModel
 import com.lagradost.shiro.ui.settings.SettingsFragment.Companion.restoreFileSelector
 import com.lagradost.shiro.ui.settings.SettingsFragmentNew.Companion.settingsViewModel
+import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.ANILIST_ACCOUNT_ID
 import com.lagradost.shiro.utils.APIS
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateAniList
@@ -63,6 +64,35 @@ import java.io.File
 import kotlin.concurrent.thread
 
 const val XML_KEY = "xml"
+
+val blacklistedTvKeys = listOf(
+    "force_landscape",
+    "swipe_to_refresh",
+    "show_subscribed",
+    "pick_downloads",
+    "subscribe_to_announcements",
+    "data_saving",
+    "disable_data_downloads",
+    "concurrent_downloads",
+    "backup_btt",
+    "restore_btt",
+    "pip_enabled",
+    "swipe_enabled",
+    "swipe_vertical_enabled",
+    "double_tap_enabled",
+    "hide_player_ffwd",
+    "fullscreen_notch",
+    "ignore_ssl",
+    "chromecast_tap_time",
+    "allow_player_rotation",
+    "compact_search_enabled",
+    "statusbar_hidden",
+    "pref_color_navigation_bar",
+    "accent_color_for_nav_view",
+    "statusbar_hidden",
+    "hide_open_website",
+    "expanded_span_count"
+)
 
 class SubSettingsFragment : PreferenceFragmentCompat() {
     private var xmlFile: Int? = null
@@ -96,6 +126,12 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         xmlFile?.let { setPreferencesFromResource(it, rootKey) }
+
+        if (tvActivity != null) {
+            blacklistedTvKeys.forEach {
+                findPreference<Preference>(it)?.isVisible = false
+            }
+        }
 
         when (xmlFile) {
 
@@ -165,10 +201,12 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
 
                 setTitle("Player settings")
 
-                findPreference<Preference?>("pip_enabled")?.isVisible =
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                findPreference<Preference>("fullscreen_notch")?.isVisible =
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                if (tvActivity == null) {
+                    findPreference<Preference?>("pip_enabled")?.isVisible =
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                    findPreference<Preference>("fullscreen_notch")?.isVisible =
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                }
 
                 val selectedProvidersPreference = findPreference<MultiSelectListPreference?>("selected_providers")
                 val apiNames = APIS.map { it.name }

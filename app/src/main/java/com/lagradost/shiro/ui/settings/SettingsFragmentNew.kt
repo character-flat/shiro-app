@@ -66,6 +66,7 @@ class SettingsFragmentNew : Fragment() {
             Pair("Updates", R.xml.settings_update_info),
             Pair("About", R.xml.settings_about),
         )*/
+        account_icon?.isVisible = tvActivity == null
         val array = arrayOf(
             Pair(settings_general, R.xml.settings_general),
             Pair(settings_style, R.xml.custom_pref_cyanea),
@@ -96,29 +97,33 @@ class SettingsFragmentNew : Fragment() {
         )
         top_padding_settings?.layoutParams = topParams
 
-        // Because the user isn't necessarily fetched
-        if (context?.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
-            && context?.getKeys(MAL_USER_KEY)?.isEmpty() == true
-        ) {
-            thread {
-                context?.getMalUser()
-            }
-        }
 
-        context?.let { context ->
-            /*settings_listview?.adapter = ArrayAdapter(context, R.layout.listview_single_item, array.map { it.first })
-            settings_listview.setOnItemClickListener { _, _, position, _ ->
-                openSettingSubMenu(array[position].second)
-            }*/
-            context.loadProfile()
-            observe(settingsViewModel!!.hasLoggedIntoMAL) {
+
+        if (tvActivity == null) {
+            // Because the user isn't necessarily fetched
+            if (context?.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+                && context?.getKeys(MAL_USER_KEY)?.isEmpty() == true
+            ) {
+                thread {
+                    context?.getMalUser()
+                }
+            }
+
+            context?.let { context ->
+                /*settings_listview?.adapter = ArrayAdapter(context, R.layout.listview_single_item, array.map { it.first })
+                settings_listview.setOnItemClickListener { _, _, position, _ ->
+                    openSettingSubMenu(array[position].second)
+                }*/
                 context.loadProfile()
-            }
-            observe(settingsViewModel!!.hasLoggedIntoAnilist) {
-                context.loadProfile()
-            }
+                observe(settingsViewModel!!.hasLoggedIntoMAL) {
+                    context.loadProfile()
+                }
+                observe(settingsViewModel!!.hasLoggedIntoAnilist) {
+                    context.loadProfile()
+                }
 
 
+            }
         }
     }
 
@@ -189,14 +194,15 @@ class SettingsFragmentNew : Fragment() {
         activity?.changeStatusBarState(settingsManager.getBoolean("statusbar_hidden", true))?.let {
             statusHeight = it
         }
-        activity?.requestedOrientation = if (settingsManager.getBoolean("force_landscape", false)) {
-            ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
-        } else {
-            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        }
         isInSettings = true
         if (tvActivity != null) {
             onWebViewNavigated += ::restoreState
+        } else {
+            activity?.requestedOrientation = if (settingsManager.getBoolean("force_landscape", false)) {
+                ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+            } else {
+                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
         }
         super.onResume()
     }

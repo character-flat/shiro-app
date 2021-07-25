@@ -16,6 +16,7 @@
 
 package com.lagradost.shiro.ui.settings
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -36,6 +37,7 @@ import com.lagradost.shiro.utils.AppUtils.showNavigation
  * Activity to show Cyanea preferences allowing the user to modify the primary, accent and background color of the app.
  */
 open class SettingsActivity : CyaneaAppCompatActivity() {
+    @SuppressLint("MissingSuperCall")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         settingsActivity = this
@@ -86,6 +88,7 @@ open class SettingsActivity : CyaneaAppCompatActivity() {
         else -> super.onOptionsItemSelected(item)
     }
 
+    @SuppressLint("MissingSuperCall")
     override fun onResume() {
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
         statusHeight = changeStatusBarState(settingsManager.getBoolean("statusbar_hidden", true))

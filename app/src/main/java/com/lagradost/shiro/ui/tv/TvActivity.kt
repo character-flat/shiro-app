@@ -1,5 +1,6 @@
 package com.lagradost.shiro.ui.tv
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.FocusFinder
@@ -17,9 +18,8 @@ import com.lagradost.shiro.ui.MasterViewModel
 import com.lagradost.shiro.ui.WebViewFragment.Companion.isInWebView
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
-import com.lagradost.shiro.ui.settings.SettingsFragment.Companion.isInSettings
+import com.lagradost.shiro.ui.settings.SettingsFragmentNew.Companion.isInSettings
 import com.lagradost.shiro.ui.tv.PlayerFragmentTv.Companion.isInPlayer
-import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
 import com.lagradost.shiro.utils.AppUtils.init
 import com.lagradost.shiro.utils.AppUtils.popCurrentPage
@@ -80,6 +80,7 @@ class TvActivity : CyaneaAppCompatActivity() {
         }
     }
 
+    @SuppressLint("MissingSuperCall")
     override fun onCreate(savedInstanceState: Bundle?) {
         // Disables ssl check - Needed for development with Android TV VM
 
@@ -149,6 +150,7 @@ class TvActivity : CyaneaAppCompatActivity() {
         }
     }
 
+    @SuppressLint("MissingSuperCall")
     override fun onResume() {
         super.onResume()
         // This is needed to avoid NPE crash due to missing context

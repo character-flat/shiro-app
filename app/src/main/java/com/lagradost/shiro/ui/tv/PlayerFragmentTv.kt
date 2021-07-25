@@ -118,6 +118,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
     private val fastForwardTime = settingsManager!!.getInt("fast_forward_button_time", 10)
     private val fastForwardTimeMillis: Long = TimeUnit.SECONDS.toMillis(fastForwardTime.toLong())
     private val autoPlayEnabled = settingsManager!!.getBoolean("autoplay_enabled", true)
+    private val skipFillers = settingsManager!!.getBoolean("skip_fillers", false)
 
     /*
     private val resizeModes = listOf(
@@ -292,7 +293,19 @@ class PlayerFragmentTv : VideoSupportFragment() {
         context?.savePos()
         playerGlue.host.hideControlsOverlay(false)
         isLoadingNextEpisode = true
-        data?.episodeIndex = minOf(data?.episodeIndex!! + 1, data?.card?.episodes?.size!! - 1)
+
+        val next =
+            if (skipFillers) data?.fillerEpisodes?.filterKeys { it > data!!.episodeIndex!! + 1 }
+                ?.filterValues { !it }?.keys?.minByOrNull { it }?.minus(1) else null
+        next?.let {
+            Toast.makeText(
+                context,
+                "Skipped ${it - data!!.episodeIndex!! - 1} filler episodes",
+                LENGTH_LONG
+            ).show()
+        }
+
+        data?.episodeIndex = next ?: minOf(data?.episodeIndex!! + 1, data?.card?.episodes?.size!! - 1)
         selectedSource = null
         extractorLinks.clear()
         releasePlayer()

@@ -20,7 +20,7 @@ import com.lagradost.shiro.ui.home.MasterCardAdapter
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.onResultsNavigated
-import com.lagradost.shiro.ui.settings.SettingsFragment
+import com.lagradost.shiro.ui.settings.SettingsFragmentNew
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.observe
@@ -101,7 +101,7 @@ class MainFragment : Fragment() {
         }
         settings_icon.setOnClickListener {
             activity?.supportFragmentManager?.beginTransaction()
-                ?.replace(R.id.home_root_tv, SettingsFragment())
+                ?.replace(R.id.home_root_tv, SettingsFragmentNew())
                 ?.commit()
         }
         homeViewModel!!.apiData.observe(viewLifecycleOwner) {

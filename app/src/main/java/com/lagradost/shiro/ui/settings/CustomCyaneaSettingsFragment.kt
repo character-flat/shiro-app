@@ -35,6 +35,7 @@ import com.jaredrummler.cyanea.tinting.SystemBarTint
 import com.jaredrummler.cyanea.utils.ColorUtils
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
+import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 
@@ -102,6 +103,12 @@ open class CyaneaSettingsFragment : PreferenceFragmentCompat(), OnPreferenceChan
         findPreference<SwitchPreference?>("accent_color_for_nav_view")?.setOnPreferenceClickListener {
             cyanea.edit { }.recreate(getCurrentActivity()!!, smooth = true)
             return@setOnPreferenceClickListener true
+        }
+
+        if (tvActivity != null) {
+            blacklistedTvKeys.forEach {
+                findPreference<Preference>(it)?.isVisible = false
+            }
         }
 
         val statusBarHidden = findPreference<SwitchPreference?>("statusbar_hidden")

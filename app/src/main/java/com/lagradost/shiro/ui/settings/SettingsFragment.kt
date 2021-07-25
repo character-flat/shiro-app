@@ -16,13 +16,13 @@ import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
 import com.lagradost.shiro.ui.WebViewFragment.Companion.onWebViewNavigated
+import com.lagradost.shiro.ui.settings.SettingsFragmentNew.Companion.isInSettings
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 
 class SettingsFragment : PreferenceFragmentCompat() {
     companion object {
-        var isInSettings: Boolean = false
         var restoreFileSelector: ActivityResultLauncher<String>? = null
     }
 
