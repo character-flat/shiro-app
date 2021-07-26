@@ -253,7 +253,6 @@ class ShiroApi {
         }
 
         fun getAnimePage(slug: String, usedToken: Token? = currentToken): AnimePage? {
-            println("Get anime $slug")
             val url = "https://tapi.shiro.is/anime/slug/${slug}?token=${usedToken?.token}"
             val headers = mapOf("Cache-Control" to "max-stale=$maxStale")
             return try {
@@ -265,7 +264,6 @@ class ShiroApi {
                     mapped
                 else null
             } catch (e: Exception) {
-                e.printStackTrace()
                 null
             }
         }
@@ -292,7 +290,22 @@ class ShiroApi {
             @JsonProperty("id") val id: String,
             @JsonProperty("slug") val slug: String,
             @JsonProperty("mal_id") val mal_id: String?,
+            @JsonProperty("title") val title: String?,
         )
+
+        fun getMalIDFromTitle(title: String): String? {
+            try {
+                val oneDayStale = 60 * 60 * 24
+                val headers = mapOf("Cache-Control" to "max-stale=$oneDayStale")
+                val res =
+                    khttp.get("https://raw.githubusercontent.com/Blatzar/shiro-db/master/anime.json", headers = headers)
+                val json = mapper.readValue<List<AllAnimeJson>>(res.text)
+                return json.find { it.title == title }?.mal_id
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            return null
+        }
 
         fun getMalIDFromSlug(slug: String): String? {
             try {

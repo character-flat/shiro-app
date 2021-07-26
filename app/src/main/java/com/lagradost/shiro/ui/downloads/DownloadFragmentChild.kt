@@ -43,6 +43,7 @@ import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.DownloadManager
 import com.lagradost.shiro.utils.VideoDownloadManager
+import com.lagradost.shiro.utils.VideoDownloadManager.downloadQueue
 import com.lagradost.shiro.utils.VideoDownloadManager.downloadStatus
 import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
 import kotlinx.android.synthetic.main.fragment_download_child.*
@@ -317,11 +318,16 @@ class DownloadFragmentChild : Fragment() {
                                         )
                                     }
                                     val pkg = VideoDownloadManager.getDownloadResumePackage(
-                                        requireContext(),
+                                        ctw,
                                         child.internalId
                                     )
+
+                                    if (downloadQueue.any {
+                                        it.item.ep.id == pkg?.item?.ep?.id
+                                    }) Toast.makeText(ctw, "Episode is already in the download queue", Toast.LENGTH_SHORT).show()
+
                                     if (pkg != null) {
-                                        VideoDownloadManager.downloadFromResume(requireContext(), pkg)
+                                        VideoDownloadManager.downloadFromResume(ctw, pkg)
                                     }
 
                                 }

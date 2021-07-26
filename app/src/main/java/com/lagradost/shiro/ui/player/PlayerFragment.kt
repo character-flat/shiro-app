@@ -1707,7 +1707,7 @@ class PlayerFragment : Fragment() {
                         links_loaded_text?.text = ""
 
                         exoPlayer.setHandleAudioBecomingNoisy(true) // WHEN HEADPHONES ARE PLUGGED OUT https://github.com/google/ExoPlayer/issues/7288
-                        player_view.player = exoPlayer
+                        player_view?.player = exoPlayer
 
                         // Sets the speed
                         exoPlayer.playbackParameters = PlaybackParameters(playbackSpeed!!)

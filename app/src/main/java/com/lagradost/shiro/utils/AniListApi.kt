@@ -25,6 +25,7 @@ import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.openBrowser
 import com.lagradost.shiro.utils.AppUtils.splitQuery
 import com.lagradost.shiro.utils.AppUtils.unixTime
+import com.lagradost.shiro.utils.ShiroApi.Companion.getMalIDFromTitle
 import com.lagradost.shiro.utils.ShiroApi.Companion.maxStale
 import com.lagradost.shiro.utils.mvvm.logError
 import java.net.URL
@@ -151,6 +152,7 @@ class AniListApi {
                             id
                             idMal
                             seasonYear
+                            startDate { year month day }
                             title {
                                 romaji
                             }
@@ -173,6 +175,7 @@ class AniListApi {
                 ).text.replace("\\", "")
                 return res.toKotlinObject()
             } catch (e: Exception) {
+                logError(e)
             }
             return null
         }
@@ -192,11 +195,23 @@ class AniListApi {
                 Regex(""" (${blackList.joinToString(separator = "|").replace("(", "\\(").replace(")", "\\)")})""")
             //println("NAME $name NEW NAME ${name.replace(blackListRegex, "")}")
             val shows = searchShows(name.replace(blackListRegex, ""))
-            val filtered = shows?.data?.Page?.media?.filter { (it.seasonYear == year || year == null) }
+            val malId = getMalIDFromTitle(name.replace(blackListRegex, ""))
 
+            shows?.data?.Page?.media?.find {
+                malId ?: "NONE" == it.idMal.toString()
+            }?.let { return it }
+
+            val filtered =
+                shows?.data?.Page?.media?.filter {
+                    (
+                            it.startDate.year ?: year.toString() == year.toString()
+                                    || year == null
+                            )
+                }
             filtered?.forEach {
                 if (fixName(it.title.romaji) == fixName(name)) return it
             }
+
             return filtered?.firstOrNull()
         }
 
@@ -347,10 +362,11 @@ class AniListApi {
 
         fun Context.getAnilistAnimeListSmart(): Array<Lists>? {
             if (getKey<String>(
-                ANILIST_TOKEN_KEY,
-                ANILIST_ACCOUNT_ID,
-                null
-            ) == null) return null
+                    ANILIST_TOKEN_KEY,
+                    ANILIST_ACCOUNT_ID,
+                    null
+                ) == null
+            ) return null
             if (checkToken()) return null
             return if (getKey(ANILIST_SHOULD_UPDATE_LIST, true) == true) {
                 val list = getFullAnilistList()?.data?.MediaListCollection?.lists?.toTypedArray()
@@ -739,6 +755,7 @@ class AniListApi {
         @JsonProperty("idMal") val idMal: Int?,
         @JsonProperty("seasonYear") val seasonYear: Int,
         @JsonProperty("title") val title: GetSearchTitle,
+        @JsonProperty("startDate") val startDate: StartedAt,
         @JsonProperty("nextAiringEpisode") val nextAiringEpisode: SeasonNextAiringEpisode?,
     )
 

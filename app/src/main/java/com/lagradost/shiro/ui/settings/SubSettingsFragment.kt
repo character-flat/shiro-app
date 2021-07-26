@@ -133,7 +133,6 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                 findPreference<Preference>(it)?.isVisible = false
             }
         }
-
         when (xmlFile) {
 
             R.xml.settings_general -> {

@@ -350,9 +350,9 @@ class MALApi {
         }
 
         private fun Context.checkMalToken() {
-            if (unixTime() > getKey<Long>(
+            if (unixTime() > getKey(
                     MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID
-                )!!
+                ) ?: 0L
             ) {
                 refreshToken()
             }

@@ -432,6 +432,15 @@ class EpisodeAdapter(
                                                 activity,
                                                 child.internalId
                                             )
+
+                                            if (downloadQueue.any {
+                                                    it.item.ep.id == pkg?.item?.ep?.id
+                                                }) Toast.makeText(
+                                                ctw,
+                                                "Episode is already in the download queue",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+
                                             if (pkg != null) {
                                                 VideoDownloadManager.downloadFromResume(activity, pkg)
                                             }
