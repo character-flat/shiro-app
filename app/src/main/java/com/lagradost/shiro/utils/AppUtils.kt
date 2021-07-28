@@ -125,11 +125,15 @@ object AppUtils {
 
     fun Context.isUsingMobileData(): Boolean {
         val conManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkInfo = conManager.allNetworks
-        //conManager.activeNetworkInfo
-        return networkInfo.any {
-            conManager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
+        //val networkInfo = conManager.allNetworks
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            conManager.getNetworkCapabilities(conManager.activeNetwork)?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
+        } else {
+            conManager.activeNetworkInfo?.type == ConnectivityManager.TYPE_MOBILE
         }
+        /*return networkInfo.any {
+            conManager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
+        }*/
     }
 
     fun Context.getNavigationBarSizeFake(): Int {

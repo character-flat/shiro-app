@@ -245,7 +245,6 @@ class ResultFragment : Fragment() {
         if (tvActivity != null) {
             onWebViewNavigated += ::restoreState
         }
-
         /*results_root.setOnApplyWindowInsetsListener { v, insets ->
             println("INSETS!!!!!!!!!!")
             insets?.systemWindowInsetBottom?.let { fragments_new_nav_view?.setPadding(0, 0, 0, it) }

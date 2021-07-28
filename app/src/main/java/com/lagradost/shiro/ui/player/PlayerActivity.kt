@@ -1,12 +1,12 @@
 package com.lagradost.shiro.ui.player
 
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
@@ -47,6 +47,7 @@ class PlayerActivity : CyaneaAppCompatActivity() {
             )
         }
 
+    @SuppressLint("MissingSuperCall")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val data = intent.data
@@ -124,10 +125,9 @@ class PlayerActivity : CyaneaAppCompatActivity() {
 
         val path = getUri(intent.data)!!.path
         // Because it doesn't get the path when it's downloaded, I have no idea
-        val realPath =
-            if (intent?.data?.path?.contains("/${Environment.DIRECTORY_DOWNLOADS}/Shiro/") == true && path?.length == 0) intent?.data?.path!!.removePrefix(
-                "/file"
-            ) else path
+        val realPath = if (File(intent.data?.path?.removePrefix("/file") ?: "NONE").exists()) intent.data?.path?.removePrefix("/file") else path
+
+        println("OATTHTTTTH ${(File(path?.removePrefix("/file") ?: "NONE").exists())} $path")
         setContentView(R.layout.activity_player)
 
         val playerData = PlayerData(

@@ -53,7 +53,8 @@ class AcraApplication : Application() {
             //core configuration:
             buildConfigClass = BuildConfig::class.java
             reportFormat = StringFormat.JSON
-            reportContent = arrayOf(ReportField.BUILD_CONFIG, ReportField.USER_CRASH_DATE,
+            reportContent = arrayOf(
+                ReportField.BUILD_CONFIG, ReportField.USER_CRASH_DATE,
                 ReportField.ANDROID_VERSION, ReportField.PHONE_MODEL,
                 ReportField.STACK_TRACE, ReportField.LOGCAT
             )
