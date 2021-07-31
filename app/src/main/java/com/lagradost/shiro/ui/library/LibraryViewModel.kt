@@ -217,12 +217,15 @@ class LibraryViewModel : ViewModel() {
     private fun updateAnilistList(list: List<AniListApi.Companion.Lists>) {
         anilistList =
             listOf(
-                list.firstOrNull {
+                // Rewatching & Watching
+                (list.firstOrNull {
                     convertAnilistStringToStatus(it.status ?: "") == AniListApi.Companion.AniListStatusType.Watching
-                            || convertAnilistStringToStatus(
+                }?.entries ?: listOf()).union(list.firstOrNull {
+                    convertAnilistStringToStatus(
                         it.status ?: ""
                     ) == AniListApi.Companion.AniListStatusType.Rewatching
-                }?.entries,
+                }?.entries ?: listOf()).toList(),
+
                 list.firstOrNull {
                     convertAnilistStringToStatus(it.status ?: "") == AniListApi.Companion.AniListStatusType.Planning
                 }?.entries,

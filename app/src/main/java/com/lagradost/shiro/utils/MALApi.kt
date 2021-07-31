@@ -168,7 +168,7 @@ class MALApi {
         )
 
         data class ListStatus(
-            @JsonProperty("status") val status: String,
+            @JsonProperty("status") val status: String?,
             @JsonProperty("score") val score: Int,
             @JsonProperty("num_episodes_watched") val num_episodes_watched: Int,
             @JsonProperty("is_rewatching") val is_rewatching: Boolean,
@@ -246,11 +246,12 @@ class MALApi {
         }
 
         private fun Context.getMalAnimeListSlice(offset: Int = 0): MalList? {
+            val user = "@me"
             return try {
                 // Very lackluster docs
                 // https://myanimelist.net/apiconfig/references/api/v2#operation/users_user_id_animelist_get
                 val url =
-                    "https://api.myanimelist.net/v2/users/@me/animelist?fields=list_status,num_episodes,media_type,status,start_date,end_date,synopsis,alternative_titles,mean,genres,rank,num_list_users,nsfw,average_episode_duration,num_favorites,popularity,num_scoring_users,start_season,favorites_info,broadcast,created_at,updated_at&nsfw=1&limit=100&offset=$offset"
+                    "https://api.myanimelist.net/v2/users/$user/animelist?fields=list_status,num_episodes,media_type,status,start_date,end_date,synopsis,alternative_titles,mean,genres,rank,num_list_users,nsfw,average_episode_duration,num_favorites,popularity,num_scoring_users,start_season,favorites_info,broadcast,created_at,updated_at&nsfw=1&limit=100&offset=$offset"
                 val res = khttp.get(
                     url, headers = mapOf(
                         "Authorization" to "Bearer " + getKey<String>(

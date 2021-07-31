@@ -25,9 +25,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager.widget.PagerAdapter
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.tabs.TabLayoutMediator
 import com.jaredrummler.cyanea.Cyanea
@@ -225,9 +225,11 @@ class LibraryFragment : Fragment() {
             return@setOnMenuItemClickListener true
         }
 
-        viewpager?.adapter = CustomPagerAdapter(getCurrentActivity()!!)
-        //viewpager?.adapter?.notifyDataSetChanged()
+        //viewpager?.adapter = CustomFragmentPagerAdapter() // CustomPagerAdapter(getCurrentActivity()!!)
+        viewpager?.adapter = CustomPagerAdapter()
 
+        viewpager?.adapter?.notifyDataSetChanged()
+        //result_tabs?.setupWithViewPager(viewpager)
         result_tabs?.tabTextColors = ColorStateList.valueOf(getCurrentActivity()!!.getTextColor())
         result_tabs?.setSelectedTabIndicatorColor(getCurrentActivity()!!.getTextColor())
 
@@ -237,6 +239,10 @@ class LibraryFragment : Fragment() {
         ) { tab, position ->
             tab.text = tabs.getOrNull(position)?.first ?: ""
         }.attach()
+
+        /*tabs.forEach {
+            result_tabs?.addTab(result_tabs.newTab().setText(it.first))
+        }*/
 
         library_toolbar?.title = if (libraryViewModel?.isMal == true) "MAL" else "Anilist"
         observe(libraryViewModel!!.currentList) { list ->
@@ -277,7 +283,100 @@ class LibraryFragment : Fragment() {
     }
 }
 
-class CustomPagerAdapter(val context: FragmentActivity) :
+class CustomFragmentPagerAdapter : PagerAdapter() {
+    override fun getCount(): Int {
+        return tabs.size
+    }
+
+    override fun isViewFromObject(view: View, `object`: Any): Boolean {
+        return view == `object`
+    }
+
+    override fun instantiateItem(container: ViewGroup, position: Int) {
+        val view = LayoutInflater.from(getCurrentActivity()!!).inflate(R.layout.mal_list, container, false)
+        view.layoutParams =
+            ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        val orientation = container.context.resources.configuration.orientation
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE || settingsManager?.getBoolean(
+                "force_landscape",
+                false
+            ) == true
+        ) {
+            view.library_card_space?.spanCount = spanCountPortrait * 2
+        } else {
+            view.library_card_space?.spanCount = spanCountPortrait
+        }
+        fun displayList(list: List<LibraryObject>) {
+            if (view.library_card_space?.adapter == null) {
+                println("GEFFFFFFFFFFFFfff $position ${list.size}")
+                view.library_card_space?.adapter = LibraryCardAdapter(container.context, list)
+                println((view.library_card_space?.adapter as? LibraryCardAdapter))
+            } else {
+                (view.library_card_space?.adapter as? LibraryCardAdapter)?.list = list
+                view.library_card_space?.adapter?.notifyDataSetChanged()
+            }
+        }
+
+        libraryViewModel?.currentList?.value?.getOrNull(tabs[position].second)?.let {
+            val list = generateLibraryObject(it)
+            if ((view.library_card_space?.adapter as? LibraryCardAdapter)?.list != list) {
+                displayList(list)
+            }
+        }
+        container.addView(view)
+    }
+
+    override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
+        //container.removeView(`object` as View)
+    }
+
+}
+
+private val spanCountPortrait = settingsManager?.getInt("library_span_count", 1) ?: 1
+private fun generateLibraryObject(list: List<Any>): List<LibraryObject> {
+    if (list.firstOrNull() is MALApi.Companion.Data) {
+        (list as? List<MALApi.Companion.Data>)?.let {
+            return it.map { data ->
+                LibraryObject(
+                    data.node.title,
+                    data.node.main_picture?.medium ?: "",
+                    data.node.id.toString(),
+                    data.list_status?.score ?: 0,
+                    data.list_status?.num_episodes_watched ?: 0,
+                    data.node.num_episodes,
+                    data.node.start_season?.season,
+                    data.node.start_season?.year,
+                    convertToStatus(data.list_status?.status ?: "").value,
+                    data.node.broadcast?.day_of_the_week?.plus(" ")?.plus(data.node.broadcast.start_time)?.let {
+                        convertJapanTimeToTimeRemaining(it, data.node.end_date)
+                    }
+                )
+            }
+        }
+    } else if (list.firstOrNull() is AniListApi.Companion.Entries) {
+        (list as? List<AniListApi.Companion.Entries>)?.let {
+            return it.map {
+                LibraryObject(
+                    it.media.title.english ?: it.media.title.romaji ?: "",
+                    it.media.coverImage.medium,
+                    it.media.idMal.toString(),
+                    it.score,
+                    it.progress,
+                    it.media.episodes,
+                    it.media.season,
+                    if (it.media.seasonYear == 0) null else it.media.seasonYear,
+                    convertAnilistStringToStatus(it.status ?: "").value,
+                    it.media.nextAiringEpisode?.timeUntilAiring?.let { it -> secondsToReadable(it, "Now") }
+                )
+            }
+        }
+    }
+
+    return listOf()
+}
+
+
+class CustomPagerAdapter() :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun getItemCount(): Int {
         return tabs.size
@@ -286,7 +385,7 @@ class CustomPagerAdapter(val context: FragmentActivity) :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return CardViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.mal_list, parent, false),
-            context
+            parent.context
         )
     }
 
@@ -299,50 +398,8 @@ class CustomPagerAdapter(val context: FragmentActivity) :
     }
 
     class CardViewHolder
-    constructor(itemView: View, val context: FragmentActivity) :
+    constructor(itemView: View, val context: Context) :
         RecyclerView.ViewHolder(itemView) {
-        private val spanCountPortrait = settingsManager?.getInt("library_span_count", 1) ?: 1
-        private fun generateLibraryObject(list: List<Any>): List<LibraryObject> {
-            if (list.firstOrNull() is MALApi.Companion.Data) {
-                (list as? List<MALApi.Companion.Data>)?.let {
-                    return it.map { data ->
-                        LibraryObject(
-                            data.node.title,
-                            data.node.main_picture?.medium ?: "",
-                            data.node.id.toString(),
-                            data.list_status?.score ?: 0,
-                            data.list_status?.num_episodes_watched ?: 0,
-                            data.node.num_episodes,
-                            data.node.start_season?.season,
-                            data.node.start_season?.year,
-                            convertToStatus(data.list_status?.status ?: "").value,
-                            data.node.broadcast?.day_of_the_week?.plus(" ")?.plus(data.node.broadcast.start_time)?.let {
-                                convertJapanTimeToTimeRemaining(it, data.node.end_date)
-                            }
-                        )
-                    }
-                }
-            } else if (list.firstOrNull() is AniListApi.Companion.Entries) {
-                (list as? List<AniListApi.Companion.Entries>)?.let {
-                    return it.map {
-                        LibraryObject(
-                            it.media.title.english ?: it.media.title.romaji ?: "",
-                            it.media.coverImage.medium,
-                            it.media.idMal.toString(),
-                            it.score,
-                            it.progress,
-                            it.media.episodes,
-                            it.media.season,
-                            if (it.media.seasonYear == 0) null else it.media.seasonYear,
-                            convertAnilistStringToStatus(it.status ?: "").value,
-                            it.media.nextAiringEpisode?.timeUntilAiring?.let { it -> secondsToReadable(it, "Now") }
-                        )
-                    }
-                }
-            }
-
-            return listOf()
-        }
 
         fun bind(position: Int) {
             val orientation = context.resources.configuration.orientation

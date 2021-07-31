@@ -17,6 +17,7 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
 import com.lagradost.shiro.ui.home.HomeViewModel
 import com.lagradost.shiro.ui.home.MasterCardAdapter
+import com.lagradost.shiro.ui.library.LibraryFragment
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.onResultsNavigated
@@ -69,24 +70,22 @@ class MainFragment : Fragment() {
             onHomeErrorCatch(ShiroApi.hasThrownError == 1)
         }
 
-        search_icon.setOnFocusChangeListener { _, hasFocus ->
+
+        val focusListener = View.OnFocusChangeListener { v, hasFocus ->
             val transition: Transition = AutoTransition()
             transition.duration = 2000 // DURATION OF ANIMATION IN MS
-
-            TransitionManager.beginDelayedTransition(tv_menu_bar, transition)
-            val scale = if (hasFocus) 0.8f else 0.5f
-            search_icon.scaleX = scale
-            search_icon.scaleY = scale
+            tv_menu_bar?.let {
+                TransitionManager.beginDelayedTransition(it, transition)
+            }
+            val scale = if (hasFocus) 0.7f else 0.5f
+            v?.scaleX = scale
+            v?.scaleY = scale
         }
-        settings_icon.setOnFocusChangeListener { _, hasFocus ->
-            val transition: Transition = AutoTransition()
-            transition.duration = 2000 // DURATION OF ANIMATION IN MS
 
-            TransitionManager.beginDelayedTransition(tv_menu_bar, transition)
-            val scale = if (hasFocus) 0.8f else 0.5f
-            settings_icon.scaleX = scale
-            settings_icon.scaleY = scale
-        }
+        search_icon.onFocusChangeListener = focusListener
+        settings_icon.onFocusChangeListener = focusListener
+        library_icon.onFocusChangeListener = focusListener
+
         /*settings_button.setOnClickListener {
             activity?.supportFragmentManager?.beginTransaction()
                 ?.replace(R.id.main_browse_fragment, SettingsFragment())
@@ -99,12 +98,17 @@ class MainFragment : Fragment() {
                 ?.replace(R.id.home_root_tv, SearchFragmentTv())
                 ?.commit()
         }
+        library_icon.setOnClickListener {
+            activity?.supportFragmentManager?.beginTransaction()
+                ?.replace(R.id.home_root_tv, LibraryFragment())
+                ?.commit()
+        }
         settings_icon.setOnClickListener {
             activity?.supportFragmentManager?.beginTransaction()
                 ?.replace(R.id.home_root_tv, SettingsFragmentNew())
                 ?.commit()
         }
-        homeViewModel!!.apiData.observe(viewLifecycleOwner) {
+        homeViewModel?.apiData?.observe(viewLifecycleOwner) {
             homeLoaded(it)
         }
     }

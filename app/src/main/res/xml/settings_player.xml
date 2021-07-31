@@ -114,6 +114,7 @@
     <SeekBarPreference
             android:icon="@drawable/ic_baseline_access_time_24"
             android:title="Fast forward skip time"
+            app:summary="Also applies to PiP"
             android:defaultValue="10"
             android:key="fast_forward_button_time"
             app:showSeekBarValue="true"

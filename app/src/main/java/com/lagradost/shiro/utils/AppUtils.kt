@@ -410,7 +410,7 @@ object AppUtils {
                         homeViewModel?.subscribed?.postValue(getSubbed())
                     }
                     //Log.d(TAG, msg)
-                    Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
                 }
         } else /*if (!isSubbed && (isBookmarked ?: !isSubbed))*/ {
             Firebase.messaging.subscribeToTopic(data.slug)
@@ -433,7 +433,7 @@ object AppUtils {
                         homeViewModel?.subscribed?.postValue(getSubbed())
                     }
                     //Log.d(TAG, msg)
-                    Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
                 }
         }
     }

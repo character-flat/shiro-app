@@ -562,7 +562,7 @@ class PlayerFragment : Fragment() {
 
         val actions: ArrayList<RemoteAction> = ArrayList()
 
-        actions.add(getRemoteAction(R.drawable.go_back_30, "Go Back", PlayerEventType.SeekBack))
+        actions.add(getRemoteAction(R.drawable.netflix_skip_back, "Go Back", PlayerEventType.SeekBack))
 
         if (exoPlayer.isPlaying) {
             actions.add(getRemoteAction(R.drawable.exo_controls_pause, "Pause", PlayerEventType.Pause))
@@ -570,7 +570,7 @@ class PlayerFragment : Fragment() {
             actions.add(getRemoteAction(R.drawable.exo_controls_play, "Play", PlayerEventType.Play))
         }
 
-        actions.add(getRemoteAction(R.drawable.go_forward_30, "Go Forward", PlayerEventType.SeekForward))
+        actions.add(getRemoteAction(R.drawable.netflix_skip_forward, "Go Forward", PlayerEventType.SeekForward))
         activity?.setPictureInPictureParams(PictureInPictureParams.Builder().setActions(actions).build())
     }
 
@@ -628,8 +628,8 @@ class PlayerFragment : Fragment() {
         when (event) {
             PlayerEventType.Play.value -> exoPlayer.play()
             PlayerEventType.Pause.value -> exoPlayer.pause()
-            PlayerEventType.SeekBack.value -> seekTime(-30000L)
-            PlayerEventType.SeekForward.value -> seekTime(30000L)
+            PlayerEventType.SeekBack.value -> seekTime(-fastForwardTime * 1000L)
+            PlayerEventType.SeekForward.value -> seekTime(fastForwardTime * 1000L)
         }
     }
 
@@ -1407,6 +1407,7 @@ class PlayerFragment : Fragment() {
                 )
             }
         } else if (data?.anilistID != null || data?.malID != null && setPercentage != 0.0f && saveHistory) {
+            println("postdelayed")
             handler.postDelayed(
                 checkProgressAction,
                 time
@@ -1416,22 +1417,29 @@ class PlayerFragment : Fragment() {
 
 
     private fun Context.updateProgress() {
+        val start = System.currentTimeMillis()
+        println("UODATEFPROGRESS")
         val hasAniList = getKey<String>(
             ANILIST_TOKEN_KEY,
             ANILIST_ACCOUNT_ID,
             null
         ) != null
-        val hasMAL = getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
 
-        val malHolder = if (hasMAL) data?.malID?.let { getDataAboutMalId(it) } else null
-        val holder = if (hasAniList && malHolder == null) data?.anilistID?.let {
-            activity?.getDataAboutId(
+        val hasMAL = getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+        val holder = if (hasAniList) data?.anilistID?.let {
+            getDataAboutId(
                 it
             )
         } else null
+        val malHolder =
+            if (hasMAL && holder == null) data?.malID?.let {
+                getDataAboutMalId(
+                    it
+                )
+            } else null
 
-        val progress = malHolder?.my_list_status?.num_episodes_watched ?: holder?.progress ?: 0
-        val score = malHolder?.my_list_status?.score ?: holder?.score ?: 0
+        val progress = holder?.progress ?: malHolder?.my_list_status?.num_episodes_watched ?: 0
+        val score = holder?.score ?: malHolder?.my_list_status?.score ?: 0
 
         var type = if (holder != null) {
             val type =
@@ -1450,7 +1458,6 @@ class PlayerFragment : Fragment() {
         }
 
         val currentEpisodeProgress = data?.episodeIndex!! + 1 + episodeOffset
-
         if (currentEpisodeProgress == holder?.episodes ?: data?.card?.episodes?.size?.plus(episodeOffset)
             && type.value != AniListApi.Companion.AniListStatusType.Completed.value
             && data?.card?.status?.lowercase() == "finished"
@@ -1458,7 +1465,7 @@ class PlayerFragment : Fragment() {
             type = AniListApi.Companion.AniListStatusType.Completed
         }
 
-        if (progress < currentEpisodeProgress && holder ?: malHolder != null) {
+        if (progress < currentEpisodeProgress && (holder ?: malHolder) != null) {
             val anilistPost =
                 if (hasAniList) data?.anilistID?.let {
                     activity?.postDataAboutId(
@@ -1490,9 +1497,10 @@ class PlayerFragment : Fragment() {
                 getCurrentActivity()!!.runOnUiThread {
                     Toast.makeText(
                         getCurrentActivity()!!,
-                        "Marked episode as seen",
+                        "Marked episode $currentEpisodeProgress as seen",
                         Toast.LENGTH_LONG
                     ).show()
+                    println(System.currentTimeMillis() - start)
                 }
             }
         }
@@ -1630,11 +1638,13 @@ class PlayerFragment : Fragment() {
                                     if (skipFillers) data?.fillerEpisodes?.filterKeys { it > data!!.episodeIndex!! + 1 }
                                         ?.filterValues { !it }?.keys?.minByOrNull { it }?.minus(1) else null
                                 next?.let {
-                                    Toast.makeText(
-                                        context,
-                                        "Skipped ${it - data!!.episodeIndex!! - 1} filler episodes",
-                                        LENGTH_LONG
-                                    ).show()
+                                    if (it - data!!.episodeIndex!! - 1 > 0) {
+                                        Toast.makeText(
+                                            context,
+                                            "Skipped ${it - data!!.episodeIndex!! - 1} filler episodes",
+                                            LENGTH_LONG
+                                        ).show()
+                                    }
                                 }
 
                                 data?.seasonIndex = 0

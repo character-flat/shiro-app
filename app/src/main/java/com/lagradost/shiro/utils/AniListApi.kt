@@ -241,7 +241,7 @@ class AniListApi {
             }
         }
 
-        fun Activity.getDataAboutId(id: Int): AniListTitleHolder? {
+        fun Context.getDataAboutId(id: Int): AniListTitleHolder? {
             val q =
                 """query (${'$'}id: Int = $id) { # Define which variables will be used in the query (id)
                 Media (id: ${'$'}id, type: ANIME) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
@@ -288,8 +288,8 @@ class AniListApi {
                         type = AniListStatusType.None,
                     )
                 }
-            } catch (e: java.lang.Exception) {
-                e.printStackTrace()
+            } catch (e: Exception) {
+                logError(e)
                 return null
             }
 
@@ -434,7 +434,6 @@ class AniListApi {
                     }
             """
                 val text = postApi("https://graphql.anilist.co", query)
-                println(text)
                 return text.toKotlinObject()
 
             } catch (e: Exception) {

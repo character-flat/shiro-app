@@ -93,7 +93,7 @@
                 </com.google.android.material.button.MaterialButton>-->
                 <ImageView
                         android:layout_centerVertical="true"
-                        android:layout_toLeftOf="@id/settings_icon"
+                        android:layout_toLeftOf="@id/library_icon"
                         android:layout_width="70dp"
                         android:layout_height="70dp"
                         android:scaleX="0.8"
@@ -109,6 +109,23 @@
                 >
                     <requestFocus/>
                 </ImageView>
+                <ImageView
+                        android:layout_toLeftOf="@id/settings_icon"
+                        android:layout_centerVertical="true"
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        android:scaleX="0.5"
+                        android:scaleY="0.5"
+                        android:src="@drawable/ic_baseline_collections_bookmark_24"
+                        android:id="@+id/library_icon"
+                        android:focusable="true"
+                        android:nextFocusDown="@id/vertical_grid_view"
+                        android:clickable="true"
+                        android:focusableInTouchMode="true"
+                        android:background="@drawable/video_tap_button"
+                        app:tint="?attr/white">
+                </ImageView>
+
                 <ImageView
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"

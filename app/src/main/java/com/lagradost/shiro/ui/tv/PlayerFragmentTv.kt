@@ -298,11 +298,13 @@ class PlayerFragmentTv : VideoSupportFragment() {
             if (skipFillers) data?.fillerEpisodes?.filterKeys { it > data!!.episodeIndex!! + 1 }
                 ?.filterValues { !it }?.keys?.minByOrNull { it }?.minus(1) else null
         next?.let {
-            Toast.makeText(
-                context,
-                "Skipped ${it - data!!.episodeIndex!! - 1} filler episodes",
-                LENGTH_LONG
-            ).show()
+            if (it - data!!.episodeIndex!! - 1 > 0) {
+                Toast.makeText(
+                    context,
+                    "Skipped ${it - data!!.episodeIndex!! - 1} filler episodes",
+                    LENGTH_LONG
+                ).show()
+            }
         }
 
         data?.episodeIndex = next ?: minOf(data?.episodeIndex!! + 1, data?.card?.episodes?.size!! - 1)
@@ -364,8 +366,9 @@ class PlayerFragmentTv : VideoSupportFragment() {
             )
         } else null
 
-        val progress = malHolder?.my_list_status?.num_episodes_watched ?: holder?.progress ?: 0
-        val score = malHolder?.my_list_status?.score ?: holder?.score ?: 0
+        val progress = holder?.progress ?: malHolder?.my_list_status?.num_episodes_watched ?: 0
+        val score = holder?.score ?: malHolder?.my_list_status?.score ?: 0
+
         var type = if (holder != null) {
             val type =
                 if (holder.type == AniListApi.Companion.AniListStatusType.None) AniListApi.Companion.AniListStatusType.Watching else holder.type

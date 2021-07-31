@@ -1151,7 +1151,7 @@ class ResultFragment : Fragment() {
             removeKey(BOOKMARK_KEY, data.slug)
         }
         thread {
-            homeViewModel!!.favorites.postValue(getFav())
+            homeViewModel?.favorites?.postValue(getFav())
         }
     }
 

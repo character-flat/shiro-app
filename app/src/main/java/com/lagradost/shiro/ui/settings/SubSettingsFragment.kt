@@ -172,7 +172,9 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                                     "Subscription failed :("
                                 }
                                 //Log.d(TAG, msg)
-                                Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                                context?.let {
+                                    Toast.makeText(it, msg, Toast.LENGTH_SHORT).show()
+                                }
                                 subToAnnouncements.isEnabled = true
                             }
                     } else {
@@ -185,7 +187,9 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                                     "Unsubscribing failed :("
                                 }
                                 //Log.d(TAG, msg)
-                                Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                                context?.let {
+                                    Toast.makeText(it, msg, Toast.LENGTH_SHORT).show()
+                                }
                                 subToAnnouncements.isEnabled = true
                             }
                     }
@@ -521,7 +525,9 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                                     "Subscription failed :("
                                 }
                                 //Log.d(TAG, msg)
-                                Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                                context?.let {
+                                    Toast.makeText(it, msg, Toast.LENGTH_SHORT).show()
+                                }
                                 subToUpdates.isEnabled = true
                             }
                     } else {
@@ -534,7 +540,9 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                                     "Unsubscribing failed :("
                                 }
                                 //Log.d(TAG, msg)
-                                Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                                context?.let {
+                                    Toast.makeText(it, msg, Toast.LENGTH_SHORT).show()
+                                }
                                 subToUpdates.isEnabled = true
                             }
                     }
