@@ -56,7 +56,7 @@ class ResAdapter(
         settingsManager?.getBoolean("compact_search_enabled", true) == true && !forceDisableCompact
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        cardList = filterCardList(cardList) as ArrayList<ShiroApi.CommonAnimePage>
+        cardList = filterCardList(cardList) as? ArrayList<ShiroApi.CommonAnimePage> ?: arrayListOf()
 
         val layout = if (compactView) R.layout.search_result_compact else R.layout.search_result
         return CardViewHolder(

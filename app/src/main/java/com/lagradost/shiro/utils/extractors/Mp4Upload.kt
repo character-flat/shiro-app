@@ -4,6 +4,7 @@ import com.lagradost.shiro.utils.ExtractorApi
 import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.Qualities
 import com.lagradost.shiro.utils.getAndUnpack
+import com.lagradost.shiro.utils.mvvm.logError
 
 class Mp4Upload : ExtractorApi() {
     override val name: String = "Mp4Upload"
@@ -14,7 +15,7 @@ class Mp4Upload : ExtractorApi() {
     override fun getUrl(url: String, referer: String?): List<ExtractorLink>? {
         try {
             with(khttp.get(url)) {
-                //println(this.text)
+                if (this.text == "File was deleted") return@with
                 getAndUnpack(this.text)?.let { unpackedText ->
                     srcRegex.find(unpackedText)?.groupValues?.get(1)?.let { link ->
                         return listOf(
@@ -29,6 +30,7 @@ class Mp4Upload : ExtractorApi() {
                 }
             }
         } catch (e: Exception) {
+            logError(e)
         }
         return null
     }

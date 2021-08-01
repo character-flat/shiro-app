@@ -308,7 +308,6 @@ class CustomFragmentPagerAdapter : PagerAdapter() {
         }
         fun displayList(list: List<LibraryObject>) {
             if (view.library_card_space?.adapter == null) {
-                println("GEFFFFFFFFFFFFfff $position ${list.size}")
                 view.library_card_space?.adapter = LibraryCardAdapter(container.context, list)
                 println((view.library_card_space?.adapter as? LibraryCardAdapter))
             } else {

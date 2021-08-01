@@ -615,7 +615,9 @@ class PlayerFragment : Fragment() {
     }
 
     private fun handleAudioFocusEvent(event: Boolean) {
-        if (!event) exoPlayer.pause()
+        if (this::exoPlayer.isInitialized) {
+            if (!event) exoPlayer.pause()
+        }
     }
 
     private fun handlePlayerEvent(event: PlayerEventType) {
@@ -1417,8 +1419,8 @@ class PlayerFragment : Fragment() {
 
 
     private fun Context.updateProgress() {
-        val start = System.currentTimeMillis()
-        println("UODATEFPROGRESS")
+        val currentEpisodeProgress = data?.episodeIndex!! + 1 + episodeOffset
+
         val hasAniList = getKey<String>(
             ANILIST_TOKEN_KEY,
             ANILIST_ACCOUNT_ID,
@@ -1457,7 +1459,6 @@ class PlayerFragment : Fragment() {
             type
         }
 
-        val currentEpisodeProgress = data?.episodeIndex!! + 1 + episodeOffset
         if (currentEpisodeProgress == holder?.episodes ?: data?.card?.episodes?.size?.plus(episodeOffset)
             && type.value != AniListApi.Companion.AniListStatusType.Completed.value
             && data?.card?.status?.lowercase() == "finished"
@@ -1500,7 +1501,6 @@ class PlayerFragment : Fragment() {
                         "Marked episode $currentEpisodeProgress as seen",
                         Toast.LENGTH_LONG
                     ).show()
-                    println(System.currentTimeMillis() - start)
                 }
             }
         }

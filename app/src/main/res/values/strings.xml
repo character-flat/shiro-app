@@ -1,24 +1,11 @@
 <resources>
     <string name="changelog">\n
-        Changelog from beta:\n
-        - Improved cross referencing (mha s5 now works for example)\n
-        - Fixed skip fillers not getting disabled by settings\n
-
-        Changelog from stable:\n
-        - Added MAL/Anilist library\n
-        - NOTE: The library is cached so if you update it from outside the app you need refresh it manually\n
-        - I\'ll add a quick edit button in library later\n
-        - Added an option to disable open website\n
-        - Added countdown to next episode in library\n
-        - Added an option to disable the player ffd and rew buttons\n
-        - Added an option to skip filler episodes automatically\n
-        - Fixed mal not displaying properly for some mal users\n
-        - Fixed some animes not showing in library\n
-        - Resumed downloads when reopening the app will now be paused\n
-        - Added an option to disable downloads on data (not tested much though, please report results)\n
-        - Added an option to increase the concurrent downloads\n
-        - Cached all anime info pages for 10m for fast reopening\n
-        - Tons of bugfixes\n
+        - Fixed rewatching animes not getting displayed in library\n
+        - Fixed MAL list not working for some\n
+        - Made PiP controls time-skip follow settings\n
+        - Made episode sync correctly prioritize anilist progress\n
+        - Made episode sync show episode getting synced to lesser confusion when it takes long to sync the episodes\n
+        - Crashfixes\n
     </string>
     <string name="app_name">Shiro</string>
     <string name="title_home">Home</string>

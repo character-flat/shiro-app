@@ -82,6 +82,7 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.getFav
 import com.lagradost.shiro.utils.ShiroApi.Companion.getSubbed
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import com.lagradost.shiro.utils.extractors.Vidstream
+import com.lagradost.shiro.utils.mvvm.logError
 import java.io.*
 import java.net.URL
 import java.net.URLDecoder
@@ -127,7 +128,8 @@ object AppUtils {
         val conManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         //val networkInfo = conManager.allNetworks
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            conManager.getNetworkCapabilities(conManager.activeNetwork)?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
+            conManager.getNetworkCapabilities(conManager.activeNetwork)
+                ?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
         } else {
             conManager.activeNetworkInfo?.type == ConnectivityManager.TYPE_MOBILE
         }
@@ -460,15 +462,18 @@ object AppUtils {
 
     fun FragmentActivity.addFragmentOnlyOnce(location: Int, fragment: Fragment, tag: String) {
         // Make sure the current transaction finishes first
+        try {
+            supportFragmentManager.executePendingTransactions()
 
-        supportFragmentManager.executePendingTransactions()
-
-        // If there is no fragment yet with this tag...
-        if (supportFragmentManager.findFragmentByTag(tag) == null) {
-            supportFragmentManager.beginTransaction()
-                .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                .add(location, fragment, tag)
-                .commitAllowingStateLoss()
+            // If there is no fragment yet with this tag...
+            if (supportFragmentManager.findFragmentByTag(tag) == null) {
+                supportFragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                    .add(location, fragment, tag)
+                    .commitAllowingStateLoss()
+            }
+        } catch (e: Exception) {
+            logError(e)
         }
     }
 

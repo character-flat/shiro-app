@@ -4,6 +4,7 @@ import com.lagradost.shiro.utils.ExtractorApi
 import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.Qualities
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
+import com.lagradost.shiro.utils.mvvm.logError
 
 class MultiQuality : ExtractorApi() {
     override val name: String = "MultiQuality"
@@ -64,7 +65,7 @@ class MultiQuality : ExtractorApi() {
                 return extractedLinksList
             }
         } catch (e: Exception) {
-
+logError(e)
         }
         return null
     }

@@ -3,6 +3,7 @@ package com.lagradost.shiro.utils.extractors
 import com.lagradost.shiro.utils.ExtractorApi
 import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.Qualities
+import com.lagradost.shiro.utils.mvvm.logError
 import org.jsoup.Jsoup
 
 class Shiro : ExtractorApi() {
@@ -30,6 +31,7 @@ class Shiro : ExtractorApi() {
                 )
             }
         } catch (e: Exception) {
+            logError(e)
         }
         return null
     }

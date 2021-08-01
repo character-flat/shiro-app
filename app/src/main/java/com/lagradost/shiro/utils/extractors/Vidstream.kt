@@ -3,6 +3,7 @@ package com.lagradost.shiro.utils.extractors
 import com.lagradost.shiro.utils.APIS
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.ExtractorLink
+import com.lagradost.shiro.utils.mvvm.logError
 import com.lagradost.shiro.utils.pmap
 import org.jsoup.Jsoup
 
@@ -24,7 +25,6 @@ class Vidstream(var providersActive: HashSet<String> = HashSet()) {
     // https://gogo-stream.com/streaming.php?id=MTE3NDg5
     //   https://streamani.net/streaming.php?id=MTE3NDg5
     fun getUrl(id: String, isCasting: Boolean = false, callback: (ExtractorLink) -> Unit): Boolean {
-        println("GETTING URLS for $id")
         //val extractedLinksList: MutableList<ExtractorLink> = mutableListOf()
         val normalApis = arrayListOf(Shiro(), MultiQuality())
         try {
@@ -59,7 +59,6 @@ class Vidstream(var providersActive: HashSet<String> = HashSet()) {
                             val extractedLinks = api.getUrl(link, url)
                             if (extractedLinks?.isNotEmpty() == true) {
                                 extractedLinks.forEach {
-                                    println("URL FETCHED ${it.url}")
                                     callback.invoke(it)
                                 }
                             }
@@ -69,6 +68,7 @@ class Vidstream(var providersActive: HashSet<String> = HashSet()) {
             }
             return true
         } catch (e: Exception) {
+            logError(e)
             return false
         }
     }

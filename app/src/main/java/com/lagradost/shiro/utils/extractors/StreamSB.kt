@@ -4,6 +4,7 @@ import com.lagradost.shiro.utils.ExtractorApi
 import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.Qualities
 import com.lagradost.shiro.utils.getAndUnpack
+import com.lagradost.shiro.utils.mvvm.logError
 
 class StreamSB : ExtractorApi() {
     override val name: String = "StreamSB"
@@ -57,7 +58,7 @@ class StreamSB : ExtractorApi() {
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            logError(e)
         }
         return extractedLinksList
     }

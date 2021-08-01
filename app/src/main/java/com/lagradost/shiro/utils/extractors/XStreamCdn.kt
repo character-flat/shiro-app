@@ -6,6 +6,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.shiro.utils.ExtractorApi
 import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.Qualities
+import com.lagradost.shiro.utils.mvvm.logError
 
 class XStreamCdn : ExtractorApi() {
     override val name: String = "XStreamCdn"
@@ -63,6 +64,7 @@ class XStreamCdn : ExtractorApi() {
             }
             return extractedLinksList
         } catch (e: Exception) {
+            logError(e)
         }
         return null
     }

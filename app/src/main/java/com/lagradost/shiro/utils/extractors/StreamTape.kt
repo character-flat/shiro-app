@@ -3,6 +3,7 @@ package com.lagradost.shiro.utils.extractors
 import com.lagradost.shiro.utils.ExtractorApi
 import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.Qualities
+import com.lagradost.shiro.utils.mvvm.logError
 
 class StreamTape : ExtractorApi() {
     override val name: String = "StreamTape"
@@ -14,6 +15,7 @@ class StreamTape : ExtractorApi() {
         Regex("""(i(|" \+ ')d(|" \+ ')=.*?&(|" \+ ')e(|" \+ ')x(|" \+ ')p(|" \+ ')i(|" \+ ')r(|" \+ ')e(|" \+ ')s(|" \+ ')=.*?&(|" \+ ')i(|" \+ ')p(|" \+ ')=.*?&(|" \+ ')t(|" \+ ')o(|" \+ ')k(|" \+ ')e(|" \+ ')n(|" \+ ')=.*)'""")
 
     override fun getUrl(url: String, referer: String?): List<ExtractorLink>? {
+        val url = "https://strtapeadblock.me/e/pb4z3WBgJ9HryBG/one-piece-episode-9841627723561.0.mp4"
         try {
             with(khttp.get(url)) {
                 linkRegex.find(this.text)?.let {
@@ -29,6 +31,7 @@ class StreamTape : ExtractorApi() {
                 }
             }
         } catch (e: Exception) {
+            logError(e)
         }
         return null
     }

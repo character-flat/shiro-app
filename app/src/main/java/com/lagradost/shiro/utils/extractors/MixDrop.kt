@@ -2,6 +2,7 @@ package com.lagradost.shiro.utils.extractors
 
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
+import com.lagradost.shiro.utils.mvvm.logError
 
 class MixDrop : ExtractorApi() {
     override val name: String = "MixDrop"
@@ -31,6 +32,7 @@ class MixDrop : ExtractorApi() {
                 }
             }
         } catch (e: Exception) {
+            logError(e)
         }
         return null
     }

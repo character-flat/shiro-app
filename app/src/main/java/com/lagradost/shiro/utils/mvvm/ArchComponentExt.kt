@@ -26,7 +26,8 @@ sealed class Resource<out T> {
         val errorResponse: Any?, //ResponseBody
         val errorString: String,
     ) : Resource<Nothing>()
-    data class Loading(val url : String? = null)  : Resource<Nothing>()
+
+    data class Loading(val url: String? = null) : Resource<Nothing>()
 }
 
 fun logError(throwable: Throwable) {
@@ -37,7 +38,7 @@ fun logError(throwable: Throwable) {
     Log.d("ApiError", "-------------------------------------------------------------------")
 }
 
-fun<T> normalSafeApiCall(apiCall : () -> T) : T? {
+fun <T> normalSafeApiCall(apiCall: () -> T): T? {
     return try {
         apiCall.invoke()
     } catch (throwable: Throwable) {
