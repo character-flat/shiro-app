@@ -2,6 +2,8 @@
     <string name="changelog">\n
         - Fixed rewatching animes not getting displayed in library\n
         - Fixed MAL list not working for some\n
+        - Added prev episode button\n
+        - Made the anime info play button start the last seen episode instead of next\n
         - Made PiP controls time-skip follow settings\n
         - Made episode sync correctly prioritize anilist progress\n
         - Made episode sync show episode getting synced to lesser confusion when it takes long to sync the episodes\n

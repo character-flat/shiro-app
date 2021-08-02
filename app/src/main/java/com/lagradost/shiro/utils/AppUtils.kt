@@ -622,15 +622,14 @@ object AppUtils {
         )
     }
 
-    fun canPlayNextEpisode(card: ShiroApi.AnimePageData?, episodeIndex: Int): NextEpisode {
-        val canNext = card!!.episodes!!.size > episodeIndex + 1
+    private fun canPlayNextEpisode(card: ShiroApi.AnimePageData?, episodeIndex: Int): NextEpisode {
+        val canNext = (card?.episodes?.size ?: 0) > episodeIndex + 1
 
         return if (canNext) {
             NextEpisode(true, episodeIndex + 1, 0)
         } else {
             NextEpisode(false, episodeIndex + 1, 0)
         }
-
     }
 
     fun Context.getLatestSeenEpisode(data: ShiroApi.AnimePageData): NextEpisode {
@@ -796,7 +795,7 @@ object AppUtils {
                     episodeIndex,
                     seasonIndex,
                     data.card.episodes!!.size == 1 && data.card.status == "finished",
-                    card.episodes?.get(episodeIndex),
+                    card.episodes?.getOrNull(episodeIndex),
                     card.image,
                     card.name,
                     card.banner.toString(),

@@ -67,7 +67,6 @@ import com.lagradost.shiro.utils.AniListApi.Companion.getDataAboutId
 import com.lagradost.shiro.utils.AniListApi.Companion.getShowId
 import com.lagradost.shiro.utils.AniListApi.Companion.postDataAboutId
 import com.lagradost.shiro.utils.AniListApi.Companion.secondsToReadable
-import com.lagradost.shiro.utils.AppUtils.canPlayNextEpisode
 import com.lagradost.shiro.utils.AppUtils.dubbify
 import com.lagradost.shiro.utils.AppUtils.expandTouchArea
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
@@ -343,7 +342,10 @@ class ResultFragment : Fragment() {
                             val episode = if (isEpisodeDubbed) lastDubbed else lastNormal
 
                             val episodePos = it.getViewPosDur(data.slug, episode.episodeIndex)
-                            val next = canPlayNextEpisode(data, episode.episodeIndex)
+                            /** Removed because I think it's better to just always start when you last left,
+                             * that way you don't need to go back and you can also re-watch to remember
+                             */
+                            /*val next = canPlayNextEpisode(data, episode.episodeIndex)
                             if (next.isFound && episodePos.viewstate) {
                                 val pos = it.getViewPosDur(data.slug, episode.episodeIndex)
                                 Toast.makeText(
@@ -360,7 +362,7 @@ class ResultFragment : Fragment() {
                                     resultViewModel?.currentMalId?.value,
                                     fillerEpisodes
                                 )
-                            } else {
+                            } else {*/
                                 Toast.makeText(
                                     it,
                                     "Playing episode ${episode.episodeIndex + 1 + episodeOffset}",
@@ -375,7 +377,7 @@ class ResultFragment : Fragment() {
                                     resultViewModel?.currentMalId?.value,
                                     fillerEpisodes
                                 )
-                            }
+                           //}
                         }
                     }
                 } else {

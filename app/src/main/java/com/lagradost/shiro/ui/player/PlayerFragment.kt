@@ -1,10 +1,12 @@
 package com.lagradost.shiro.ui.player
 
+import ANILIST_SHOULD_UPDATE_LIST
 import ANILIST_TOKEN_KEY
 import DataStore.getKey
 import DataStore.removeKey
 import DataStore.setKey
 import DataStore.toKotlinObject
+import MAL_SHOULD_UPDATE_LIST
 import MAL_TOKEN_KEY
 import PLAYBACK_SPEED_KEY
 import RESIZE_MODE_KEY
@@ -73,6 +75,7 @@ import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.ui.downloads.DownloadFragmentChild.Companion.getAllDownloadedEpisodes
 import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
+import com.lagradost.shiro.ui.library.LibraryFragment.Companion.libraryViewModel
 import com.lagradost.shiro.ui.player.PlayerActivity.Companion.playerActivity
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.resultViewModel
@@ -302,12 +305,12 @@ class PlayerFragment : Fragment() {
     // Prevent clicking next episode button multiple times
     private var isLoadingNextEpisode = false
 
-    private fun canPlayNextEpisode(): Boolean {
+    private fun canPlayEpisode(next: Boolean): Boolean {
         if (data?.card == null || data?.seasonIndex == null || data?.episodeIndex == null) {
             return false
         }
         return try {
-            data!!.card!!.episodes!!.size > data!!.episodeIndex!! + 1
+            if (next) data!!.card!!.episodes!!.size > data!!.episodeIndex!! + 1 else data!!.episodeIndex!! - 1 >= 0
             //MainActivity.canPlayNextEpisode(data?.card!!, data?.seasonIndex!!, data?.episodeIndex!!).isFound
         } catch (e: NullPointerException) {
             false
@@ -404,7 +407,6 @@ class PlayerFragment : Fragment() {
                         && data?.episodeIndex != null) || data?.card != null)
                 && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0
             ) {
-                println("SETTING VIEW POS DUR ${data!!.slug}")
                 context?.setViewPosDur(data!!, exoPlayer.currentPosition, exoPlayer.duration)
             }
         }
@@ -468,6 +470,7 @@ class PlayerFragment : Fragment() {
             exo_rew?.isClickable = isClickable
             exo_prev?.isClickable = isClickable
             video_go_back?.isClickable = isClickable
+            prev_episode_btt?.isClickable = isClickable
             next_episode_btt?.isClickable = isClickable
             playback_speed_btt?.isClickable = isClickable
             skip_op?.isClickable = isClickable
@@ -850,8 +853,15 @@ class PlayerFragment : Fragment() {
         navigationBarHeight = requireContext().getNavigationBarHeight()
         statusBarHeight = requireContext().getStatusBarHeight()
 
+        next_episode_progressbar?.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
         progressBarLeft.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
         progressBarRight.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
+
+//        val isInMultiWindow = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+//            activity?.isInMultiWindowMode ?: false
+//        } else false
+//
+//        changePlayerTextVisibility(resources.configuration.orientation != SCREEN_ORIENTATION_PORTRAIT && !isInMultiWindow)
 
         activity?.contentResolver
             ?.registerContentObserver(
@@ -1293,8 +1303,8 @@ class PlayerFragment : Fragment() {
             activity?.let {
                 it.runOnUiThread {
                     val time = 5000L
-                    next_episode_overlay.visibility = VISIBLE
-                    next_episode_progressbar.progress = 0
+                    next_episode_overlay?.visibility = VISIBLE
+                    next_episode_progressbar?.progress = 0
 
                     val animation =
                         ObjectAnimator.ofInt(
@@ -1376,7 +1386,7 @@ class PlayerFragment : Fragment() {
         }
         outState.putBoolean(STATE_PLAYER_FULLSCREEN, isFullscreen)
         outState.putBoolean(STATE_PLAYER_PLAYING, isPlayerPlaying)
-        outState.putInt(RESIZE_MODE_KEY, resizeMode!!)
+        outState.putInt(RESIZE_MODE_KEY, resizeMode)
         outState.putFloat(PLAYBACK_SPEED, playbackSpeed!!)
         savePos()
         super.onSaveInstanceState(outState)
@@ -1409,7 +1419,6 @@ class PlayerFragment : Fragment() {
                 )
             }
         } else if (data?.anilistID != null || data?.malID != null && setPercentage != 0.0f && saveHistory) {
-            println("postdelayed")
             handler.postDelayed(
                 checkProgressAction,
                 time
@@ -1502,6 +1511,10 @@ class PlayerFragment : Fragment() {
                         Toast.LENGTH_LONG
                     ).show()
                 }
+                setKey(MAL_SHOULD_UPDATE_LIST, true)
+                setKey(ANILIST_SHOULD_UPDATE_LIST, true)
+                libraryViewModel?.requestMalList(this)
+                libraryViewModel?.requestAnilistList(this)
             }
         }
     }
@@ -1576,7 +1589,7 @@ class PlayerFragment : Fragment() {
                         if (currentUrl.name == "Downloaded" && data != null) {
                             data?.slug?.let { slug ->
                                 val episodes = context?.getAllDownloadedEpisodes(slug)?.map { it.key }
-
+                                val prevEpisode = episodes?.filter { it?.episodeIndex == data!!.episodeIndex!! - 1 }
                                 val nextEpisode = episodes?.filter { it?.episodeIndex == data!!.episodeIndex!! + 1 }
                                 if (!nextEpisode.isNullOrEmpty()) {
                                     val fileInfo = VideoDownloadManager.getDownloadFileInfoAndUpdateSettings(
@@ -1612,51 +1625,115 @@ class PlayerFragment : Fragment() {
                                 } else {
                                     next_episode_btt?.visibility = GONE
                                 }
+                                if (!prevEpisode.isNullOrEmpty()) {
+                                    val fileInfo = VideoDownloadManager.getDownloadFileInfoAndUpdateSettings(
+                                        requireContext(),
+                                        prevEpisode[0]!!.internalId
+                                    )
+                                    if (fileInfo != null) {
+                                        prev_episode_btt?.visibility = VISIBLE
+                                        prev_episode_btt?.setOnClickListener {
+                                            handler.removeCallbacks(checkProgressAction)
+                                            cancelNextEpisode()
+                                            if (isLoadingNextEpisode) return@setOnClickListener
+                                            updateHideTime(interaction = false)
+                                            isLoadingNextEpisode = true
+                                            savePos()
+                                            val key = getViewKey(
+                                                slug,
+                                                data!!.episodeIndex!! - 1
+                                            )
+                                            context?.removeKey(VIEW_POS_KEY, key)
+                                            context?.removeKey(VIEW_DUR_KEY, key)
+
+                                            releasePlayer()
+                                            loadAndPlay()
+                                            handler.postDelayed(checkProgressAction, 5000L)
+
+                                            data!!.title =
+                                                "Episode ${prevEpisode[0]!!.episodeIndex - 1 + episodeOffset} · ${prevEpisode[0]!!.videoTitle}"
+                                            data?.url = fileInfo.path.toString()
+                                            data?.episodeIndex = data!!.episodeIndex!! - 1
+                                        }
+                                    }
+                                } else {
+                                    prev_episode_btt?.visibility = GONE
+                                }
                             }
                             sources_btt?.visibility = GONE
-                        } else if (canPlayNextEpisode()) {
-                            next_episode_btt?.visibility = VISIBLE
-                            next_episode_btt?.setOnClickListener {
-                                handler.removeCallbacks(checkProgressAction)
-                                cancelNextEpisode()
-                                if (isLoadingNextEpisode) return@setOnClickListener
-                                updateHideTime(interaction = false)
-                                playerViewModel?.selectedSource?.postValue(null)
-                                extractorLinks.clear()
-                                isLoadingNextEpisode = true
-                                savePos()
-                                /*val next =
-                                    data!!.card!!.episodes!!.size > data!!.episodeIndex!! + 1*/
-                                val key = getViewKey(
-                                    data?.card!!.slug,
-                                    data!!.episodeIndex!! + 1
-                                )
-                                context?.removeKey(VIEW_POS_KEY, key)
-                                context?.removeKey(VIEW_DUR_KEY, key)
+                        } else {
+                            if (canPlayEpisode(true)) {
+                                next_episode_btt?.visibility = VISIBLE
+                                next_episode_btt?.setOnClickListener {
+                                    handler.removeCallbacks(checkProgressAction)
+                                    cancelNextEpisode()
+                                    if (isLoadingNextEpisode) return@setOnClickListener
+                                    updateHideTime(interaction = false)
+                                    playerViewModel?.selectedSource?.postValue(null)
+                                    extractorLinks.clear()
+                                    isLoadingNextEpisode = true
+                                    savePos()
+                                    /*val next =
+                                        data!!.card!!.episodes!!.size > data!!.episodeIndex!! + 1*/
+                                    val key = getViewKey(
+                                        data?.card!!.slug,
+                                        data!!.episodeIndex!! + 1
+                                    )
+                                    context?.removeKey(VIEW_POS_KEY, key)
+                                    context?.removeKey(VIEW_DUR_KEY, key)
 
-                                val next =
-                                    if (skipFillers) data?.fillerEpisodes?.filterKeys { it > data!!.episodeIndex!! + 1 }
-                                        ?.filterValues { !it }?.keys?.minByOrNull { it }?.minus(1) else null
-                                next?.let {
-                                    if (it - data!!.episodeIndex!! - 1 > 0) {
-                                        Toast.makeText(
-                                            context,
-                                            "Skipped ${it - data!!.episodeIndex!! - 1} filler episodes",
-                                            LENGTH_LONG
-                                        ).show()
+                                    val next =
+                                        if (skipFillers) data?.fillerEpisodes?.filterKeys { it > data!!.episodeIndex!! + 1 }
+                                            ?.filterValues { !it }?.keys?.minByOrNull { it }?.minus(1) else null
+                                    next?.let {
+                                        if (it - data!!.episodeIndex!! - 1 > 0) {
+                                            Toast.makeText(
+                                                context,
+                                                "Skipped ${it - data!!.episodeIndex!! - 1} filler episodes",
+                                                LENGTH_LONG
+                                            ).show()
+                                        }
                                     }
-                                }
 
-                                data?.seasonIndex = 0
-                                data?.episodeIndex = next ?: data!!.episodeIndex!! + 1
-                                releasePlayer()
-                                loadAndPlay()
-                                handler.postDelayed(checkProgressAction, 5000L)
+                                    data?.seasonIndex = 0
+                                    data?.episodeIndex = next ?: data!!.episodeIndex!! + 1
+                                    releasePlayer()
+                                    loadAndPlay()
+                                    handler.postDelayed(checkProgressAction, 5000L)
+                                }
+                            } else {
+                                next_episode_btt?.visibility = GONE
                             }
-                        }
-                        // this to make the button visible in the editor
-                        else {
-                            next_episode_btt?.visibility = GONE
+
+                            if (canPlayEpisode(false)) {
+                                prev_episode_btt?.visibility = VISIBLE
+                                prev_episode_btt?.setOnClickListener {
+                                    handler.removeCallbacks(checkProgressAction)
+                                    cancelNextEpisode()
+                                    if (isLoadingNextEpisode) return@setOnClickListener
+                                    updateHideTime(interaction = false)
+                                    playerViewModel?.selectedSource?.postValue(null)
+                                    extractorLinks.clear()
+                                    isLoadingNextEpisode = true
+                                    savePos()
+                                    /*val next =
+                                        data!!.card!!.episodes!!.size > data!!.episodeIndex!! + 1*/
+                                    val key = getViewKey(
+                                        data?.card!!.slug,
+                                        data!!.episodeIndex!! - 1
+                                    )
+                                    context?.removeKey(VIEW_POS_KEY, key)
+                                    context?.removeKey(VIEW_DUR_KEY, key)
+
+                                    data?.seasonIndex = 0
+                                    data?.episodeIndex = data!!.episodeIndex!! - 1
+                                    releasePlayer()
+                                    loadAndPlay()
+                                    handler.postDelayed(checkProgressAction, 5000L)
+                                }
+                            } else {
+                                prev_episode_btt?.visibility = GONE
+                            }
                         }
 
                         val mimeType =

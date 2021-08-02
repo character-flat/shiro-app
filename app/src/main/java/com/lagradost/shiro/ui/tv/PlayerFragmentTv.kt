@@ -17,10 +17,13 @@ package com.lagradost.shiro.ui.tv
  */
 
 
+import ANILIST_SHOULD_UPDATE_LIST
 import ANILIST_TOKEN_KEY
 import DataStore.getKey
 import DataStore.mapper
+import DataStore.setKey
 import DataStore.toKotlinObject
+import MAL_SHOULD_UPDATE_LIST
 import MAL_TOKEN_KEY
 import android.annotation.SuppressLint
 import android.app.Dialog
@@ -62,6 +65,7 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.MimeTypes
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
+import com.lagradost.shiro.ui.library.LibraryFragment.Companion.libraryViewModel
 import com.lagradost.shiro.ui.player.PlayerData
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
 import com.lagradost.shiro.ui.player.SSLTrustManager
@@ -431,6 +435,10 @@ class PlayerFragmentTv : VideoSupportFragment() {
                         Toast.LENGTH_LONG
                     ).show()
                 }
+                setKey(MAL_SHOULD_UPDATE_LIST, true)
+                setKey(ANILIST_SHOULD_UPDATE_LIST, true)
+                libraryViewModel?.requestMalList(this)
+                libraryViewModel?.requestAnilistList(this)
             }
         }
     }

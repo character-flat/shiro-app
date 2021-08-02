@@ -54,8 +54,6 @@ class DownloadFragment : Fragment() {
     )
 
     private fun updateItems(bool: Boolean = true) {
-        val begin = System.nanoTime()
-
         activity?.runOnUiThread {
             childMetadataKeys.clear()
             val childKeys = context?.getChildren() ?: listOf()
