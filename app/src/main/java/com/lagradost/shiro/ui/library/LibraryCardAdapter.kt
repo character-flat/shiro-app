@@ -143,11 +143,11 @@ class LibraryCardAdapter(val context: Context, var list: List<LibraryObject>) :
                 getCurrentActivity()?.loadPage(item.id, item.title, true)
             }
 
-            itemView.imageView.setOnClickListener {
+            /*itemView.imageView.setOnClickListener {
                 getCurrentActivity()?.loadPage(item.id, item.title, true)
                 //activity?.loadPage(card.slug, card.name)
                 /*MainActivity.loadPage(card)*/
-            }
+            }*/
 
             val glideUrl =
                 GlideUrl(item.poster)

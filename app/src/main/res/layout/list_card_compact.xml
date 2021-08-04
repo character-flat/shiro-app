@@ -6,9 +6,11 @@
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:orientation="vertical"
+        android:background="@drawable/outline_background"
 >
     <androidx.cardview.widget.CardView
             android:id="@+id/backgroundCard"
+            android:background="@drawable/outline_background"
             android:layout_margin="2dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

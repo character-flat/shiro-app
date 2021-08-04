@@ -991,8 +991,10 @@ fun loadPlayer(title: String?, url: String, startAt: Long?) {
     }
 
     fun FragmentActivity.loadPage(slug: String, name: String, isMalId: Boolean = false) {
+        val layoutId = if (tvActivity != null) R.id.home_root_tv else R.id.homeRoot
+
         this.addFragmentOnlyOnce(
-            R.id.homeRoot,
+            layoutId,
             ResultFragment.newInstance(slug, name, isMalId),
             RESULT_FRAGMENT_TAG
         )

@@ -27,6 +27,9 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.AutoTransition
+import androidx.transition.Transition
+import androidx.transition.TransitionManager
 import androidx.viewpager.widget.PagerAdapter
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.tabs.TabLayoutMediator
@@ -35,6 +38,7 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.library.LibraryFragment.Companion.libraryViewModel
 import com.lagradost.shiro.ui.library.LibraryFragment.Companion.onMenuCollapsed
+import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.convertAnilistStringToStatus
 import com.lagradost.shiro.utils.AniListApi.Companion.secondsToReadable
@@ -47,6 +51,10 @@ import com.lagradost.shiro.utils.MALApi.Companion.convertToStatus
 import com.lagradost.shiro.utils.mvvm.observe
 import kotlinx.android.synthetic.main.bottom_sheet.*
 import kotlinx.android.synthetic.main.fragment_library.*
+import kotlinx.android.synthetic.main.fragment_library.login_overlay
+import kotlinx.android.synthetic.main.fragment_library.result_tabs
+import kotlinx.android.synthetic.main.fragment_library.viewpager
+import kotlinx.android.synthetic.main.fragment_library_tv.*
 import kotlinx.android.synthetic.main.mal_list.view.*
 
 class CustomSearchView(context: Context) : SearchView(context) {
@@ -105,7 +113,8 @@ class LibraryFragment : Fragment() {
 
         libraryViewModel?.isMal = (getCurrentActivity()!!.getKey(LIBRARY_IS_MAL, true) == true && hasMAL) || !hasAniList
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_library, container, false)
+        val layout = if (tvActivity != null) R.layout.fragment_library_tv else R.layout.fragment_library
+        return inflater.inflate(layout, container, false)
     }
 
     private fun getCurrentTabCorrected(): Int {
@@ -133,7 +142,8 @@ class LibraryFragment : Fragment() {
         /*tabs.forEach {
             result_tabs?.addTab(result_tabs.newTab().setText(it))
         }*/
-        fragment_list_root.setPadding(0, MainActivity.statusHeight, 0, 0)
+        fragment_list_root?.setPadding(0, MainActivity.statusHeight, 0, 0)
+        fragment_list_root_tv?.setPadding(0, MainActivity.statusHeight, 0, 0)
 
         val hasAniList = getCurrentActivity()!!.getKey<String>(
             ANILIST_TOKEN_KEY,
@@ -159,9 +169,9 @@ class LibraryFragment : Fragment() {
             }
         }
 
-        val searchView: CustomSearchView =
-            library_toolbar.menu.findItem(R.id.action_search).actionView as CustomSearchView
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        val searchView: CustomSearchView? =
+            library_toolbar?.menu?.findItem(R.id.action_search)?.actionView as? CustomSearchView
+        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 libraryViewModel?.sortCurrentList(getCurrentTabCorrected(), SEARCH, query)
                 return true
@@ -173,51 +183,60 @@ class LibraryFragment : Fragment() {
             }
         })
 
+        fun reload() {
+            context?.setKey(MAL_SHOULD_UPDATE_LIST, true)
+            context?.setKey(ANILIST_SHOULD_UPDATE_LIST, true)
+            libraryViewModel?.requestMalList(context)
+            libraryViewModel?.requestAnilistList(context)
+            Toast.makeText(context, "Refreshing your list", Toast.LENGTH_SHORT).show()
+        }
+
+        fun sort() {
+            val bottomSheetDialog = BottomSheetDialog(getCurrentActivity()!!, R.style.AppBottomSheetDialogTheme)
+            bottomSheetDialog.setContentView(R.layout.bottom_sheet)
+            bottomSheetDialog.main_text.text = "Sort by"
+            bottomSheetDialog.bottom_sheet_top_bar.backgroundTintList =
+                ColorStateList.valueOf(Cyanea.instance.backgroundColorDark)
+
+            val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
+            val arrayAdapter = ArrayAdapter<String>(
+                requireContext(),
+                R.layout.bottom_single_choice
+            ) // checkmark_select_dialog
+            res.choiceMode = CHOICE_MODE_SINGLE
+
+            val sortingMethods =
+                if (libraryViewModel?.isMal == true) malSortingMethods else anilistSortingMethods
+
+            arrayAdapter.addAll(ArrayList(sortingMethods.map { t -> t.name }))
+            res.adapter = arrayAdapter
+
+            res.setItemChecked(
+                sortingMethods.indexOfFirst { t ->
+                    t.id == libraryViewModel?.sortMethods?.getOrNull(
+                        result_tabs?.selectedTabPosition ?: -1
+                    ) ?: 0
+                },
+                true
+            )
+            res.setOnItemClickListener { _, _, position, _ ->
+                val sel = sortingMethods[position].id
+                libraryViewModel?.sortCurrentList(getCurrentTabCorrected(), sel)
+                bottomSheetDialog.dismiss()
+            }
+
+            bottomSheetDialog.show()
+        }
+
+
         library_toolbar?.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.action_reload -> {
-                    context?.setKey(MAL_SHOULD_UPDATE_LIST, true)
-                    context?.setKey(ANILIST_SHOULD_UPDATE_LIST, true)
-                    libraryViewModel?.requestMalList(context)
-                    libraryViewModel?.requestAnilistList(context)
-                    Toast.makeText(context, "Refreshing your list", Toast.LENGTH_SHORT).show()
+                    reload()
                 }
 
                 R.id.action_sort -> {
-                    val bottomSheetDialog = BottomSheetDialog(getCurrentActivity()!!, R.style.AppBottomSheetDialogTheme)
-                    bottomSheetDialog.setContentView(R.layout.bottom_sheet)
-                    bottomSheetDialog.main_text.text = "Sort by"
-                    bottomSheetDialog.bottom_sheet_top_bar.backgroundTintList =
-                        ColorStateList.valueOf(Cyanea.instance.backgroundColorDark)
-
-                    val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
-                    val arrayAdapter = ArrayAdapter<String>(
-                        requireContext(),
-                        R.layout.bottom_single_choice
-                    ) // checkmark_select_dialog
-                    res.choiceMode = CHOICE_MODE_SINGLE
-
-                    val sortingMethods =
-                        if (libraryViewModel?.isMal == true) malSortingMethods else anilistSortingMethods
-
-                    arrayAdapter.addAll(ArrayList(sortingMethods.map { t -> t.name }))
-                    res.adapter = arrayAdapter
-
-                    res.setItemChecked(
-                        sortingMethods.indexOfFirst { t ->
-                            t.id == libraryViewModel?.sortMethods?.getOrNull(
-                                result_tabs?.selectedTabPosition ?: -1
-                            ) ?: 0
-                        },
-                        true
-                    )
-                    res.setOnItemClickListener { _, _, position, _ ->
-                        val sel = sortingMethods[position].id
-                        libraryViewModel?.sortCurrentList(getCurrentTabCorrected(), sel)
-                        bottomSheetDialog.dismiss()
-                    }
-
-                    bottomSheetDialog.show()
+                    sort()
                 }
                 else -> {
                 }
@@ -225,24 +244,64 @@ class LibraryFragment : Fragment() {
             return@setOnMenuItemClickListener true
         }
 
+        val focusListener = View.OnFocusChangeListener { v, hasFocus ->
+            val transition: Transition = AutoTransition()
+            transition.duration = 2000 // DURATION OF ANIMATION IN MS
+            library_menu_bar?.let {
+                TransitionManager.beginDelayedTransition(it, transition)
+            }
+            val scale = if (hasFocus) 0.7f else 0.5f
+            v?.scaleX = scale
+            v?.scaleY = scale
+        }
+
+        reload_icon?.onFocusChangeListener = focusListener
+        reload_icon?.setOnClickListener {
+            reload()
+        }
+        sort_icon?.onFocusChangeListener = focusListener
+        sort_icon?.setOnClickListener {
+            sort()
+        }
+
+
         //viewpager?.adapter = CustomFragmentPagerAdapter() // CustomPagerAdapter(getCurrentActivity()!!)
-        viewpager?.adapter = CustomPagerAdapter()
+        viewpager?.adapter = CustomPagerAdapter {
+            // For android tv dpad support
+            when (it) {
+                View.FOCUS_RIGHT -> {
+                    val index = result_tabs?.selectedTabPosition?.plus(1) ?: 0
+                    viewpager?.currentItem = index
+                    //result_tabs?.setScrollPosition(index, 0f, true)
+                    //result_tabs?.getTabAt(result_tabs?.selectedTabPosition?.plus(1) ?: 0)?.select()
+                }
+                View.FOCUS_LEFT -> {
+                    val index = result_tabs?.selectedTabPosition?.minus(1) ?: 0
+                    viewpager?.currentItem = index
+                    //result_tabs?.getTabAt(result_tabs?.selectedTabPosition?.minus(1) ?: 0)?.select()
+                }
+            }
+        }
 
         viewpager?.adapter?.notifyDataSetChanged()
         //result_tabs?.setupWithViewPager(viewpager)
         result_tabs?.tabTextColors = ColorStateList.valueOf(getCurrentActivity()!!.getTextColor())
         result_tabs?.setSelectedTabIndicatorColor(getCurrentActivity()!!.getTextColor())
 
-        TabLayoutMediator(
-            result_tabs,
-            viewpager,
-        ) { tab, position ->
-            tab.text = tabs.getOrNull(position)?.first ?: ""
-        }.attach()
+        if (result_tabs != null) {
+            TabLayoutMediator(
+                result_tabs,
+                viewpager,
+            ) { tab, position ->
+                tab.view.isFocusable = false
+                tab.text = tabs.getOrNull(position)?.first ?: ""
+            }.attach()
+        }
 
-        /*tabs.forEach {
-            result_tabs?.addTab(result_tabs.newTab().setText(it.first))
-        }*/
+//            tabs.forEach {
+//                result_tabs?.addTab(result_tabs.newTab().setText(it.first))
+//            }
+
 
         library_toolbar?.title = if (libraryViewModel?.isMal == true) "MAL" else "Anilist"
         observe(libraryViewModel!!.currentList) { list ->
@@ -375,16 +434,20 @@ private fun generateLibraryObject(list: List<Any>): List<LibraryObject> {
 }
 
 
-class CustomPagerAdapter() :
+class CustomPagerAdapter(private val hitBorderCallback: (Int) -> Unit) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun getItemCount(): Int {
         return tabs.size
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        parent.isFocusable = false
+        parent.descendantFocusability = ViewGroup.FOCUS_AFTER_DESCENDANTS
+
         return CardViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.mal_list, parent, false),
-            parent.context
+            parent.context,
+            hitBorderCallback
         )
     }
 
@@ -397,7 +460,7 @@ class CustomPagerAdapter() :
     }
 
     class CardViewHolder
-    constructor(itemView: View, val context: Context) :
+    constructor(itemView: View, val context: Context, private val hitBorderCallback: (Int) -> Unit) :
         RecyclerView.ViewHolder(itemView) {
 
         fun bind(position: Int) {
@@ -411,6 +474,7 @@ class CustomPagerAdapter() :
             } else {
                 itemView.library_card_space?.spanCount = spanCountPortrait
             }
+            itemView.library_card_space?.setBorderCallback(hitBorderCallback)
             fun displayList(list: List<LibraryObject>) {
                 if (itemView.library_card_space?.adapter == null) {
                     itemView.library_card_space?.adapter = LibraryCardAdapter(context, list)

@@ -1,9 +1,12 @@
 package com.lagradost.shiro.ui
 
+import ANILIST_SHOULD_UPDATE_LIST
 import DataStore.getKey
 import DataStore.getKeys
 import DataStore.removeKey
 import DataStore.removeKeys
+import DataStore.setKey
+import MAL_SHOULD_UPDATE_LIST
 import android.annotation.SuppressLint
 import android.app.PictureInPictureParams
 import android.content.Intent

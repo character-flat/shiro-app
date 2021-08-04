@@ -7,7 +7,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlin.math.abs
 
-open class GrdLayoutManager(val context: Context, private val spanCoun: Int) : GridLayoutManager(context, spanCoun) {
+open class GrdLayoutManager(val context: Context, private val spanCoun: Int) :
+    GridLayoutManager(context, spanCoun) {
     override fun onFocusSearchFailed(
         focused: View,
         focusDirection: Int,
@@ -23,6 +24,14 @@ open class GrdLayoutManager(val context: Context, private val spanCoun: Int) : G
         }
     }
 
+    fun setBorderCallback(callback: (Int) -> Unit) {
+        hitBorderCallback = callback
+    }
+
+    companion object {
+        var hitBorderCallback: (Int) -> Unit = fun(_: Int) {}
+    }
+
     override fun onRequestChildFocus(
         parent: RecyclerView,
         state: RecyclerView.State,
@@ -31,10 +40,10 @@ open class GrdLayoutManager(val context: Context, private val spanCoun: Int) : G
     ): Boolean {
         // android.widget.FrameLayout$LayoutParams cannot be cast to androidx.recyclerview.widget.RecyclerView$LayoutParams
         return try {
-            val pos = maxOf(0, getPosition(focused!!) - 2)
+            val pos = maxOf(0, getPosition(focused!!) - spanCount)
             parent.scrollToPosition(pos)
             super.onRequestChildFocus(parent, state, child, focused)
-        } catch (e: Exception){
+        } catch (e: Exception) {
             false
         }
     }
@@ -44,7 +53,17 @@ open class GrdLayoutManager(val context: Context, private val spanCoun: Int) : G
         return try {
             val fromPos = getPosition(focused)
             val nextPos = getNextViewPos(fromPos, direction)
+//            val directionOffset = when (direction) {
+//                View.FOCUS_UP -> -spanCount
+//                View.FOCUS_DOWN -> spanCount
+//                else -> 0
+//            }
+//            val adjustedPos =
+//                if (nextPos < spanCount || nextPos + spanCount > itemCount) nextPos
+//                else maxOf(0, nextPos + directionOffset)
+//            scrollToPosition(nextPos)
             findViewByPosition(nextPos)
+
         } catch (e: Exception) {
             null
         }
@@ -53,7 +72,14 @@ open class GrdLayoutManager(val context: Context, private val spanCoun: Int) : G
     private fun getNextViewPos(fromPos: Int, direction: Int): Int {
         val offset = calcOffsetToNextView(direction)
 
+        // When on the top row and tries to go up
+        if (direction == View.FOCUS_UP && fromPos <= spanCoun) {
+            hitBorderCallback(direction)
+        }
+
         if (hitBorder(fromPos, offset)) {
+            //println(direction)
+            hitBorderCallback(direction)
             return fromPos
         }
 
@@ -61,9 +87,6 @@ open class GrdLayoutManager(val context: Context, private val spanCoun: Int) : G
     }
 
     private fun calcOffsetToNextView(direction: Int): Int {
-        val spanCount = this.spanCoun
-        val orientation = this.orientation
-
         if (orientation == VERTICAL) {
             when (direction) {
                 View.FOCUS_DOWN -> {
@@ -101,12 +124,10 @@ open class GrdLayoutManager(val context: Context, private val spanCoun: Int) : G
     }
 
     private fun hitBorder(from: Int, offset: Int): Boolean {
-        val spanCount = spanCount
-
         return if (abs(offset) == 1) {
             val spanIndex = from % spanCount
             val newSpanIndex = spanIndex + offset
-            newSpanIndex < 0 || newSpanIndex >= spanCount
+            newSpanIndex < 0 || newSpanIndex >= spanCount || newSpanIndex >= childCount
         } else {
             val newPos = from + offset
             newPos in spanCount..-1
@@ -128,6 +149,10 @@ class AutofitRecyclerView @JvmOverloads constructor(context: Context, attrs: Att
                 manager.spanCount = value
             }
         }
+
+    fun setBorderCallback(callback: (Int) -> Unit) {
+        manager.setBorderCallback(callback)
+    }
 
     val itemWidth: Int
         get() = measuredWidth / manager.spanCount
