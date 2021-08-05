@@ -42,6 +42,7 @@ import android.widget.AbsListView.CHOICE_MODE_SINGLE
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import androidx.leanback.app.PlaybackSupportFragment
 import androidx.leanback.app.VideoSupportFragment
@@ -181,7 +182,7 @@ class PlayerFragmentTv : VideoSupportFragment() {
             super.onCreatePrimaryActions(adapter)
 
             fun Action.setIcon(drawable: Int) {
-                this.icon = ContextCompat.getDrawable(context, drawable).apply {
+                this.icon = AppCompatResources.getDrawable(context, drawable).apply {
                     this?.mutate()
                         ?.setColorFilter(
                             ContextCompat.getColor(getCurrentActivity()!!, R.color.white),

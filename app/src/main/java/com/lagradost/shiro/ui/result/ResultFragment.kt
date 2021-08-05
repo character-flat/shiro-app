@@ -17,6 +17,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.text.Html
 import android.transition.ChangeBounds
@@ -754,7 +755,9 @@ class ResultFragment : Fragment() {
                                 }
                             }
                         }
-                        aniList_progressbar?.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            aniList_progressbar?.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
+                        }
                         anilist_btt_holder?.visibility = VISIBLE
                         status_text?.text =
                             if (info.type.value == AniListApi.Companion.AniListStatusType.None.value) "Status" else info.type.name
@@ -876,8 +879,10 @@ class ResultFragment : Fragment() {
                             } else {
                                 val bottomSheetDialog = BottomSheetDialog(activity, R.style.AppBottomSheetDialogTheme)
                                 bottomSheetDialog.setContentView(R.layout.bottom_sheet)
-                                bottomSheetDialog.bottom_sheet_top_bar.backgroundTintList =
-                                    ColorStateList.valueOf(Cyanea.instance.backgroundColorDark)
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                    bottomSheetDialog.bottom_sheet_top_bar.backgroundTintList =
+                                        ColorStateList.valueOf(Cyanea.instance.backgroundColorDark)
+                                }
 
                                 val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
                                 res.choiceMode = CHOICE_MODE_SINGLE
@@ -899,8 +904,10 @@ class ResultFragment : Fragment() {
                         status_btt?.setOnClickListener {
                             val bottomSheetDialog = BottomSheetDialog(activity, R.style.AppBottomSheetDialogTheme)
                             bottomSheetDialog.setContentView(R.layout.bottom_sheet)
-                            bottomSheetDialog.bottom_sheet_top_bar.backgroundTintList =
-                                ColorStateList.valueOf(Cyanea.instance.backgroundColorDark)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                bottomSheetDialog.bottom_sheet_top_bar.backgroundTintList =
+                                    ColorStateList.valueOf(Cyanea.instance.backgroundColorDark)
+                            }
 
                             val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
                             val arrayAdapter = ArrayAdapter<String>(activity, R.layout.bottom_single_choice)
@@ -1125,11 +1132,15 @@ class ResultFragment : Fragment() {
     private fun toggleHeartVisual(_isBookmarked: Boolean) {
         if (_isBookmarked) {
             title_bookmark?.setImageResource(R.drawable.filled_heart)
-            title_bookmark?.imageTintList = ColorStateList.valueOf(Cyanea.instance.primary)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                title_bookmark?.imageTintList = ColorStateList.valueOf(Cyanea.instance.primary)
+            }
         } else {
             title_bookmark?.setImageResource(R.drawable.outlined_heart)
-            title_bookmark?.imageTintList =
-                ColorStateList.valueOf(getCurrentActivity()!!.getColorFromAttr(R.attr.white))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                title_bookmark?.imageTintList =
+                    ColorStateList.valueOf(getCurrentActivity()!!.getColorFromAttr(R.attr.white))
+            }
         }
     }
 
@@ -1265,9 +1276,11 @@ class ResultFragment : Fragment() {
         result_poster_blur?.background = ColorDrawable(Cyanea.instance.backgroundColor)
         fragment_results_toolbar?.background = ColorDrawable(Cyanea.instance.backgroundColor)
         fragment_results_nested_scrollview?.background = ColorDrawable(Cyanea.instance.backgroundColor)
-        title_holder.backgroundTintList = ColorStateList.valueOf(
-            Cyanea.instance.backgroundColor
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            title_holder.backgroundTintList = ColorStateList.valueOf(
+                Cyanea.instance.backgroundColor
+            )
+        }
         loading_overlay.background = ColorDrawable(Cyanea.instance.backgroundColor)
 
         hideKeyboard()

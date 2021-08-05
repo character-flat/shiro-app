@@ -95,11 +95,11 @@
                 android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
                 android:value="com.lagradost.shiro.utils.CastOptionsProvider"/>
 
-        <service
-                android:name=".utils.DownloadService"
-                android:enabled="true"
-                android:exported="false">
-        </service>
+<!--        <service-->
+<!--                android:name=".utils.DownloadService"-->
+<!--                android:enabled="true"-->
+<!--                android:exported="false">-->
+<!--        </service>-->
     </application>
 
 </manifest>

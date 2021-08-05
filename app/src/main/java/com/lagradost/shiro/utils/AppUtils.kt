@@ -569,7 +569,9 @@ object AppUtils {
     }
 
     fun FragmentActivity.showNavigation() {
-        window.navigationBarColor = Cyanea.instance.backgroundColor
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.navigationBarColor = Cyanea.instance.backgroundColor
+        }
     }
 
     // https://stackoverflow.com/questions/29069070/completely-transparent-status-bar-and-navigation-bar-on-lollipop

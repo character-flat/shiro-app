@@ -98,14 +98,14 @@
                         android:layout_height="70dp"
                         android:scaleX="0.8"
                         android:scaleY="0.8"
-                        android:src="@drawable/search_icon"
+                        app:srcCompat="@drawable/search_icon"
                         android:id="@+id/search_icon"
                         android:focusable="true"
                         android:nextFocusUp="@null"
                         android:nextFocusDown="@id/vertical_grid_view"
                         android:clickable="true"
                         android:focusableInTouchMode="true"
-                        android:background="@drawable/video_tap_button"
+                        app:background="@drawable/video_tap_button"
                 >
                     <requestFocus/>
                 </ImageView>
@@ -116,13 +116,13 @@
                         android:layout_height="70dp"
                         android:scaleX="0.5"
                         android:scaleY="0.5"
-                        android:src="@drawable/ic_baseline_collections_bookmark_24"
+                        app:srcCompat="@drawable/ic_baseline_collections_bookmark_24"
                         android:id="@+id/library_icon"
                         android:focusable="true"
                         android:nextFocusDown="@id/vertical_grid_view"
                         android:clickable="true"
                         android:focusableInTouchMode="true"
-                        android:background="@drawable/video_tap_button"
+                        app:background="@drawable/video_tap_button"
                         app:tint="?attr/white">
                 </ImageView>
 
@@ -139,7 +139,7 @@
                         android:nextFocusDown="@id/vertical_grid_view"
                         android:clickable="true"
                         android:focusableInTouchMode="true"
-                        android:background="@drawable/video_tap_button"
+                        app:background="@drawable/video_tap_button"
                         app:tint="?attr/white">
                 </ImageView>
 

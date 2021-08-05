@@ -9,6 +9,7 @@ import VIEWSTATE_KEY
 import VIEW_POS_KEY
 import android.content.res.ColorStateList
 import android.net.Uri
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -299,7 +300,9 @@ class EpisodeAdapter(
             } else {
                 card.video_progress.alpha = 0f
             }
-            card.progressBar.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                card.progressBar.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
+            }
             fun updateIcon(megabytes: Int, fileInfo: VideoDownloadManager.DownloadedFileInfoResult?) {
                 card.cdi_loading.visibility = GONE
 
@@ -412,7 +415,9 @@ class EpisodeAdapter(
                         setStatus(true)
                         updateIcon(localBytesTotal, fileInfo)
 
-                        card.cardPauseIcon.imageTintList = ColorStateList.valueOf(Cyanea.instance.primary)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            card.cardPauseIcon.imageTintList = ColorStateList.valueOf(Cyanea.instance.primary)
+                        }
                         card.cardPauseIcon.setOnClickListener { v ->
                             val ctw = ContextThemeWrapper(activity, R.style.PopupMenu)
                             val popup = PopupMenu(ctw, v)

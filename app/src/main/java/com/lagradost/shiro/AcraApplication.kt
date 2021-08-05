@@ -1,7 +1,9 @@
 package com.lagradost.shiro
 
-import android.app.Application
 import android.content.Context
+import android.os.Build
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.multidex.MultiDexApplication
 import com.google.auto.service.AutoService
 import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.utils.mvvm.logError
@@ -45,31 +47,34 @@ class CustomSenderFactory : ReportSenderFactory {
     }
 }
 
-class AcraApplication : Application() {
+class AcraApplication : MultiDexApplication() {
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
 
-        initAcra {
-            //core configuration:
-            buildConfigClass = BuildConfig::class.java
-            reportFormat = StringFormat.JSON
-            reportContent = arrayOf(
-                ReportField.BUILD_CONFIG, ReportField.USER_CRASH_DATE,
-                ReportField.ANDROID_VERSION, ReportField.PHONE_MODEL,
-                ReportField.STACK_TRACE, ReportField.LOGCAT
-            )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            initAcra {
+                //core configuration:
+                buildConfigClass = BuildConfig::class.java
+                reportFormat = StringFormat.JSON
+                reportContent = arrayOf(
+                    ReportField.BUILD_CONFIG, ReportField.USER_CRASH_DATE,
+                    ReportField.ANDROID_VERSION, ReportField.PHONE_MODEL,
+                    ReportField.STACK_TRACE, ReportField.LOGCAT
+                )
 
-            //each plugin you chose above can be configured in a block like this:
-            toast {
-                text = getString(R.string.acra_report_toast)
-                //opening this block automatically enables the plugin.
+                //each plugin you chose above can be configured in a block like this:
+                toast {
+                    text = getString(R.string.acra_report_toast)
+                    //opening this block automatically enables the plugin.
+                }
+
             }
-
         }
     }
 
     override fun onCreate() {
         super.onCreate()
         Cyanea.init(this, resources)
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
     }
 }

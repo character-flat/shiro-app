@@ -38,6 +38,7 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.library.LibraryFragment.Companion.libraryViewModel
 import com.lagradost.shiro.ui.library.LibraryFragment.Companion.onMenuCollapsed
+import com.lagradost.shiro.ui.tv.TvActivity.Companion.isInSearch
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.convertAnilistStringToStatus
@@ -98,6 +99,11 @@ class LibraryFragment : Fragment() {
         SortingMethod("Score (Low to High)", SCORE_SORT_REVERSED),
     )
 
+    override fun onDestroy() {
+        isInSearch = false
+        super.onDestroy()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -110,6 +116,8 @@ class LibraryFragment : Fragment() {
             ANILIST_ACCOUNT_ID,
             null
         ) != null
+        // TODO FIX
+        isInSearch = true
 
         libraryViewModel?.isMal = (getCurrentActivity()!!.getKey(LIBRARY_IS_MAL, true) == true && hasMAL) || !hasAniList
         // Inflate the layout for this fragment
@@ -144,7 +152,6 @@ class LibraryFragment : Fragment() {
         }*/
         fragment_list_root?.setPadding(0, MainActivity.statusHeight, 0, 0)
         fragment_list_root_tv?.setPadding(0, MainActivity.statusHeight, 0, 0)
-
         val hasAniList = getCurrentActivity()!!.getKey<String>(
             ANILIST_TOKEN_KEY,
             ANILIST_ACCOUNT_ID,
@@ -387,7 +394,6 @@ class CustomFragmentPagerAdapter : PagerAdapter() {
     override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
         //container.removeView(`object` as View)
     }
-
 }
 
 private val spanCountPortrait = settingsManager?.getInt("library_span_count", 1) ?: 1

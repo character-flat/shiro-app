@@ -13,9 +13,9 @@ android {
         buildConfigField("boolean", "BETA", "false")
         // Hack :)
         buildConfigField("String", "BUILDDATE", "new java.text.SimpleDateFormat(\"yyyy-MM-dd HH:mm\").format(new java.util.Date(" + System.currentTimeMillis() + "L));")
-        vectorDrawables.useSupportLibrary = true
+        //vectorDrawables.useSupportLibrary = true
         applicationId "com.lagradost.shiro"
-        minSdkVersion 21
+        minSdkVersion 19
         targetSdkVersion 30
         // Don't forget to update versionCode too :)
         versionCode 29
@@ -31,6 +31,9 @@ android {
         kapt {
             correctErrorTypes = true
         }
+
+        multiDexKeepFile file('multidex-config.txt')
+        multiDexEnabled true
 
     }
 
