@@ -1,4 +1,3 @@
-# The official Shiro android app 
+# The un-official Shiro android app 
 
-Another victim of F*nimations quest for making this world a worse place.
-Their service is so fucking bad that they feel threatened by an amateur app created by a teen 🤡
+The old one got dmca'd I will try and keep this only aslong as it is "legal".
