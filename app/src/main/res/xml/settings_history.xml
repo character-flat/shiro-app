@@ -11,18 +11,18 @@
             app:defaultValue="true"
     />
     <Preference
-            android:icon="@drawable/ic_baseline_delete_24"
+            android:icon="@drawable/ic_baseline_delete_outline_24"
             app:key="clear_history"
             android:title="Clear watch history"
     />
     <Preference
-            android:icon="@drawable/ic_baseline_delete_24"
+            android:icon="@drawable/ic_baseline_delete_outline_24"
             app:key="clear_cache"
             android:title="Clear image cache"
             android:summary="This will only free up storage, not fix any bugs"
     />
     <Preference
-            android:icon="@drawable/ic_baseline_delete_24"
+            android:icon="@drawable/ic_baseline_delete_outline_24"
             app:key="clear_network_cache"
             android:title="Clear network cache"
     />

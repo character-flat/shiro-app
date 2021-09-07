@@ -56,7 +56,7 @@ object FillerEpisodeCheck {
             // Strips these from the name
             val blackList = listOf(
                 "TV Dubbed",
-                "Dubbed",
+                "(Dub)",
                 "Subbed",
                 "(TV)",
                 "(Uncensored)",

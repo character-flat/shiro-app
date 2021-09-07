@@ -8,6 +8,7 @@
         android:background="@color/backgroundLight"
         android:id="@+id/results_root"
         android:fitsSystemWindows="true"
+        android:transitionName="shared_element_container"
 >
     <ImageView
             android:layout_width="match_parent"
@@ -78,7 +79,7 @@
                 <FrameLayout android:layout_width="wrap_content"
                              android:layout_height="wrap_content"
                              android:id="@+id/title_share_holder"
-                             android:layout_toStartOf="@+id/title_subscribe_holder"
+                             android:layout_toStartOf="@+id/edit_button"
                 >
                     <ImageView
                             android:id="@+id/title_share"
@@ -86,7 +87,7 @@
                             android:layout_height="30dp"
                             android:elevation="10dp"
                             android:background="@color/transparent"
-                            android:src="@drawable/ic_baseline_share_24"
+                            app:srcCompat="@drawable/ic_baseline_share_24"
                             android:layout_gravity="center"
                             android:contentDescription="@string/bookmark_btt_hint"/>
                     <ImageView
@@ -101,6 +102,18 @@
                             android:background="@drawable/video_tap_button">
                     </ImageView>
                 </FrameLayout>
+                <ImageView
+                        android:id="@+id/edit_button"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:padding="10dp"
+                        android:elevation="10dp"
+                        android:layout_toStartOf="@+id/title_subscribe_holder"
+                        android:background="@drawable/video_tap_button"
+                        app:srcCompat="@drawable/ic_outline_edit_24"
+                        android:layout_gravity="center"
+                        android:contentDescription="Override sync id"/>
+
                 <FrameLayout android:layout_width="wrap_content"
                              android:layout_height="wrap_content"
                              android:id="@+id/title_subscribe_holder"

@@ -1,13 +1,10 @@
 <resources>
     <string name="changelog">\n
-        - Fixed rewatching animes not getting displayed in library\n
-        - Fixed MAL list not working for some\n
-        - Added prev episode button\n
-        - Made the anime info play button start the last seen episode instead of next\n
-        - Made PiP controls time-skip follow settings\n
-        - Made episode sync correctly prioritize anilist progress\n
-        - Made episode sync show episode getting synced to lesser confusion when it takes long to sync the episodes\n
-        - Crashfixes\n
+        + Reworked the anime info UI\n
+        + Moved the anime info play button to the anime poster\n
+        + Added recommended and related\n
+        + Added anime trailer\n
+        + Crashfixes\n
     </string>
     <string name="app_name">Shiro</string>
     <string name="title_home">Home</string>
@@ -82,21 +79,15 @@
     <string name="browse_title"></string>
     <string name="related_movies">Related Videos</string>
     <string name="grid_view">Grid View</string>
-    <string name="error_fragment">Error Fragment</string>
-    <string name="personal_settings">Personal Settings</string>
-    <string name="watch_trailer_1">Watch trailer</string>
-    <string name="watch_trailer_2">FREE</string>
-    <string name="rent_1">Rent By Day</string>
-    <string name="rent_2">From $1.99</string>
-    <string name="buy_1">Buy and Own</string>
-    <string name="buy_2">AT $9.99</string>
-    <string name="movie">Movie</string>
+    <string name="popup_delete_file">Delete File</string>
+    <string name="popup_play_file">Play File</string>
+    <string name="popup_resume_download">Resume Download</string>
+    <string name="popup_pause_download">Pause Download</string>
+    <string name="error_loading_links">Error Loading Links</string>
 
     <!-- Error messages -->
     <string name="error_fragment_message">An error occurred</string>
     <string name="dismiss_error">Dismiss</string>
     <string name="subscriptions">Subscriptions</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="library">Library</string>
 </resources>

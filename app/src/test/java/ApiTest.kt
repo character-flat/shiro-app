@@ -1,6 +1,6 @@
+
 import com.google.common.truth.Truth.assertThat
 import com.lagradost.shiro.utils.ShiroApi
-import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.getHomeOnly
 import com.lagradost.shiro.utils.ShiroApi.Companion.getRandomAnimePage
 import com.lagradost.shiro.utils.ShiroApi.Companion.getToken
@@ -40,9 +40,6 @@ object ApiTest : Spek({
                 assertThat(quickSearch).isNotNull()
             }
             it("Animepage test") {
-                animePage = getAnimePage(slug, token)
-                assertThat(animePage).isNotNull()
-                assertThat(animePage?.data?.slug).isEqualTo(slug)
             }
             it("Video link test") {
                 val episodeLink = animePage?.data?.episodes?.get(0)?.videos?.get(0)?.let { getVideoLink(it.video_id) }

@@ -11,15 +11,15 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -31,14 +31,17 @@ import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.utils.*
-import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
+import com.lagradost.shiro.utils.AppUtils.getNavController
+import com.lagradost.shiro.utils.AppUtils.guaranteedContext
 import com.lagradost.shiro.utils.AppUtils.isUsingMobileData
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
-import com.lagradost.shiro.utils.VideoDownloadManager.KEY_DOWNLOAD_INFO
+import com.lagradost.shiro.utils.Coroutines.main
 import com.lagradost.shiro.utils.VideoDownloadManager.currentDownloads
 import com.lagradost.shiro.utils.VideoDownloadManager.downloadQueue
+import com.lagradost.shiro.utils.VideoDownloadManager.saveQueue
+import com.lagradost.shiro.utils.mvvm.normalSafeApiCall
 import com.lagradost.shiro.utils.mvvm.observe
 import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.fragment_download.*
@@ -54,28 +57,27 @@ class DownloadFragment : Fragment() {
     )
 
     private fun updateItems(bool: Boolean = true) {
-        activity?.runOnUiThread {
+        main {
             childMetadataKeys.clear()
-            val childKeys = context?.getChildren() ?: listOf()
-            downloadRoot.removeAllViews()
+            val childKeys = guaranteedContext(context).getChildren()
+            downloadRoot?.removeAllViews()
             val inflater = activity?.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-
             val epData = hashMapOf<String, EpisodesDownloaded>()
             try {
-                downloadCenterText.text =
+                downloadCenterText?.text =
                     if (isDonor) getString(R.string.resultpage1) else getString(R.string.resultpage2)
-                downloadCenterRoot.visibility = if (childKeys.isEmpty()) VISIBLE else GONE
+                downloadCenterRoot?.isVisible = childKeys.isEmpty()
 
-                for (k in childKeys) {
-                    val child = context?.getKey<DownloadManager.DownloadFileMetadata>(k)
+                childKeys.forEach { k ->
+                    val child = guaranteedContext(context).getKey<DownloadManager.DownloadFileMetadata>(k)
                     if (child != null) {
                         val fileInfo = VideoDownloadManager.getDownloadFileInfoAndUpdateSettings(
-                            requireContext(),
+                            guaranteedContext(context),
                             child.internalId
                         )
 
                         if (fileInfo == null) {
-                            val id = (child.animeData.slug + "E${child.episodeIndex}").hashCode()
+                            val id = (child.slug + "E${child.episodeIndex}").hashCode()
                             if (!downloadQueue.toList()
                                     .any { it.item.ep.id == id }
                                 && !currentDownloads.any { it == id }
@@ -121,14 +123,14 @@ class DownloadFragment : Fragment() {
                 for (k in keys ?: listOf()) {
                     val parent = context?.getKey<DownloadManager.DownloadParentFileMetadata>(k)
                     if (parent != null) {
-                        if (epData.containsKey(parent.slug)) {
+                        if (epData.containsKey(parent.slug.replace("-dubbed", "-dub"))) {
                             val cardView = inflater.inflate(R.layout.download_card, view?.parent as? ViewGroup, false)
 
                             cardView.imageView.setOnClickListener {
-                                activity?.loadPage(parent.slug, parent.title)
+                                activity?.loadPage(parent.slug.replace("-dubbed", "-dub"), parent.title)
                             }
 
-                            cardView.cardTitle.text = parent.title
+                            cardView.cardTitle?.text = parent.title
                             //cardView.imageView.setImageURI(Uri.parse(parent.coverImagePath))
 
                             // Legacy
@@ -141,7 +143,7 @@ class DownloadFragment : Fragment() {
                                 }
                             } else {
                                 val glideUrlMain =
-                                    GlideUrl(ShiroApi.getFullUrlCdn(parent.coverImagePath)) { ShiroApi.currentHeaders }
+                                    ShiroApi.getFullUrlCdn(parent.coverImagePath)
                                 context?.let {
                                     GlideApp.with(it)
                                         .load(glideUrlMain)
@@ -150,22 +152,27 @@ class DownloadFragment : Fragment() {
                                 }
                             }
 
-                            val childData = epData[parent.slug]!!
+                            val childData = epData[parent.slug.replace("-dubbed", "-dub")]!!
                             val megaBytes = DownloadManager.convertBytesToAny(childData.countBytes, 0, 2.0).toInt()
-                            cardView.cardInfo.text =
+                            cardView.cardInfo?.text =
                                 if (parent.isMovie) "$megaBytes MB" else
                                     "${childData.count} Episode${(if (childData.count == 1) "" else "s")} | $megaBytes MB"
-
-                            cardView.cardBg?.setCardBackgroundColor(Cyanea.instance.backgroundColorDark)
-
-                            cardView.cardBg.setOnClickListener {
-                                activity?.addFragmentOnlyOnce(
-                                    R.id.homeRoot,
-                                    DownloadFragmentChild.newInstance(
-                                        parent.slug
-                                    ),
-                                    downloadFragmentTag
+                            cardView.card_outline?.setCardBackgroundColor(Cyanea.instance.backgroundColorDark)
+                            cardView.card_outline?.setCardBackgroundColor(Cyanea.instance.backgroundColorDark)
+                            cardView.card_outline.setOnClickListener {
+                                val arguments = Bundle().apply {
+                                    putString(SLUG, parent.slug.replace("-dubbed", "-dub"))
+                                }
+                                activity?.getNavController()?.navigate(
+                                    R.id.action_navigation_downloads_to_navigation_download_child, arguments
                                 )
+//                                activity?.addFragmentOnlyOnce(
+//                                    R.id.homeRoot,
+//                                    DownloadFragmentChild.newInstance(
+//                                        parent.slug.replace("-dubbed", "-dub")
+//                                    ),
+//                                    downloadFragmentTag
+//                                )
 
                                 /*MainActivity.activity?.supportFragmentManager?.beginTransaction()
                                     ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
@@ -177,9 +184,9 @@ class DownloadFragment : Fragment() {
                                     ?.commitAllowingStateLoss()*/
                             }
 
-                            downloadRoot.addView(cardView)
+                            downloadRoot?.addView(cardView)
                         } else {
-                            if (currentDownloads.isEmpty()  && downloadQueue.isEmpty()
+                            if (currentDownloads.isEmpty() && downloadQueue.isEmpty()
                             ) {
                                 val coverFile = File(parent.coverImagePath)
                                 if (coverFile.exists()) {
@@ -208,17 +215,22 @@ class DownloadFragment : Fragment() {
         )
 
         download_fragment_background?.background = ColorDrawable(Cyanea.instance.backgroundColor)
-        queue_card?.backgroundTintList = ColorStateList.valueOf(Cyanea.instance.backgroundColorDark)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            queue_card?.backgroundTintList = ColorStateList.valueOf(Cyanea.instance.backgroundColorDark)
+        }
         queue_card?.setOnClickListener {
-            activity?.addFragmentOnlyOnce(
-                R.id.homeRoot,
-                QueueFragment.newInstance(),
-                downloadFragmentTag
+            activity?.getNavController()?.navigate(
+                R.id.action_navigation_downloads_to_navigation_download_queue
             )
+//            activity?.addFragmentOnlyOnce(
+//                R.id.homeRoot,
+//                QueueFragment.newInstance(),
+//                downloadFragmentTag
+//            )
         }
 
         fun setQueueText() {
-            val size = downloadQueue.toList().distinctBy { it.item.ep.id }.size
+            val size = downloadQueue.toList().filterNotNull().distinctBy { it.item.ep.id }.size
             val suffix = if (size == 1) "" else "s"
             val pausedStatus = if (masterViewModel?.isQueuePaused?.value != false) "\nPaused" else ""
             queue_card_text?.text = "Queue (${
@@ -238,6 +250,7 @@ class DownloadFragment : Fragment() {
             } else {
                 queue_pause_play?.setImageResource(R.drawable.netflix_pause)
             }
+            context?.let { ctx -> saveQueue(ctx) }
         }
 
         queue_pause_play?.setOnClickListener {
@@ -253,11 +266,8 @@ class DownloadFragment : Fragment() {
                 masterViewModel?.isQueuePaused?.postValue(masterViewModel?.isQueuePaused?.value?.not() ?: true)
             }
         }
-
         top_padding_download.layoutParams = topParams
-
         updateItems()
-
     }
 
     override fun onCreateView(
@@ -271,17 +281,53 @@ class DownloadFragment : Fragment() {
     companion object {
         val downloadsUpdated = Event<Boolean>()
         val childMetadataKeys = hashMapOf<String, MutableList<String>>()
-        const val LEGACY_DOWNLOADS = "legacy_downloads_2"
-    }
+        const val LEGACY_DOWNLOADS = "legacy_downloads_3"
 
-    private fun Context.getChildren(): List<String> {
-        val legacyDownloads = getKey(LEGACY_DOWNLOADS, true)
-        if (legacyDownloads == true) {
-            convertOldDownloads()
+        fun Context.getChildren(): List<String> {
+            val legacyDownloads = getKey(LEGACY_DOWNLOADS, true)
+            if (legacyDownloads == true) {
+                convertOldDownloads()
+            }
+
+            return getKeys(DOWNLOAD_CHILD_KEY)
         }
 
-        return getKeys(DOWNLOAD_CHILD_KEY) ?: listOf()
+        private fun Context.convertOldDownloads() {
+            normalSafeApiCall {
+                val keys = getKeys(DOWNLOAD_CHILD_KEY)
+                normalSafeApiCall {
+                    keys.pmap {
+                        getKey<DownloadManager.DownloadFileMetadataLegacy>(it)
+                    }
+                }
+                keys.forEach {
+                    val data = getKey<DownloadManager.DownloadFileMetadataLegacy>(it)
+                    if (data != null) {
+                        // NEEDS REMOVAL TO PREVENT DUPLICATES
+                        removeKey(it)
+                        val episodeOffset =
+                            if (data.animeData.episodes?.filter { it.episode_number == 0 }.isNullOrEmpty()) 0 else -1
+                        setKey(
+                            it, DownloadManager.DownloadFileMetadata(
+                                data.internalId,
+                                data.slug.replace("-dubbed", "-dub"),
+                                data.thumbPath,
+                                data.videoTitle,
+                                data.episodeIndex,
+                                data.downloadAt,
+                                episodeOffset
+                            )
+                        )
+                    } else {
+                        removeKey(it)
+                    }
+                }
+                setKey(LEGACY_DOWNLOADS, false)
+            }
+        }
+
     }
+
 
     override fun onResume() {
         downloadsUpdated += ::updateItems
@@ -293,46 +339,4 @@ class DownloadFragment : Fragment() {
         super.onDestroy()
     }
 
-    private fun Context.convertOldDownloads() {
-        try {
-            val keys = getKeys(DOWNLOAD_CHILD_KEY)
-            keys.pmap {
-                getKey<DownloadManager.DownloadFileMetadataSemiLegacy>(it)
-            }
-            keys.forEach {
-                val data = getKey<DownloadManager.DownloadFileMetadataSemiLegacy>(it)
-                if (data != null) {
-                    // NEEDS REMOVAL TO PREVENT DUPLICATES
-                    removeKey(it)
-                    val file = File(data.videoPath)
-                    setKey(
-                        KEY_DOWNLOAD_INFO, data.internalId.toString(),
-                        file.parent?.toString()
-                            ?.let { parentPath ->
-                                VideoDownloadManager.DownloadedFileInfo(
-                                    data.maxFileSize,
-                                    parentPath,
-                                    file.name
-                                )
-                            }
-                    )
-                    setKey(
-                        it, DownloadManager.DownloadFileMetadata(
-                            data.internalId,
-                            data.slug,
-                            data.animeData,
-                            data.thumbPath,
-                            data.videoTitle,
-                            data.episodeIndex,
-                            data.downloadAt,
-                        )
-                    )
-                }
-            }
-            setKey(LEGACY_DOWNLOADS, false)
-        } catch (e: Exception) {
-            println("Error IN convertOldDownloads")
-        }
-
-    }
 }

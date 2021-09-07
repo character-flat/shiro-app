@@ -4,18 +4,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.leanback.widget.SearchBar
 import androidx.leanback.widget.SpeechOrbView
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.home.CardAdapter
-import com.lagradost.shiro.ui.result.ResultFragment.Companion.onResultsNavigated
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.isInSearch
 import com.lagradost.shiro.utils.AppUtils.displayCardData
-import com.lagradost.shiro.utils.ShiroApi.Companion.quickSearch
-import com.lagradost.shiro.utils.ShiroApi.Companion.search
+import com.lagradost.shiro.utils.AppUtils.filterCardList
+import com.lagradost.shiro.utils.Coroutines.main
+import com.lagradost.shiro.utils.ShiroApi
+import com.lagradost.shiro.utils.ShiroApi.Companion.searchNew
 import kotlinx.android.synthetic.main.fragment_search_tv.*
 import kotlin.concurrent.thread
 
@@ -32,16 +32,7 @@ class SearchFragmentTv : Fragment() {
 
     override fun onDestroy() {
         isInSearch = false
-        onResultsNavigated -= ::restoreState
         super.onDestroy()
-    }
-
-    private fun restoreState(hasEntered: Boolean) {
-        if (hasEntered) {
-            this.view?.visibility = GONE
-        } else {
-            this.view?.visibility = VISIBLE
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -49,7 +40,6 @@ class SearchFragmentTv : Fragment() {
         val speechOrbView: SpeechOrbView = view.findViewById(R.id.lb_search_bar_speech_orb)
         speechOrbView.visibility = GONE
 
-        onResultsNavigated += ::restoreState
         //val snapHelper = PagerSnapHelper()
         //snapHelper.attachToRecyclerView(scrollView)
 
@@ -63,10 +53,19 @@ class SearchFragmentTv : Fragment() {
             override fun onSearchQueryChange(query: String?) {
                 if (query == null) return
                 thread {
-                    val data = quickSearch(query)
-                    data?.let {
-                        activity?.runOnUiThread {
-                            activity?.displayCardData(it, search_recycler, expand_text, adapter = adapter)
+                    val data = searchNew(query)
+                    data?.let { data ->
+                        val filteredData =
+                            filterCardList(data.map {
+                                ShiroApi.CommonAnimePageData(
+                                    it.title,
+                                    it.poster,
+                                    it.slug,
+                                    it.title_english
+                                )
+                            })
+                        main {
+                            activity?.displayCardData(filteredData, search_recycler, expand_text, adapter = adapter)
                         }
                     }
                 }
@@ -75,10 +74,19 @@ class SearchFragmentTv : Fragment() {
             override fun onSearchQuerySubmit(query: String?) {
                 if (query == null) return
                 thread {
-                    val data = search(query)
-                    data?.let {
-                        activity?.runOnUiThread {
-                            activity?.displayCardData(data, search_recycler, expand_text, adapter = adapter)
+                    val data = searchNew(query)
+                    data?.let { data ->
+                        val filteredData =
+                            filterCardList(data.map {
+                                ShiroApi.CommonAnimePageData(
+                                    it.title,
+                                    it.poster,
+                                    it.slug,
+                                    it.title_english
+                                )
+                            })
+                        main {
+                            activity?.displayCardData(filteredData, search_recycler, expand_text, adapter = adapter)
                         }
                     }
                 }

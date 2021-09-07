@@ -5,8 +5,6 @@ import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.preference.Preference
@@ -15,9 +13,7 @@ import androidx.preference.PreferenceManager
 import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
-import com.lagradost.shiro.ui.WebViewFragment.Companion.onWebViewNavigated
 import com.lagradost.shiro.ui.settings.SettingsFragmentNew.Companion.isInSettings
-import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 
@@ -73,17 +69,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         startActivity(intent)
     }
 
-    private fun restoreState(hasEntered: Boolean) {
-        if (hasEntered) {
-            this.view?.visibility = GONE
-        } else {
-            this.view?.visibility = VISIBLE
-        }
-    }
-
     override fun onDestroy() {
         super.onDestroy()
-        onWebViewNavigated -= ::restoreState
         isInSettings = false
     }
 
@@ -98,9 +85,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
             ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
         isInSettings = true
-        if (tvActivity != null) {
-            onWebViewNavigated += ::restoreState
-        }
         super.onResume()
     }
 

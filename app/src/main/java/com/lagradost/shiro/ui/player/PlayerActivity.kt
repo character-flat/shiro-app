@@ -29,10 +29,17 @@ import com.lagradost.shiro.utils.AppUtils.init
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.requestRW
 import java.io.File
+import java.lang.ref.WeakReference
 
 class PlayerActivity : CyaneaAppCompatActivity() {
     companion object {
-        var playerActivity: PlayerActivity? = null
+        private var _playerActivity: WeakReference<PlayerActivity>? = null
+        var playerActivity
+            get() = _playerActivity?.get()
+            private set(value) {
+                _playerActivity = WeakReference(value)
+            }
+
     }
 
     private val myAudioFocusListener =
@@ -65,7 +72,7 @@ class PlayerActivity : CyaneaAppCompatActivity() {
             theme.applyStyle(R.style.darkText, true)
         }
         if (!Cyanea.instance.isThemeModified) {
-            val list: List<CyaneaTheme> = CyaneaTheme.Companion.from(assets, "themes/cyanea_themes.json");
+            val list: List<CyaneaTheme> = CyaneaTheme.Companion.from(assets, "themes/cyanea_themes.json")
             list[0].apply(Cyanea.instance).recreate(this)
         }
 
@@ -125,9 +132,11 @@ class PlayerActivity : CyaneaAppCompatActivity() {
 
         val path = getUri(intent.data)!!.path
         // Because it doesn't get the path when it's downloaded, I have no idea
-        val realPath = if (File(intent.data?.path?.removePrefix("/file") ?: "NONE").exists()) intent.data?.path?.removePrefix("/file") else path
+        val realPath = if (File(
+                intent.data?.path?.removePrefix("/file") ?: "NONE"
+            ).exists()
+        ) intent.data?.path?.removePrefix("/file") else path
 
-        println("OATTHTTTTH ${(File(path?.removePrefix("/file") ?: "NONE").exists())} $path")
         setContentView(R.layout.activity_player)
 
         val playerData = PlayerData(

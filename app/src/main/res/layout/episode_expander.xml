@@ -6,13 +6,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:clickable="true"
-        android:focusable="true"
-        android:background="@drawable/outline_background"
-        android:nextFocusRight="@+id/cdi"
-        android:nextFocusLeft="@+id/cdi"
         android:id="@+id/episode_result_root"
+        android:layout_marginBottom="5dp"
 >
+<!--        android:descendantFocusability="afterDescendants"-->
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -21,43 +18,51 @@
         <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_margin="2dp"
-                android:elevation="10dp"
                 app:cardCornerRadius="@dimen/card_corner_radius"
-                android:id="@+id/cardBg"
-                app:cardBackgroundColor="?attr/backgroundColorLight"
+                android:id="@+id/card_outline"
         >
-            <RelativeLayout
+
+            <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"
-
+                    android:layout_margin="2dp"
+                    android:elevation="10dp"
+                    android:id="@+id/card_bg"
+                    app:cardCornerRadius="@dimen/card_corner_radius"
+                    app:cardBackgroundColor="?attr/backgroundColorLight"
             >
-                <TextView
-                        android:id="@+id/cardTitle"
-                        android:layout_margin="10dp"
+                <RelativeLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textSize="15sp"
-                        android:textColor="?attr/textColor"
-                        tools:text="Episodes 1-50"
-                        android:gravity="center"
-                        android:layout_centerVertical="true"
-                        android:layout_alignParentStart="true"
-                        android:layout_alignEnd="@+id/expand_icon"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+
                 >
-                </TextView>
-                <ImageView
-                        android:layout_alignParentEnd="true"
-                        android:id="@+id/expand_icon"
-                        android:layout_marginEnd="10dp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        app:srcCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
-                >
-                </ImageView>
-            </RelativeLayout>
+                    <TextView
+                            android:id="@+id/cardTitle"
+                            android:layout_margin="10dp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="15sp"
+                            android:textColor="?attr/textColor"
+                            tools:text="Episodes 1-50"
+                            android:gravity="center"
+                            android:layout_centerVertical="true"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignEnd="@+id/expand_icon"
+                    >
+                    </TextView>
+                    <ImageView
+                            android:layout_alignParentEnd="true"
+                            android:id="@+id/expand_icon"
+                            android:layout_marginEnd="10dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            app:srcCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
+                    >
+                    </ImageView>
+                </RelativeLayout>
+            </androidx.cardview.widget.CardView>
         </androidx.cardview.widget.CardView>
         <com.lagradost.shiro.ui.AutofitRecyclerView
                 app:layout_behavior="@string/appbar_scrolling_view_behavior"
@@ -73,7 +78,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/episodes_res_view"
                 android:orientation="vertical"
-                app:spanCount="2"
+                app:spanCount="1"
                 tools:listitem="@layout/episode_result_compact"
         >
 

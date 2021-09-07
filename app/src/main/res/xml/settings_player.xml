@@ -58,6 +58,12 @@
             android:title="Fullscreen the notch in player"
             app:defaultValue="true"
     />
+    <SwitchPreference
+            android:icon="@drawable/ic_baseline_skip_previous_24"
+            app:key="hide_prev_episode_button"
+            android:title="Hide the previous episode button"
+            app:defaultValue="false"
+    />
     <!--<SwitchPreference
             android:icon="@drawable/ic_baseline_fast_forward_24"
             app:key="skip_op_enabled"
@@ -85,14 +91,14 @@
             app:useSimpleSummaryProvider="true"
             app:summary="Selecting none is the same as selecting all"
     />
-    <SwitchPreference
-            android:icon="@drawable/ic_baseline_vpn_lock_24"
-            app:key="alternative_vidstream"
-            android:title="Use alternative Vidstream"
-            android:summaryOn="Some ISPs block vidstream\nUsing streamani.net"
-            android:summaryOff="Some ISPs block vidstream\nUsing gogo-stream.com"
-            app:defaultValue="false"
-    />
+    <!--    <SwitchPreference-->
+    <!--            android:icon="@drawable/ic_baseline_vpn_lock_24"-->
+    <!--            app:key="alternative_vidstream"-->
+    <!--            android:title="Use alternative Vidstream"-->
+    <!--            android:summaryOn="Some ISPs block vidstream\nUsing streamani.net"-->
+    <!--            android:summaryOff="Some ISPs block vidstream\nUsing gogo-stream.com"-->
+    <!--            app:defaultValue="false"-->
+    <!--    />-->
     <SwitchPreference
             android:icon="@drawable/ic_baseline_warning_24"
             app:key="ignore_ssl"
@@ -144,6 +150,12 @@
             app:key="allow_player_rotation"
             android:title="Allow player rotation"
             android:summary="Cursed"
+            app:defaultValue="false"
+    />
+    <SwitchPreference
+            android:icon="@drawable/ic_baseline_gradient_24"
+            app:key="disable_player_shadow"
+            android:title="Disable the player overlay shadow"
             app:defaultValue="false"
     />
 

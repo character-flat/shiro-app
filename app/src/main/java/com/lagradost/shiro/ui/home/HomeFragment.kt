@@ -1,5 +1,8 @@
 package com.lagradost.shiro.ui.home
 
+import DataStore.getKey
+import DataStore.mapper
+import DataStore.setKey
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +11,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
@@ -16,8 +20,8 @@ import androidx.preference.PreferenceManager
 import androidx.transition.ChangeBounds
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
-import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.MainActivity
@@ -25,6 +29,7 @@ import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppUtils.displayCardData
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.getNextEpisode
+import com.lagradost.shiro.utils.AppUtils.guaranteedContext
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.observe
@@ -32,12 +37,13 @@ import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.PositionedCropTransformation
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.cachedHome
-import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePage
+import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePageNew
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.utils.ShiroApi.Companion.getRandomAnimePage
+import com.lagradost.shiro.utils.ShiroApi.Companion.getRandom
 import com.lagradost.shiro.utils.ShiroApi.Companion.hasThrownError
 import com.lagradost.shiro.utils.ShiroApi.Companion.initShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
+import com.lagradost.shiro.utils.mvvm.normalSafeApiCall
 import kotlinx.android.synthetic.main.download_card.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlin.concurrent.thread
@@ -50,10 +56,6 @@ class HomeFragment : Fragment() {
         var homeViewModel: HomeViewModel? = null
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -61,10 +63,12 @@ class HomeFragment : Fragment() {
     ): View? {
         homeViewModel = homeViewModel ?: ViewModelProvider(getCurrentActivity()!!).get(HomeViewModel::class.java)
 
+//        /** THIS FUCKS UP OTHER NON SHARED TRANSITIONS!!! */
+//        exitTransition = Hold()
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
-    private fun homeLoaded(data: ShiroApi.ShiroHomePage?) {
+    private fun homeLoaded(data: ShiroApi.ShiroHomePageNew?) {
         activity?.runOnUiThread {
             /*trending_anime_scroll_view.removeAllViews()
             recentlySeenScrollView.removeAllViews()
@@ -103,14 +107,27 @@ class HomeFragment : Fragment() {
 
             // TODO MAKE THIS LIKE MASTERCARDADAPTER
             if (data != null) {
-                activity?.displayCardData(data.data.trending_animes, trending_anime_scroll_view, trending_text)
+                activity?.displayCardData(data.trending?.data?.map {
+                    ShiroApi.CommonAnimePageData(
+                        it.title,
+                        it.poster,
+                        it.slug,
+                        it.title_english
+                    )
+                }, trending_anime_scroll_view, trending_text)
                 activity?.displayCardData(
-                    data.data.latest_episodes.map { it.anime } as? List<ShiroApi.CommonAnimePage>,
+                    data.recents?.map {
+                        ShiroApi.CommonAnimePageData(
+                            it.anime.title,
+                            it.anime.poster,
+                            it.anime.slug,
+                        )
+                    }?.distinctBy { it.slug },
                     recently_updated_scroll_view,
                     recently_updated_text
                 )
-                activity?.displayCardData(data.data.ongoing_animes, ongoing_anime_scroll_view, ongoing_anime_text)
-                activity?.displayCardData(data.data.latest_animes, latest_anime_scroll_view, latest_anime_text)
+//                activity?.displayCardData(data.data.ongoing_animes, ongoing_anime_scroll_view, ongoing_anime_text)
+//                activity?.displayCardData(data.data.latest_animes, latest_anime_scroll_view, latest_anime_text)
             }
             //displayCardData(data?.recentlyAddedData, recentScrollView)
             displayFav()
@@ -145,9 +162,9 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun generateRandom(randomPage: ShiroApi.AnimePage? = null) {
+    private fun generateRandom(randomPage: ShiroApi.Companion.Random? = null) {
         thread {
-            val random: ShiroApi.AnimePage? = randomPage ?: getRandomAnimePage()
+            val random: ShiroApi.Companion.Random? = randomPage ?: getRandom()
             cachedHome?.random = random
             val randomData = random?.data
             // Hack, assuming all dubbed shows have a normal equivalent
@@ -174,28 +191,30 @@ class HomeFragment : Fragment() {
                         marginParams.setMargins(0, 250.toPx, 0, 0)
                         main_layout.layoutParams = marginParams
 
-                        val glideUrlMain =
-                            GlideUrl(getFullUrlCdn(randomData.image)) { ShiroApi.currentHeaders }
+                        val glideUrlMain = getFullUrlCdn(randomData.poster)
                         context?.let {
                             val settingsManager = PreferenceManager.getDefaultSharedPreferences(it)
                             val savingData = settingsManager.getBoolean("data_saving", false)
                             GlideApp.with(it)
                                 .load(glideUrlMain)
+                                .timeout(10000) // 10s
                                 .transform(PositionedCropTransformation(1f, 0f))
                                 .transition(DrawableTransitionOptions.withCrossFade(100))
                                 .onlyRetrieveFromCache(savingData)
                                 .into(main_poster)
                         }
 
-                        main_name.text = randomData.name
-                        main_genres.text =
-                            randomData.genres?.joinToString(prefix = "", postfix = "", separator = " • ")
+                        main_name?.text = randomData.title
+                        normalSafeApiCall {
+                            main_genres?.text =
+                                mapper.readValue<List<String>>(randomData.genres)
+                                    .joinToString(prefix = "", postfix = "", separator = " • ")
+                        }
                         main_watch_button.setOnClickListener {
-                            //MainActivity.loadPage(cardInfo!!)
                             Toast.makeText(activity, "Loading link", Toast.LENGTH_SHORT).show()
                             thread {
                                 // LETTING USER PRESS STUFF WHEN THIS LOADS CAN CAUSE BUGS
-                                val page = getAnimePage(randomData.slug)
+                                val page = getAnimePageNew(randomData.slug)
                                 if (page != null) {
                                     val nextEpisode = context?.getNextEpisode(page.data)
                                     nextEpisode?.let {
@@ -211,7 +230,8 @@ class HomeFragment : Fragment() {
                         main_watch_button.setOnLongClickListener {
                             //MainActivity.loadPage(cardInfo!!)
                             if (cardInfo != null) {
-                                val nextEpisode = context?.getNextEpisode(randomData)
+                                val page = getAnimePageNew(randomData.slug)
+                                val nextEpisode = page?.data?.let { it1 -> context?.getNextEpisode(it1) }
                                 if (nextEpisode != null) {
                                     Toast.makeText(
                                         activity,
@@ -223,7 +243,7 @@ class HomeFragment : Fragment() {
                             return@setOnLongClickListener true
                         }
                         main_info_button.setOnClickListener {
-                            activity?.loadPage(randomData.slug, randomData.name)
+                            activity?.loadPage(randomData.slug, randomData.title)
                         }
                     } else {
                         main_poster_holder.visibility = GONE
@@ -278,7 +298,7 @@ class HomeFragment : Fragment() {
                 favouriteRoot.visibility = VISIBLE
                 //println(data.favorites!!.map { it?.title?.english})
                 activity?.displayCardData(
-                    favorites.sortedWith(compareBy { it?.name }).toList(),
+                    favorites.sortedWith(compareBy { it?.name }).mapNotNull { it }.toList(),
                     favouriteScrollView,
                     favorites_text,
                     overrideHideDubbed = true
@@ -297,7 +317,7 @@ class HomeFragment : Fragment() {
                     subscribedRoot.visibility = VISIBLE
                     //println(data.favorites!!.map { it?.title?.english})
                     activity?.displayCardData(
-                        subscribed.sortedWith(compareBy { it?.name }).toList(),
+                        subscribed.sortedWith(compareBy { it?.name }).mapNotNull { it }.toList(),
                         subscribedScrollView,
                         subscribed_text,
                         overrideHideDubbed = true
@@ -330,7 +350,6 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         main_scroll?.alpha = 0f
         ShiroApi.onHomeError += ::onHomeErrorCatch
-        println("ERRORSS ENCOUNTERED $hasThrownError")
         if (hasThrownError != -1) {
             onHomeErrorCatch(hasThrownError == 1)
         }
@@ -352,6 +371,20 @@ class HomeFragment : Fragment() {
         // This gets overwritten when data is loaded
         home_swipe_refresh?.setOnRefreshListener {
             home_swipe_refresh?.isRefreshing = false
+        }
+
+
+
+        if (guaranteedContext(context).getKey("DMCA_MESSAGE", false) == false) {
+            guaranteedContext(context).setKey("DMCA_MESSAGE", true)
+            AlertDialog.Builder(guaranteedContext(context), R.style.AlertDialogCustom)
+                .setCancelable(false)
+                .setTitle("DMCA DISCLAIMER")
+                .setPositiveButton("I understand") { dialogInterface, _ ->
+                    dialogInterface.dismiss()
+                }
+                .setMessage("The Shiro app is only a front-end to the shiro site available in the browser. As it's only a front-end it does not host nor control the videos accessible in the app. The legality of the content shown in the app is therefore the responsibility of the video hosts. It's also the users responsibility to make sure that their usage of this app is legal in their country. Use this app at your own risk!\n\nIn case of copyright infringement contact the offending video hosting provider!\n\nThis app is only for personal and educational use.\n")
+                .show()
         }
 
         // CAUSES CRASH ON 6.0.0

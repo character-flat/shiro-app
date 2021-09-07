@@ -105,7 +105,7 @@
                         android:nextFocusDown="@id/vertical_grid_view"
                         android:clickable="true"
                         android:focusableInTouchMode="true"
-                        app:background="@drawable/video_tap_button"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                 >
                     <requestFocus/>
                 </ImageView>
@@ -122,7 +122,7 @@
                         android:nextFocusDown="@id/vertical_grid_view"
                         android:clickable="true"
                         android:focusableInTouchMode="true"
-                        app:background="@drawable/video_tap_button"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         app:tint="?attr/white">
                 </ImageView>
 
@@ -139,8 +139,9 @@
                         android:nextFocusDown="@id/vertical_grid_view"
                         android:clickable="true"
                         android:focusableInTouchMode="true"
-                        app:background="@drawable/video_tap_button"
-                        app:tint="?attr/white">
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        app:tint="?attr/white"
+                >
                 </ImageView>
 
 

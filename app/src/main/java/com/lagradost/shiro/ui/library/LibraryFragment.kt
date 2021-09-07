@@ -11,10 +11,13 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
+import android.view.FocusFinder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.AbsListView.CHOICE_MODE_SINGLE
 import android.widget.ArrayAdapter
 import android.widget.ImageButton
@@ -30,7 +33,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.AutoTransition
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
-import androidx.viewpager.widget.PagerAdapter
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.tabs.TabLayoutMediator
 import com.jaredrummler.cyanea.Cyanea
@@ -38,17 +41,23 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.library.LibraryFragment.Companion.libraryViewModel
 import com.lagradost.shiro.ui.library.LibraryFragment.Companion.onMenuCollapsed
+import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.isInSearch
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.*
 import com.lagradost.shiro.utils.AniListApi.Companion.convertAnilistStringToStatus
 import com.lagradost.shiro.utils.AniListApi.Companion.secondsToReadable
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
+import com.lagradost.shiro.utils.AppUtils.getCurrentContext
 import com.lagradost.shiro.utils.AppUtils.getTextColor
+import com.lagradost.shiro.utils.AppUtils.guaranteedContext
+import com.lagradost.shiro.utils.AppUtils.notNull
+import com.lagradost.shiro.utils.AppUtils.reduceDragSensitivity
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.Coroutines.main
 import com.lagradost.shiro.utils.MALApi.Companion.convertJapanTimeToTimeRemaining
 import com.lagradost.shiro.utils.MALApi.Companion.convertToStatus
+import com.lagradost.shiro.utils.mvvm.normalSafeApiCall
 import com.lagradost.shiro.utils.mvvm.observe
 import kotlinx.android.synthetic.main.bottom_sheet.*
 import kotlinx.android.synthetic.main.fragment_library.*
@@ -56,6 +65,7 @@ import kotlinx.android.synthetic.main.fragment_library.login_overlay
 import kotlinx.android.synthetic.main.fragment_library.result_tabs
 import kotlinx.android.synthetic.main.fragment_library.viewpager
 import kotlinx.android.synthetic.main.fragment_library_tv.*
+import kotlinx.android.synthetic.main.mal_list.*
 import kotlinx.android.synthetic.main.mal_list.view.*
 
 class CustomSearchView(context: Context) : SearchView(context) {
@@ -119,7 +129,8 @@ class LibraryFragment : Fragment() {
         // TODO FIX
         isInSearch = true
 
-        libraryViewModel?.isMal = (getCurrentActivity()!!.getKey(LIBRARY_IS_MAL, true) == true && hasMAL) || !hasAniList
+        libraryViewModel?.isMal =
+            (guaranteedContext(context).getKey(LIBRARY_IS_MAL, true) == true && hasMAL) || !hasAniList
         // Inflate the layout for this fragment
         val layout = if (tvActivity != null) R.layout.fragment_library_tv else R.layout.fragment_library
         return inflater.inflate(layout, container, false)
@@ -146,22 +157,24 @@ class LibraryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         result_tabs?.removeAllTabs()
+        result_tabs?.isFocusable = false
 
         /*tabs.forEach {
             result_tabs?.addTab(result_tabs.newTab().setText(it))
         }*/
         fragment_list_root?.setPadding(0, MainActivity.statusHeight, 0, 0)
         fragment_list_root_tv?.setPadding(0, MainActivity.statusHeight, 0, 0)
-        val hasAniList = getCurrentActivity()!!.getKey<String>(
+
+        val hasAniList = guaranteedContext(context).getKey<String>(
             ANILIST_TOKEN_KEY,
             ANILIST_ACCOUNT_ID,
             null
         ) != null
-        val hasMAL = getCurrentActivity()!!.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+        val hasMAL = guaranteedContext(context).getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
         login_overlay?.background = ColorDrawable(Cyanea.instance.backgroundColor)
         login_overlay?.isVisible = !hasAniList && !hasMAL
         library_toolbar?.navigationIcon = if (hasAniList && hasMAL) ContextCompat.getDrawable(
-            getCurrentActivity()!!,
+            guaranteedContext(context),
             R.drawable.ic_baseline_swap_vert_24
         ) else null
         library_toolbar?.children?.forEach {
@@ -190,6 +203,22 @@ class LibraryFragment : Fragment() {
             }
         })
 
+        fun search() {
+            search_library?.editText?.text?.toString()?.let { text ->
+                libraryViewModel?.sortCurrentList(getCurrentTabCorrected(), SEARCH, text)
+            }
+        }
+
+        search_library?.editText?.setOnEditorActionListener { textView, i, keyEvent ->
+            if (i == EditorInfo.IME_ACTION_SEARCH ||
+                i == EditorInfo.IME_ACTION_DONE
+            ) {
+                search()
+                return@setOnEditorActionListener true
+            }
+            return@setOnEditorActionListener false
+        }
+
         fun reload() {
             context?.setKey(MAL_SHOULD_UPDATE_LIST, true)
             context?.setKey(ANILIST_SHOULD_UPDATE_LIST, true)
@@ -201,9 +230,11 @@ class LibraryFragment : Fragment() {
         fun sort() {
             val bottomSheetDialog = BottomSheetDialog(getCurrentActivity()!!, R.style.AppBottomSheetDialogTheme)
             bottomSheetDialog.setContentView(R.layout.bottom_sheet)
-            bottomSheetDialog.main_text.text = "Sort by"
-            bottomSheetDialog.bottom_sheet_top_bar.backgroundTintList =
-                ColorStateList.valueOf(Cyanea.instance.backgroundColorDark)
+            bottomSheetDialog.main_text?.text = "Sort by"
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                bottomSheetDialog.bottom_sheet_top_bar.backgroundTintList =
+                    ColorStateList.valueOf(Cyanea.instance.backgroundColorDark)
+            }
 
             val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
             val arrayAdapter = ArrayAdapter<String>(
@@ -230,6 +261,14 @@ class LibraryFragment : Fragment() {
                 val sel = sortingMethods[position].id
                 libraryViewModel?.sortCurrentList(getCurrentTabCorrected(), sel)
                 bottomSheetDialog.dismiss()
+            }
+
+            // Full expansion for TV
+            bottomSheetDialog.setOnShowListener {
+                normalSafeApiCall {
+                    BottomSheetBehavior.from(bottomSheetDialog.bottom_sheet_root.parent as View).peekHeight =
+                        bottomSheetDialog.bottom_sheet_root.height
+                }
             }
 
             bottomSheetDialog.show()
@@ -270,27 +309,127 @@ class LibraryFragment : Fragment() {
         sort_icon?.setOnClickListener {
             sort()
         }
-
+        search_icon?.onFocusChangeListener = focusListener
+        search_icon?.setOnClickListener {
+            search()
+        }
+        switch_icon?.isVisible = hasAniList && hasMAL
+        switch_icon?.onFocusChangeListener = focusListener
+        switch_icon?.setOnClickListener {
+            val newIsMal = !(libraryViewModel?.isMal ?: true)
+            val client = if (newIsMal) "MAL" else "Anilist"
+            Toast.makeText(getCurrentContext() ?: requireContext(), "Switched to $client", Toast.LENGTH_SHORT).show()
+            libraryViewModel?.isMal = newIsMal
+            context?.setKey(LIBRARY_IS_MAL, newIsMal)
+            libraryViewModel?.displayList()
+        }
 
         //viewpager?.adapter = CustomFragmentPagerAdapter() // CustomPagerAdapter(getCurrentActivity()!!)
         viewpager?.adapter = CustomPagerAdapter {
             // For android tv dpad support
             when (it) {
                 View.FOCUS_RIGHT -> {
-                    val index = result_tabs?.selectedTabPosition?.plus(1) ?: 0
-                    viewpager?.currentItem = index
-                    //result_tabs?.setScrollPosition(index, 0f, true)
-                    //result_tabs?.getTabAt(result_tabs?.selectedTabPosition?.plus(1) ?: 0)?.select()
+                    val location = IntArray(2)
+                    getCurrentActivity()?.currentFocus?.getLocationOnScreen(location)
+
+                    fragment_list_root_tv.notNull {
+                        val index = result_tabs?.selectedTabPosition?.plus(1) ?: 0
+                        if (index == (result_tabs?.tabCount ?: 0)) return@notNull
+
+                        val x = 1
+                        val y = location[1]
+                        library_menu_bar?.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+
+//                        viewpager?.currentItem = index
+                        viewpager?.setCurrentItem(index, false)
+
+                        view.postDelayed({
+                            run {
+                                val focusFinder = FocusFinder.getInstance()
+
+                                /**
+                                 * 1. Try to go up from current y pos on the left side
+                                 * 2. Try to go down from left
+                                 * 3. Request the background
+                                 * */
+                                focusFinder.findNearestTouchable(
+                                    viewpager,
+                                    x,
+                                    y,
+                                    View.FOCUS_UP,
+                                    IntArray(2)
+                                )?.requestFocus() ?: focusFinder.findNearestTouchable(
+                                    viewpager,
+                                    1,
+                                    0,
+                                    View.FOCUS_DOWN,
+                                    IntArray(2)
+                                )?.requestFocus() ?: library_card_space?.requestFocus()
+                                library_menu_bar?.descendantFocusability = ViewGroup.FOCUS_AFTER_DESCENDANTS
+
+                            }
+                        }, 200)
+                    }
                 }
                 View.FOCUS_LEFT -> {
-                    val index = result_tabs?.selectedTabPosition?.minus(1) ?: 0
-                    viewpager?.currentItem = index
+                    fragment_list_root_tv.notNull {
+                        val index = result_tabs?.selectedTabPosition?.minus(1) ?: 0
+                        if (index == -1) return@notNull
+
+                        val location = IntArray(2)
+                        getCurrentActivity()?.currentFocus?.getLocationOnScreen(location)
+
+                        val x = it.width - 1
+                        val y = location[1]
+
+                        library_menu_bar?.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+
+//                        viewpager?.currentItem = index
+                        viewpager?.setCurrentItem(index, false)
+                        /**
+                         * 1. Try to go up from current y pos on the right side
+                         * 2. Try to go down from right
+                         * 3. Try to go down from the left
+                         * 4. Request the background
+                         * */
+                        view.postDelayed({
+                            run {
+                                val focusFinder = FocusFinder.getInstance()
+                                focusFinder.findNearestTouchable(
+                                    viewpager,
+                                    x,
+                                    y,
+                                    View.FOCUS_UP,
+                                    IntArray(2)
+                                )?.requestFocus() ?: focusFinder.findNearestTouchable(
+                                    viewpager,
+                                    x,
+                                    0,
+                                    View.FOCUS_DOWN,
+                                    IntArray(2)
+                                )?.requestFocus() ?: focusFinder.findNearestTouchable(
+                                    viewpager,
+                                    1,
+                                    0,
+                                    View.FOCUS_DOWN,
+                                    IntArray(2)
+                                )?.requestFocus()
+                                library_card_space?.requestFocus()
+                                library_menu_bar?.descendantFocusability = ViewGroup.FOCUS_AFTER_DESCENDANTS
+
+                            }
+                        }, 200)
+                    }
+
+
                     //result_tabs?.getTabAt(result_tabs?.selectedTabPosition?.minus(1) ?: 0)?.select()
                 }
             }
         }
 
+        viewpager?.reduceDragSensitivity()
         viewpager?.adapter?.notifyDataSetChanged()
+
         //result_tabs?.setupWithViewPager(viewpager)
         result_tabs?.tabTextColors = ColorStateList.valueOf(getCurrentActivity()!!.getTextColor())
         result_tabs?.setSelectedTabIndicatorColor(getCurrentActivity()!!.getTextColor())
@@ -311,7 +450,8 @@ class LibraryFragment : Fragment() {
 
 
         library_toolbar?.title = if (libraryViewModel?.isMal == true) "MAL" else "Anilist"
-        observe(libraryViewModel!!.currentList) { list ->
+        observe(libraryViewModel!!.currentList)
+        { list ->
             for (i in tabs.indices) {
                 val size = list.getOrNull(tabs[i].second)?.size ?: 0
                 main {
@@ -349,53 +489,6 @@ class LibraryFragment : Fragment() {
     }
 }
 
-class CustomFragmentPagerAdapter : PagerAdapter() {
-    override fun getCount(): Int {
-        return tabs.size
-    }
-
-    override fun isViewFromObject(view: View, `object`: Any): Boolean {
-        return view == `object`
-    }
-
-    override fun instantiateItem(container: ViewGroup, position: Int) {
-        val view = LayoutInflater.from(getCurrentActivity()!!).inflate(R.layout.mal_list, container, false)
-        view.layoutParams =
-            ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        val orientation = container.context.resources.configuration.orientation
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE || settingsManager?.getBoolean(
-                "force_landscape",
-                false
-            ) == true
-        ) {
-            view.library_card_space?.spanCount = spanCountPortrait * 2
-        } else {
-            view.library_card_space?.spanCount = spanCountPortrait
-        }
-        fun displayList(list: List<LibraryObject>) {
-            if (view.library_card_space?.adapter == null) {
-                view.library_card_space?.adapter = LibraryCardAdapter(container.context, list)
-                println((view.library_card_space?.adapter as? LibraryCardAdapter))
-            } else {
-                (view.library_card_space?.adapter as? LibraryCardAdapter)?.list = list
-                view.library_card_space?.adapter?.notifyDataSetChanged()
-            }
-        }
-
-        libraryViewModel?.currentList?.value?.getOrNull(tabs[position].second)?.let {
-            val list = generateLibraryObject(it)
-            if ((view.library_card_space?.adapter as? LibraryCardAdapter)?.list != list) {
-                displayList(list)
-            }
-        }
-        container.addView(view)
-    }
-
-    override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
-        //container.removeView(`object` as View)
-    }
-}
-
 private val spanCountPortrait = settingsManager?.getInt("library_span_count", 1) ?: 1
 private fun generateLibraryObject(list: List<Any>): List<LibraryObject> {
     if (list.firstOrNull() is MALApi.Companion.Data) {
@@ -405,6 +498,7 @@ private fun generateLibraryObject(list: List<Any>): List<LibraryObject> {
                     data.node.title,
                     data.node.main_picture?.medium ?: "",
                     data.node.id.toString(),
+                    null,
                     data.list_status?.score ?: 0,
                     data.list_status?.num_episodes_watched ?: 0,
                     data.node.num_episodes,
@@ -424,6 +518,7 @@ private fun generateLibraryObject(list: List<Any>): List<LibraryObject> {
                     it.media.title.english ?: it.media.title.romaji ?: "",
                     it.media.coverImage.medium,
                     it.media.idMal.toString(),
+                    it.media.id.toString(),
                     it.score,
                     it.progress,
                     it.media.episodes,
@@ -466,24 +561,27 @@ class CustomPagerAdapter(private val hitBorderCallback: (Int) -> Unit) :
     }
 
     class CardViewHolder
-    constructor(itemView: View, val context: Context, private val hitBorderCallback: (Int) -> Unit) :
+        (itemView: View, val context: Context, private val hitBorderCallback: (Int) -> Unit) :
         RecyclerView.ViewHolder(itemView) {
 
+        val orientation = context.resources.configuration.orientation
+        val spanCount = if (orientation == Configuration.ORIENTATION_LANDSCAPE || settingsManager?.getBoolean(
+                "force_landscape",
+                false
+            ) == true
+        ) spanCountPortrait * 2 else spanCountPortrait
+
         fun bind(position: Int) {
-            val orientation = context.resources.configuration.orientation
-            if (orientation == Configuration.ORIENTATION_LANDSCAPE || settingsManager?.getBoolean(
-                    "force_landscape",
-                    false
-                ) == true
-            ) {
-                itemView.library_card_space?.spanCount = spanCountPortrait * 2
-            } else {
-                itemView.library_card_space?.spanCount = spanCountPortrait
-            }
+            itemView.library_card_space?.spanCount = spanCount
             itemView.library_card_space?.setBorderCallback(hitBorderCallback)
+
+            if (tvActivity != null) {
+                itemView.library_card_space?.setPadding(0, 5.toPx, 0, 200.toPx)
+            }
+
             fun displayList(list: List<LibraryObject>) {
                 if (itemView.library_card_space?.adapter == null) {
-                    itemView.library_card_space?.adapter = LibraryCardAdapter(context, list)
+                    itemView.library_card_space?.adapter = LibraryCardAdapter(list)
                 } else {
                     (itemView.library_card_space?.adapter as? LibraryCardAdapter)?.list = list
                     itemView.library_card_space?.adapter?.notifyDataSetChanged()
@@ -498,4 +596,5 @@ class CustomPagerAdapter(private val hitBorderCallback: (Int) -> Unit) :
             }
         }
     }
+
 }

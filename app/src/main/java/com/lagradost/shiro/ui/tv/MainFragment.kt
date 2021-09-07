@@ -2,6 +2,7 @@ package com.lagradost.shiro.ui.tv
 
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -9,6 +10,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.AutoTransition
 import androidx.transition.Transition
@@ -17,11 +19,6 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
 import com.lagradost.shiro.ui.home.HomeViewModel
 import com.lagradost.shiro.ui.home.MasterCardAdapter
-import com.lagradost.shiro.ui.library.LibraryFragment
-import com.lagradost.shiro.ui.player.PlayerFragment.Companion.onPlayerNavigated
-import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
-import com.lagradost.shiro.ui.result.ResultFragment.Companion.onResultsNavigated
-import com.lagradost.shiro.ui.settings.SettingsFragmentNew
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
 import com.lagradost.shiro.utils.AppUtils.observe
@@ -34,7 +31,7 @@ import kotlin.concurrent.thread
 
 class MainFragment : Fragment() {
 
-    private fun homeLoaded(data: ShiroApi.ShiroHomePage?) {
+    private fun homeLoaded(data: ShiroApi.ShiroHomePageNew?) {
         activity?.runOnUiThread {
             main_load?.visibility = GONE
             main_reload_data_btt?.visibility = GONE
@@ -42,8 +39,8 @@ class MainFragment : Fragment() {
             val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder> = MasterCardAdapter(
                 requireActivity(),
             )
-            vertical_grid_view.adapter = adapter
-            (vertical_grid_view.adapter as MasterCardAdapter).notifyDataSetChanged()
+            vertical_grid_view?.adapter = adapter
+            (vertical_grid_view?.adapter as? MasterCardAdapter)?.notifyDataSetChanged()
             //val snapHelper = LinearSnapHelper()
             //snapHelper.attachToRecyclerView(vertical_grid_view)
         }
@@ -86,49 +83,25 @@ class MainFragment : Fragment() {
         settings_icon.onFocusChangeListener = focusListener
         library_icon.onFocusChangeListener = focusListener
 
-        /*settings_button.setOnClickListener {
-            activity?.supportFragmentManager?.beginTransaction()
-                ?.replace(R.id.main_browse_fragment, SettingsFragment())
-                ?.commit()
-        }*/
         tv_menu_bar.visibility = VISIBLE
 
         search_icon.setOnClickListener {
-            activity?.supportFragmentManager?.beginTransaction()
-                ?.replace(R.id.home_root_tv, SearchFragmentTv())
-                ?.commit()
+            findNavController().navigate(
+                R.id.global_to_navigation_search_tv
+            )
         }
         library_icon.setOnClickListener {
-            activity?.supportFragmentManager?.beginTransaction()
-                ?.replace(R.id.home_root_tv, LibraryFragment())
-                ?.commit()
+            findNavController().navigate(
+                R.id.global_to_navigation_library_tv
+            )
         }
         settings_icon.setOnClickListener {
-            activity?.supportFragmentManager?.beginTransaction()
-                ?.replace(R.id.home_root_tv, SettingsFragmentNew())
-                ?.commit()
+            findNavController().navigate(
+                R.id.global_to_navigation_settings_tv
+            )
         }
         homeViewModel?.apiData?.observe(viewLifecycleOwner) {
             homeLoaded(it)
-        }
-    }
-
-    private fun restoreState(hasEntered: Boolean) {
-        if (hasEntered) {
-            // Needed to prevent focus when on bottom
-            view?.visibility = GONE
-        } else {
-            if (isInResults) return
-            view?.visibility = VISIBLE
-            // Somehow fucks up if you've been in player, I've yet to understand why
-            if (hasBeenInPlayer) {
-                hasBeenInPlayer = false
-                activity?.supportFragmentManager
-                    ?.beginTransaction()
-                    ?.detach(this)
-                    ?.attach(this)
-                    ?.commitAllowingStateLoss()
-            }
         }
     }
 
@@ -155,25 +128,27 @@ class MainFragment : Fragment() {
     }
 
     override fun onResume() {
-
         observe(homeViewModel!!.subscribed) {
             (vertical_grid_view?.adapter as? MasterCardAdapter)?.notifyDataSetChanged()
         }
         observe(homeViewModel!!.favorites) {
             (vertical_grid_view?.adapter as? MasterCardAdapter)?.notifyDataSetChanged()
         }
-        context?.requestHome()
-        onResultsNavigated += ::restoreState
-        onPlayerNavigated += ::restoreState
+        thread {
+            context?.requestHome()
+        }
         homeViewModel!!.apiData.observe(viewLifecycleOwner) {
             homeLoaded(it)
         }
+        Handler().postDelayed({
+            search_icon?.requestFocus()
+        }, 200L)
+
+
         super.onResume()
     }
 
     override fun onDestroy() {
-        onResultsNavigated -= ::restoreState
-        onPlayerNavigated -= ::restoreState
         super.onDestroy()
     }
 

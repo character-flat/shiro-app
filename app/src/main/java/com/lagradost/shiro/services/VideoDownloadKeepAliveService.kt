@@ -53,7 +53,7 @@ class VideoDownloadKeepAliveService : Service() {
             val resumePkg = keys.mapNotNull { k -> this.getKey<VideoDownloadManager.DownloadResumePackage>(k) }
 
             for (pkg in resumePkg) { // ADD ALL CURRENT DOWNLOADS
-                VideoDownloadManager.downloadFromResume(this, pkg)
+//                VideoDownloadManager.downloadFromResume(this, pkg)
             }
 
             // ADD QUEUE
@@ -62,7 +62,7 @@ class VideoDownloadKeepAliveService : Service() {
             if (resumeQueue != null && resumeQueue.isNotEmpty()) {
                 val sorted = resumeQueue.sortedBy { item -> item.index }
                 for (queueItem in sorted) {
-                    VideoDownloadManager.downloadFromResume(this, queueItem.pkg)
+//                    VideoDownloadManager.downloadFromResume(this, queueItem.pkg)
                 }
             }
         }

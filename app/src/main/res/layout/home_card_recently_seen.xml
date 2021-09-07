@@ -63,24 +63,25 @@
                         android:indeterminate="false"
                         style="@android:style/Widget.Material.ProgressBar.Horizontal"
                         android:layout_height="wrap_content"
-                        android:layout_above="@+id/imageText"
-                        android:layout_marginBottom="-6dp"
                         tools:progress="30"
                         tools:max="100"
+                        android:elevation="100dp"
+                        android:layout_alignParentBottom="true"
                 >
+                    <!--                        android:layout_above="@+id/imageText"-->
                 </androidx.core.widget.ContentLoadingProgressBar>
                 <TextView
                         android:layout_width="114dp"
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:layout_gravity="bottom"
-                        android:paddingBottom="5dp"
-                        android:paddingTop="5dp"
+                        android:paddingBottom="15dp"
+                        android:paddingTop="30dp"
                         android:textColor="@color/textColor"
                         android:id="@+id/imageText"
                         android:textStyle="bold"
                         android:maxLines="1"
-                        android:background="@color/darkBarTransparent"
+                        android:background="@drawable/title_shadow"
                         android:layout_alignParentBottom="true"
                 />
             </RelativeLayout>
@@ -93,7 +94,7 @@
                     android:elevation="10dp"
                     android:padding="10dp"
                     app:tint="@color/white"
-                    android:src="@drawable/ic_outline_info_24"
+                    app:srcCompat="@drawable/ic_outline_info_24"
                     android:layout_gravity="top|start"
                     android:contentDescription="@string/continue_watching_info_button"/>
 
@@ -105,12 +106,13 @@
                     android:padding="10dp"
                     android:elevation="10dp"
                     app:tint="@color/white"
-                    android:src="@drawable/ic_baseline_clear_24"
+                    app:srcCompat="@drawable/ic_baseline_clear_24"
                     android:layout_gravity="end|top"
                     android:contentDescription="@string/continue_watching_remove_button"
             />
         </androidx.cardview.widget.CardView>
 
+        <!--        TV buttons below-->
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:elevation="100dp"
                 android:background="@color/black_overlay_darker"
@@ -133,6 +135,7 @@
                     android:paddingStart="0dp"
                     android:paddingEnd="0dp"
                     android:textColor="@color/textColor"
+                    android:background="@drawable/outline_background"
                     style="@style/DialogButton"
             />
             <Button
@@ -148,6 +151,7 @@
                     android:paddingStart="0dp"
                     android:paddingEnd="0dp"
                     android:textColor="@color/textColor"
+                    android:background="@drawable/outline_background"
                     style="@style/DialogButton"
             />
             <Button
@@ -164,6 +168,7 @@
                     android:paddingStart="0dp"
                     android:paddingEnd="0dp"
                     android:textColor="@color/textColor"
+                    android:background="@drawable/outline_background"
                     style="@style/DialogButton"
 
             />

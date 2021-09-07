@@ -17,14 +17,14 @@
                 android:title="Hold to favorite"
                 app:defaultValue="false"
         />
-        <SwitchPreference
-                android:icon="@drawable/ic_baseline_vpn_lock_24"
-                app:key="alternative_vidstream"
-                android:title="Use alternative Vidstream"
-                android:summaryOn="Some ISPs block vidstream\nUsing streamani.net"
-                android:summaryOff="Some ISPs block vidstream\nUsing gogo-stream.com"
-                app:defaultValue="false"
-        />
+<!--        <SwitchPreference-->
+<!--                android:icon="@drawable/ic_baseline_vpn_lock_24"-->
+<!--                app:key="alternative_vidstream"-->
+<!--                android:title="Use alternative Vidstream"-->
+<!--                android:summaryOn="Some ISPs block vidstream\nUsing streamani.net"-->
+<!--                android:summaryOff="Some ISPs block vidstream\nUsing gogo-stream.com"-->
+<!--                app:defaultValue="false"-->
+<!--        />-->
         <SwitchPreference
                 android:icon="@drawable/ic_baseline_filter_list_24"
                 app:key="search_for_filler_episodes"
@@ -136,12 +136,12 @@
                 app:defaultValue="true"
         />
         <Preference
-                android:icon="@drawable/ic_baseline_delete_24"
+                android:icon="@drawable/ic_baseline_delete_outline_24"
                 app:key="clear_history"
                 android:title="Clear watch history"
         />
         <Preference
-                android:icon="@drawable/ic_baseline_delete_24"
+                android:icon="@drawable/ic_baseline_delete_outline_24"
                 app:key="clear_cache"
                 android:title="Clear image cache"
         />
@@ -185,7 +185,7 @@
     >
         <Preference
                 android:icon="@drawable/ic_baseline_payment_24"
-                android:title="Donate to Shiro.is"
+                android:title="Donate to ********"
                 app:summary="To help fund the site"
         >
             <intent android:action="android.intent.action.VIEW"
@@ -202,7 +202,7 @@
 
         </Preference>
         <Preference
-                android:title="Shiro.is discord"
+                android:title="******** discord"
                 android:icon="@drawable/ic_baseline_discord_24"
                 app:summary="Join the Shiro community"
         >

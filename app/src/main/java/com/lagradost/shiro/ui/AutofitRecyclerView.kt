@@ -24,6 +24,11 @@ open class GrdLayoutManager(val context: Context, private val spanCoun: Int) :
         }
     }
 
+    //https://stackoverflow.com/questions/30220771/recyclerview-inconsistency-detected-invalid-item-position
+    override fun supportsPredictiveItemAnimations(): Boolean {
+        return false
+    }
+
     fun setBorderCallback(callback: (Int) -> Unit) {
         hitBorderCallback = callback
     }
@@ -53,15 +58,6 @@ open class GrdLayoutManager(val context: Context, private val spanCoun: Int) :
         return try {
             val fromPos = getPosition(focused)
             val nextPos = getNextViewPos(fromPos, direction)
-//            val directionOffset = when (direction) {
-//                View.FOCUS_UP -> -spanCount
-//                View.FOCUS_DOWN -> spanCount
-//                else -> 0
-//            }
-//            val adjustedPos =
-//                if (nextPos < spanCount || nextPos + spanCount > itemCount) nextPos
-//                else maxOf(0, nextPos + directionOffset)
-//            scrollToPosition(nextPos)
             findViewByPosition(nextPos)
 
         } catch (e: Exception) {
@@ -139,9 +135,7 @@ class AutofitRecyclerView @JvmOverloads constructor(context: Context, attrs: Att
     RecyclerView(context, attrs) {
 
     private val manager = GrdLayoutManager(context, 2) // THIS CONTROLS SPANS
-
     private var columnWidth = -1
-
     var spanCount = 0
         set(value) {
             field = value

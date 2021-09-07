@@ -3,7 +3,6 @@ package com.lagradost.shiro.utils
 import BOOKMARK_KEY
 import DataStore.containsKey
 import DataStore.getKey
-import DataStore.mapper
 import DataStore.removeKey
 import DataStore.setKey
 import SUBSCRIPTIONS_BOOKMARK_KEY
@@ -13,6 +12,7 @@ import VIEW_DUR_KEY
 import VIEW_LST_KEY
 import VIEW_POS_KEY
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AppOpsManager
 import android.app.UiModeManager
@@ -32,62 +32,86 @@ import android.net.NetworkCapabilities
 import android.net.Uri
 import android.net.http.HttpResponseCache
 import android.os.Build
+import android.os.Bundle
 import android.os.Environment
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.util.Log
 import android.util.TypedValue
-import android.view.TouchDelegate
-import android.view.View
-import android.view.WindowManager
+import android.view.*
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
+import androidx.appcompat.view.menu.MenuBuilder
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.google.android.exoplayer2.ext.cast.CastPlayer
+import com.google.android.exoplayer2.util.MimeTypes
+import com.google.android.exoplayer2.video.VideoSize
+import com.google.android.gms.cast.MediaInfo
+import com.google.android.gms.cast.MediaMetadata
+import com.google.android.gms.cast.MediaQueueItem
+import com.google.android.gms.cast.MediaStatus.REPEAT_MODE_REPEAT_SINGLE
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.common.images.WebImage
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
+import com.lagradost.shiro.AcraApplication.Companion.getAppContext
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.*
 import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
+import com.lagradost.shiro.ui.MainActivity.Companion.navController
+import com.lagradost.shiro.ui.home.CARD_LIST
 import com.lagradost.shiro.ui.home.CardAdapter
 import com.lagradost.shiro.ui.home.CardContinueAdapter
-import com.lagradost.shiro.ui.home.EXPANDED_HOME_FRAGMENT_TAG
-import com.lagradost.shiro.ui.home.ExpandedHomeFragment
 import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
-import com.lagradost.shiro.ui.player.PLAYER_FRAGMENT_TAG
+import com.lagradost.shiro.ui.home.TITLE
 import com.lagradost.shiro.ui.player.PlayerActivity.Companion.playerActivity
 import com.lagradost.shiro.ui.player.PlayerData
-import com.lagradost.shiro.ui.player.PlayerFragment
-import com.lagradost.shiro.ui.result.RESULT_FRAGMENT_TAG
-import com.lagradost.shiro.ui.result.ResultFragment
+import com.lagradost.shiro.ui.result.IS_MAL_ID
+import com.lagradost.shiro.ui.result.NAME
+import com.lagradost.shiro.ui.result.SLUG
 import com.lagradost.shiro.ui.settings.SettingsActivity.Companion.settingsActivity
-import com.lagradost.shiro.ui.tv.PlayerFragmentTv
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
+import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
+import com.lagradost.shiro.utils.AniListApi.Companion.initGetUser
+import com.lagradost.shiro.utils.Coroutines.main
+import com.lagradost.shiro.utils.MALApi.Companion.authenticateMalLogin
+import com.lagradost.shiro.utils.ShiroApi.Companion.getAnimePageNew
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFav
+import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.utils.ShiroApi.Companion.getSlugFromMalId
 import com.lagradost.shiro.utils.ShiroApi.Companion.getSubbed
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import com.lagradost.shiro.utils.extractors.Vidstream
 import com.lagradost.shiro.utils.mvvm.logError
+import com.lagradost.shiro.utils.mvvm.normalSafeApiCall
+import org.json.JSONObject
 import java.io.*
 import java.net.URL
 import java.net.URLDecoder
 import java.security.MessageDigest
-import java.util.*
 import kotlin.concurrent.thread
 import kotlin.math.roundToInt
 
@@ -95,9 +119,16 @@ import kotlin.math.roundToInt
 object AppUtils {
     var settingsManager: SharedPreferences? = null
     var allApi: Vidstream = Vidstream()
+    val mapper: JsonMapper = JsonMapper.builder().addModule(KotlinModule())
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
+
     fun FragmentActivity.init() {
         settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
         allApi.providersActive = settingsManager?.getStringSet("selected_providers", hashSetOf()) as HashSet<String>
+    }
+
+    fun <T : Any> T?.notNull(f: (it: T) -> Unit) {
+        if (this != null) f(this)
     }
 
     fun unixTime(): Long {
@@ -117,11 +148,83 @@ object AppUtils {
             0
     }
 
+    fun Any.toJson(): String{
+        return mapper.writeValueAsString(this)
+    }
+
     fun Context.getNavigationBarHeight(): Int {
         val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
         return if (resourceId > 0) {
             resources.getDimensionPixelSize(resourceId)
         } else 0
+    }
+
+
+    fun FragmentActivity.handleIntent(intent: Intent?) {
+        val data: Uri? = intent?.data
+
+        if (data != null) {
+            val dataString = data.toString()
+            if (dataString != "") {
+                if (dataString.contains("shiroapp")) {
+                    if (dataString.contains("/anilistlogin")) {
+                        authenticateLogin(dataString)
+                    } else if (dataString.contains("/mallogin")) {
+                        authenticateMalLogin(dataString)
+                    }
+                }
+            }
+
+            thread {
+                when {
+                    /** Shiro url */
+                    data.toString().contains("********") -> {
+                        val urlRegex = Regex("""shiro\.is/anime/(.*?)(/\d+|)$""")
+                        val found = urlRegex.find(data.toString())
+                        if (found != null) {
+                            val (slug, episode) = found.destructured
+                            // Kinda hack using 2 slugs, but should work semi fine
+                            println("SLUG $slug EPISODE $episode")
+                            val num = episode.replace("/", "").toIntOrNull()
+                            val slugFixed = slug.replace("/", "")
+                            if (num != null) {
+                                val page = getAnimePageNew(slugFixed)
+                                main {
+                                    if (page?.data != null && page.data.episodes.size >= num && num > 0) {
+                                        loadPlayer(num - 1, 0L, page.data)
+                                    } else {
+                                        loadPage(slugFixed, slugFixed)
+                                    }
+                                }
+                            } else {
+                                main {
+                                    loadPage(slugFixed, slugFixed)
+                                }
+                            }
+
+                        }
+                    }
+                    /** MAL url */
+                    data.toString().contains("myanimelist.net") -> {
+                        val urlRegex = Regex("""myanimelist\.net/anime/(.*)/(.*)""")
+                        val found = urlRegex.find(data.toString())
+                        if (found != null) {
+                            val (malId, title) = found.destructured
+                            // Kinda hack using 2 slugs, but should work semi fine
+                            getSlugFromMalId(malId, title)?.let { slug ->
+                                main {
+                                    loadPage(slug, slug)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+        } else {
+            initGetUser()
+        }
     }
 
     fun Context.isUsingMobileData(): Boolean {
@@ -148,13 +251,20 @@ object AppUtils {
 
     fun Context.installCache() {
         try {
-            val httpCacheDir = File(this.cacheDir, "http")
-            val httpCacheSize: Long = 10 * 1024 * 1024 // 10 MiB
+            val httpCacheDir = File(cacheDir, "http")
+            val httpCacheSize: Long = 50 * 1024 * 1024 // 50 MiB
             HttpResponseCache.install(httpCacheDir, httpCacheSize)
         } catch (e: Exception) {
+            logError(e)
         }
     }
 
+
+    fun FragmentActivity.getNavController(): NavController? {
+        return navController
+            ?: (supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment?)?.navController
+            ?: (supportFragmentManager.findFragmentById(R.id.home_root_tv) as? NavHostFragment?)?.navController
+    }
 
     // https://stackoverflow.com/questions/20264268/how-do-i-get-the-height-and-width-of-the-android-navigation-bar-programmatically
     fun Context.getNavigationBarSize(): Point {
@@ -191,14 +301,118 @@ object AppUtils {
         return size
     }
 
+    fun Context.castEpisode(links: List<ExtractorLink>, data: ShiroApi.CommonAnimePageData, episodeIndex: Int) {
+        val castContext = CastContext.getSharedInstance(this)
+        castContext.castOptions
+        val key = getViewKey(data.slug, episodeIndex)
+        val mediaItems = links.map {
+            val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE)
+            movieMetadata.putString(
+                MediaMetadata.KEY_TITLE,
+                "Episode ${episodeIndex + 1} - ${it.name}"
+            )
+            movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data.name)
+            movieMetadata.addImage(WebImage(Uri.parse(getFullUrlCdn(data.image))))
+            MediaQueueItem.Builder(
+                MediaInfo.Builder(it.url)
+                    .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
+                    .setContentType(MimeTypes.VIDEO_UNKNOWN)
+                    .setCustomData(JSONObject().put("data", it.name))
+                    .setMetadata(movieMetadata)
+                    .build()
+            ).build()
+        }.toTypedArray()
+
+        val castPlayer = CastPlayer(castContext)
+        castPlayer.loadItems(
+            mediaItems,
+            0,
+            getKey(VIEW_POS_KEY, key, 0L)!!,
+            REPEAT_MODE_REPEAT_SINGLE
+        )
+    }
+
+
+    // https://stackoverflow.com/questions/67334537/how-to-make-viewpager2-less-sensitive
+    fun ViewPager2.reduceDragSensitivity() {
+        normalSafeApiCall {
+            val recyclerViewField = ViewPager2::class.java.getDeclaredField("mRecyclerView")
+            recyclerViewField.isAccessible = true
+            val recyclerView = recyclerViewField.get(this) as RecyclerView
+
+            val touchSlopField = RecyclerView::class.java.getDeclaredField("mTouchSlop")
+            touchSlopField.isAccessible = true
+            val touchSlop = touchSlopField.get(recyclerView) as Int
+            touchSlopField.set(recyclerView, touchSlop * 2)       // "4" was obtained experimentally
+        }
+    }
 
     // Guarantee slug is dubbed or not
-    fun ShiroApi.AnimePageData.dubbify(turnDubbed: Boolean): ShiroApi.AnimePageData {
+    fun ShiroApi.Companion.AnimePageNewData.dubbify(turnDubbed: Boolean): ShiroApi.Companion.AnimePageNewData {
         return this.copy(
-            slug = if (turnDubbed) {
-                slug.removeSuffix("-dubbed") + "-dubbed"
+            anime = this.anime.dubbify(turnDubbed)
+        )
+    }
+
+    /**| S1:E2 Hello World
+     * | Episode 2. Hello world
+     * | Hello World
+     * | Season 1 - Episode 2
+     * | Episode 2
+     * **/
+    fun getNameFull(name: String?, episode: Int?, season: Int?): String {
+        val rEpisode = if (episode == 0) null else episode
+        val rSeason = if (season == 0) null else season
+
+        if (name != null) {
+            return if (rEpisode != null && rSeason != null) {
+                "S${rSeason}:E${rEpisode} $name"
+            } else if (rEpisode != null) {
+                "Episode $rEpisode. $name"
             } else {
-                slug.removeSuffix("-dubbed")
+                name
+            }
+        } else {
+            if (rEpisode != null && rSeason != null) {
+                return "Season $rSeason - Episode $rEpisode"
+            } else if (rSeason == null) {
+                return "Episode $rEpisode"
+            }
+        }
+        return ""
+    }
+
+    /**id, stringRes */
+    @SuppressLint("RestrictedApi")
+    fun View.popupMenuNoIcons(
+        items: List<Pair<Int, Int>>,
+        onMenuItemClick: MenuItem.() -> Unit,
+    ): PopupMenu {
+        val ctw = ContextThemeWrapper(context, R.style.PopupMenu)
+        val popup = PopupMenu(ctw, this, Gravity.NO_GRAVITY, R.attr.actionOverflowMenuStyle, 0)
+
+        items.forEach { (id, stringRes) ->
+            popup.menu.add(0, id, 0, stringRes)
+        }
+
+        (popup.menu as? MenuBuilder)?.setOptionalIconsVisible(true)
+
+        popup.setOnMenuItemClickListener {
+            it.onMenuItemClick()
+            true
+        }
+
+        popup.show()
+        return popup
+    }
+
+    // Guarantee slug is dubbed or not
+    fun ShiroApi.Companion.AnimePageNew.dubbify(turnDubbed: Boolean): ShiroApi.Companion.AnimePageNew {
+        return copy(
+            slug = if (turnDubbed) {
+                slug.removeSuffix("-dub") + "-dub"
+            } else {
+                slug.removeSuffix("-dub")
             }
         )
     }
@@ -221,9 +435,9 @@ object AppUtils {
     // Guarantee slug is dubbed or not
     fun String.dubbify(turnDubbed: Boolean): String {
         return if (turnDubbed) {
-            this.removeSuffix("-dubbed") + "-dubbed"
+            this.removeSuffix("-dub") + "-dub"
         } else {
-            this.removeSuffix("-dubbed")
+            this.removeSuffix("-dub")
         }
     }
 
@@ -236,6 +450,68 @@ object AppUtils {
             rect.right += extraPadding
             rect.bottom += extraPadding
             bigView.touchDelegate = TouchDelegate(rect, smallView)
+        }
+    }
+
+    enum class AspectRatioTV(val value: Int) {
+        RESIZE_MODE_FIT(0), // Normal
+        RESIZE_MODE_STRETCH(1), // Stretch
+        RESIZE_MODE_ZOOM(2), // Zoom
+        RESIZE_MODE_4_3(3), // 4:3
+    }
+
+    fun SurfaceView.setAspectRatio(ratio: AspectRatioTV, size: VideoSize) {
+        println("Changed surface view $ratio ${size.width} ${size.height}")
+
+        val maxWidth = rootView.measuredWidth
+        val maxHeight = rootView.measuredHeight
+
+        val widthScale = maxWidth.toFloat() / size.width
+        val heightScale = maxHeight.toFloat() / size.height
+
+        val isHorizontalBlackBars = heightScale > widthScale
+        val smallestScale = minOf(widthScale, heightScale)
+
+        val normalHeight = if (isHorizontalBlackBars) (smallestScale * size.height).toInt() else MATCH_PARENT
+        val normalWidth = if (isHorizontalBlackBars) MATCH_PARENT else (smallestScale * size.width).toInt()
+
+        when (ratio) {
+            AspectRatioTV.RESIZE_MODE_FIT -> {
+                scaleX = 1f
+                scaleY = 1f
+                layoutParams = layoutParams.apply {
+                    width = normalWidth
+                    height = normalHeight
+                }
+            }
+            AspectRatioTV.RESIZE_MODE_STRETCH -> {
+                scaleX = 1f
+                scaleY = 1f
+                layoutParams = layoutParams.apply {
+                    height = MATCH_PARENT
+                    width = MATCH_PARENT
+                }
+            }
+            AspectRatioTV.RESIZE_MODE_ZOOM -> {
+                val biggestScale = maxOf(widthScale, heightScale)
+                layoutParams = layoutParams.apply {
+                    height = normalHeight
+                    width = normalWidth
+                }
+                val scale = biggestScale / smallestScale
+                scaleX = scale
+                scaleY = scale
+            }
+
+            AspectRatioTV.RESIZE_MODE_4_3 -> {
+                scaleX = 1f
+                scaleY = 1f
+                layoutParams = layoutParams.apply {
+                    width = (maxHeight.toFloat() * (4F / 3F)).toInt()
+                    height = MATCH_PARENT
+                }
+            }
+
         }
     }
 
@@ -363,6 +639,7 @@ object AppUtils {
             )
         } else {
             removeKey(BOOKMARK_KEY, slug)
+            removeKey(BOOKMARK_KEY, slug.replace("-dub", "-dubbed"))
         }
         thread {
             homeViewModel?.favorites?.postValue(getFav())
@@ -378,6 +655,7 @@ object AppUtils {
 
         if (selected == "Toggle Favorite" || selected == "Toggle Favorite and Subscribe") {
             isBookmarked = toggleHeart(card.name, card.image, card.slug)
+            println("CARD SLUG ${card.slug}")
             val prefix = if (isBookmarked) "Added" else "Removed"
             Toast.makeText(this, "$prefix ${card.name}", Toast.LENGTH_SHORT).show()
         }
@@ -449,12 +727,12 @@ object AppUtils {
         return Color.argb(alpha, red, green, blue)
     }
 
-    fun filterCardList(cards: List<ShiroApi.CommonAnimePage?>?): List<ShiroApi.CommonAnimePage?>? {
+    fun filterCardList(cards: List<ShiroApi.CommonAnimePage>?): List<ShiroApi.CommonAnimePage>? {
         return when (settingsManager!!.getString("hide_behavior", "None")) {
             "Hide dubbed" ->
-                cards?.filter { it?.slug?.endsWith("-dubbed")?.not() == true }
+                cards?.filter { it.slug.endsWith("-dub").not() }
             "Hide subbed" ->
-                cards?.filter { it?.slug?.endsWith("-dubbed") == true }
+                cards?.filter { it.slug.endsWith("-dub") }
             else ->
                 cards
         }
@@ -462,7 +740,7 @@ object AppUtils {
 
     fun FragmentActivity.addFragmentOnlyOnce(location: Int, fragment: Fragment, tag: String) {
         // Make sure the current transaction finishes first
-        try {
+        normalSafeApiCall {
             supportFragmentManager.executePendingTransactions()
 
             // If there is no fragment yet with this tag...
@@ -472,8 +750,6 @@ object AppUtils {
                     .add(location, fragment, tag)
                     .commitAllowingStateLoss()
             }
-        } catch (e: Exception) {
-            logError(e)
         }
     }
 
@@ -502,27 +778,26 @@ object AppUtils {
         return id + "E" + episodeIndex
     }
 
-    fun Context.hideKeyboard(view: View) {
-        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    fun View.hideKeyboard() {
+        val inputMethodManager = this.context.getSystemService(Activity.INPUT_METHOD_SERVICE) as? InputMethodManager?
+        inputMethodManager?.hideSoftInputFromWindow(this.windowToken, 0)
     }
 
     fun Fragment.hideKeyboard() {
-        view.let {
-            if (it != null) {
-                activity?.hideKeyboard(it)
-            }
-        }
+        view?.hideKeyboard()
     }
 
     fun getCurrentActivity(): CyaneaAppCompatActivity? {
-        return when {
-            settingsActivity != null -> settingsActivity
-            activity != null -> activity
-            tvActivity != null -> tvActivity
-            playerActivity != null -> playerActivity
-            else -> null
-        }
+        return settingsActivity ?: activity ?: tvActivity ?: playerActivity
+    }
+
+    fun getCurrentContext(): Context? {
+        return getAppContext() ?: getCurrentActivity()
+    }
+
+    // If this gets NPE the app deserves to crash
+    fun guaranteedContext(context: Context?): Context {
+        return context ?: getCurrentContext()!!
     }
 
     fun Activity.requestAudioFocus(focusRequest: AudioFocusRequest?) {
@@ -540,7 +815,7 @@ object AppUtils {
         }
     }
 
-    fun Activity.changeStatusBarState(hide: Boolean): Int {
+    fun FragmentActivity.changeStatusBarState(hide: Boolean): Int {
         return if (hide) {
             window?.setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -618,14 +893,14 @@ object AppUtils {
         val key = getViewKey(aniListId, episodeIndex)
 
         return EpisodePosDurInfo(
-            getKey(VIEW_POS_KEY, key, -1L)!!,
-            getKey(VIEW_DUR_KEY, key, -1L)!!,
+            getKey(VIEW_POS_KEY, key, -1L) ?: -1L,
+            getKey(VIEW_DUR_KEY, key, -1L) ?: -1L,
             containsKey(VIEWSTATE_KEY, key)
         )
     }
 
-    private fun canPlayNextEpisode(card: ShiroApi.AnimePageData?, episodeIndex: Int): NextEpisode {
-        val canNext = (card?.episodes?.size ?: 0) > episodeIndex + 1
+    private fun canPlayNextEpisode(card: ShiroApi.Companion.AnimePageNewData, episodeIndex: Int): NextEpisode {
+        val canNext = card.episodes.size > episodeIndex + 1
 
         return if (canNext) {
             NextEpisode(true, episodeIndex + 1, 0)
@@ -634,9 +909,9 @@ object AppUtils {
         }
     }
 
-    fun Context.getLatestSeenEpisode(data: ShiroApi.AnimePageData): NextEpisode {
-        for (i in (data.episodes?.size?.minus(1) ?: 0) downTo 0) {
-            val firstPos = getViewPosDur(data.slug, i)
+    fun Context.getLatestSeenEpisode(data: ShiroApi.Companion.AnimePageNewData): NextEpisode {
+        for (i in (data.episodes.size.minus(1) ?: 0) downTo 0) {
+            val firstPos = getViewPosDur(data.anime.slug, i)
             if (firstPos.viewstate) {
                 return NextEpisode(true, i, 0)
             }
@@ -646,7 +921,7 @@ object AppUtils {
 
 
     fun FragmentActivity.displayCardData(
-        data: List<ShiroApi.CommonAnimePage?>?,
+        data: List<ShiroApi.CommonAnimePage>?,
         resView: RecyclerView,
         textView: TextView,
         isOnTop: Boolean = false,
@@ -665,30 +940,21 @@ object AppUtils {
         val filteredData = if (overrideHideDubbed) data else filterCardList(data)
         resView.adapter = newAdapter
 
-        (ArrayList(filteredData) as? ArrayList<ShiroApi.CommonAnimePage?>)?.let {
+        (ArrayList(filteredData ?: listOf())).let {
             (resView.adapter as CardAdapter).cardList = it
         }
         (resView.adapter as CardAdapter).notifyDataSetChanged()
 
-        val layoutId = if (tvActivity != null) R.id.home_root_tv else R.id.homeRoot
+//        val layoutId = if (tvActivity != null) R.id.home_root_tv else R.id.homeRoot
         textView.setOnClickListener {
-            if (this.supportFragmentManager.findFragmentByTag(EXPANDED_HOME_FRAGMENT_TAG) != null) return@setOnClickListener
-            this.supportFragmentManager.beginTransaction()
-                .setCustomAnimations(
-                    R.anim.enter_from_right,
-                    R.anim.exit_to_right,
-                    R.anim.enter_from_right,
-                    R.anim.exit_to_right
-                )
-                .add(
-                    layoutId,
-                    ExpandedHomeFragment.newInstance(
-                        mapper.writeValueAsString(data),
-                        textView.text.toString()
-                    ),
-                    EXPANDED_HOME_FRAGMENT_TAG
-                )
-                .commitAllowingStateLoss()
+            val arguments = Bundle().apply {
+                putString(CARD_LIST, mapper.writeValueAsString(data))
+                putString(TITLE, textView.text.toString())
+            }
+            getNavController()?.navigate(
+                R.id.action_navigation_home_to_navigation_expanded_home,
+                arguments,
+            )
         }
     }
 
@@ -714,29 +980,29 @@ object AppUtils {
     }
 
 
-    fun Context.getNextEpisode(data: ShiroApi.AnimePageData): NextEpisode {
+    fun Context.getNextEpisode(data: ShiroApi.Companion.AnimePageNewData): NextEpisode {
         // HANDLES THE LOGIC FOR NEXT EPISODE
         var episodeIndex = 0
         var seasonIndex = 0
         val maxValue = 90
-        val firstPos = getViewPosDur(data.slug, 0)
+        val firstPos = getViewPosDur(data.anime.slug, 0)
         // Hacky but works :)
         if (((firstPos.pos * 100) / firstPos.dur <= maxValue || firstPos.pos == -1L) && !firstPos.viewstate) {
-            val found = data.episodes?.getOrNull(episodeIndex) != null
+            val found = data.episodes.getOrNull(episodeIndex) != null
             return NextEpisode(found, episodeIndex, seasonIndex)
         }
 
         while (true) { // IF PROGRESS IS OVER 95% CONTINUE SEARCH FOR NEXT EPISODE
             val next = canPlayNextEpisode(data, episodeIndex)
             if (next.isFound) {
-                val nextPro = getViewPosDur(data.slug, next.episodeIndex)
+                val nextPro = getViewPosDur(data.anime.slug, next.episodeIndex)
                 seasonIndex = next.seasonIndex
                 episodeIndex = next.episodeIndex
                 if (((nextPro.pos * 100) / nextPro.dur <= maxValue || nextPro.pos == -1L) && !nextPro.viewstate) {
                     return NextEpisode(true, episodeIndex, seasonIndex)
                 }
             } else {
-                val found = data.episodes?.getOrNull(episodeIndex) != null
+                val found = data.episodes.getOrNull(episodeIndex) != null
                 return NextEpisode(found, episodeIndex, seasonIndex)
             }
         }
@@ -767,7 +1033,7 @@ object AppUtils {
         while (canContinue) { // IF PROGRESS IS OVER 95% CONTINUE SEARCH FOR NEXT EPISODE
             val next = canPlayNextEpisode(card, episodeIndex)
             if (next.isFound) {
-                val nextPro = getViewPosDur(card.slug, next.episodeIndex)
+                val nextPro = getViewPosDur(card.anime.slug, next.episodeIndex)
                 seasonIndex = next.seasonIndex
                 episodeIndex = next.episodeIndex
                 if ((nextPro.pos * 100) / dur <= maxValue) {
@@ -787,20 +1053,20 @@ object AppUtils {
         if (settingsManager?.getBoolean("save_history", true) == true) {
             setKey(
                 VIEW_LST_KEY,
-                data.card.slug,
+                data.card.anime.slug,
                 LastEpisodeInfo(
                     _pos,
                     _dur,
                     System.currentTimeMillis(),
                     card,
-                    card.slug,
+                    card.anime.slug,
                     episodeIndex,
                     seasonIndex,
-                    data.card.episodes!!.size == 1 && data.card.status == "finished",
-                    card.episodes?.getOrNull(episodeIndex),
-                    card.image,
-                    card.name,
-                    card.banner.toString(),
+                    data.card.episodes.size == 1 && data.card.anime.status.lowercase() == "finished airing",
+                    card.episodes.getOrNull(episodeIndex),
+                    card.anime.poster,
+                    card.anime.title,
+                    card.anime.banner,
                     data.anilistID,
                     data.malID,
                     data.fillerEpisodes
@@ -821,6 +1087,11 @@ object AppUtils {
     }
 
     fun FragmentActivity.requestRW() {
+        ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+
         ActivityCompat.requestPermissions(
             this,
             arrayOf(
@@ -832,7 +1103,7 @@ object AppUtils {
     }
 
     fun fixCardTitle(title: String): String {
-        val suffix = " Dubbed"
+        val suffix = " (Dub)"
         return if (title.endsWith(suffix)) "✦ ${
             title.substring(
                 0,
@@ -853,64 +1124,11 @@ object AppUtils {
         return queryPairs
     }
 
-    fun FragmentActivity.popCurrentPage(isInPlayer: Boolean, isInExpandedView: Boolean, isInResults: Boolean) {
-        println("POPPED CURRENT FRAGMENT")
-        runOnUiThread {
-            supportFragmentManager.executePendingTransactions()
-            thread {
-                val currentFragment = supportFragmentManager.fragments.lastOrNull {
-                    it.isVisible
-                }
-
-                if (tvActivity == null) {
-                    requestedOrientation = if (settingsManager?.getBoolean("force_landscape", false) == true) {
-                        ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
-                    } else {
-                        ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-                    }
-                }
-
-                if (currentFragment == null) {
-                    //this.onBackPressed()
-                    return@thread
-                }
-
-                // No fucked animations leaving the player :)
-                when {
-                    isInPlayer -> {
-                        supportFragmentManager.beginTransaction()
-                            //.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                            .remove(currentFragment)
-                            .commitAllowingStateLoss()
-                    }
-                    isInExpandedView && !isInResults -> {
-                        supportFragmentManager.beginTransaction()
-                            .setCustomAnimations(
-                                R.anim.enter_from_right,
-                                R.anim.exit_to_right,
-                                R.anim.pop_enter,
-                                R.anim.pop_exit
-                            )
-                            .remove(currentFragment)
-                            .commitAllowingStateLoss()
-                    }
-                    else -> {
-                        supportFragmentManager.beginTransaction()
-                            .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                            .remove(currentFragment)
-                            .commitAllowingStateLoss()
-                    }
-                }
-            }
-        }
-    }
-
-
-    fun Activity.hideSystemUI() {
+    fun FragmentActivity.hideSystemUI() {
         // Enables regular immersive mode.
         // For "lean back" mode, remove SYSTEM_UI_FLAG_IMMERSIVE.
         // Or for "sticky immersive," replace it with SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        window?.decorView?.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                 // Set the content to appear under the system bars so that the
                 // content doesn't resize when the system bars hide and show.
                 or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -953,7 +1171,7 @@ object AppUtils {
     fun FragmentActivity.loadPlayer(
         episodeIndex: Int,
         startAt: Long,
-        card: ShiroApi.AnimePageData,
+        card: ShiroApi.Companion.AnimePageNewData,
         anilistID: Int? = null,
         malID: Int? = null,
         fillerEpisodes: HashMap<Int, Boolean>? = null
@@ -965,7 +1183,7 @@ object AppUtils {
                 0,
                 card,
                 startAt,
-                card.slug,
+                card.anime.slug,
                 anilistID,
                 malID,
                 fillerEpisodes
@@ -983,44 +1201,35 @@ fun loadPlayer(title: String?, url: String, startAt: Long?) {
     fun FragmentActivity.loadPlayer(data: PlayerData) {
         runOnUiThread {
             masterViewModel?.playerData?.value = data
-            val instance =
-                if (tvActivity != null) PlayerFragmentTv.newInstance() else PlayerFragment.newInstance()//.newInstance(data)
-
-            this.addFragmentOnlyOnce(android.R.id.content, instance, PLAYER_FRAGMENT_TAG)
+            val destination =
+                if (tvActivity != null) R.id.global_to_navigation_player_tv else R.id.global_to_navigation_player
+            getNavController()?.navigate(
+                destination
+            )
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
         }
-
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
     }
 
     fun FragmentActivity.loadPage(slug: String, name: String, isMalId: Boolean = false) {
-        val layoutId = if (tvActivity != null) R.id.home_root_tv else R.id.homeRoot
+        getNavController()?.let {
+            val arguments = Bundle().apply {
+                putString(SLUG, slug.replace("-dubbed", "-dub"))
+                putString(NAME, name)
+                putBoolean(IS_MAL_ID, isMalId)
+            }
 
-        this.addFragmentOnlyOnce(
-            layoutId,
-            ResultFragment.newInstance(slug, name, isMalId),
-            RESULT_FRAGMENT_TAG
-        )
-        /*
-        activity?.runOnUiThread {
-            val _navController = Navigation.findNavController(activity!!, R.id.nav_host_fragment)
-            _navController?.navigateUp()
-            _navController?.navigate(R.layout.fragment_results,null,null)
+//            val extras = sharedView?.let { sharedView ->
+//                ViewCompat.setTransitionName(
+//                    sharedView,
+//                    "shared_element_container"
+//                )
+//                FragmentNavigatorExtras(sharedView to "shared_element_container")
+//            }
+            val destination =
+                if (tvActivity != null) R.id.global_to_navigation_results_tv else R.id.global_to_navigation_results
+            it.navigate(destination, arguments, null, null)
         }
-    */
-        // NavigationUI.navigateUp(navController!!,R.layout.fragment_results)
     }
-
-    fun CyaneaAppCompatActivity.changeTheme() {
-        cyanea.edit {
-            val rnd = Random()
-            val color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
-            primary(color)
-            accent(color)
-            backgroundResource(R.color.background_material_dark)
-            // Many other theme modifications are available
-        }.recreate(this)
-    }
-
 
     fun Context.getTextColor(isGrey: Boolean = false): Int {
         return if (Cyanea.instance.isDark) {
@@ -1043,7 +1252,7 @@ fun loadPlayer(title: String?, url: String, startAt: Long?) {
     }
 
     fun shouldShowPIPMode(isInPlayer: Boolean): Boolean {
-        return settingsManager?.getBoolean("pip_enabled", true) ?: true && isInPlayer
+        return settingsManager?.getBoolean("pip_enabled", false) ?: false && isInPlayer
     }
 
     fun Context.hasPIPPermission(): Boolean {

@@ -34,9 +34,10 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustResize"
             tools:node="merge">
 
-        <receiver android:name="androidx.media.session.MediaButtonReceiver">
+        <receiver android:name="com.lagradost.shiro.utils.NonCrashMediaButtonReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON"/>
             </intent-filter>

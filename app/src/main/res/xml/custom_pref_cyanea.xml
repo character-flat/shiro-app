@@ -75,6 +75,33 @@
             android:title="Compact search results"
             app:defaultValue="true"
     />
+    <SwitchPreference
+            android:icon="@drawable/search_icon"
+            app:key="top_search_bar"
+            android:title="Top search bar"
+            app:summary="Use the old top search bar layout"
+            app:defaultValue="false"
+    />
+    <SwitchPreference
+            android:icon="@drawable/ic_baseline_new_releases_24"
+            app:key="new_results_page"
+            android:title="Use alternative anime info page"
+            app:defaultValue="false"
+            app:isPreferenceVisible="false"
+    />
+    <SwitchPreference
+            android:icon="@drawable/ic_baseline_image_24"
+            app:key="no_episode_thumbnails"
+            android:title="No episode thumbnails"
+            app:summary="Use the old episode layout without thumbnails"
+            app:defaultValue="false"
+    />
+    <SwitchPreference
+            android:icon="@drawable/ic_baseline_article_24"
+            app:key="no_episode_description"
+            android:title="No episode description"
+            app:defaultValue="false"
+    />
     <SeekBarPreference
             android:summary="Double in Landscape mode"
             android:icon="@drawable/ic_baseline_view_column_24"
@@ -111,12 +138,6 @@
             app:min="60"
     >
     </SeekBarPreference>
-    <SwitchPreference
-            android:icon="@drawable/ic_baseline_new_releases_24"
-            app:key="new_results_page"
-            android:title="Use alternative anime info page"
-            app:defaultValue="false"
-    />
 
 
 </androidx.preference.PreferenceScreen>

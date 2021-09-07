@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import com.lagradost.shiro.BuildConfig
+import io.michaelrocks.paranoid.Obfuscate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -31,11 +33,14 @@ sealed class Resource<out T> {
 }
 
 fun logError(throwable: Throwable) {
-    Log.d("ApiError", "-------------------------------------------------------------------")
-    Log.d("ApiError", "safeApiCall: " + throwable.localizedMessage)
-    Log.d("ApiError", "safeApiCall: " + throwable.message)
-    throwable.printStackTrace()
-    Log.d("ApiError", "-------------------------------------------------------------------")
+    @Obfuscate
+    if (BuildConfig.BUILD_TYPE == "debug") {
+        Log.d("ApiError", "-------------------------------------------------------------------")
+        Log.d("ApiError", "safeApiCall: " + throwable.localizedMessage)
+        Log.d("ApiError", "safeApiCall: " + throwable.message)
+        throwable.printStackTrace()
+        Log.d("ApiError", "-------------------------------------------------------------------")
+    }
 }
 
 fun <T> normalSafeApiCall(apiCall: () -> T): T? {

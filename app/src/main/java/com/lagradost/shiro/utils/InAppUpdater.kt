@@ -1,13 +1,16 @@
 package com.lagradost.shiro.utils
 
+import android.app.DownloadManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
-import android.os.Build
+import android.os.Environment
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
+import androidx.core.content.getSystemService
 import androidx.fragment.app.FragmentActivity
 import androidx.preference.PreferenceManager
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -18,9 +21,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.shiro.BuildConfig
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
-import java.io.*
-import java.net.URL
-import java.net.URLConnection
+import java.io.File
 import kotlin.concurrent.thread
 
 // Stolen from LagradOst's quicknovel :)
@@ -123,134 +124,75 @@ object InAppUpdater {
         }
     }
 
-    private fun FragmentActivity.downloadUpdate(url: String, localContext: Context): Boolean {
+    private fun FragmentActivity.downloadUpdate(url: String): Boolean {
         println("DOWNLOAD UPDATE $url")
-        var fullResume = false // IF FULL RESUME
-        try {
-            // =================== DOWNLOAD POSTERS AND SETUP PATH ===================
-            val path = this.filesDir.toString() +
-                    "/Download/apk/update.apk"
+//        var fullResume = false // IF FULL RESUME
+        val downloadManager = getSystemService<DownloadManager>()!!
 
-            // =================== MAKE DIRS ===================
-            val rFile = File(path)
-            try {
-                rFile.parentFile.mkdirs()
-            } catch (_ex: Exception) {
-                println("FAILED:::$_ex")
-            }
-            val url = url.replace(" ", "%20")
+        val request = DownloadManager.Request(Uri.parse(url))
+            .setMimeType("application/vnd.android.package-archive")
+            .setTitle("Shiro update")
+            .setDestinationInExternalFilesDir(
+                this,
+                Environment.DIRECTORY_DOWNLOADS,
+                "shiro.apk"
+            )
+            .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
+            .setAllowedOverRoaming(true)
+            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
 
-            val _url = URL(url)
+        val id = downloadManager.enqueue(request)
+        registerReceiver(
+            object : BroadcastReceiver() {
+                override fun onReceive(context: Context?, intent: Intent?) {
+                    val downloadId = intent?.getLongExtra(
+                        DownloadManager.EXTRA_DOWNLOAD_ID, id
+                    ) ?: id
 
-            val connection: URLConnection = _url.openConnection()
+                    val query = DownloadManager.Query()
+                    query.setFilterById(downloadId)
+                    val c = downloadManager.query(query)
 
-            var bytesRead = 0L
+                    if (c.moveToFirst()) {
+                        val columnIndex = c
+                            .getColumnIndex(DownloadManager.COLUMN_STATUS)
+                        if (DownloadManager.STATUS_SUCCESSFUL == c
+                                .getInt(columnIndex)
+                        ) {
+                            c.getColumnIndex(DownloadManager.COLUMN_MEDIAPROVIDER_URI)
+                            val uri = Uri.parse(
+                                c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))
+                            )
+//                            val uri = downloadManager.getUriForDownloadedFile(downloadId)
+                            openApk(context ?: this@downloadUpdate, uri)
 
-            // =================== STORAGE ===================
-            try {
-                if (!rFile.exists()) {
-                    rFile.createNewFile()
-                } else {
-                    rFile.delete()
-                    rFile.createNewFile()
+                        }
+                    }
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                this.runOnUiThread {
-                    Toast.makeText(localContext, "Permission error when downloading update", Toast.LENGTH_SHORT).show()
-                }
-                return false
+            }, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+        )
+        return true
+    }
+
+    fun openApk(context: Context, uri: Uri) {
+        uri.path?.let {
+            val contentUri = FileProvider.getUriForFile(
+                context,
+                BuildConfig.APPLICATION_ID + ".provider",
+                File(it)
+            )
+            val installIntent = Intent(Intent.ACTION_VIEW).apply {
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
+                data = contentUri
             }
-
-            // =================== CONNECTION ===================
-            connection.setRequestProperty("Accept-Encoding", "identity")
-            connection.connectTimeout = 10000
-            var clen = 0
-            try {
-                connection.connect()
-                clen = connection.contentLength
-                println("CONTENTN LENGTH: $clen")
-            } catch (_ex: Exception) {
-                println("CONNECT:::$_ex")
-                _ex.printStackTrace()
-            }
-
-            // =================== VALIDATE ===================
-            if (clen < 5000000) { // min of 5 MB
-                clen = 0
-            }
-            if (clen <= 0) { // TO SMALL OR INVALID
-                //showNot(0, 0, 0, DownloadType.IsFailed, info)
-                return false
-            }
-
-            // =================== SETUP VARIABLES ===================
-            //val bytesTotal: Long = (clen + bytesRead.toInt()).toLong()
-            val input: InputStream = BufferedInputStream(connection.inputStream)
-            val output: OutputStream = FileOutputStream(rFile, false)
-            var bytesPerSec = 0L
-            val buffer = ByteArray(1024)
-            var count: Int
-            //var lastUpdate = System.currentTimeMillis()
-
-            while (true) {
-                try {
-                    count = input.read(buffer)
-                    if (count < 0) break
-
-                    bytesRead += count
-                    bytesPerSec += count
-                    output.write(buffer, 0, count)
-                } catch (_ex: Exception) {
-                    println("CONNECT TRUE:::$_ex")
-                    _ex.printStackTrace()
-                    fullResume = true
-                    break
-                }
-            }
-
-            if (fullResume) { // IF FULL RESUME DELETE CURRENT AND DONT SHOW DONE
-                with(NotificationManagerCompat.from(localContext)) {
-                    cancel(-1)
-                }
-            }
-
-            output.flush()
-            output.close()
-            input.close()
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                val contentUri = FileProvider.getUriForFile(
-                    localContext,
-                    BuildConfig.APPLICATION_ID + ".provider",
-                    rFile
-                )
-                val install = Intent(Intent.ACTION_VIEW)
-                install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                install.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                install.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
-                install.data = contentUri
-                this.startActivity(install)
-                return true
-            } else {
-                val apkUri = Uri.fromFile(rFile)
-                val install = Intent(Intent.ACTION_VIEW)
-                install.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                install.setDataAndType(
-                    apkUri,
-                    "application/vnd.android.package-archive"
-                )
-                this.startActivity(install)
-                return true
-            }
-
-        } catch (_ex: Exception) {
-            println("FATAL EX DOWNLOADING:::$_ex")
-            return false
+            context.startActivity(installIntent)
         }
     }
 
-    fun FragmentActivity.runAutoUpdate(localContext: Context, checkAutoUpdate: Boolean = true): Boolean {
+
+    fun FragmentActivity.runAutoUpdate(checkAutoUpdate: Boolean = true): Boolean {
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
 
         if (!checkAutoUpdate || settingsManager.getBoolean("auto_update", true)
@@ -265,7 +207,7 @@ object InAppUpdater {
                         )
                     }
 
-                    val builder: AlertDialog.Builder = AlertDialog.Builder(localContext, R.style.AlertDialogCustom)
+                    val builder: AlertDialog.Builder = AlertDialog.Builder(this, R.style.AlertDialogCustom)
                     builder.setTitle("New update found!\n${currentVersion?.versionName} -> ${update.updateVersion}")
                     builder.setMessage("${update.changelog}")
 
@@ -273,22 +215,16 @@ object InAppUpdater {
                         setPositiveButton("Update") { _, _ ->
                             Toast.makeText(this@runAutoUpdate, "Download started", Toast.LENGTH_LONG).show()
                             thread {
-                                val downloadStatus = downloadUpdate(update.updateURL, localContext)
+                                val downloadStatus = downloadUpdate(update.updateURL)
                                 if (!downloadStatus) {
                                     runOnUiThread {
                                         Toast.makeText(
-                                            localContext,
+                                            this@runAutoUpdate,
                                             "Download Failed",
                                             Toast.LENGTH_LONG
                                         ).show()
                                     }
-                                } /*else {
-                                        activity.runOnUiThread {
-                                            Toast.makeText(localContext,
-                                                "Downloaded APK",
-                                                Toast.LENGTH_LONG).show()
-                                        }
-                                    }*/
+                                }
                             }
                         }
 

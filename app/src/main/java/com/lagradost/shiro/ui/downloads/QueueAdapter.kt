@@ -11,7 +11,9 @@ import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
 import com.lagradost.shiro.utils.VideoDownloadManager
 import com.lagradost.shiro.utils.VideoDownloadManager.downloadQueue
 import com.lagradost.shiro.utils.VideoDownloadManager.saveQueue
-import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
+import kotlinx.android.synthetic.main.episode_result_downloaded.view.cardTitle
+import kotlinx.android.synthetic.main.episode_result_downloaded.view.progressBar
+import kotlinx.android.synthetic.main.episode_result_queued.view.*
 
 class QueueAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var queue = listOf<VideoDownloadManager.DownloadResumePackage>().apply {
@@ -25,7 +27,7 @@ class QueueAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         updateQueue()
         return QueueViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.episode_result_downloaded, parent, false)
+            LayoutInflater.from(parent.context).inflate(R.layout.episode_result_queued, parent, false)
         )
     }
 
@@ -42,13 +44,12 @@ class QueueAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         return queue.size
     }
 
-    class QueueViewHolder
-    constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class QueueViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(item: VideoDownloadManager.DownloadResumePackage) {
             itemView.progressBar.visibility = GONE
             itemView.cardPauseIcon.visibility = GONE
             val title = "${item.item.ep.episode?.let { "E$it" } ?: ""} ${item.item.ep.mainName}"
-            itemView.cardTitle.text = title
+            itemView.cardTitle?.text = title
 
             itemView.cardRemoveIcon.setOnClickListener {
                 downloadQueue.removeAll { it == item }

@@ -4,8 +4,8 @@ import BOOKMARK_KEY
 import DataStore.containsKey
 import DataStore.removeKey
 import DataStore.setKey
-import android.content.Context
 import android.content.res.ColorStateList
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -23,12 +23,13 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.AutofitRecyclerView
 import com.lagradost.shiro.ui.BookmarkedTitle
 import com.lagradost.shiro.ui.GlideApp
-import com.lagradost.shiro.ui.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.home.HomeFragment.Companion.homeViewModel
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.AppUtils.filterCardList
 import com.lagradost.shiro.utils.AppUtils.fixCardTitle
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
+import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
+import com.lagradost.shiro.utils.AppUtils.guaranteedContext
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.onLongCardClick
 import com.lagradost.shiro.utils.AppUtils.settingsManager
@@ -43,26 +44,24 @@ import kotlin.concurrent.thread
 import kotlin.math.roundToInt
 
 class ResAdapter(
-    context: Context,
     animeList: ArrayList<ShiroApi.CommonAnimePage>,
-    resView: AutofitRecyclerView,
+    val resView: AutofitRecyclerView,
+    val isMalId: Boolean,
     forceDisableCompact: Boolean = false
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var cardList = animeList
-    var context: Context? = context
-    private var resView: AutofitRecyclerView? = resView
     private val compactView =
         settingsManager?.getBoolean("compact_search_enabled", true) == true && !forceDisableCompact
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        cardList = filterCardList(cardList) as? ArrayList<ShiroApi.CommonAnimePage> ?: arrayListOf()
+        cardList = ArrayList(filterCardList(cardList) ?: listOf())
 
         val layout = if (compactView) R.layout.search_result_compact else R.layout.search_result
         return CardViewHolder(
             LayoutInflater.from(parent.context).inflate(layout, parent, false),
-            context!!,
-            resView!!,
+            resView,
+            isMalId,
             compactView
         )
     }
@@ -81,11 +80,12 @@ class ResAdapter(
     }
 
     class CardViewHolder
-    constructor(itemView: View, _context: Context, resView: AutofitRecyclerView, private val compactView: Boolean) :
+    constructor(itemView: View, resView: AutofitRecyclerView, private val isMalId: Boolean, private val compactView: Boolean) :
         RecyclerView.ViewHolder(itemView) {
-        val context = _context
         val cardView: ImageView = itemView.imageView
         private val coverHeight: Int = if (compactView) 80.toPx else (resView.itemWidth / 0.68).roundToInt()
+        val context = guaranteedContext(itemView.context)
+
         fun bind(card: ShiroApi.CommonAnimePage) {
             if (compactView) {
                 // COPIED -----------------------------------------
@@ -93,11 +93,15 @@ class ResAdapter(
                 fun toggleHeartVisual(_isBookmarked: Boolean) {
                     if (_isBookmarked) {
                         itemView.title_bookmark.setImageResource(R.drawable.filled_heart)
-                        itemView.title_bookmark.imageTintList = ColorStateList.valueOf(Cyanea.instance.primary)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            itemView.title_bookmark.imageTintList = ColorStateList.valueOf(Cyanea.instance.primary)
+                        }
                     } else {
                         itemView.title_bookmark.setImageResource(R.drawable.outlined_heart)
-                        itemView.title_bookmark.imageTintList =
-                            ColorStateList.valueOf(context.getColorFromAttr(R.attr.white))
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            itemView.title_bookmark.imageTintList =
+                                ColorStateList.valueOf(context.getColorFromAttr(R.attr.white))
+                        }
                     }
                 }
 
@@ -128,13 +132,14 @@ class ResAdapter(
                     toggleHeart(!isBookmarked)
                 }
                 // ------------------------------------------------
-                itemView.backgroundCard.backgroundTintList = ColorStateList.valueOf(
-                    Cyanea.instance.backgroundColorDark
-                )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    itemView.backgroundCard.backgroundTintList = ColorStateList.valueOf(
+                        Cyanea.instance.backgroundColorDark
+                    )
+                }
 
                 itemView.backgroundCard.setOnClickListener {
-                    activity?.loadPage(card.slug, card.name)
-
+                    getCurrentActivity()?.loadPage(card.slug, card.name, isMalId)
                 }
                 cardView.setOnLongClickListener {
                     if (context.onLongCardClick(card)) toggleHeart(!isBookmarked)
@@ -167,12 +172,11 @@ class ResAdapter(
             }
 
             cardView.setOnClickListener {
-                activity?.loadPage(card.slug, card.name)
+                getCurrentActivity()?.loadPage(card.slug, card.name, isMalId)
                 /*MainActivity.loadPage(card)*/
             }
 
-            val glideUrl =
-                GlideUrl(getFullUrlCdn(card.image)) { ShiroApi.currentHeaders }
+            val glideUrl = getFullUrlCdn(card.image)
             context.let {
                 val settingsManager = PreferenceManager.getDefaultSharedPreferences(it)
                 val savingData = settingsManager.getBoolean("data_saving", false)

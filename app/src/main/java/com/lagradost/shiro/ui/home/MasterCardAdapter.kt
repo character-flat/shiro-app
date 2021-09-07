@@ -29,10 +29,23 @@ class MasterCardAdapter(
             //Pair(data?.searchResults, "Search results"),
             Pair(data?.recentlySeen, activity?.getString(R.string.continue_watching)),
             Pair(homeViewModel!!.favorites.value, activity?.getString(R.string.favorites)),
-            Pair(data?.data?.trending_animes, activity?.getString(R.string.trending_anime)),
-            Pair(data?.data?.latest_episodes?.map { it.anime }, activity?.getString(R.string.home_recently_updated)),
-            Pair(data?.data?.ongoing_animes, activity?.getString(R.string.home_ongoing)),
-            Pair(data?.data?.latest_animes, activity?.getString(R.string.latest_anime))
+            Pair(data?.trending?.data?.map {
+                    ShiroApi.CommonAnimePageData(
+                        it.title,
+                        it.poster,
+                        it.slug,
+                        it.title_english
+                    )
+                }, activity?.getString(R.string.trending_anime)),
+            Pair(data?.recents?.map {
+                ShiroApi.CommonAnimePageData(
+                    it.anime.title,
+                    it.anime.poster,
+                    it.anime.slug,
+                )
+            }?.distinctBy { it.slug }, activity?.getString(R.string.home_recently_updated)),
+//            Pair(data?.data?.ongoing_animes, activity?.getString(R.string.home_ongoing)),
+//            Pair(data?.data?.latest_animes, activity?.getString(R.string.latest_anime))
         ).filter {
             it.first != null && it.first?.isNotEmpty() == true
         }
@@ -54,7 +67,6 @@ class MasterCardAdapter(
         }
         holder.itemView.setOnFocusChangeListener { _, _ ->
             val menu = activity?.findViewById<LinearLayout>(R.id.tv_menu_bar)
-            println("menu $menu")
             if (position == 0) {
                 menu?.visibility = VISIBLE
             } else {
@@ -64,7 +76,7 @@ class MasterCardAdapter(
     }
 
     override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
-        holder.itemView.horizontalGridView.adapter = null
+        holder.itemView.horizontalGridView?.adapter = null
         holder.itemView.visibility = GONE
         super.onViewRecycled(holder)
     }
@@ -78,14 +90,14 @@ class MasterCardAdapter(
         val card: View = itemView
 
         fun bind(pair: Pair<List<Any?>?, String?>, position: Int) {
-            card.expand_text.text = pair.second
+            card.expand_text?.text = pair.second
             card.visibility = VISIBLE
             val isOnTop = position == 0
             val isFavorite = activity.getString(R.string.favorites) == pair.second
             when {
                 pair.first as? List<ShiroApi.CommonAnimePage?> != null && pair.second != activity.getString(R.string.continue_watching) -> {
                     activity.displayCardData(
-                        pair.first as List<ShiroApi.CommonAnimePage?>?,
+                        pair.first as List<ShiroApi.CommonAnimePage>?,
                         card.horizontalGridView,
                         card.expand_text,
                         isOnTop,
@@ -100,7 +112,6 @@ class MasterCardAdapter(
                     )
                 }
                 else -> {
-                    println("Error on ${pair.second}")
                 }
             }
         }

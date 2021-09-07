@@ -1,9 +1,17 @@
 package com.lagradost.shiro.utils
 
+import ANILIST_CACHED_LIST
+import ANILIST_SHOULD_UPDATE_LIST
+import ANILIST_TOKEN_KEY
+import ANILIST_UNIXTIME_KEY
 import DataStore.getDefaultSharedPrefs
 import DataStore.getSharedPrefs
 import DataStore.mapper
 import DataStore.setKeyRaw
+import MAL_CACHED_LIST
+import MAL_SHOULD_UPDATE_LIST
+import MAL_UNIXTIME_KEY
+import MAL_USER_KEY
 import android.content.Context
 import android.os.Environment
 import android.widget.Toast
@@ -18,6 +26,33 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object BackupUtils {
+    private val blackList = listOf(
+        "cool_mode",
+        "beta_theme",
+        "purple_theme",
+        "subscribe_to_updates",
+        "subscribe_to_announcements",
+        "subscriptions_bookmarked",
+        "subscriptions",
+        "legacy_bookmarks",
+        "legacy_bookmarks_1",
+        "pink_theme",
+        ANILIST_ACCOUNT_ID,
+        ANILIST_CLIENT_ID,
+        ANILIST_TOKEN_KEY,
+        ANILIST_CACHED_LIST,
+        ANILIST_SHOULD_UPDATE_LIST,
+        ANILIST_UNIXTIME_KEY,
+        MAL_ACCOUNT_ID,
+        MAL_CLIENT_ID,
+        MAL_SHOULD_UPDATE_LIST,
+        MAL_CACHED_LIST,
+        MAL_UNIXTIME_KEY,
+        MAL_USER_KEY
+    )
+    private val filterRegex = Regex("""^(${blackList.joinToString(separator = "|")})""")
+
+
     // Kinda hack, but I couldn't think of a better way
     data class BackupVars(
         @JsonProperty("_Bool") val _Bool: Map<String, Boolean>?,
@@ -41,27 +76,27 @@ object BackupUtils {
                         .toString() + "/Shiro/"
                 val date = SimpleDateFormat("yyyy_MM_dd_HH_mm").format(Date(currentTimeMillis()))
                 val allDataFile = File(downloadDir + "Shiro_Backup_${date}.xml")
-                allDataFile.parentFile.mkdirs()
+                allDataFile.parentFile?.mkdirs()
 
                 val allData = getSharedPrefs().all
                 val allSettings = getDefaultSharedPrefs().all
 
                 val allDataSorted = BackupVars(
-                    allData.filter { it.value is Boolean } as? Map<String, Boolean>,
-                    allData.filter { it.value is Int } as? Map<String, Int>,
-                    allData.filter { it.value is String } as? Map<String, String>,
-                    allData.filter { it.value is Float } as? Map<String, Float>,
-                    allData.filter { it.value is Long } as? Map<String, Long>,
-                    allData.filter { it.value as? Set<String> != null } as? Map<String, Set<String>>
+                    allData.filter { it.value is Boolean && !isBlacklisted(it.key) } as? Map<String, Boolean>,
+                    allData.filter { it.value is Int && !isBlacklisted(it.key) } as? Map<String, Int>,
+                    allData.filter { it.value is String && !isBlacklisted(it.key) } as? Map<String, String>,
+                    allData.filter { it.value is Float && !isBlacklisted(it.key) } as? Map<String, Float>,
+                    allData.filter { it.value is Long && !isBlacklisted(it.key) } as? Map<String, Long>,
+                    allData.filter { it.value as? Set<String> != null && !isBlacklisted(it.key) } as? Map<String, Set<String>>
                 )
 
                 val allSettingsSorted = BackupVars(
-                    allSettings.filter { it.value is Boolean } as? Map<String, Boolean>,
-                    allSettings.filter { it.value is Int } as? Map<String, Int>,
-                    allSettings.filter { it.value is String } as? Map<String, String>,
-                    allSettings.filter { it.value is Float } as? Map<String, Float>,
-                    allSettings.filter { it.value is Long } as? Map<String, Long>,
-                    allSettings.filter { it.value as? Set<String> != null } as? Map<String, Set<String>>
+                    allSettings.filter { it.value is Boolean && !isBlacklisted(it.key) } as? Map<String, Boolean>,
+                    allSettings.filter { it.value is Int && !isBlacklisted(it.key) } as? Map<String, Int>,
+                    allSettings.filter { it.value is String && !isBlacklisted(it.key) } as? Map<String, String>,
+                    allSettings.filter { it.value is Float && !isBlacklisted(it.key) } as? Map<String, Float>,
+                    allSettings.filter { it.value is Long && !isBlacklisted(it.key) } as? Map<String, Long>,
+                    allSettings.filter { it.value as? Set<String> != null && !isBlacklisted(it.key) } as? Map<String, Set<String>>
                 )
 
                 val backupFile = BackupFile(
@@ -99,20 +134,12 @@ object BackupUtils {
         }
     }
 
+    fun isBlacklisted(key: String): Boolean {
+        return filterRegex.containsMatchIn(key)
+    }
+
     private fun <T> Context.restoreMap(map: Map<String, T>?, isEditingAppSettings: Boolean = false) {
-        val blackList = listOf(
-            "cool_mode",
-            "beta_theme",
-            "purple_theme",
-            "subscribe_to_updates",
-            "subscribe_to_announcements",
-            "subscriptions_bookmarked",
-            "subscriptions",
-            "legacy_bookmarks",
-            "pink_theme"
-        )
-        val filterRegex = Regex("""^(${blackList.joinToString(separator = "|")})""")
-        map?.filter { !filterRegex.containsMatchIn(it.key) }?.forEach {
+        map?.filter { !isBlacklisted(it.key) }?.forEach {
             setKeyRaw(it.key, it.value, isEditingAppSettings)
         }
     }
@@ -136,7 +163,7 @@ object BackupUtils {
                 restoreMap(backupFile.datastore._Long)
                 restoreMap(backupFile.datastore._StringSet)
             }
-        } catch (e: Exception){
+        } catch (e: Exception) {
 
         }
     }

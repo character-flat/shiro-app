@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--        android:background="@drawable/outline_background"-->
 <LinearLayout
+        android:background="@drawable/outline_background"
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
@@ -24,9 +25,8 @@
             android:layout_marginBottom="2dp"
             android:elevation="10dp"
             android:orientation="vertical"
-
+            android:foreground="?android:attr/selectableItemBackgroundBorderless"
     >
-<!--                android:foreground="?android:attr/selectableItemBackgroundBorderless"-->
 
         <ImageView
                 android:duplicateParentState="true"

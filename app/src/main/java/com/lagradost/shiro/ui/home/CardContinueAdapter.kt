@@ -2,6 +2,8 @@ package com.lagradost.shiro.ui.home
 
 import DataStore.removeKey
 import VIEW_LST_KEY
+import android.content.res.ColorStateList
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -21,14 +23,12 @@ import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.LastEpisodeInfo
-import com.lagradost.shiro.ui.result.RESULT_FRAGMENT_TAG
-import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
-import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
 import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.loadPlayer
 import com.lagradost.shiro.utils.AppUtils.onLongCardClick
+import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.utils.ShiroApi.Companion.requestHome
 import kotlinx.android.synthetic.main.home_card.view.home_card_root
@@ -38,25 +38,24 @@ import kotlinx.android.synthetic.main.home_card_recently_seen.view.*
 
 
 class CardContinueAdapter(
-    activity: FragmentActivity,
+    val activity: FragmentActivity,
     animeList: List<LastEpisodeInfo?>?,
     private val isOnTop: Boolean = false
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var cardList = animeList
-    var activity: FragmentActivity? = activity
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return CardViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.home_card_recently_seen, parent, false),
-            activity!!
+            activity
         )
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
             is CardViewHolder -> {
-                holder.bind(cardList?.get(position))
+                holder.bind(cardList?.filter { it?.data != null }?.getOrNull(position))
             }
         }
 
@@ -83,22 +82,22 @@ class CardContinueAdapter(
             if (!subFocus) view.menu_root.visibility = GONE
             view.home_card_recently_seen.radius = if (hasFocus) 0F else 6.toPx.toFloat()
             if (isOnTop) {
-                activity?.findViewById<View>(R.id.tv_menu_bar)?.visibility = VISIBLE
+                activity.findViewById<View>(R.id.tv_menu_bar)?.visibility = VISIBLE
             } else {
-                activity?.findViewById<View>(R.id.tv_menu_bar)?.visibility = GONE
+                activity.findViewById<View>(R.id.tv_menu_bar)?.visibility = GONE
             }
         }
 
     }
 
     override fun getItemCount(): Int {
-        return if (cardList?.size == null) 0 else cardList!!.size
+        return cardList?.filter { it?.data != null }?.size ?: 0
     }
 
     class CardViewHolder(itemView: View, val activity: FragmentActivity) : RecyclerView.ViewHolder(itemView) {
         val card: ImageView = itemView.imageView
         fun bind(cardInfo: LastEpisodeInfo?) {
-            if (cardInfo != null) {
+            if (cardInfo?.data != null) {
                 if (tvActivity != null) {
                     val param = itemView.layoutParams as ViewGroup.MarginLayoutParams
                     param.updateMargins(
@@ -109,8 +108,7 @@ class CardContinueAdapter(
                     )
                     itemView.layoutParams = param
                 }
-                val glideUrl =
-                    GlideUrl(cardInfo.id?.let { getFullUrlCdn(it.image) })
+                val glideUrl = getFullUrlCdn(cardInfo.data.anime.poster)
                 //  activity?.runOnUiThread {
 
                 val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
@@ -124,26 +122,25 @@ class CardContinueAdapter(
 
                 itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).start()
                 val episodeOffset =
-                    if (cardInfo.id?.episodes?.filter { it.episode_number == 0 }.isNullOrEmpty()) 0 else -1
-                itemView.imageText.text =
-                    if (cardInfo.id?.name?.endsWith("Dubbed") == true) "✦ Episode ${cardInfo.episodeIndex + 1 + episodeOffset}" else "Episode ${cardInfo.episodeIndex + 1 + episodeOffset}"
-                if (cardInfo.id != null && tvActivity == null) {
+                    if (cardInfo.data.episodes.filter { it.episode == "0" }.isNullOrEmpty()) 0 else -1
+                itemView.imageText?.text =
+                    if (cardInfo.data.anime.title.endsWith("(Dub)")) "✦ Episode ${cardInfo.episodeIndex + 1 + episodeOffset}" else "Episode ${cardInfo.episodeIndex + 1 + episodeOffset}"
+                if (tvActivity == null) {
                     itemView.infoButton.visibility = VISIBLE
                     itemView.infoButton.setOnClickListener {
-                        activity.loadPage(cardInfo.id.slug, cardInfo.title)
+                        activity.loadPage(cardInfo.data.anime.slug, cardInfo.title)
                     }
                     itemView.infoButton.setOnLongClickListener {
                         Toast.makeText(activity, cardInfo.title, Toast.LENGTH_LONG).show()
                         return@setOnLongClickListener true
                     }
-                } else if (cardInfo.id != null) {
+                } else {
                     // TV INFO BUTTON
                     itemView.infoButton.visibility = GONE
                     itemView.tv_button_info.setOnClickListener {
-                        activity.addFragmentOnlyOnce(
-                            R.id.home_root_tv,
-                            ResultFragment.newInstance(cardInfo.id.slug, cardInfo.title),
-                            RESULT_FRAGMENT_TAG
+                        activity.loadPage(
+                            cardInfo.data.anime.slug,
+                            cardInfo.title
                         )
                     }
                 }
@@ -154,17 +151,24 @@ class CardContinueAdapter(
                         itemView.tv_button_info.requestFocus()
                         itemView.home_card_root.isFocusable = false
                     } else {
-                        cardInfo.id?.let { card ->
+                        cardInfo.data.let { card ->
                             itemView.scaleY = 0.9f
                             itemView.scaleX = 0.9f
                             itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).start()
-                            activity.onLongCardClick(card)
+                            activity.onLongCardClick(
+                                ShiroApi.CommonAnimePageData(
+                                    card.anime.title,
+                                    card.anime.poster,
+                                    card.anime.slug,
+                                    card.anime.title_english
+                                )
+                            )
                         }
                     }
                     return@setOnLongClickListener true
                 }
                 itemView.home_card_root.setOnClickListener {
-                    cardInfo.id?.let { data ->
+                    cardInfo.data.let { data ->
                         activity.loadPlayer(
                             cardInfo.episodeIndex,
                             cardInfo.pos,
@@ -183,13 +187,13 @@ class CardContinueAdapter(
                         itemView.home_card_root.requestFocus()
                     }
                     itemView.tv_button_remove.setOnClickListener {
-                        activity.removeKey(VIEW_LST_KEY, cardInfo.aniListId)
+                        activity.removeKey(VIEW_LST_KEY, cardInfo.slug)
                         activity.requestHome(true)
                     }
                 } else {
                     itemView.removeButton.visibility = VISIBLE
                     itemView.removeButton.setOnClickListener {
-                        activity.removeKey(VIEW_LST_KEY, cardInfo.aniListId)
+                        activity.removeKey(VIEW_LST_KEY, cardInfo.slug)
                         activity.requestHome(true)
                     }
                 }
@@ -197,10 +201,23 @@ class CardContinueAdapter(
                     var progress: Int = (cardInfo.pos * 100L / cardInfo.dur).toInt()
                     if (progress < 5) {
                         progress = 5
-                    } else if (progress > 95) {
+                    } else if (progress > 90) {
                         progress = 100
                     }
                     itemView.video_progress.progress = progress
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        itemView.video_progress.progressTintList = ColorStateList.valueOf(Cyanea.instance.accent)
+                    }
+                    itemView.video_progress.layoutParams =
+                        (itemView.video_progress.layoutParams as? ViewGroup.MarginLayoutParams)?.apply {
+                            updateMargins(
+                                0,
+                                0,
+                                0,
+                                // Needs to be different if leanback is loaded to get the same result, no idea why
+                                if (tvActivity != null) (-6).toPx else (-3).toPx
+                            )
+                        }
                 } else {
                     itemView.video_progress?.alpha = 0f
                 }

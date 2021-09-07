@@ -10,6 +10,7 @@
         android:background="?attr/backgroundColor"
 >
     <LinearLayout
+            android:id="@+id/settings_root"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -43,7 +44,7 @@
                         android:layout_height="125dp"
                         android:layout_gravity="center"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/ic_launcher_foreground"
+                        app:srcCompat="@drawable/ic_launcher_foreground"
                         android:foreground="?attr/selectableItemBackgroundBorderless"
                         android:contentDescription="Account icon">
 

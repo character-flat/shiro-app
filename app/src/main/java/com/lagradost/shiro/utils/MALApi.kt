@@ -154,7 +154,7 @@ class MALApi {
             @JsonProperty("average_episode_duration") val average_episode_duration: Int,
             @JsonProperty("synopsis") val synopsis: String,
             @JsonProperty("mean") val mean: Double,
-            @JsonProperty("genres") val genres: List<Genres>,
+            @JsonProperty("genres") val genres: List<Genres>?,
             @JsonProperty("rank") val rank: Int,
             @JsonProperty("popularity") val popularity: Int,
             @JsonProperty("num_list_users") val num_list_users: Int,
@@ -321,6 +321,7 @@ class MALApi {
                         if (SimpleDateFormat("yyyy-MM-dd").parse(it).time < System.currentTimeMillis()) return@convertJapanTimeToTimeRemaining null
                     }
                 } catch (e: ParseException) {
+                    logError(e)
                 }
 
                 // Unparseable date: "2021 7 4 other null"
@@ -430,7 +431,7 @@ class MALApi {
                     }
                     true
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    logError(e)
                     false
                 }
             } else {

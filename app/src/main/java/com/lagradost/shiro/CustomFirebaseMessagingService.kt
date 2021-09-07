@@ -104,7 +104,7 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
      * @param token The new token.
      */
     private fun sendRegistrationToServer(token: String?) {
-        //khttp.post("https://shiro.is/token", data=mapOf("token" to token))
+        //khttp.post("********", data=mapOf("token" to token))
         Log.d(TAG, "sendRegistrationTokenToServer($token)")
     }
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.cardview.widget.CardView
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
@@ -11,7 +11,11 @@
         android:background="@drawable/outline_background"
         android:nextFocusRight="@+id/cdi"
         android:nextFocusLeft="@+id/cdi"
+        android:layout_marginBottom="5dp"
+        app:cardCornerRadius="@dimen/card_corner_radius"
         android:id="@+id/episode_result_root"
+        android:layout_marginStart="2.5dp"
+        android:layout_marginEnd="2.5dp"
 >
     <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
@@ -19,7 +23,7 @@
             android:layout_margin="2dp"
             android:elevation="10dp"
             app:cardCornerRadius="@dimen/card_corner_radius"
-            android:id="@+id/cardBg"
+            android:id="@+id/card_bg"
             app:cardBackgroundColor="?attr/backgroundColorDark">
         <!-- USING CROP RATIO (182/268), centerCrop for fill -->
 
@@ -65,38 +69,38 @@
                 <!--                                           android:background="?android:attr/selectableItemBackgroundBorderless"-->
                 <!--                           app:tint="?attr/white"-->
 
-                <ImageView android:layout_width="40dp"
-                           android:layout_height="40dp"
+                <ImageView android:layout_width="30dp"
+                           android:layout_height="30dp"
                            app:layout_constraintBottom_toBottomOf="parent"
                            app:layout_constraintTop_toTopOf="parent"
                            app:layout_constraintStart_toEndOf="@id/cardTitle"
                            app:layout_constraintEnd_toEndOf="parent"
                            app:srcCompat="@drawable/netflix_download"
-                           android:layout_margin="10dp"
+                           android:layout_margin="15dp"
                            android:id="@+id/cdi"
                            android:nextFocusRight="@+id/episode_result_root"
                            android:nextFocusLeft="@+id/episode_result_root"
                            android:layout_gravity="end|center_vertical"
                            android:contentDescription="@string/start_download"/>
-<!--                        app:tint="?attr/white"-->
-<!--                        android:background="?android:attr/selectableItemBackgroundBorderless"-->
+                <!--                        app:tint="?attr/white"-->
+                <!--                        android:background="?android:attr/selectableItemBackgroundBorderless"-->
 
-                <ProgressBar
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintStart_toEndOf="@id/cardTitle"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:srcCompat="@drawable/netflix_download"
-                        android:layout_margin="10dp"
-                        android:id="@+id/cdi_loading"
-                        android:nextFocusRight="@+id/episode_result_root"
-                        android:nextFocusLeft="@+id/episode_result_root"
-                        android:layout_gravity="end|center_vertical"
-                        android:visibility="gone"
-                        android:contentDescription="@string/start_download"/>
-<!--                           android:background="?android:attr/selectableItemBackgroundBorderless"-->
+<!--                <ProgressBar-->
+<!--                        android:layout_width="40dp"-->
+<!--                        android:layout_height="40dp"-->
+<!--                        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                        app:layout_constraintTop_toTopOf="parent"-->
+<!--                        app:layout_constraintStart_toEndOf="@id/cardTitle"-->
+<!--                        app:layout_constraintEnd_toEndOf="parent"-->
+<!--                        app:srcCompat="@drawable/netflix_download"-->
+<!--                        android:layout_margin="10dp"-->
+<!--                        android:id="@+id/cdi_loading"-->
+<!--                        android:nextFocusRight="@+id/episode_result_root"-->
+<!--                        android:nextFocusLeft="@+id/episode_result_root"-->
+<!--                        android:layout_gravity="end|center_vertical"-->
+<!--                        android:visibility="gone"-->
+<!--                        android:contentDescription="@string/start_download"/>-->
+                <!--                           android:background="?android:attr/selectableItemBackgroundBorderless"-->
 
                 <ImageView android:layout_width="40dp"
                            android:layout_height="40dp"
@@ -108,7 +112,7 @@
                            android:layout_margin="10dp"
                            android:contentDescription="@string/stop_download"/>
 
-                <ProgressBar
+                <androidx.core.widget.ContentLoadingProgressBar
                         style="?android:attr/progressBarStyleHorizontal"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
@@ -123,26 +127,26 @@
                         android:progress="0"
                         tools:visibility="visible"
                 />
-<!--                           android:background="?android:attr/selectableItemBackgroundBorderless"-->
+                <!--                           android:background="?android:attr/selectableItemBackgroundBorderless"-->
 
-                <ImageView android:layout_width="30dp" android:layout_height="30dp"
-                           android:id="@+id/cardPauseIcon"
-                           android:layout_margin="15dp"
-                           android:src="@drawable/exo_icon_stop"
-                           app:tint="?attr/colorPrimary"
-                           android:layout_gravity="end|center_vertical"
-                           android:visibility="gone"
-                           android:contentDescription="@string/stop_download"/>
-<!--                           android:background="?android:attr/selectableItemBackgroundBorderless"-->
+<!--                <ImageView android:layout_width="30dp" android:layout_height="30dp"-->
+<!--                           android:id="@+id/cardPauseIcon"-->
+<!--                           android:layout_margin="15dp"-->
+<!--                           android:src="@drawable/exo_icon_stop"-->
+<!--                           app:tint="?attr/colorPrimary"-->
+<!--                           android:layout_gravity="end|center_vertical"-->
+<!--                           android:visibility="gone"-->
+<!--                           android:contentDescription="@string/stop_download"/>-->
+<!--                &lt;!&ndash;                           android:background="?android:attr/selectableItemBackgroundBorderless"&ndash;&gt;-->
 
-                <ImageView android:layout_width="30dp"
-                           android:layout_height="30dp"
-                           android:id="@+id/cardRemoveIcon"
-                           android:layout_margin="15dp"
-                           app:srcCompat="@drawable/ic_baseline_delete_24"
-                           android:layout_gravity="end|center_vertical"
-                           android:visibility="gone"
-                           android:contentDescription="@string/remove_download"/>
+<!--                <ImageView android:layout_width="30dp"-->
+<!--                           android:layout_height="30dp"-->
+<!--                           android:id="@+id/cardRemoveIcon"-->
+<!--                           android:layout_margin="15dp"-->
+<!--                           app:srcCompat="@drawable/ic_baseline_delete_24"-->
+<!--                           android:layout_gravity="end|center_vertical"-->
+<!--                           android:visibility="gone"-->
+<!--                           android:contentDescription="@string/remove_download"/>-->
                 <!--
                 <TextView
                         android:id="@+id/cardDescription"
@@ -159,4 +163,4 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.cardview.widget.CardView>
-</LinearLayout>
+</androidx.cardview.widget.CardView>

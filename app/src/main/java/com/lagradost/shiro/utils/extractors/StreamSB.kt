@@ -34,24 +34,23 @@ class StreamSB : ExtractorApi() {
         val newUrl = url.replace("sbplay.org/embed-", "sbplay.org/play/").removeSuffix(".html")
         try {
             with(khttp.get(newUrl, timeout = 10.0)) {
-                getAndUnpack(this.text)?.let {
-                    sourceRegex.findAll(it).forEach { sourceMatch ->
-                        val extractedUrl = sourceMatch.groupValues[1]
-                        if (extractedUrl.contains(".m3u8")) {
-                            with(khttp.get(extractedUrl)) {
-                                m3u8UrlRegex.findAll(this.text).forEach { match ->
-                                    val extractedUrlM3u8 = match.groupValues[2]
-                                    val extractedRes = match.groupValues[1]
-                                    extractedLinksList.add(
-                                        ExtractorLink(
-                                            "$name ${extractedRes}p",
-                                            extractedUrlM3u8,
-                                            extractedUrl,
-                                            getQuality(extractedRes),
-                                            true
-                                        )
+                val fixedText = getAndUnpack(text) ?: text
+                sourceRegex.findAll(fixedText).forEach { sourceMatch ->
+                    val extractedUrl = sourceMatch.groupValues[1]
+                    if (extractedUrl.contains(".m3u8")) {
+                        with(khttp.get(extractedUrl)) {
+                            m3u8UrlRegex.findAll(this.text).forEach { match ->
+                                val extractedUrlM3u8 = match.groupValues[2]
+                                val extractedRes = match.groupValues[1]
+                                extractedLinksList.add(
+                                    ExtractorLink(
+                                        "$name ${extractedRes}p",
+                                        extractedUrlM3u8,
+                                        extractedUrl,
+                                        getQuality(extractedRes),
+                                        true
                                     )
-                                }
+                                )
                             }
                         }
                     }

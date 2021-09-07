@@ -2,7 +2,6 @@ package com.lagradost.shiro.ui.library
 
 import ANILIST_TOKEN_KEY
 import DataStore.getKey
-import MAL_TOKEN_KEY
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -14,7 +13,6 @@ import com.lagradost.shiro.utils.AniListApi.Companion.getAnilistAnimeListSmart
 import com.lagradost.shiro.utils.MALApi
 import com.lagradost.shiro.utils.MALApi.Companion.convertToStatus
 import com.lagradost.shiro.utils.MALApi.Companion.getMalAnimeListSmart
-import com.lagradost.shiro.utils.MAL_ACCOUNT_ID
 import me.xdrop.fuzzywuzzy.FuzzySearch
 import java.text.SimpleDateFormat
 import kotlin.concurrent.thread
@@ -251,7 +249,7 @@ class LibraryViewModel : ViewModel() {
 
     fun requestMalList(context: Context?) {
         thread {
-            val hasMAL = context?.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+//            val hasMAL = context?.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
             context?.getMalAnimeListSmart()?.let {
                 updateMALList(it)
             }

@@ -92,7 +92,8 @@ val blacklistedTvKeys = listOf(
     "statusbar_hidden",
     "hide_open_website",
     "expanded_span_count",
-    "new_results_page"
+    "new_results_page",
+    "disable_player_shadow"
 )
 
 class SubSettingsFragment : PreferenceFragmentCompat() {
@@ -149,6 +150,14 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                     }
                     return@setOnPreferenceChangeListener true
                 }
+
+                findPreference<SwitchPreference>("hide_chinese")?.setOnPreferenceChangeListener { _, newValue ->
+                    thread {
+                        context?.requestHome(false)
+                    }
+                    return@setOnPreferenceChangeListener true
+                }
+
 
                 /*findPreference<SwitchPreference?>("use_external_storage")?.setOnPreferenceChangeListener { _, newValue ->
                     if (newValue == true) {
@@ -501,7 +510,7 @@ class SubSettingsFragment : PreferenceFragmentCompat() {
                 checkUpdates?.setOnPreferenceClickListener {
                     thread {
                         if (context != null && activity != null) {
-                            val updateSuccess = requireActivity().runAutoUpdate(getCurrentActivity()!!, false)
+                            val updateSuccess = requireActivity().runAutoUpdate(false)
                             if (!updateSuccess) {
                                 activity?.runOnUiThread {
                                     Toast.makeText(activity, "No updates found :(", Toast.LENGTH_SHORT).show()

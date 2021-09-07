@@ -1,7 +1,6 @@
 package com.lagradost.shiro.utils.extractors
 
 import com.lagradost.shiro.utils.APIS
-import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.ExtractorLink
 import com.lagradost.shiro.utils.mvvm.logError
 import com.lagradost.shiro.utils.pmap
@@ -11,11 +10,12 @@ class Vidstream(var providersActive: HashSet<String> = HashSet()) {
     val name: String = "Vidstream"
     private val mainUrl: String
         get() {
-            return if (settingsManager?.getBoolean(
-                    "alternative_vidstream",
-                    false
-                ) == true
-            ) "https://streamani.net" else "https://gogo-stream.com"
+            return "https://streamani.net"
+//            if (settingsManager?.getBoolean(
+//                    "alternative_vidstream",
+//                    false
+//                ) == true
+//            ) "https://streamani.net" else "https://gogo-stream.com"
         }
 
     private fun getExtractorUrl(id: String): String {
@@ -29,13 +29,12 @@ class Vidstream(var providersActive: HashSet<String> = HashSet()) {
         val normalApis = arrayListOf(Shiro(), MultiQuality())
         try {
             normalApis.pmap { api ->
-                println("GETTING URL FOR ${api.mainUrl}")
                 if (providersActive.size == 0 || providersActive.contains(api.name)) {
                     val url = api.getExtractorUrl(id)
                     val source = api.getUrl(url)
                     source?.forEach {
                         // When shiro serves unavailable.mp4
-                        if (!it.url.contains("shiro.is/")) callback.invoke(it)
+                        if (!it.url.contains("********")) callback.invoke(it)
                     }
                 }
             }

@@ -11,7 +11,7 @@
             android:layout_marginBottom="5dp"
             android:elevation="10dp"
             app:cardCornerRadius="@dimen/card_corner_radius"
-            android:id="@+id/cardBg"
+            android:id="@+id/card_outline"
             app:cardBackgroundColor="?attr/backgroundColorDark">
         <!-- USING CROP RATIO (182/268), centerCrop for fill -->
         <ImageView

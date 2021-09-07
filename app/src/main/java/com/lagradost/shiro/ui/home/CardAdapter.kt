@@ -1,6 +1,5 @@
 package com.lagradost.shiro.ui.home
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -17,13 +16,10 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.GlideApp
-import com.lagradost.shiro.ui.result.RESULT_FRAGMENT_TAG
-import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
-import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
 import com.lagradost.shiro.utils.AppUtils.fixCardTitle
-import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
+import com.lagradost.shiro.utils.AppUtils.loadPage
 import com.lagradost.shiro.utils.AppUtils.onLongCardClick
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
@@ -84,7 +80,7 @@ class CardAdapter(
         return cardList.size
     }
 
-    class CardViewHolder(itemView: View, _context: Context) : RecyclerView.ViewHolder(itemView) {
+    class CardViewHolder(itemView: View, _context: FragmentActivity) : RecyclerView.ViewHolder(itemView) {
         val context = _context
         val card: View = itemView
 
@@ -101,8 +97,7 @@ class CardAdapter(
                 card.layoutParams = param
             }
             if (cardInfo != null) {
-                val glideUrl =
-                    GlideUrl(getFullUrlCdn(cardInfo.image))
+                val glideUrl = getFullUrlCdn(cardInfo.image)
                 //  activity?.runOnUiThread {
                 context.let {
                     val settingsManager = PreferenceManager.getDefaultSharedPreferences(it)
@@ -115,7 +110,7 @@ class CardAdapter(
                         .into(card.imageView)
                 }
                 itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).start()
-                itemView.imageText.text = fixCardTitle(cardInfo.name)
+                itemView.imageText?.text = fixCardTitle(cardInfo.name)
 
                 itemView.home_card_root.setOnLongClickListener {
                     itemView.scaleY = 0.9f
@@ -125,11 +120,9 @@ class CardAdapter(
                     return@setOnLongClickListener true
                 }
                 itemView.home_card_root.setOnClickListener {
-                    val home = if (tvActivity != null) R.id.home_root_tv else R.id.homeRoot
-                    getCurrentActivity()?.addFragmentOnlyOnce(
-                        home,
-                        ResultFragment.newInstance(cardInfo.slug, cardInfo.name),
-                        RESULT_FRAGMENT_TAG
+                    context.loadPage(
+                        cardInfo.slug,
+                        cardInfo.name,
                     )
                 }
             }

@@ -390,59 +390,59 @@
                     </RelativeLayout>
 
 
-                    <TextView
-                            style="@style/HomeCategoriesText"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/home_ongoing"
-                            android:id="@+id/ongoing_anime_text"
-                            app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
-                    >
-                    </TextView>
-                    <RelativeLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="180dp"
-                            android:layout_marginBottom="20dp"
-                    >
+                    <!--                    <TextView-->
+                    <!--                            style="@style/HomeCategoriesText"-->
+                    <!--                            android:layout_width="match_parent"-->
+                    <!--                            android:layout_height="wrap_content"-->
+                    <!--                            android:text="@string/home_ongoing"-->
+                    <!--                            android:id="@+id/ongoing_anime_text"-->
+                    <!--                            app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"-->
+                    <!--                    >-->
+                    <!--                    </TextView>-->
+                    <!--                    <RelativeLayout-->
+                    <!--                            android:layout_width="wrap_content"-->
+                    <!--                            android:layout_height="180dp"-->
+                    <!--                            android:layout_marginBottom="20dp"-->
+                    <!--                    >-->
 
-                        <androidx.recyclerview.widget.RecyclerView
-                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                                android:id="@+id/ongoing_anime_scroll_view"
-                                tools:listitem="@layout/home_card"
-                                android:orientation="horizontal"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                style="@style/HomeCategoriesResView"
-                        >
-                        </androidx.recyclerview.widget.RecyclerView>
-                    </RelativeLayout>
+                    <!--                        <androidx.recyclerview.widget.RecyclerView-->
+                    <!--                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"-->
+                    <!--                                android:id="@+id/ongoing_anime_scroll_view"-->
+                    <!--                                tools:listitem="@layout/home_card"-->
+                    <!--                                android:orientation="horizontal"-->
+                    <!--                                android:layout_width="wrap_content"-->
+                    <!--                                android:layout_height="wrap_content"-->
+                    <!--                                style="@style/HomeCategoriesResView"-->
+                    <!--                        >-->
+                    <!--                        </androidx.recyclerview.widget.RecyclerView>-->
+                    <!--                    </RelativeLayout>-->
 
-                    <TextView
-                            style="@style/HomeCategoriesText"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/latest_anime"
-                            android:id="@+id/latest_anime_text"
-                            app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
-                    >
-                    </TextView>
-                    <RelativeLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="180dp"
-                            android:layout_marginBottom="20dp"
-                    >
+                    <!--                    <TextView-->
+                    <!--                            style="@style/HomeCategoriesText"-->
+                    <!--                            android:layout_width="match_parent"-->
+                    <!--                            android:layout_height="wrap_content"-->
+                    <!--                            android:text="@string/latest_anime"-->
+                    <!--                            android:id="@+id/latest_anime_text"-->
+                    <!--                            app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"-->
+                    <!--                    >-->
+                    <!--                    </TextView>-->
+                    <!--                    <RelativeLayout-->
+                    <!--                            android:layout_width="wrap_content"-->
+                    <!--                            android:layout_height="180dp"-->
+                    <!--                            android:layout_marginBottom="20dp"-->
+                    <!--                    >-->
 
-                        <androidx.recyclerview.widget.RecyclerView
-                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                                android:id="@+id/latest_anime_scroll_view"
-                                tools:listitem="@layout/home_card"
-                                android:orientation="horizontal"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                style="@style/HomeCategoriesResView"
-                        >
-                        </androidx.recyclerview.widget.RecyclerView>
-                    </RelativeLayout>
+                    <!--                        <androidx.recyclerview.widget.RecyclerView-->
+                    <!--                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"-->
+                    <!--                                android:id="@+id/latest_anime_scroll_view"-->
+                    <!--                                tools:listitem="@layout/home_card"-->
+                    <!--                                android:orientation="horizontal"-->
+                    <!--                                android:layout_width="wrap_content"-->
+                    <!--                                android:layout_height="wrap_content"-->
+                    <!--                                style="@style/HomeCategoriesResView"-->
+                    <!--                        >-->
+                    <!--                        </androidx.recyclerview.widget.RecyclerView>-->
+                    <!--                    </RelativeLayout>-->
 
                     <!--
                                         <LinearLayout

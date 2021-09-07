@@ -5,7 +5,7 @@
 >
     <Preference
             android:icon="@drawable/ic_baseline_payment_24"
-            android:title="Donate to Shiro.is"
+            android:title="Donate to ********"
             app:summary="To help fund the site"
     >
         <intent android:action="android.intent.action.VIEW"
@@ -23,7 +23,7 @@
 
     </Preference>
     <Preference
-            android:title="Shiro.is discord"
+            android:title="******** discord"
             android:icon="@drawable/ic_baseline_discord_24"
             app:summary="Join the Shiro community"
     >
@@ -38,6 +38,13 @@
             app:summary="https://github.com/LagradOst/QuickNovel">
         <intent android:action="android.intent.action.VIEW"
                 android:data="https://github.com/LagradOst/QuickNovel"/>
+    </Preference>
+    <Preference
+            android:title="Anime and Movie app by the same devs"
+            android:icon="@drawable/cs3_cloud"
+            app:summary="https://github.com/LagradOst/CloudStream-3">
+        <intent android:action="android.intent.action.VIEW"
+                android:data="https://github.com/LagradOst/CloudStream-3"/>
     </Preference>
     <Preference
             android:title="Developers (to complain to)"

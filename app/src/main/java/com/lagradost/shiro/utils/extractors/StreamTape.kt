@@ -15,7 +15,6 @@ class StreamTape : ExtractorApi() {
         Regex("""(i(|" \+ ')d(|" \+ ')=.*?&(|" \+ ')e(|" \+ ')x(|" \+ ')p(|" \+ ')i(|" \+ ')r(|" \+ ')e(|" \+ ')s(|" \+ ')=.*?&(|" \+ ')i(|" \+ ')p(|" \+ ')=.*?&(|" \+ ')t(|" \+ ')o(|" \+ ')k(|" \+ ')e(|" \+ ')n(|" \+ ')=.*)'""")
 
     override fun getUrl(url: String, referer: String?): List<ExtractorLink>? {
-        val url = "https://strtapeadblock.me/e/pb4z3WBgJ9HryBG/one-piece-episode-9841627723561.0.mp4"
         try {
             with(khttp.get(url)) {
                 linkRegex.find(this.text)?.let {

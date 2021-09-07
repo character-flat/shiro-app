@@ -1,92 +1,142 @@
 package com.lagradost.shiro.ui.result
 
-import DOWNLOAD_CHILD_KEY
 import DataStore.containsKey
-import DataStore.getKey
-import DataStore.removeKey
-import DataStore.setKey
 import VIEWSTATE_KEY
-import VIEW_POS_KEY
 import android.content.res.ColorStateList
-import android.net.Uri
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.Toast
+import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.view.ContextThemeWrapper
-import androidx.appcompat.widget.PopupMenu
-import androidx.core.content.ContextCompat
-import androidx.core.view.marginBottom
-import androidx.core.view.marginLeft
-import androidx.core.view.marginTop
-import androidx.core.view.updateMarginsRelative
-import androidx.fragment.app.FragmentActivity
+import androidx.cardview.widget.CardView
+import androidx.core.view.isVisible
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.exoplayer2.ext.cast.CastPlayer
-import com.google.android.exoplayer2.util.MimeTypes
-import com.google.android.gms.cast.MediaInfo
-import com.google.android.gms.cast.MediaMetadata
-import com.google.android.gms.cast.MediaQueueItem
-import com.google.android.gms.cast.MediaStatus.REPEAT_MODE_REPEAT_SINGLE
-import com.google.android.gms.cast.framework.CastContext
-import com.google.android.gms.cast.framework.CastState
-import com.google.android.gms.common.images.WebImage
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ui.MainActivity.Companion.isDonor
-import com.lagradost.shiro.ui.downloads.DownloadFragment.Companion.downloadsUpdated
-import com.lagradost.shiro.ui.result.ResultFragment.Companion.resultViewModel
+import com.lagradost.shiro.ui.GlideApp
+import com.lagradost.shiro.ui.NextEpisode
+import com.lagradost.shiro.ui.downloads.*
 import com.lagradost.shiro.ui.toPx
+import com.lagradost.shiro.ui.tv.TvActivity.Companion.tvActivity
 import com.lagradost.shiro.utils.AppUtils.dubbify
 import com.lagradost.shiro.utils.AppUtils.getColorFromAttr
 import com.lagradost.shiro.utils.AppUtils.getLatestSeenEpisode
-import com.lagradost.shiro.utils.AppUtils.getTextColor
 import com.lagradost.shiro.utils.AppUtils.getViewKey
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
-import com.lagradost.shiro.utils.AppUtils.isCastApiAvailable
-import com.lagradost.shiro.utils.AppUtils.loadPlayer
-import com.lagradost.shiro.utils.AppUtils.settingsManager
-import com.lagradost.shiro.utils.DownloadManager
 import com.lagradost.shiro.utils.ShiroApi
 import com.lagradost.shiro.utils.ShiroApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.utils.ShiroApi.Companion.getVideoLink
 import com.lagradost.shiro.utils.VideoDownloadManager
-import com.lagradost.shiro.utils.VideoDownloadManager.downloadQueue
-import kotlinx.android.synthetic.main.episode_result_compact.view.*
+import kotlinx.android.synthetic.main.episode_result.view.*
+import kotlinx.android.synthetic.main.episode_result_compact.view.cardTitle
+import kotlinx.android.synthetic.main.episode_result_compact.view.cdi
+import kotlinx.android.synthetic.main.episode_result_compact.view.episode_result_root
+import kotlinx.android.synthetic.main.episode_result_compact.view.progressBar
+import kotlinx.android.synthetic.main.episode_result_compact.view.video_progress
 import kotlinx.android.synthetic.main.fragment_results.view.*
-import org.json.JSONObject
-import kotlin.concurrent.thread
+import java.util.*
+
+const val ACTION_PLAY_EPISODE_IN_PLAYER = 1
+const val ACTION_PLAY_EPISODE_IN_VLC_PLAYER = 2
+const val ACTION_PLAY_EPISODE_IN_BROWSER = 3
+
+const val ACTION_CHROME_CAST_EPISODE = 4
+const val ACTION_CHROME_CAST_MIRROR = 5
+
+const val ACTION_DOWNLOAD_EPISODE = 6
+const val ACTION_DOWNLOAD_MIRROR = 7
+
+const val ACTION_RELOAD_EPISODE = 8
+const val ACTION_COPY_LINK = 9
+
+const val ACTION_SHOW_OPTIONS = 10
+
+const val ACTION_CLICK_DEFAULT = 11
+const val ACTION_CLICK_LONG = 12
+
+
+data class EpisodeClickEvent(
+    val action: Int,
+    val data: AllDataWithId,
+    val adapterPosition: Int
+)
 
 class EpisodeAdapter(
-    val activity: FragmentActivity,
-    val data: ShiroApi.AnimePageData,
+    val data: ShiroApi.Companion.AnimePageNewData,
     private val resView: View,
     private val parentPosition: Int,
     rangeStart: Int? = null,
     rangeStop: Int? = null,
+//    val anilistID: Int?,
+//    val malID: Int?,
     private val isFiller: HashMap<Int, Boolean>? = null,
+    private val clickCallback: (EpisodeClickEvent) -> Unit,
+    private val downloadClickCallback: (DownloadClickEvent) -> Unit,
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    val stop = rangeStop ?: data.episodes!!.size
+    val stop = rangeStop ?: data.episodes.size
     val start = rangeStart ?: 0
-    var episodes = data.episodes!!.subList(start, stop)
+    var episodes = data.episodes.subList(start, stop)
+
     private var prevFocus: Int? = null
 
+    private val mBoundViewHolders: HashSet<DownloadButtonViewHolder> = HashSet()
+    private fun getAllBoundViewHolders(): Set<DownloadButtonViewHolder?>? {
+        return Collections.unmodifiableSet(mBoundViewHolders)
+    }
+
+    fun killAdapter() {
+        getAllBoundViewHolders()?.forEach { view ->
+            view?.downloadButton?.dispose()
+        }
+    }
+
+    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
+        if (holder is DownloadButtonViewHolder) {
+            holder.downloadButton?.dispose()
+        }
+    }
+
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+        if (holder is DownloadButtonViewHolder) {
+            holder.downloadButton?.dispose()
+            mBoundViewHolders.remove(holder)
+        }
+    }
+
+    override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
+        if (holder is DownloadButtonViewHolder) {
+            holder.reattachDownloadButton()
+        }
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        //resView.spanCount = if (isDonor) 2 else 3
+        val settingsManager = PreferenceManager.getDefaultSharedPreferences(parent.context)
+        val layout =
+            if (settingsManager.getBoolean(
+                    "no_episode_thumbnails",
+                    false
+                )
+            ) R.layout.episode_result_compact else R.layout.episode_result
+        val hasDescription = !settingsManager.getBoolean("no_episode_description", false)
+
         return CardViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.episode_result_compact, parent, false),
-            activity,
+            LayoutInflater.from(parent.context).inflate(layout, parent, false),
             resView,
             data,
             start,
             parentPosition,
             isFiller,
+            hasDescription,
+
+//            anilistID,
+//            malID,
+
+            clickCallback,
+            downloadClickCallback,
         )
     }
 
@@ -116,523 +166,250 @@ class EpisodeAdapter(
 
     class CardViewHolder
     constructor(
-        itemView: View, val activity: FragmentActivity, private val resView: View,
-        val data: ShiroApi.AnimePageData, val start: Int, private val parentPosition: Int,
-        private val isFiller: HashMap<Int, Boolean>? = null
-    ) :
-        RecyclerView.ViewHolder(itemView) {
-        val card: LinearLayout = itemView.episode_result_root
+        itemView: View,
+        private val resView: View,
+        val data: ShiroApi.Companion.AnimePageNewData,
+        val start: Int,
+        private val parentPosition: Int,
+        private val isFiller: HashMap<Int, Boolean>?,
+        private val hasDescription: Boolean,
 
-        companion object {
-            val anilistID: Int?
-                get() = resultViewModel?.currentAniListId?.value
-            val malID: Int?
-                get() = resultViewModel?.currentMalId?.value
+//        val anilistID: Int?,
+//        val malID: Int?,
+
+        private val clickCallback: (EpisodeClickEvent) -> Unit,
+        private val downloadClickCallback: (DownloadClickEvent) -> Unit,
+    ) :
+        RecyclerView.ViewHolder(itemView), DownloadButtonViewHolder {
+        val card: CardView = itemView.episode_result_root
+        var cardPosition = 0
+        override var downloadButton: EasyDownloadButton? = if (tvActivity == null) EasyDownloadButton() else null
+
+        override fun reattachDownloadButton() {
+            if (tvActivity != null) return
+
+            downloadButton?.dispose()
+            val episode = start + cardPosition
+            val id = (data.anime.slug + "E$episode").hashCode()
+            val downloadInfo = VideoDownloadManager.getDownloadFileInfoAndUpdateSettings(itemView.context, id)
+            val episodeOffset = if (data.episodes.filter { it.episode == "0" }.isNullOrEmpty()) 0 else -1
+
+            downloadButton?.setUpButton(
+                downloadInfo?.fileLength, downloadInfo?.totalBytes, itemView.progressBar, itemView.cdi, null,
+                AllDataWithId(
+                    id,
+                    data.anime.slug,
+                    data.anime.title,
+                    episode,
+                    episodeOffset,
+//                    anilistID,
+//                    malID,
+                    isFiller,
+                    data
+                )
+            ) {
+                if (it.action == DOWNLOAD_ACTION_DOWNLOAD) {
+                    clickCallback.invoke(
+                        EpisodeClickEvent(
+                            ACTION_DOWNLOAD_EPISODE,
+                            AllDataWithId(
+                                id,
+                                data.anime.slug,
+                                data.anime.title,
+                                episode,
+                                episodeOffset,
+//                                anilistID,
+//                                malID,
+                                isFiller,
+                                data
+                            ),
+                            parentPosition
+                        )
+                    )
+                } else {
+                    downloadClickCallback.invoke(it)
+                }
+            }
         }
 
         // Downloads is only updated when re-bound!
         fun bind(position: Int) {
-            if (position == 0) {
-                card.requestFocus()
-            }
-            if (position == 0 || position == 1) {
-                card.setOnFocusChangeListener { _: View, focused: Boolean ->
-                    resView.isFocusable = focused
+            with(itemView.context) {
+                cardPosition = position
+
+                if (position == 0) {
+                    card.requestFocus()
                 }
-            }
-            val episodeOffset = if (data.episodes?.filter { it.episode_number == 0 }.isNullOrEmpty()) 0 else -1
-
-
-            //println("START $start pos $position")
-            val episodePos = start + position
-            val key = getViewKey(data.slug, episodePos)
-
-            // Because the view is recycled
-            card.progressBar.visibility = GONE
-            card.cardPauseIcon.visibility = GONE
-            card.cardRemoveIcon.visibility = GONE
-
-            // Sets loading icon on queued items
-            if (downloadQueue.any { it.item.ep.episode == episodePos + 1 + episodeOffset }) {
-                card.cdi_loading.visibility = VISIBLE
-                card.cdi.visibility = GONE
-            } else {
-                card.cdi_loading.visibility = GONE
-                card.cdi.visibility = VISIBLE
-            }
-
-            if (isDonor) {
-                card.cdi.setOnClickListener {
-                    card.cdi_loading.visibility = VISIBLE
-                    card.cdi.visibility = GONE
-                    thread {
-                        val sources = data.episodes?.get(episodePos)?.videos?.getOrNull(0)?.video_id.let { video_id ->
-                            getVideoLink(
-                                video_id!!
-                            )
-                        }?.filter { !it.isM3u8 }
-                        activity.runOnUiThread {
-                            if (!sources.isNullOrEmpty()) {
-                                // card.cdi.visibility = VISIBLE
-                                // card.cdi_loading.visibility = GONE
-                                if (settingsManager?.getBoolean("pick_downloads", false) == true) {
-                                    lateinit var dialog: AlertDialog
-                                    val sourcesTexts = sources.map { it.name }
-                                    val builder = AlertDialog.Builder(activity, R.style.AlertDialogCustom)
-                                    builder.setTitle("Pick source")
-                                    builder.setSingleChoiceItems(sourcesTexts.toTypedArray(), 0) { _, which ->
-                                        DownloadManager.downloadEpisode(
-                                            activity,
-                                            DownloadManager.DownloadInfo(
-                                                episodePos,
-                                                data,
-                                                anilistID,
-                                                malID,
-                                                isFiller
-                                            ),
-                                            listOf(sources[which])
-                                        )
-
-                                        dialog.dismiss()
-                                    }
-                                    dialog = builder.create()
-                                    dialog.show()
-                                } else {
-                                    DownloadManager.downloadEpisode(
-                                        activity,
-                                        DownloadManager.DownloadInfo(
-                                            episodePos,
-                                            data,
-                                            anilistID,
-                                            malID,
-                                            isFiller
-                                        ),
-                                        sources
-                                    )
-                                }
-                            } else {
-                                Toast.makeText(
-                                    activity,
-                                    "Download failed for episode ${episodePos + 1 + episodeOffset}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                card.cdi.visibility = VISIBLE
-                                card.cdi_loading.visibility = GONE
-                            }
-                        }
+                if (position == 0 || position == 1) {
+                    card.setOnFocusChangeListener { _: View, focused: Boolean ->
+                        resView.isFocusable = focused
                     }
                 }
-            } else {
-                card.cdi.visibility = GONE
-                val param = card.cardTitle.layoutParams as ViewGroup.MarginLayoutParams
-                param.updateMarginsRelative(
-                    card.cardTitle.marginLeft,
-                    card.cardTitle.marginTop,
-                    10.toPx,
-                    card.cardTitle.marginBottom
-                )
-                card.cardTitle.layoutParams = param
-            }
-
-            itemView.episode_result_root.setOnClickListener {
-                if (activity.isCastApiAvailable()) {
-                    val castContext = CastContext.getSharedInstance(activity.applicationContext)
-                    println("SSTATE: " + castContext.castState + "<<")
-                    if (castContext.castState == CastState.CONNECTED) {
-                        castEpisode(data, episodePos)
-                    } else {
-                        thread {
-                            activity.loadPlayer(episodePos, 0L, data, anilistID, malID, isFiller)
-                        }
-                    }
-                } else {
-                    thread {
-                        activity.loadPlayer(episodePos, 0L, data, anilistID, malID, isFiller)
+                val episodeOffset = if (data.episodes.filter { it.episode == "0" }.isNullOrEmpty()) 0 else -1
+                val episodePos = start + position
+                val id = (data.anime.slug + "E$episodePos").hashCode()
+                card.video_thumbnail?.let {
+                    data.episodes.getOrNull(episodePos)?.image?.let { thumbnail ->
+                        val guaranteedThumbnail = thumbnail.ifBlank { data.anime.poster }
+                        val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
+                        val savingData = settingsManager.getBoolean("data_saving", false)
+                        val url = getFullUrlCdn(guaranteedThumbnail)
+                        GlideApp.with(this)
+                            .load(url)
+                            .transition(DrawableTransitionOptions.withCrossFade(100))
+                            .onlyRetrieveFromCache(savingData)
+                            .into(it)
                     }
                 }
-            }
 
-            card.episode_result_root.setOnLongClickListener {
-                val keyNormal = getViewKey(data.slug.dubbify(false), episodePos)
-                val keyDubbed = getViewKey(data.slug.dubbify(true), episodePos)
-
-                if (activity.containsKey(VIEWSTATE_KEY, keyNormal) || activity.containsKey(
-                        VIEWSTATE_KEY,
-                        keyDubbed
+                val defaultData =
+                    AllDataWithId(
+                        id,
+                        data.anime.slug,
+                        data.anime.title,
+                        episodePos,
+                        episodeOffset,
+//                        anilistID,
+//                        malID,
+                        isFiller,
+                        data
                     )
-                ) {
-                    activity.removeKey(VIEWSTATE_KEY, keyNormal)
-                    activity.removeKey(VIEWSTATE_KEY, keyDubbed)
-                } else {
-                    activity.setKey(VIEWSTATE_KEY, key, System.currentTimeMillis())
-                }
-                // Hack, but works
-                (activity.findViewById<RecyclerView>(R.id.episodes_res_view).adapter as MasterEpisodeAdapter).notifyItemChanged(
-                    parentPosition
-                )
-                //resView.adapter?.notifyDataSetChanged()
-                //setCardViewState(key, episodePos)
-                return@setOnLongClickListener true
-            }
 
-            val isCurrentFiller = if (isFiller != null) {
-                if (isFiller.containsKey(episodePos + 1)) {
-                    isFiller[episodePos + 1] ?: false
+                card.cdi.isVisible = tvActivity == null
+                card.setOnClickListener {
+                    clickCallback.invoke(
+                        EpisodeClickEvent(
+                            ACTION_CLICK_DEFAULT,
+                            defaultData,
+                            parentPosition
+                        )
+                    )
+                }
+
+                val longClickListener = View.OnLongClickListener {
+                    clickCallback.invoke(
+                        EpisodeClickEvent(
+                            ACTION_CLICK_LONG,
+                            defaultData,
+                            parentPosition
+                        )
+                    )
+                    return@OnLongClickListener true
+                }
+
+                card.setOnLongClickListener(longClickListener)
+
+                val isCurrentFiller = if (isFiller != null) {
+                    if (isFiller.containsKey(episodePos + 1)) {
+                        isFiller[episodePos + 1] ?: false
+                    } else false
                 } else false
-            } else false
 
-            val title = "Episode ${episodePos + 1 + episodeOffset}" + (if (isCurrentFiller) " (Filler)" else "")
-            card.cardTitle.text = title
+                val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
+                val noThumbnails = settingsManager.getBoolean("no_episode_thumbnails", false)
+                val fillerSuffix = if (isCurrentFiller) "(Filler)" else ""
 
-            setCardViewState(episodePos)
+                val siteTitle = data.episodes.getOrNull(episodePos)?.title
 
-            val pro = activity.getViewPosDur(data.slug, episodePos)
-            //println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
-            if (pro.dur > 0 && pro.pos > 0) {
-                var progress: Int = (pro.pos * 100L / pro.dur).toInt()
-                if (progress < 5) {
-                    progress = 5
-                } else if (progress > 95) {
-                    progress = 100
+                /**
+                 * 1. No thumbnails -> Episode 1 (Filler)
+                 * 2. Has episode in title -> (Filler) <title>Episode 1....</title>
+                 * 3. Doesn't have episode in title -> Episode 1. (Filler) <title>....</title>
+                 * 4. else -> Episode 1 (Filler)
+                 */
+                val fixedSiteTitle = when {
+                    noThumbnails -> "Episode ${episodePos + 1 + episodeOffset} $fillerSuffix"
+                    Regex("""Episode \d+""").matches(siteTitle ?: "") -> "$fillerSuffix $siteTitle"
+                    siteTitle != null -> "${episodePos + 1 + episodeOffset}. $fillerSuffix $siteTitle"
+                    else -> "Episode ${episodePos + 1 + episodeOffset} $fillerSuffix"
                 }
-                card.video_progress.alpha = 1f
-                card.video_progress.progress = progress
-            } else {
-                card.video_progress.alpha = 0f
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                card.progressBar.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
-            }
-            fun updateIcon(megabytes: Int, fileInfo: VideoDownloadManager.DownloadedFileInfoResult?) {
-                card.cdi_loading.visibility = GONE
 
-                if (fileInfo == null) {
-                    card.cdi.visibility = VISIBLE
-                    card.progressBar.visibility = GONE
-                    card.cardPauseIcon.visibility = GONE
-                    card.cardRemoveIcon.visibility = GONE
-                } else {
-                    card.cdi.visibility = GONE
-                    val megaBytesTotal = DownloadManager.convertBytesToAny(fileInfo.totalBytes, 0, 2.0).toInt()
-                    if (megabytes + 0.1 >= megaBytesTotal) {
-                        card.progressBar.visibility = GONE
-                        card.cardPauseIcon.visibility = GONE
-                        card.cardRemoveIcon.visibility = VISIBLE
+                card.cardTitle?.text = fixedSiteTitle
+
+                card.cardSummary?.isVisible = hasDescription
+                if (hasDescription) {
+                    card.cardSummary?.setOnLongClickListener(longClickListener)
+                    val summary = data.episodes.getOrNull(episodePos)?.insight?.replace("`", "'") ?: "None"
+                    if (summary == "None") {
+                        card.cardSummary?.visibility = GONE
                     } else {
-                        card.progressBar.visibility = VISIBLE
-                        card.cardRemoveIcon.visibility = GONE
-                        card.cardPauseIcon.visibility = VISIBLE
+                        card.cardSummary?.text = summary
+                        card.cardSummary?.setOnClickListener {
+                            val builder: AlertDialog.Builder =
+                                AlertDialog.Builder(this, R.style.AlertDialogCustom)
+                            builder.setMessage(summary).setTitle("Insight")
+                                .show()
+                        }
                     }
                 }
-            }
 
-            if (isDonor) {
-                val internalId = (data.slug + "E${episodePos}").hashCode()
-                val child = activity.getKey<DownloadManager.DownloadFileMetadata>(
-                    DOWNLOAD_CHILD_KEY,
-                    internalId.toString()
-                )
-                // ================ DOWNLOAD STUFF ================
-                if (child != null) {
-                    val fileInfo = VideoDownloadManager.getDownloadFileInfoAndUpdateSettings(activity, child.internalId)
-                    if (fileInfo != null) {
-                        val megaBytesTotal = DownloadManager.convertBytesToAny(fileInfo.totalBytes, 0, 2.0).toInt()
-                        val localBytesTotal =
-                            maxOf(DownloadManager.convertBytesToAny(fileInfo.fileLength, 0, 2.0).toInt(), 1)
 
-                        println("FILE EXISTS:$episodePos")
-                        fun deleteFile() {
-                            if (VideoDownloadManager.deleteFileAndUpdateSettings(activity, child.internalId)) {
-                                activity.removeKey(DOWNLOAD_CHILD_KEY, key)
-                                activity.runOnUiThread {
-                                    Toast.makeText(
-                                        activity,
-                                        "${child.videoTitle} E${child.episodeIndex + 1} deleted",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                    updateIcon(0, null)
-                                }
-                                downloadsUpdated.invoke(true)
-                            }
-                        }
-
-                        card.cardRemoveIcon.setOnClickListener {
-                            val alertDialog: AlertDialog = activity.let {
-                                val builder = AlertDialog.Builder(it, R.style.AlertDialogCustom)
-                                builder.apply {
-                                    setPositiveButton(
-                                        "Delete"
-                                    ) { _, _ ->
-                                        deleteFile()
-                                    }
-                                    setNegativeButton(
-                                        "Cancel"
-                                    ) { _, _ ->
-                                        // User cancelled the dialog
-                                    }
-                                }
-                                // Set other dialog properties
-                                builder.setTitle("Delete ${child.videoTitle} - E${child.episodeIndex + 1}")
-
-                                // Create the AlertDialog
-                                builder.create()
-                            }
-                            alertDialog.show()
-                        }
-
-                        card.cardTitle.text = title
-
-                        //card.cardTitleExtra.text = "$localBytesTotal / $megaBytesTotal MB"
-
-                        fun getDownload(): DownloadManager.DownloadInfo {
-                            return DownloadManager.DownloadInfo(
-                                child.episodeIndex,
-                                data,
-                                anilistID,
-                                malID,
-                                isFiller
-                            )
-                        }
-
-                        fun getStatus(): Boolean { // IF CAN RESUME
-                            return if (VideoDownloadManager.downloadStatus.containsKey(child.internalId)) {
-                                VideoDownloadManager.downloadStatus[child.internalId] == VideoDownloadManager.DownloadType.IsPaused
-                            } else {
-                                true
-                            }
-                        }
-
-                        fun setStatus(isPaused: Boolean) {
-                            activity.runOnUiThread {
-                                if (isPaused) {
-                                    card.cardPauseIcon.setImageResource(R.drawable.netflix_play)
-                                } else {
-                                    card.cardPauseIcon.setImageResource(R.drawable.exo_icon_stop)
-                                }
-                            }
-                        }
-
-                        setStatus(true)
-                        updateIcon(localBytesTotal, fileInfo)
-
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            card.cardPauseIcon.imageTintList = ColorStateList.valueOf(Cyanea.instance.primary)
-                        }
-                        card.cardPauseIcon.setOnClickListener { v ->
-                            val ctw = ContextThemeWrapper(activity, R.style.PopupMenu)
-                            val popup = PopupMenu(ctw, v)
-                            if (getStatus()) {
-                                popup.setOnMenuItemClickListener {
-                                    when (it.itemId) {
-                                        R.id.res_resumedload -> {
-                                            if (VideoDownloadManager.downloadStatus.containsKey(child.internalId)) {
-                                                VideoDownloadManager.downloadEvent.invoke(
-                                                    Pair(
-                                                        child.internalId,
-                                                        VideoDownloadManager.DownloadActionType.Resume
-                                                    )
-                                                )
-                                            }
-                                            val pkg = VideoDownloadManager.getDownloadResumePackage(
-                                                activity,
-                                                child.internalId
-                                            )
-
-                                            if (downloadQueue.any {
-                                                    it.item.ep.id == pkg?.item?.ep?.id
-                                                }) Toast.makeText(
-                                                ctw,
-                                                "Episode is already in the download queue",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-
-                                            if (pkg != null) {
-                                                VideoDownloadManager.downloadFromResume(activity, pkg)
-                                            }
-                                        }
-                                        R.id.res_stopdload -> {
-                                            VideoDownloadManager.downloadEvent.invoke(
-                                                Pair(
-                                                    child.internalId,
-                                                    VideoDownloadManager.DownloadActionType.Stop
-                                                )
-                                            )
-                                            deleteFile()
-                                        }
-                                    }
-                                    return@setOnMenuItemClickListener true
-                                }
-                                popup.inflate(R.menu.resume_menu)
-                            } else {
-                                popup.setOnMenuItemClickListener {
-                                    when (it.itemId) {
-                                        R.id.stop_pauseload -> {
-                                            VideoDownloadManager.downloadEvent.invoke(
-                                                Pair(
-                                                    child.internalId,
-                                                    VideoDownloadManager.DownloadActionType.Pause
-                                                )
-                                            )
-                                        }
-                                        R.id.stop_stopdload -> {
-                                            VideoDownloadManager.downloadEvent.invoke(
-                                                Pair(
-                                                    child.internalId,
-                                                    VideoDownloadManager.DownloadActionType.Stop
-                                                )
-                                            )
-                                        }
-                                    }
-                                    return@setOnMenuItemClickListener true
-                                }
-                                popup.inflate(R.menu.stop_menu)
-                            }
-                            popup.show()
-                        }
-
-                        card.progressBar.progress = maxOf(minOf(localBytesTotal * 100 / megaBytesTotal, 100), 0)
-
-                        VideoDownloadManager.downloadStatusEvent += {
-                            if (it.first == child.internalId) {
-                                val isPaused = it.second == VideoDownloadManager.DownloadType.IsPaused
-                                setStatus(isPaused)
-                            }
-                        }
-
-                        // This makes progress work but is incredibly laggy
-                        /*DownloadManager.downloadEvent += {
-                            activity.runOnUiThread {
-                                if (it.downloadEvent.id == child.internalId) {
-                                    (resView.episodes_res_view.adapter as EpisodeAdapter).notifyItemChanged(position)
-                                }
-                            }
-                        }*/
+                val pro = getViewPosDur(data.anime.slug, episodePos)
+                if (pro.dur > 0 && pro.pos > 0) {
+                    var progress: Int = (pro.pos * 100L / pro.dur).toInt()
+                    if (progress < 5) {
+                        progress = 5
+                    } else if (progress > 90) {
+                        progress = 100
                     }
-                }
-            }
-        }
-
-        private fun setCardViewState(episodePos: Int) {
-            val keyNormal = getViewKey(data.slug.dubbify(false), episodePos)
-            val keyDubbed = getViewKey(data.slug.dubbify(true), episodePos)
-            if (activity.containsKey(VIEWSTATE_KEY, keyNormal) || activity.containsKey(VIEWSTATE_KEY, keyDubbed)) {
-                val lastNormal = activity.getLatestSeenEpisode(data.dubbify(false))
-                val lastDubbed = activity.getLatestSeenEpisode(data.dubbify(true))
-                val last = if (lastDubbed.episodeIndex > lastNormal.episodeIndex) lastDubbed else lastNormal
-
-                if (last.isFound && last.episodeIndex == episodePos) {
-                    activity.let {
-                        card.cardBg.setCardBackgroundColor(
-                            Cyanea.instance.primaryLight
-                        )
-                    }
+                    card.video_progress.alpha = 1f
+                    card.video_progress.progress = progress
                 } else {
-                    activity.let {
-                        card.cardBg.setCardBackgroundColor(
-                            Cyanea.instance.primaryDark
+                    card.video_progress.alpha = 0f
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    card.progressBar.progressTintList = ColorStateList.valueOf(Cyanea.instance.accent)
+                }
+
+
+                val keyNormal = getViewKey(data.anime.slug.dubbify(false), episodePos)
+                val keyDubbed = getViewKey(data.anime.slug.dubbify(true), episodePos)
+
+                var lastDubbed: NextEpisode? = null
+                var lastNormal: NextEpisode? = null
+
+                fun setVisibility(focused: Boolean) {
+                    if (focused) {
+                        card.setCardBackgroundColor(
+                            getColorFromAttr(R.attr.white)
                         )
-                    }
-                }
-                activity.let {
-                    card.cardTitle.setTextColor(
-                        it.getTextColor()
-                    )
-                    card.cdi.setColorFilter(
-                        ContextCompat.getColor(it, R.color.white)
-                    )
-                    card.cardRemoveIcon.setColorFilter(
-                        ContextCompat.getColor(it, R.color.white)
-                    )
-                }
-            } else {
-                // Otherwise color is recycled
-                activity.let {
-                    card.cardTitle.setTextColor(
-                        it.getTextColor()
-                    )
-                    card.cardBg.setCardBackgroundColor(
-                        Cyanea.instance.backgroundColorDark
-                    )
-                    card.cdi.setColorFilter(
-                        it.getColorFromAttr(R.attr.white)
-                    )
-                    card.cardRemoveIcon.setColorFilter(
-                        it.getColorFromAttr(R.attr.white)
-                    )
-                }
-            }
-        }
+                    } else if (containsKey(VIEWSTATE_KEY, keyNormal) || containsKey(VIEWSTATE_KEY, keyDubbed)) {
+                        lastNormal = lastNormal ?: getLatestSeenEpisode(data.dubbify(false))
+                        lastDubbed = lastDubbed ?: getLatestSeenEpisode(data.dubbify(true))
+                        val last =
+                            if (lastDubbed!!.episodeIndex > lastNormal!!.episodeIndex) lastDubbed!! else lastNormal!!
 
-        private fun castEpisode(data: ShiroApi.AnimePageData, episodeIndex: Int) {
-            Toast.makeText(activity, "Getting links", Toast.LENGTH_SHORT).show()
-            val castContext = CastContext.getSharedInstance(activity.applicationContext)
-            castContext.castOptions
-            val key = getViewKey(data.slug, episodeIndex)
-            thread {
-                val videoLinks = data.episodes?.get(episodeIndex)?.videos?.getOrNull(0)?.video_id.let { video_id ->
-                    getVideoLink(
-                        video_id!!, isCasting = true
-                    )
-                }
-
-                /*val videoLinks = listOf(
-                    ExtractorLink(
-                        "Bus",
-                        "https://samplelib.com/lib/download/mp4/sample-10s.mp4",
-                        "",
-                        0
-                    ), ExtractorLink(
-                        "Traffic",
-                        "https://samplelib.com/lib/download/mp4/sample-20s.mp4",
-                        "",
-                        0
-                    ), ExtractorLink(
-                        "Crossing",
-                        "https://samplelib.com/lib/download/mp4/sample-30s.mp4",
-                        "",
-                        0
-                    )
-                )*/
-
-                println("LINK $videoLinks")
-                if (videoLinks != null) {
-                    activity.runOnUiThread {
-                        val mediaItems = videoLinks.map {
-                            val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE)
-                            movieMetadata.putString(
-                                MediaMetadata.KEY_TITLE,
-                                "Episode ${episodeIndex + 1} - ${it.name}"
-                            )
-                            movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data.name)
-                            movieMetadata.addImage(WebImage(Uri.parse(getFullUrlCdn(data.image))))
-                            MediaQueueItem.Builder(
-                                MediaInfo.Builder(it.url)
-                                    .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
-                                    .setContentType(MimeTypes.VIDEO_UNKNOWN)
-                                    .setCustomData(JSONObject().put("data", it.name))
-                                    .setMetadata(movieMetadata)
-                                    .build()
-                            )
-                                .build()
-                        }.toTypedArray()
-
-                        val castPlayer = CastPlayer(castContext)
-                        castPlayer.loadItems(
-                            mediaItems,
-                            0,
-                            activity.getKey(VIEW_POS_KEY, key, 0L)!!,
-                            REPEAT_MODE_REPEAT_SINGLE
+                        card.card_bg.setCardBackgroundColor(
+                            Cyanea.instance.backgroundColorDark
                         )
-                    }
 
-
-                    /*castPlayer.setSessionAvailabilityListener(object : SessionAvailabilityListener {
-                        override fun onCastSessionAvailable() {
-
+                        val margins = if (last.isFound && last.episodeIndex == episodePos) {
+                            card.setCardBackgroundColor(
+                                Cyanea.instance.accent
+                            )
+                            4.toPx
+                        } else {
+                            card.setCardBackgroundColor(
+                                Cyanea.instance.accentDark
+                            )
+                            2.toPx
                         }
+                        card.card_bg.layoutParams = card.card_bg.layoutParams.apply {
+                            (this as FrameLayout.LayoutParams).setMargins(margins, margins, margins, margins)
+                        }
+                    } else {
+                        card.card_bg.setCardBackgroundColor(
+                            Cyanea.instance.backgroundColor
+                        )
+                        card.setCardBackgroundColor(
+                            Cyanea.instance.backgroundColorLight
+                        )
+                    }
+                }
 
-                        override fun onCastSessionUnavailable() {}
-                    })*/
+                setVisibility(card.isFocused)
+                card.setOnFocusChangeListener { view, b ->
+                    setVisibility(b)
                 }
             }
         }

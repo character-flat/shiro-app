@@ -6,29 +6,28 @@ import android.os.Bundle
 import android.view.FocusFinder
 import android.view.KeyEvent
 import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.preference.PreferenceManager
 import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
 import com.jaredrummler.cyanea.prefs.CyaneaTheme
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
+import com.lagradost.shiro.ui.MainActivity.Companion.navController
 import com.lagradost.shiro.ui.MasterViewModel
-import com.lagradost.shiro.ui.WebViewFragment.Companion.isInWebView
-import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
-import com.lagradost.shiro.ui.settings.SettingsFragmentNew.Companion.isInSettings
 import com.lagradost.shiro.ui.tv.PlayerFragmentTv.Companion.isInPlayer
-import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
+import com.lagradost.shiro.utils.AppUtils.handleIntent
 import com.lagradost.shiro.utils.AppUtils.init
-import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
-import com.lagradost.shiro.utils.MALApi.Companion.authenticateMalLogin
 import com.lagradost.shiro.utils.ShiroApi.Companion.initShiroApi
 import kotlinx.android.synthetic.main.activity_tv.*
 import kotlinx.android.synthetic.main.fragment_main_tv.*
+import java.lang.ref.WeakReference
 import kotlin.concurrent.thread
 
 /**
@@ -36,7 +35,13 @@ import kotlin.concurrent.thread
  */
 class TvActivity : CyaneaAppCompatActivity() {
     companion object {
-        var tvActivity: TvActivity? = null
+        private var _tvActivity: WeakReference<TvActivity>? = null
+        var tvActivity
+            get() = _tvActivity?.get()
+            private set(value) {
+                _tvActivity = WeakReference(value)
+            }
+
         var isInSearch = false
 
         fun FragmentActivity.applyThemes() {
@@ -67,19 +72,6 @@ class TvActivity : CyaneaAppCompatActivity() {
 
     }
 
-    override fun onBackPressed() {
-        if ((isInSearch || isInSettings) && !isInResults && !isInWebView) {
-            supportFragmentManager.beginTransaction()
-                .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                .replace(R.id.home_root_tv, MainFragment())
-                .commit()
-        } else if (isInResults || isInPlayer || isInWebView) {
-            popCurrentPage(isInPlayer, isInExpandedView, isInResults)
-        } else {
-            super.onBackPressed()
-        }
-    }
-
     @SuppressLint("MissingSuperCall")
     override fun onCreate(savedInstanceState: Bundle?) {
         // Disables ssl check - Needed for development with Android TV VM
@@ -107,7 +99,7 @@ class TvActivity : CyaneaAppCompatActivity() {
             theme.applyStyle(R.style.darkText, true)
         }
         if (!Cyanea.instance.isThemeModified) {
-            val list: List<CyaneaTheme> = CyaneaTheme.Companion.from(assets, "themes/cyanea_themes.json");
+            val list: List<CyaneaTheme> = CyaneaTheme.Companion.from(assets, "themes/cyanea_themes.json")
             list[0].apply(Cyanea.instance).recreate(this)
         }
         applyThemes()
@@ -121,10 +113,12 @@ class TvActivity : CyaneaAppCompatActivity() {
         // ------ Init -----
         tvActivity = this
         thread {
-            runAutoUpdate(this)
+            runAutoUpdate()
         }
 
         setContentView(R.layout.activity_tv)
+        navController = findNavController(home_root_tv)
+        handleIntent(intent)
     }
 
 
@@ -132,15 +126,11 @@ class TvActivity : CyaneaAppCompatActivity() {
         return if (keyCode == KeyEvent.KEYCODE_DPAD_UP && !isInPlayer && !isInResults) {
             try {
                 val nextFocused =
-                    FocusFinder.getInstance().findNextFocus(home_root_tv, currentFocus, View.FOCUS_UP)
-                if (nextFocused == null) {
-                    //println("Null focus")
-                    search_icon.requestFocus()
-                } else {
-                    //println("Found focus")
-                    nextFocused.requestFocus()
-                    //super.onKeyDown(keyCode, event)
-                }
+                    FocusFinder.getInstance()
+                        .findNextFocus(home_root_tv?.view as? ViewGroup?, currentFocus, View.FOCUS_UP)
+                nextFocused?.requestFocus()
+                    ?: search_icon?.requestFocus()
+                    ?: false
             } catch (e: Exception) {
                 return false
             }
@@ -160,19 +150,7 @@ class TvActivity : CyaneaAppCompatActivity() {
 
     // AUTH FOR LOGIN
     override fun onNewIntent(intent: Intent?) {
-        if (intent != null) {
-            val dataString = intent.dataString
-            if (dataString != null && dataString != "") {
-                if (dataString.contains("shiroapp")) {
-                    if (dataString.contains("/anilistlogin")) {
-                        authenticateLogin(dataString)
-                    } else if (dataString.contains("/mallogin")) {
-                        authenticateMalLogin(dataString)
-                    }
-                }
-            }
-        }
-
+        handleIntent(intent)
         super.onNewIntent(intent)
     }
 

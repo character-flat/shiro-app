@@ -1,12 +1,16 @@
 package com.lagradost.shiro
 
+import ANILIST_SHOULD_UPDATE_LIST
+import DataStore.setKey
+import MAL_SHOULD_UPDATE_LIST
+import android.app.Application
 import android.content.Context
 import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.multidex.MultiDexApplication
 import com.google.auto.service.AutoService
 import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.utils.mvvm.logError
+import com.lagradost.shiro.utils.mvvm.normalSafeApiCall
 import org.acra.ReportField
 import org.acra.config.CoreConfiguration
 import org.acra.config.toast
@@ -15,6 +19,7 @@ import org.acra.data.StringFormat
 import org.acra.ktx.initAcra
 import org.acra.sender.ReportSender
 import org.acra.sender.ReportSenderFactory
+import java.lang.ref.WeakReference
 import kotlin.concurrent.thread
 
 class CustomReportSender : ReportSender {
@@ -47,9 +52,15 @@ class CustomSenderFactory : ReportSenderFactory {
     }
 }
 
-class AcraApplication : MultiDexApplication() {
+class AcraApplication : Application() {
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
+        context = base
+
+        normalSafeApiCall {
+            base?.setKey(MAL_SHOULD_UPDATE_LIST, true)
+            base?.setKey(ANILIST_SHOULD_UPDATE_LIST, true)
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             initAcra {
@@ -74,7 +85,27 @@ class AcraApplication : MultiDexApplication() {
 
     override fun onCreate() {
         super.onCreate()
+        context = context ?: baseContext
         Cyanea.init(this, resources)
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
+//        normalSafeApiCall {
+//            // Cleaning up update folder
+//            File("$filesDir/Download/apk/").deleteOnExit()
+//        }
     }
+
+    companion object {
+        private var _context: WeakReference<Context>? = null
+        var context
+            get() = _context?.get()
+            private set(value) {
+                _context = WeakReference(value)
+            }
+
+        fun getAppContext(): Context? {
+            return context
+        }
+
+    }
+
 }

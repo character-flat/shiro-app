@@ -96,8 +96,7 @@ class SettingsFragmentNew : Fragment() {
             MainActivity.statusHeight // view height
         )
         top_padding_settings?.layoutParams = topParams
-
-
+        settings_root?.background = ColorDrawable(Cyanea.instance.backgroundColor)
 
         if (tvActivity == null) {
             // Because the user isn't necessarily fetched
@@ -175,17 +174,8 @@ class SettingsFragmentNew : Fragment() {
         startActivity(intent)
     }
 
-    private fun restoreState(hasEntered: Boolean) {
-        if (hasEntered) {
-            this.view?.visibility = GONE
-        } else {
-            this.view?.visibility = VISIBLE
-        }
-    }
-
     override fun onDestroy() {
         super.onDestroy()
-        onWebViewNavigated -= ::restoreState
         isInSettings = false
     }
 
@@ -196,7 +186,6 @@ class SettingsFragmentNew : Fragment() {
         }
         isInSettings = true
         if (tvActivity != null) {
-            onWebViewNavigated += ::restoreState
         } else {
             activity?.requestedOrientation = if (settingsManager.getBoolean("force_landscape", false)) {
                 ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE

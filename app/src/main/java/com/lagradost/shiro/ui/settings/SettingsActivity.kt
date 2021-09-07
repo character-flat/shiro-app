@@ -17,21 +17,19 @@
 package com.lagradost.shiro.ui.settings
 
 import android.annotation.SuppressLint
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
-import androidx.annotation.ColorInt
 import androidx.preference.PreferenceManager
-import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
 import com.lagradost.shiro.utils.AppUtils.addFragmentOnlyOnce
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.showNavigation
+import java.lang.ref.WeakReference
 
 /**
  * Activity to show Cyanea preferences allowing the user to modify the primary, accent and background color of the app.
@@ -40,6 +38,8 @@ open class SettingsActivity : CyaneaAppCompatActivity() {
     @SuppressLint("MissingSuperCall")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_settings)
+
         settingsActivity = this
         supportActionBar?.show()
         supportActionBar?.setDisplayShowHomeEnabled(true)
@@ -69,13 +69,15 @@ open class SettingsActivity : CyaneaAppCompatActivity() {
         //delegate.localNightMode =
         //    if (Cyanea.instance.isLight) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
 
+        val layout = R.id.activity_settings_root
         when (val xml = intent.getIntExtra(XML_KEY, -1)) {
+
             R.xml.custom_pref_cyanea -> {
-                this.addFragmentOnlyOnce(android.R.id.content, CyaneaSettingsFragment.newInstance(), "SETTINGS")
+                this.addFragmentOnlyOnce(layout, CyaneaSettingsFragment.newInstance(), "SETTINGS")
             }
             -1 -> finish()
             else -> {
-                this.addFragmentOnlyOnce(android.R.id.content, SubSettingsFragment.newInstance(xml), "SETTINGS")
+                this.addFragmentOnlyOnce(layout, SubSettingsFragment.newInstance(xml), "SETTINGS")
             }
         }
     }
@@ -96,7 +98,12 @@ open class SettingsActivity : CyaneaAppCompatActivity() {
     }
 
     companion object {
-        var settingsActivity: SettingsActivity? = null
+        private var _settingsActivity: WeakReference<SettingsActivity>? = null
+        var settingsActivity
+            get() = _settingsActivity?.get()
+            private set(value) {
+                _settingsActivity = WeakReference(value)
+            }
     }
 
     override fun onDestroy() {

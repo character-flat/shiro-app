@@ -1,12 +1,7 @@
 package com.lagradost.shiro.ui
 
-import ANILIST_SHOULD_UPDATE_LIST
 import DataStore.getKey
-import DataStore.getKeys
 import DataStore.removeKey
-import DataStore.removeKeys
-import DataStore.setKey
-import MAL_SHOULD_UPDATE_LIST
 import android.annotation.SuppressLint
 import android.app.PictureInPictureParams
 import android.content.Intent
@@ -18,54 +13,57 @@ import android.graphics.drawable.ColorDrawable
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.KeyEvent
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
+import androidx.core.view.marginBottom
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
+import androidx.transition.ChangeBounds
+import androidx.transition.TransitionManager
+import androidx.work.WorkManager
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.jaredrummler.cyanea.Cyanea
 import com.jaredrummler.cyanea.app.CyaneaAppCompatActivity
 import com.jaredrummler.cyanea.prefs.CyaneaTheme
 import com.lagradost.shiro.R
-import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.player.PlayerEventType
 import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
-import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
-import com.lagradost.shiro.utils.AniListApi.Companion.authenticateLogin
-import com.lagradost.shiro.utils.AniListApi.Companion.initGetUser
 import com.lagradost.shiro.utils.AppUtils.changeStatusBarState
 import com.lagradost.shiro.utils.AppUtils.getTextColor
+import com.lagradost.shiro.utils.AppUtils.handleIntent
 import com.lagradost.shiro.utils.AppUtils.hasPIPPermission
+import com.lagradost.shiro.utils.AppUtils.hideKeyboard
 import com.lagradost.shiro.utils.AppUtils.hideSystemUI
 import com.lagradost.shiro.utils.AppUtils.init
 import com.lagradost.shiro.utils.AppUtils.installCache
-import com.lagradost.shiro.utils.AppUtils.isUsingMobileData
-import com.lagradost.shiro.utils.AppUtils.loadPage
-import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.shouldShowPIPMode
 import com.lagradost.shiro.utils.AppUtils.transparentStatusAndNavigation
+import com.lagradost.shiro.utils.DownloadManager.checkDownloadsUsingWorker
+import com.lagradost.shiro.utils.DownloadManager.resumeEpisodeUsingWorker
 import com.lagradost.shiro.utils.Event
 import com.lagradost.shiro.utils.InAppUpdater.runAutoUpdate
-import com.lagradost.shiro.utils.MALApi.Companion.authenticateMalLogin
 import com.lagradost.shiro.utils.ShiroApi
-import com.lagradost.shiro.utils.ShiroApi.Companion.getSlugFromMalId
 import com.lagradost.shiro.utils.ShiroApi.Companion.initShiroApi
 import com.lagradost.shiro.utils.VideoDownloadManager
-import com.lagradost.shiro.utils.VideoDownloadManager.downloadCheck
-import com.lagradost.shiro.utils.VideoDownloadManager.downloadStatus
+import com.lagradost.shiro.utils.VideoDownloadManager.KEY_RESUME_PACKAGES
+import com.lagradost.shiro.utils.VideoDownloadManager.currentDownloads
 import com.lagradost.shiro.utils.VideoDownloadManager.maxConcurrentDownloads
 import com.lagradost.shiro.utils.mvvm.observe
-import kotlinx.coroutines.flow.merge
+import kotlinx.android.synthetic.main.activity_main.*
+import java.lang.ref.WeakReference
 import kotlin.concurrent.thread
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
@@ -77,11 +75,11 @@ data class EpisodePosDurInfo(
     @JsonProperty("viewstate") val viewstate: Boolean,
 )
 
-data class LastEpisodeInfo(
+data class LastEpisodeInfoLegacy(
     @JsonProperty("pos") val pos: Long,
     @JsonProperty("dur") val dur: Long,
     @JsonProperty("seenAt") val seenAt: Long,
-    @JsonProperty("id") val id: ShiroApi.AnimePageData?,
+    @JsonProperty("id") val id: ShiroApi.AnimePageData,
 
     // Old, is actually used for slugs
     @JsonProperty("aniListId") val aniListId: String,
@@ -89,7 +87,30 @@ data class LastEpisodeInfo(
     @JsonProperty("episodeIndex") val episodeIndex: Int,
     @JsonProperty("seasonIndex") val seasonIndex: Int,
     @JsonProperty("isMovie") val isMovie: Boolean,
-    @JsonProperty("episode") val episode: ShiroApi.ShiroEpisodes?,
+    @JsonProperty("episode") val episode: ShiroApi.ShiroEpisodes,
+    @JsonProperty("coverImage") val coverImage: String,
+    @JsonProperty("title") val title: String?,
+    @JsonProperty("bannerImage") val bannerImage: String,
+
+    @JsonProperty("anilistID") val anilistID: Int?,
+    @JsonProperty("malID") val malID: Int?,
+
+    @JsonProperty("fillerEpisodes") val fillerEpisodes: HashMap<Int, Boolean>?
+)
+
+data class LastEpisodeInfo(
+    @JsonProperty("pos") val pos: Long,
+    @JsonProperty("dur") val dur: Long,
+    @JsonProperty("seenAt") val seenAt: Long,
+    @JsonProperty("data") val data: ShiroApi.Companion.AnimePageNewData?,
+
+    // Old, is actually used for slugs
+    @JsonProperty("slug") val slug: String,
+
+    @JsonProperty("episodeIndex") val episodeIndex: Int,
+    @JsonProperty("seasonIndex") val seasonIndex: Int,
+    @JsonProperty("isMovie") val isMovie: Boolean,
+    @JsonProperty("episode") val episode: ShiroApi.Companion.AnimePageNewEpisodes?,
     @JsonProperty("coverImage") val coverImage: String,
     @JsonProperty("title") val title: String,
     @JsonProperty("bannerImage") val bannerImage: String,
@@ -117,11 +138,23 @@ data class BookmarkedTitle(
 class MainActivity : CyaneaAppCompatActivity() {
     companion object {
         var isInPIPMode = false
+        var workManager: WorkManager? = null
 
-        @SuppressLint("StaticFieldLeak")
-        var navController: NavController? = null
+        private var _navController: WeakReference<NavController>? = null
+        var navController
+            get() = _navController?.get()
+            set(value) {
+                _navController = WeakReference(value)
+            }
+
         var statusHeight: Int = 0
-        var activity: MainActivity? = null
+        private var _activity: WeakReference<MainActivity>? = null
+        var activity
+            get() = _activity?.get()
+            private set(value) {
+                _activity = WeakReference(value)
+            }
+
         var canShowPipMode: Boolean = false
         var isDonor: Boolean = false
 
@@ -139,20 +172,6 @@ class MainActivity : CyaneaAppCompatActivity() {
         handleIntent(intent)
         super.onNewIntent(intent)
     }
-
-    override fun onBackPressed() {
-        try {
-            println("BACK PRESSED!!!! $isInResults $isInPlayer $isInExpandedView")
-            if (isInResults || isInPlayer || isInExpandedView) {
-                popCurrentPage(isInPlayer, isInExpandedView, isInResults)
-            } else {
-                super.onBackPressed()
-            }
-            // java.lang.IllegalStateException: FragmentManager is already executing transactions
-        } catch (e: Exception) {
-        }
-    }
-
 
     private fun enterPIPMode() {
         if (!shouldShowPIPMode(isInPlayer) || !canShowPipMode) return
@@ -187,9 +206,9 @@ class MainActivity : CyaneaAppCompatActivity() {
         }
     }
 
+    @SuppressLint("MissingSuperCall")
     override fun onResume() {
         super.onResume()
-        println("RESUMED!!!")
         // This is needed to avoid NPE crash due to missing context
         init()
         if (isInPlayer) {
@@ -247,6 +266,7 @@ class MainActivity : CyaneaAppCompatActivity() {
 
     private var mediaSession: MediaSessionCompat? = null
 
+    @SuppressLint("MissingSuperCall")
     override fun onCreate(savedInstanceState: Bundle?) {
         activity = this
 
@@ -284,7 +304,7 @@ class MainActivity : CyaneaAppCompatActivity() {
             theme.applyStyle(R.style.darkText, true)
         }
         if (!Cyanea.instance.isThemeModified) {
-            val list: List<CyaneaTheme> = CyaneaTheme.Companion.from(assets, "themes/cyanea_themes.json");
+            val list: List<CyaneaTheme> = CyaneaTheme.Companion.from(assets, "themes/cyanea_themes.json")
             list[0].apply(Cyanea.instance).recreate(this)
         }
 
@@ -318,7 +338,7 @@ class MainActivity : CyaneaAppCompatActivity() {
         // Hardcoded for now since it fails for some people :|
         isDonor = true //getDonorStatus() == androidId
         thread {
-            runAutoUpdate(this)
+            runAutoUpdate()
         }
         //https://stackoverflow.com/questions/29146757/set-windowtranslucentstatus-true-when-android-lollipop-or-higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -333,7 +353,7 @@ class MainActivity : CyaneaAppCompatActivity() {
 
         observe(masterViewModel!!.isQueuePaused) {
             if (!it) {
-                downloadCheck(this)
+                checkDownloadsUsingWorker(this)
             }
         }
 
@@ -347,33 +367,42 @@ class MainActivity : CyaneaAppCompatActivity() {
             )
         }
 
-        // To remove a bug where this is permanent
-        removeKey(VideoDownloadManager.KEY_RESUME_CURRENT)
+        workManager = WorkManager.getInstance(this)
 
-        // ADD QUEUE
-        // array needed because List gets cast exception to linkedList for some unknown reason
-        val resumeQueue =
-            getKey<Array<VideoDownloadManager.DownloadQueueResumePackage>>(VideoDownloadManager.KEY_RESUME_QUEUE_PACKAGES)
+        // Because downloads can still be running when opening app (service)
+        if (currentDownloads.isNullOrEmpty()) {
+            // To remove a bug where this is permanent
+            keys?.forEach {
+                removeKey(KEY_RESUME_PACKAGES, it.toString())
+            }
+            removeKey(VideoDownloadManager.KEY_RESUME_CURRENT)
 
-        val allList = mutableListOf<Int>()
-        allList.addAll(resumePkg?.map { it.item.ep.id } ?: listOf())
-        allList.addAll(resumeQueue?.map { it.pkg.item.ep.id } ?: listOf())
-        val size = allList.distinctBy { it }.size
-        if (size > 0) {
-            Toast.makeText(
-                this,
-                "$size Download${if (size == 1) "" else "s"} restored from your previous session",
-                Toast.LENGTH_LONG
-            ).show()
-            masterViewModel!!.isQueuePaused.value = true
+            // ADD QUEUE
+            // array needed because List gets cast exception to linkedList for some unknown reason
+            val resumeQueue =
+                getKey<Array<VideoDownloadManager.DownloadQueueResumePackage>>(VideoDownloadManager.KEY_RESUME_QUEUE_PACKAGES)
+
+            val allList = mutableListOf<Int>()
+            allList.addAll(resumePkg?.map { it.item.ep.id } ?: listOf())
+            allList.addAll(resumeQueue?.map { it.pkg.item.ep.id } ?: listOf())
+            val size = allList.distinctBy { it }.size
+            if (size > 0) {
+                Toast.makeText(
+                    this,
+                    "$size Download${if (size == 1) "" else "s"} restored from your previous session",
+                    Toast.LENGTH_LONG
+                ).show()
+                masterViewModel!!.isQueuePaused.value = true
+            }
+
+            for (pkg in resumePkg ?: listOf()) { // ADD ALL CURRENT DOWNLOADS
+                resumeEpisodeUsingWorker(this, pkg, false)
+            }
+            resumeQueue?.sortedBy { it.index }?.forEach {
+                resumeEpisodeUsingWorker(this, it.pkg, false)
+            }
         }
 
-        for (pkg in resumePkg ?: listOf()) { // ADD ALL CURRENT DOWNLOADS
-            VideoDownloadManager.downloadFromResume(this, pkg, false)
-        }
-        resumeQueue?.sortedBy { it.index }?.forEach {
-            VideoDownloadManager.downloadFromResume(this, it.pkg, false)
-        }
 
         val statusBarHidden = settingsManager.getBoolean("statusbar_hidden", true)
         statusHeight = changeStatusBarState(statusBarHidden)
@@ -445,51 +474,52 @@ class MainActivity : CyaneaAppCompatActivity() {
 
         mediaSession!!.isActive = true
 
-
-        /*val layout = listOf(
-            R.id.navigation_home, R.id.navigation_search, /*R.id.navigation_downloads,*/ R.id.navigation_settings
-        )
-        val appBarConfiguration = AppBarConfiguration(
-            layout.toSet()
-        )*/
-
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        //setupActionBarWithNavController(navController, appBarConfiguration)
-
-
+        var startUp = true
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
         navController = findNavController(R.id.nav_host_fragment)
         navView.setupWithNavController(navController!!)
-        /*
-        navView.setOnNavigationItemReselectedListener {
-            return@setOnNavigationItemReselectedListener
-        }
-        val options = NavOptions.Builder()
-            .setLaunchSingleTop(true)
-            .setEnterAnim(R.anim.enter)
-            .setExitAnim(R.anim.exit)
-            .setPopEnterAnim(R.anim.pop_enter)
-            .setPopExitAnim(R.anim.pop_exit)
-            .setPopUpTo(navController!!.graph.startDestination, false)
-            .build()
-        navView.setOnNavigationItemSelectedListener {
-            when (it.itemId) {
-                R.id.navigation_home -> {
-                    navController?.navigate(R.id.navigation_home, null, options)
-                }
-                R.id.navigation_search -> {
-                    navController?.navigate(R.id.navigation_search, null, options)
-                }
-                R.id.navigation_downloads -> {
-                    navController?.navigate(R.id.navigation_downloads, null, options)
-                }
-                R.id.navigation_settings -> {
-                    navController?.navigate(R.id.navigation_settings, null, options)
+
+        navController!!.addOnDestinationChangedListener { _, destination, _ ->
+            navView.hideKeyboard()
+            if (destination.id != R.id.navigation_player) {
+                requestedOrientation = if (settingsManager?.getBoolean("force_landscape", false) == true) {
+                    ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+                } else {
+                    ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                 }
             }
-            true
-        }*/
+
+            // Fucks up anime info layout since that has its own layout
+            cast_mini_controller_holder?.isVisible = destination.id != R.id.navigation_results
+
+            if (listOf(
+                    R.id.navigation_home,
+                    R.id.navigation_search,
+                    R.id.navigation_downloads,
+                    R.id.navigation_library,
+                    R.id.navigation_settings
+                ).contains(destination.id)
+            ) {
+                navView.visibility = VISIBLE
+                if (navView.marginBottom < 0) {
+                    navView.layoutParams = navView.layoutParams.apply {
+                        val transition = ChangeBounds()
+                        transition.duration = 100 // DURATION OF ANIMATION IN MS
+                        TransitionManager.beginDelayedTransition(container, transition)
+                        (this as ConstraintLayout.LayoutParams).setMargins(0, 0, 0, 0)
+                    }
+                }
+            } else {
+                if (startUp) navView.visibility = GONE
+                navView.layoutParams = navView.layoutParams.apply {
+                    val transition = ChangeBounds()
+                    transition.duration = 100 // DURATION OF ANIMATION IN MS
+                    TransitionManager.beginDelayedTransition(container, transition)
+                    (this as ConstraintLayout.LayoutParams).setMargins(0, 0, 0, -navView.height)
+                }
+            }
+            startUp = false
+        }
 
         //val attrPrimary = Cyanea.instance.menuIconColor //if (lightMode) Cyanea.instance.primaryDark else Cyanea.instance.primary
         val states = arrayOf(
@@ -556,58 +586,5 @@ class MainActivity : CyaneaAppCompatActivity() {
         window.setBackgroundDrawable(ColorDrawable(Cyanea.instance.backgroundColor))
         //val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
 
-    }
-
-    private fun handleIntent(intent: Intent?) {
-        val data: Uri? = intent?.data
-        println("INTENTE DATA ${intent?.data}")
-
-        if (data != null) {
-            val dataString = data.toString()
-            if (dataString != "") {
-                if (dataString.contains("shiroapp")) {
-                    if (dataString.contains("/anilistlogin")) {
-                        authenticateLogin(dataString)
-                    } else if (dataString.contains("/mallogin")) {
-                        authenticateMalLogin(dataString)
-                    }
-                }
-            }
-
-            thread {
-                when {
-                    /** Shiro url */
-                    data.toString().contains("shiro.is") -> {
-                        val urlRegex = Regex("""shiro\.is/anime/(.*)""")
-                        val found = urlRegex.find(data.toString())
-                        if (found != null) {
-                            val (slug) = found.destructured
-                            // Kinda hack using 2 slugs, but should work semi fine
-                            activity?.runOnUiThread {
-                                activity?.loadPage(slug, slug)
-                            }
-                        }
-                    }
-                    /** MAL url */
-                    data.toString().contains("myanimelist.net") -> {
-                        val urlRegex = Regex("""myanimelist\.net/anime/(.*)/(.*)""")
-                        val found = urlRegex.find(data.toString())
-                        if (found != null) {
-                            val (malId, title) = found.destructured
-                            // Kinda hack using 2 slugs, but should work semi fine
-                            getSlugFromMalId(malId, title)?.let { slug ->
-                                activity?.runOnUiThread {
-                                    activity?.loadPage(slug, slug)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-
-        } else {
-            initGetUser()
-        }
     }
 }

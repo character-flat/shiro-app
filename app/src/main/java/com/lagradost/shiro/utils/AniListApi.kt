@@ -160,9 +160,41 @@ class AniListApi {
                                 timeUntilAiring
                                 episode
                             }
-                          }
+                            recommendations {
+                                nodes {
+                                    id
+                                    mediaRecommendation {
+                                        id
+                                        title {
+                                            english
+                                            romaji
+                                        }
+                                        idMal
+                                        coverImage { medium large }
+                                        averageScore
+                                    }
+                                }
+                            }
+                            relations {
+                                edges {
+                                    id
+                                    relationType(version: 2)
+                                    node {
+                                        format
+                                        id
+                                        idMal
+                                        coverImage { medium large }
+                                        averageScore
+                                        title {
+                                            english
+                                            romaji
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
+                }
                 """
                 val data =
                     mapOf("query" to query, "variables" to mapOf("search" to name, "page" to 1, "type" to "ANIME"))
@@ -180,11 +212,11 @@ class AniListApi {
             return null
         }
 
-        fun getShowId(name: String, year: Int?): GetSearchMedia? {
+        fun getShowId(malId: String?, name: String, year: Int?): GetSearchMedia? {
             // Strips these from the name
             val blackList = listOf(
                 "TV Dubbed",
-                "Dubbed",
+                "(Dub)",
                 "Subbed",
                 "(TV)",
                 "(Uncensored)",
@@ -195,10 +227,10 @@ class AniListApi {
                 Regex(""" (${blackList.joinToString(separator = "|").replace("(", "\\(").replace(")", "\\)")})""")
             //println("NAME $name NEW NAME ${name.replace(blackListRegex, "")}")
             val shows = searchShows(name.replace(blackListRegex, ""))
-            val malId = getMalIDFromTitle(name.replace(blackListRegex, ""))
+            val malIdFixed = malId ?: getMalIDFromTitle(name.replace(blackListRegex, ""))
 
             shows?.data?.Page?.media?.find {
-                malId ?: "NONE" == it.idMal.toString()
+                malIdFixed ?: "NONE" == it.idMal.toString()
             }?.let { return it }
 
             val filtered =
@@ -241,6 +273,14 @@ class AniListApi {
             }
         }
 
+        data class MediaRecommendation(
+            @JsonProperty("id") val id: Int,
+            @JsonProperty("title") val title: Title,
+            @JsonProperty("idMal") val idMal: Int?,
+            @JsonProperty("coverImage") val coverImage: CoverImage,
+            @JsonProperty("averageScore") val averageScore: Int?
+        )
+
         fun Context.getDataAboutId(id: Int): AniListTitleHolder? {
             val q =
                 """query (${'$'}id: Int = $id) { # Define which variables will be used in the query (id)
@@ -253,15 +293,20 @@ class AniListApi {
                         status
                         score (format: POINT_10)
                     }
+                    title {
+                        english
+                        romaji
+                    }
                 }
             }"""
             try {
-                println("ID::::: $id")
                 val data = postApi("https://graphql.anilist.co", q, true)
+                println(data)
                 var d: GetDataRoot? = null
                 try {
                     d = mapper.readValue<GetDataRoot>(data)
                 } catch (e: Exception) {
+                    logError(e)
                     println("Anilist json failed")
                 }
                 if (d == null) {
@@ -271,6 +316,7 @@ class AniListApi {
                 val main = d.data.Media
                 if (main.mediaListEntry != null) {
                     return AniListTitleHolder(
+                        title = main.title,
                         id = id,
                         isFavourite = main.isFavourite,
                         progress = main.mediaListEntry.progress,
@@ -280,6 +326,7 @@ class AniListApi {
                     )
                 } else {
                     return AniListTitleHolder(
+                        title = main.title,
                         id = id,
                         isFavourite = main.isFavourite,
                         progress = 0,
@@ -317,7 +364,8 @@ class AniListApi {
         )
 
         data class CoverImage(
-            @JsonProperty("medium") val medium: String
+            @JsonProperty("medium") val medium: String,
+            @JsonProperty("large") val large: String?
         )
 
         data class Media(
@@ -478,6 +526,7 @@ class AniListApi {
                 val data = postApi("https://graphql.anilist.co", q)
                 return data != ""
             } catch (e: Exception) {
+                logError(e)
                 return false
             }
         }
@@ -503,7 +552,6 @@ class AniListApi {
             try {
                 val data = postApi("https://graphql.anilist.co", q)
                 if (data == "") return null
-                println("RESULT: $data")
                 val userData = mapper.readValue<AniListRoot>(data)
                 val u = userData.data.Viewer
                 val user = AniListUser(
@@ -570,7 +618,6 @@ class AniListApi {
         fun getAllSeasons(id: Int): List<SeasonResponse?> {
             val seasons = mutableListOf<SeasonResponse?>()
             fun getSeasonRecursive(id: Int) {
-                println(id)
                 val season = getSeason(id)
                 if (season != null) {
                     seasons.add(season)
@@ -653,7 +700,11 @@ class AniListApi {
     data class SeasonNode(
         @JsonProperty("id") val id: Int,
         @JsonProperty("format") val format: String?,
-        @JsonProperty("nextAiringEpisode") val nextAiringEpisode: SeasonNextAiringEpisode?,
+        @JsonProperty("title") val title: Title,
+        @JsonProperty("idMal") val idMal: Int?,
+        @JsonProperty("coverImage") val coverImage: CoverImage,
+        @JsonProperty("averageScore") val averageScore: Int?
+//        @JsonProperty("nextAiringEpisode") val nextAiringEpisode: SeasonNextAiringEpisode?,
     )
 
     data class AniListAvatar(
@@ -716,13 +767,21 @@ class AniListApi {
         @JsonProperty("data") val data: LikeData,
     )
 
+    data class Recommendation(
+        @JsonProperty("title") val title: String,
+        @JsonProperty("idMal") val idMal: Int,
+        @JsonProperty("poster") val poster: String,
+        @JsonProperty("averageScore") val averageScore: Int?
+    )
+
     data class AniListTitleHolder(
+        @JsonProperty("title") val title: Title,
         @JsonProperty("isFavourite") val isFavourite: Boolean,
         @JsonProperty("id") val id: Int,
         @JsonProperty("progress") val progress: Int,
         @JsonProperty("episodes") val episodes: Int,
         @JsonProperty("score") val score: Int,
-        @JsonProperty("type") val type: AniListApi.Companion.AniListStatusType,
+        @JsonProperty("type") val type: AniListStatusType,
     )
 
     data class GetDataMediaListEntry(
@@ -731,10 +790,20 @@ class AniListApi {
         @JsonProperty("score") val score: Int,
     )
 
+    data class Nodes(
+        @JsonProperty("id") val id: Int,
+        @JsonProperty("mediaRecommendation") val mediaRecommendation: MediaRecommendation
+    )
+
     data class GetDataMedia(
         @JsonProperty("isFavourite") val isFavourite: Boolean,
         @JsonProperty("episodes") val episodes: Int,
-        @JsonProperty("mediaListEntry") val mediaListEntry: GetDataMediaListEntry?,
+        @JsonProperty("title") val title: Title,
+        @JsonProperty("mediaListEntry") val mediaListEntry: GetDataMediaListEntry?
+    )
+
+    data class Recommendations(
+        @JsonProperty("nodes") val nodes: List<Nodes>
     )
 
     data class GetDataData(
@@ -756,6 +825,8 @@ class AniListApi {
         @JsonProperty("title") val title: GetSearchTitle,
         @JsonProperty("startDate") val startDate: StartedAt,
         @JsonProperty("nextAiringEpisode") val nextAiringEpisode: SeasonNextAiringEpisode?,
+        @JsonProperty("recommendations") val recommendations: Recommendations?,
+        @JsonProperty("relations") val relations: SeasonEdges
     )
 
     data class GetSearchPage(

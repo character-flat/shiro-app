@@ -4,12 +4,13 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent" xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/fragment_list_root"
+        android:id="@+id/mal_list_root"
         android:descendantFocusability="afterDescendants"
         android:orientation="vertical">
     <!--    <androidx.core.widget.NestedScrollView-->
     <!--            android:layout_width="match_parent"-->
     <!--            android:layout_height="match_parent">-->
+    <!--            android:paddingBottom="200dp"-->
 
     <com.lagradost.shiro.ui.AutofitRecyclerView
             android:layout_width="match_parent"
@@ -18,7 +19,6 @@
             android:clipToPadding="false"
             android:paddingTop="5dp"
             android:id="@+id/library_card_space"
-            android:paddingBottom="200dp"
             tools:listitem="@layout/list_card_compact"
             android:orientation="vertical">
     </com.lagradost.shiro.ui.AutofitRecyclerView>

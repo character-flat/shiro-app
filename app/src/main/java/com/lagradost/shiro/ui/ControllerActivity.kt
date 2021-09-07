@@ -1,6 +1,7 @@
 package com.lagradost.shiro.ui
 
 import android.content.res.ColorStateList
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.View.INVISIBLE
@@ -48,9 +49,11 @@ class SelectSourceController(val view: ImageView) : UIController() {
             if (items.isNotEmpty()) {
                 val bottomSheetDialog = BottomSheetDialog(view.context, R.style.AppBottomSheetDialogTheme)
                 bottomSheetDialog.setContentView(R.layout.bottom_sheet)
-                bottomSheetDialog.bottom_sheet_top_bar.backgroundTintList = ColorStateList.valueOf(
-                    Cyanea.instance.backgroundColorDark
-                )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    bottomSheetDialog.bottom_sheet_top_bar.backgroundTintList = ColorStateList.valueOf(
+                        Cyanea.instance.backgroundColorDark
+                    )
+                }
 
                 val res = bottomSheetDialog.findViewById<ListView>(R.id.sort_click)!!
                 val arrayAdapter = ArrayAdapter<String>(view.context, R.layout.bottom_single_choice)
@@ -63,16 +66,14 @@ class SelectSourceController(val view: ImageView) : UIController() {
                     true
                 )
                 res.setOnItemClickListener { _, _, position, _ ->
-                    println(
-                        remoteMediaClient.queueJumpToItem(
-                            items[position].first,
-                            remoteMediaClient.approximateStreamPosition,
-                            null
-                        )
+                    remoteMediaClient.queueJumpToItem(
+                        items[position].first,
+                        remoteMediaClient.approximateStreamPosition,
+                        null
                     )
                     bottomSheetDialog.dismiss()
                 }
-                bottomSheetDialog.main_text.text = "Pick source"
+                bottomSheetDialog.main_text?.text = "Pick source"
                 bottomSheetDialog.show()
             }
         }

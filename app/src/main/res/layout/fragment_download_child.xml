@@ -3,7 +3,7 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="match_parent" xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
 >
     <View android:layout_width="wrap_content"
@@ -17,9 +17,11 @@
             tools:context=".ui.downloads.DownloadFragmentChild"
             android:id="@+id/download_child_scroll_view"
     >
-        <LinearLayout android:orientation="vertical" android:layout_height="wrap_content"
+        <LinearLayout android:orientation="vertical"
+                      android:layout_height="wrap_content"
                       android:layout_width="match_parent">
-            <LinearLayout android:orientation="horizontal" android:layout_width="match_parent"
+            <LinearLayout android:orientation="horizontal"
+                          android:layout_width="match_parent"
                           android:layout_height="70dp">
                 <FrameLayout
                         android:layout_margin="5dp"
@@ -52,6 +54,23 @@
                           android:id="@+id/download_header_text">
                 </TextView>
             </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    android:descendantFocusability="blocksDescendants"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/download_child_res_view"
+                    android:orientation="vertical"
+                    tools:listitem="@layout/episode_result_downloaded"
+            >
+                <requestFocus/>
+            </androidx.recyclerview.widget.RecyclerView>
+
+
             <LinearLayout
                     android:paddingLeft="10dp"
                     android:paddingRight="10dp"

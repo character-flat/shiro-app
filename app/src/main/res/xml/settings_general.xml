@@ -44,6 +44,13 @@
             android:entries="@array/HideBehavior"
             android:entryValues="@array/HideBehavior"
     />
+    <SwitchPreference
+            app:isPreferenceVisible="false"
+            android:icon="@drawable/ic_baseline_language_24"
+            app:key="hide_chinese"
+            android:title="Hide chinese shows"
+            app:defaultValue="false"
+    />
 
     <ListPreference
             android:title="Hold behavior"

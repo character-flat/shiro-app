@@ -2,6 +2,7 @@ package com.lagradost.shiro.ui.home
 
 import android.content.res.ColorStateList
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,32 +18,29 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity.Companion.statusHeight
-import com.lagradost.shiro.ui.player.PlayerFragment.Companion.isInPlayer
-import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import com.lagradost.shiro.ui.search.ResAdapter
 import com.lagradost.shiro.utils.AppUtils.filterCardList
-import com.lagradost.shiro.utils.AppUtils.popCurrentPage
 import com.lagradost.shiro.utils.AppUtils.settingsManager
 import com.lagradost.shiro.utils.ShiroApi
 import kotlinx.android.synthetic.main.fragment_expanded_home.*
 
-private const val CARD_LIST = "card_list"
-private const val TITLE = "title"
+const val CARD_LIST = "card_list"
+const val TITLE = "title"
 
 // private const val spanCountLandscape = 6
 const val EXPANDED_HOME_FRAGMENT_TAG = "EXPANDED_HOME_FRAGMENT_TAG"
 
 class ExpandedHomeFragment : Fragment() {
-    private var cardList: List<ShiroApi.CommonAnimePageData?>? = null
+    private var cardList: List<ShiroApi.CommonAnimePageData>? = null
     private var title: String? = null
     private val mapper = JsonMapper.builder().addModule(KotlinModule())
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()!!
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let { bundle ->
             val cards = bundle.getString(CARD_LIST)
-            cardList = cards?.let { mapper.readValue<List<ShiroApi.CommonAnimePageData>>(it) }
+            cardList = cards?.let { mapper.readValue(it) }
             title = bundle.getString(TITLE)
         }
     }
@@ -75,11 +73,13 @@ class ExpandedHomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         isInExpandedView = true
         title_go_back_holder.setOnClickListener {
-            activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
+            activity?.onBackPressed()
         }
-        expanded_home_title_holder.backgroundTintList = ColorStateList.valueOf(
-            Cyanea.instance.backgroundColorDark
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            expanded_home_title_holder.backgroundTintList = ColorStateList.valueOf(
+                Cyanea.instance.backgroundColorDark
+            )
+        }
 
         val topParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
             LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
@@ -95,23 +95,22 @@ class ExpandedHomeFragment : Fragment() {
                 false
             )
         ) {
-            expanded_card_list_view.spanCount = spanCountPortrait * 2
+            expanded_card_list_view?.spanCount = spanCountPortrait * 2
         } else {
-            expanded_card_list_view.spanCount = spanCountPortrait
+            expanded_card_list_view?.spanCount = spanCountPortrait
         }
-        title_text.text = title
-        val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = activity?.let {
+        title_text?.text = title
+        val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder> =
             ResAdapter(
-                it,
                 ArrayList(),
                 expanded_card_list_view,
-                true
+                false,
+                forceDisableCompact = true
             )
-        }
-        expanded_card_list_view.adapter = adapter
-        (expanded_card_list_view.adapter as ResAdapter).cardList =
-            filterCardList(cardList) as ArrayList<ShiroApi.CommonAnimePage>
-        (expanded_card_list_view.adapter as ResAdapter).notifyDataSetChanged()
+        expanded_card_list_view?.adapter = adapter
+        (expanded_card_list_view?.adapter as? ResAdapter)?.cardList =
+            ArrayList(filterCardList(cardList) ?: listOf())
+        (expanded_card_list_view?.adapter as? ResAdapter)?.notifyDataSetChanged()
 
     }
 }

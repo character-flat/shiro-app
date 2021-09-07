@@ -16,23 +16,32 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:clipChildren="false"
-                android:visibility="visible"
                 tools:visibility="visible"
                 android:id="@+id/library_menu_bar"
         >
 
-            <EditText
-                    tools:visibility="visible"
-                    android:visibility="gone"
+            <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="0dp"
-                    android:layout_height="50dp"
+                    android:layout_height="70dp"
+                    android:background="@color/transparent"
                     android:layout_centerVertical="true"
                     android:layout_alignParentStart="true"
-                    android:layout_toLeftOf="@+id/search_icon"
+                    android:id="@+id/search_library"
+                    android:layout_toStartOf="@+id/search_icon"
+                    android:layout_marginStart="50dp"
+                    android:layout_marginEnd="50dp"
+
             >
+                <com.google.android.material.textfield.TextInputEditText
+                        android:layout_height="match_parent"
+                        android:layout_width="match_parent"
+                        android:background="@color/transparent"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
+                        android:textSize="30dp"
+                        tools:ignore="SpUsage"/>
 
-
-            </EditText>
+            </com.google.android.material.textfield.TextInputLayout>
             <!--
             <ImageView
                     android:layout_width="50dp"
@@ -63,29 +72,46 @@
             >
 
             </com.google.android.material.button.MaterialButton>-->
+
             <ImageView
                     android:layout_centerVertical="true"
-                    android:layout_toLeftOf="@id/reload_icon"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:scaleX="0.8"
-                    android:scaleY="0.8"
-                    android:src="@drawable/search_icon"
+                    android:layout_toLeftOf="@id/switch_icon"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:scaleX="0.5"
+                    android:scaleY="0.5"
+                    app:srcCompat="@drawable/search_icon"
                     android:id="@+id/search_icon"
                     android:focusable="true"
                     android:nextFocusUp="@null"
                     android:nextFocusDown="@id/vertical_grid_view"
                     android:clickable="true"
                     android:focusableInTouchMode="true"
-                    android:background="@drawable/video_tap_button"
+                    android:background="?attr/selectableItemBackgroundBorderless"
             >
-                <requestFocus/>
+            </ImageView>
+            <ImageView
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@id/reload_icon"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:scaleX="0.5"
+                    android:scaleY="0.5"
+                    app:srcCompat="@drawable/ic_baseline_swap_vert_24"
+                    android:id="@+id/switch_icon"
+                    android:focusable="true"
+                    android:nextFocusUp="@null"
+                    android:nextFocusDown="@id/vertical_grid_view"
+                    android:clickable="true"
+                    android:focusableInTouchMode="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+            >
             </ImageView>
             <ImageView
                     android:layout_toLeftOf="@id/sort_icon"
                     android:layout_centerVertical="true"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
                     android:scaleX="0.5"
                     android:scaleY="0.5"
                     android:src="@drawable/quantum_ic_refresh_white_24"
@@ -94,24 +120,24 @@
                     android:nextFocusDown="@id/vertical_grid_view"
                     android:clickable="true"
                     android:focusableInTouchMode="true"
-                    android:background="@drawable/video_tap_button"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     app:tint="?attr/white">
             </ImageView>
 
             <ImageView
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
                     android:scaleX="0.5"
                     android:scaleY="0.5"
-                    android:src="@drawable/ic_baseline_sort_24"
+                    app:srcCompat="@drawable/ic_baseline_sort_24"
                     android:id="@+id/sort_icon"
                     android:focusable="true"
                     android:nextFocusDown="@id/vertical_grid_view"
                     android:clickable="true"
                     android:focusableInTouchMode="true"
-                    android:background="@drawable/video_tap_button"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     app:tint="?attr/white">
             </ImageView>
 

@@ -4,8 +4,10 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:orientation="vertical"
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:minWidth="600dp"
-        android:layout_height="match_parent">
+        android:id="@+id/bottom_sheet_root"
+>
     <androidx.cardview.widget.CardView
             app:cardCornerRadius="10dp"
             android:id="@+id/bottom_sheet_top_bar"
@@ -27,6 +29,8 @@
         </TextView>
     </androidx.cardview.widget.CardView>
     <ListView
+            android:drawSelectorOnTop="false"
+            android:listSelector="@drawable/outline_background"
             android:layout_marginTop="-10dp"
             android:paddingTop="10dp"
             android:id="@+id/sort_click"

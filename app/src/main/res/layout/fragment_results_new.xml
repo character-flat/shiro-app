@@ -7,6 +7,7 @@
         android:id="@+id/results_root"
         android:background="?attr/backgroundColor"
         android:fitsSystemWindows="true"
+        android:transitionName="shared_element_container"
         xmlns:android="http://schemas.android.com/apk/res/android">
     <ImageView
             android:layout_width="match_parent"
@@ -245,7 +246,7 @@
                                         android:layout_height="match_parent"
                                         android:layout_alignParentEnd="true"
                                         android:layout_centerVertical="true"
-                                        android:src="@drawable/ic_outline_edit_24"
+                                        app:srcCompat="@drawable/ic_outline_edit_24"
                                         android:clickable="true"
                                         android:focusable="true"
                                         android:id="@+id/edit_episodes_btt"
@@ -280,7 +281,7 @@
                                             android:elevation="10dp"
                                             android:clickable="true"
                                             android:focusable="true"
-                                            android:src="@drawable/ic_baseline_star_border_24"
+                                            app:srcCompat="@drawable/ic_baseline_star_border_24"
                                             android:layout_gravity="center"
                                             app:tint="?attr/white"
                                     />
@@ -307,7 +308,7 @@
                                             android:elevation="10dp"
                                             android:clickable="true"
                                             android:focusable="true"
-                                            android:src="@drawable/filled_viewstate"
+                                            app:srcCompat="@drawable/filled_viewstate"
                                             android:layout_gravity="center"
                                             app:tint="?attr/white"/>
                                     <TextView
@@ -335,7 +336,7 @@
                                             android:elevation="10dp"
                                             android:clickable="true"
                                             android:focusable="true"
-                                            android:src="@drawable/ic_anilist_icon"
+                                            app:srcCompat="@drawable/ic_anilist_icon"
                                             android:layout_gravity="center"
                                             android:contentDescription="@string/anilist_btt_hint"/>
                                     <TextView android:text="@string/anilist_btt"
@@ -363,7 +364,7 @@
                                             android:elevation="10dp"
                                             android:clickable="true"
                                             android:focusable="true"
-                                            android:src="@drawable/mal_logo"
+                                            app:srcCompat="@drawable/mal_logo"
                                             android:layout_gravity="center"
                                             android:contentDescription="@string/anilist_btt_hint"/>
                                     <TextView android:text="MAL"
@@ -396,7 +397,7 @@
                                     app:layout_constraintTop_toTopOf="parent"
                                     app:layout_constraintBottom_toBottomOf="parent"
                                     android:layout_marginStart="20dp"
-                                    android:src="@drawable/netflix_play"
+                                    app:srcCompat="@drawable/netflix_play"
                                     android:background="@drawable/video_tap_button"
                                     app:tint="?attr/white"
                             >
@@ -456,7 +457,7 @@
                                     app:layout_constraintTop_toTopOf="parent"
                                     app:layout_constraintBottom_toBottomOf="parent"
                                     android:layout_marginEnd="20dp"
-                                    android:src="@drawable/ic_baseline_language_24"
+                                    app:srcCompat="@drawable/ic_baseline_language_24"
                                     android:visibility="gone"
                                     tools:visibility="visible"
                                     android:background="@drawable/video_tap_button"
@@ -564,7 +565,7 @@
                             android:layout_width="30dp"
                             android:layout_height="30dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/arrow_back">
+                            app:srcCompat="@drawable/arrow_back">
                     </ImageView>
                     <ImageView
                             android:id="@+id/title_go_back"
@@ -593,7 +594,7 @@
                 <FrameLayout android:layout_width="wrap_content"
                              android:layout_height="wrap_content"
                              android:id="@+id/title_share_holder"
-                             android:layout_toStartOf="@+id/title_subscribe_holder"
+                             android:layout_toStartOf="@+id/edit_button"
                 >
                     <ImageView
                             android:id="@+id/title_share"
@@ -601,7 +602,7 @@
                             android:layout_height="30dp"
                             android:elevation="10dp"
                             android:background="@color/transparent"
-                            android:src="@drawable/ic_baseline_share_24"
+                            app:srcCompat="@drawable/ic_baseline_share_24"
                             android:layout_gravity="center"
                             android:contentDescription="@string/bookmark_btt_hint"/>
                     <ImageView
@@ -616,6 +617,20 @@
                             android:background="@drawable/video_tap_button">
                     </ImageView>
                 </FrameLayout>
+
+                <ImageView
+                        android:id="@+id/edit_button"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:padding="10dp"
+                        android:elevation="10dp"
+                        android:layout_toStartOf="@+id/title_subscribe_holder"
+                        android:background="@drawable/video_tap_button"
+                        app:srcCompat="@drawable/ic_outline_edit_24"
+                        android:layout_gravity="center"
+                        android:contentDescription="Override sync id"/>
+
+
                 <FrameLayout android:layout_width="wrap_content"
                              android:layout_height="wrap_content"
                              android:id="@+id/title_subscribe_holder"
@@ -629,7 +644,7 @@
                             android:layout_height="30dp"
                             android:elevation="10dp"
                             android:background="@color/transparent"
-                            android:src="@drawable/ic_baseline_notifications_none_24"
+                            app:srcCompat="@drawable/ic_baseline_notifications_none_24"
                             android:layout_gravity="center"
                             android:contentDescription="@string/bookmark_btt_hint"/>
                     <ImageView
@@ -656,7 +671,7 @@
                             android:layout_height="30dp"
                             android:elevation="10dp"
                             android:background="@color/transparent"
-                            android:src="@drawable/outlined_heart"
+                            app:srcCompat="@drawable/outlined_heart"
                             android:layout_gravity="center"
                             android:contentDescription="@string/bookmark_btt_hint"/>
                     <ImageView
@@ -676,7 +691,7 @@
     </FrameLayout>
     <FrameLayout
             android:background="?attr/backgroundColor"
-            tools:visibility="visible"
+            tools:visibility="gone"
             android:id="@+id/loading_overlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

@@ -5,7 +5,6 @@ import ANILIST_TOKEN_KEY
 import DataStore.getKey
 import DataStore.removeKey
 import DataStore.setKey
-import DataStore.toKotlinObject
 import MAL_SHOULD_UPDATE_LIST
 import MAL_TOKEN_KEY
 import PLAYBACK_SPEED_KEY
@@ -56,15 +55,20 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.C.TIME_UNSET
+import com.google.android.exoplayer2.database.ExoDatabaseProvider
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.TimeBar
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
+import com.google.android.exoplayer2.upstream.cache.CacheDataSource
+import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
+import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoSize
@@ -72,29 +76,32 @@ import com.jaredrummler.cyanea.Cyanea
 import com.lagradost.shiro.R
 import com.lagradost.shiro.ui.MainActivity
 import com.lagradost.shiro.ui.MainActivity.Companion.focusRequest
+import com.lagradost.shiro.ui.MainActivity.Companion.isInPIPMode
 import com.lagradost.shiro.ui.MainActivity.Companion.masterViewModel
-import com.lagradost.shiro.ui.downloads.DownloadFragmentChild.Companion.getAllDownloadedEpisodes
-import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
+import com.lagradost.shiro.ui.downloads.DownloadFragmentChild.Companion.getSortedEpisodes
 import com.lagradost.shiro.ui.library.LibraryFragment.Companion.libraryViewModel
 import com.lagradost.shiro.ui.player.PlayerActivity.Companion.playerActivity
-import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
-import com.lagradost.shiro.ui.result.ResultFragment.Companion.resultViewModel
+import com.lagradost.shiro.ui.result.ResultFragment.Companion.publicResultViewModel
 import com.lagradost.shiro.ui.toPx
 import com.lagradost.shiro.utils.*
+import com.lagradost.shiro.utils.AniListApi.Companion.fromIntToAnimeStatus
 import com.lagradost.shiro.utils.AniListApi.Companion.getDataAboutId
 import com.lagradost.shiro.utils.AniListApi.Companion.postDataAboutId
 import com.lagradost.shiro.utils.AppUtils.getCurrentActivity
+import com.lagradost.shiro.utils.AppUtils.getCurrentContext
 import com.lagradost.shiro.utils.AppUtils.getNavigationBarHeight
 import com.lagradost.shiro.utils.AppUtils.getStatusBarHeight
 import com.lagradost.shiro.utils.AppUtils.getVideoContentUri
 import com.lagradost.shiro.utils.AppUtils.getViewKey
 import com.lagradost.shiro.utils.AppUtils.getViewPosDur
+import com.lagradost.shiro.utils.AppUtils.guaranteedContext
 import com.lagradost.shiro.utils.AppUtils.hideKeyboard
 import com.lagradost.shiro.utils.AppUtils.hideSystemUI
-import com.lagradost.shiro.utils.AppUtils.popCurrentPage
+import com.lagradost.shiro.utils.AppUtils.notNull
 import com.lagradost.shiro.utils.AppUtils.requestAudioFocus
 import com.lagradost.shiro.utils.AppUtils.setViewPosDur
 import com.lagradost.shiro.utils.AppUtils.showSystemUI
+import com.lagradost.shiro.utils.Coroutines.main
 import com.lagradost.shiro.utils.MALApi.Companion.getDataAboutMalId
 import com.lagradost.shiro.utils.MALApi.Companion.malStatusAsString
 import com.lagradost.shiro.utils.MALApi.Companion.setScoreRequest
@@ -102,6 +109,8 @@ import com.lagradost.shiro.utils.ShiroApi.Companion.USER_AGENT
 import com.lagradost.shiro.utils.ShiroApi.Companion.fmod
 import com.lagradost.shiro.utils.ShiroApi.Companion.loadLinks
 import com.lagradost.shiro.utils.VideoDownloadManager.isScopedStorage
+import com.lagradost.shiro.utils.mvvm.logError
+import com.lagradost.shiro.utils.mvvm.normalSafeApiCall
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_sheet.*
 import kotlinx.android.synthetic.main.player.*
@@ -135,7 +144,7 @@ data class PlayerData(
     @JsonProperty("url") var url: String?,
     @JsonProperty("episodeIndex") var episodeIndex: Int?,
     @JsonProperty("seasonIndex") var seasonIndex: Int?,
-    @JsonProperty("card") val card: ShiroApi.AnimePageData?,
+    @JsonProperty("card") val card: ShiroApi.Companion.AnimePageNewData?,
     @JsonProperty("startAt") val startAt: Long?,
     @JsonProperty("slug") val slug: String,
     @JsonProperty("anilistID") val anilistID: Int? = null,
@@ -190,23 +199,23 @@ class PlayerFragment : Fragment() {
                 }
             }*/
 
-        fun newInstance() =
-            PlayerFragment().apply {
-                arguments = Bundle().apply {
-                    masterViewModel?.playerData?.value?.let {
-                        putString("data", mapper.writeValueAsString(it))
-                    }
-                }
-            }
+//        fun newInstance() =
+//            PlayerFragment().apply {
+//                arguments = Bundle().apply {
+//                    masterViewModel?.playerData?.value?.let {
+//                        putString("data", mapper.writeValueAsString(it))
+//                    }
+//                }
+//            }
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
-        arguments?.getString("data")?.let {
-            data = it.toKotlinObject()
-            episodeOffset = if (data?.card?.episodes?.filter { it.episode_number == 0 }.isNullOrEmpty()) 0 else -1
+        masterViewModel?.playerData?.value?.let {
+            data = it
+            episodeOffset = if (data?.card?.episodes?.filter { it.episode == "0" }.isNullOrEmpty()) 0 else -1
         }
     }
 
@@ -236,20 +245,23 @@ class PlayerFragment : Fragment() {
     private var isCurrentlyPlaying: Boolean = false
     private var playbackSpeed: Float? = getCurrentActivity()!!.getKey(PLAYBACK_SPEED_KEY, 1f)
 
-    private val settingsManager = PreferenceManager.getDefaultSharedPreferences(getCurrentActivity()!!)
-    private val swipeEnabled = settingsManager!!.getBoolean("swipe_enabled", true)
-    private val swipeVerticalEnabled = settingsManager!!.getBoolean("swipe_vertical_enabled", true)
+    private val settingsManager = PreferenceManager.getDefaultSharedPreferences(getCurrentContext()!!)!!
+    private val swipeEnabled = settingsManager.getBoolean("swipe_enabled", true)
+    private val swipeVerticalEnabled = settingsManager.getBoolean("swipe_vertical_enabled", true)
     private val skipOpEnabled = true//settingsManager!!.getBoolean("skip_op_enabled", false)
-    val doubleTapEnabled = settingsManager!!.getBoolean("double_tap_enabled", false)
+    val doubleTapEnabled = settingsManager.getBoolean("double_tap_enabled", false)
     private val playBackSpeedEnabled = true//settingsManager!!.getBoolean("playback_speed_enabled", false)
     private val playerResizeEnabled = true//settingsManager!!.getBoolean("player_resize_enabled", false)
-    private val doubleTapTime = settingsManager!!.getInt("dobule_tap_time", 10)
-    private val fastForwardTime = settingsManager!!.getInt("fast_forward_button_time", 10)
-    private val autoPlayEnabled = settingsManager!!.getBoolean("autoplay_enabled", true)
-    private val fullscreenNotch = settingsManager!!.getBoolean("fullscreen_notch", true)
-    private val hidePlayerFFWD = settingsManager!!.getBoolean("hide_player_ffwd", false)
-    private val skipFillers = settingsManager!!.getBoolean("skip_fillers", false)
+    private val doubleTapTime = settingsManager.getInt("dobule_tap_time", 10)
+    private val fastForwardTime = settingsManager.getInt("fast_forward_button_time", 10)
+    private val autoPlayEnabled = settingsManager.getBoolean("autoplay_enabled", true)
+    private val fullscreenNotch = settingsManager.getBoolean("fullscreen_notch", true)
+    private val hidePlayerFFWD = settingsManager.getBoolean("hide_player_ffwd", false)
+    private val skipFillers = settingsManager.getBoolean("skip_fillers", false)
+    private val hidePrevButton = settingsManager.getBoolean("hide_prev_episode_button", false)
 
+    private val cacheSize = 100L * 1024L * 1024L // 100 mb
+    private var simpleCache: SimpleCache? = null
     private var statusBarHeight by Delegates.notNull<Int>()
     private var navigationBarHeight by Delegates.notNull<Int>()
 
@@ -261,7 +273,7 @@ class PlayerFragment : Fragment() {
     private var episodesSinceInteraction = 0
 
     // SSL
-    private val ignoreSSL = settingsManager?.getBoolean("ignore_ssl", false) == true
+    private val ignoreSSL = settingsManager.getBoolean("ignore_ssl", false)
     private val defaultVerifier = HttpsURLConnection.getDefaultHostnameVerifier()
     private val defaultFactory = HttpsURLConnection.getDefaultSSLSocketFactory()
 
@@ -285,7 +297,7 @@ class PlayerFragment : Fragment() {
         AspectRatioFrameLayout.RESIZE_MODE_FILL,
         AspectRatioFrameLayout.RESIZE_MODE_ZOOM,
     )
-    private var resizeMode = getCurrentActivity()!!.getKey(RESIZE_MODE_KEY, 0) ?: 0
+    private var resizeMode = getCurrentContext()!!.getKey(RESIZE_MODE_KEY, 0) ?: 0
 
     // Made getters because this can change if user is in a split view for example
     val width: Int
@@ -306,18 +318,19 @@ class PlayerFragment : Fragment() {
     private var isLoadingNextEpisode = false
 
     private fun canPlayEpisode(next: Boolean): Boolean {
-        if (data?.card == null || data?.seasonIndex == null || data?.episodeIndex == null) {
+        if (data?.card == null || data?.episodeIndex == null) {
             return false
         }
         return try {
-            if (next) data!!.card!!.episodes!!.size > data!!.episodeIndex!! + 1 else data!!.episodeIndex!! - 1 >= 0
+            if (next) data!!.card!!.episodes.size > data!!.episodeIndex!! + 1 else data!!.episodeIndex!! - 1 >= 0
             //MainActivity.canPlayNextEpisode(data?.card!!, data?.seasonIndex!!, data?.episodeIndex!!).isFound
         } catch (e: NullPointerException) {
+            logError(e)
             false
         }
     }
 
-    private fun getCurrentEpisode(): ShiroApi.ShiroEpisodes? {
+    private fun getCurrentEpisode(): ShiroApi.Companion.AnimePageNewEpisodes? {
         return data?.card?.episodes?.getOrNull(data?.episodeIndex!!)//data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.episodeIndex!!)
     }
 
@@ -325,7 +338,11 @@ class PlayerFragment : Fragment() {
         // Cached, first is index, second is links
         thread {
             if (!(sources.first == data?.episodeIndex && data?.episodeIndex != null)) {
-                getCurrentEpisode()?.videos?.getOrNull(0)?.video_id?.let {
+                val episodes = getCurrentEpisode()?.sources?.let {
+                    mapper.readValue<List<ShiroApi.Companion.EpisodeObject?>?>(it)
+                }
+                val videoId = episodes?.firstOrNull { it?.slug == "gogostream" }
+                videoId?.source?.let {
                     loadLinks(
                         it,
                         false,
@@ -333,36 +350,33 @@ class PlayerFragment : Fragment() {
                     )
                 }
             }
-            activity?.runOnUiThread {
+            main {
                 initPlayerIfPossible()
             }
         }
     }
 
     private fun linkLoaded(link: ExtractorLink) {
-        val safeLinks = extractorLinks
         extractorLinks.add(link)
+        // to prevent changing when doing distinctBy or sortedBy leading to ConcurrentModificationException
+        val safeLinks = extractorLinks.toTypedArray()
 
         if (
         // Prevent editing the text post-player
             !isCurrentlyPlaying &&
-            // Prevent duplicate urls
-            // !safeLinks.map { it.url }.contains(link.url) &&
             // Add the link post url check
-            safeLinks.add(link) &&
             !link.name.startsWith("Shiro")
         ) {
-            activity?.runOnUiThread {
+            main {
                 links_loaded_text?.text = "${safeLinks.distinctBy { it.url }.size} - Loaded ${link.name}"
                 quickstart_btt?.visibility = VISIBLE
             }
         }
         sources = Pair(data?.episodeIndex, safeLinks.sortedBy { -it.quality }.distinctBy { it.url })
 
-
         // Quickstart
-        if (link.name.startsWith("Shiro")/*Shiro().name*/) {
-            activity?.runOnUiThread {
+        if (link.quality == Qualities.UHD.value || link.quality == Qualities.FullHd.value  /*Shiro().name*/) {
+            main {
                 initPlayerIfPossible(link)
             }
         }
@@ -387,7 +401,8 @@ class PlayerFragment : Fragment() {
             if (data?.fillerEpisodes?.get((data?.episodeIndex ?: -1) + 1) == true) " (Filler) " else ""
         if (data?.title != null) return data?.title!! + fillerInfo + postTitle
 
-        val isMovie: Boolean = data?.card?.episodes?.size == 1 && data?.card?.status == "finished"
+        val isMovie: Boolean =
+            data?.card?.episodes?.size == 1 && data?.card?.anime?.status?.lowercase() == "finished airing"
         // data?.card!!.cdndata?.seasons.size == 1 && data?.card!!.cdndata?.seasons[0].episodes.size == 1
         var preTitle = ""
         if (!isMovie) {
@@ -397,7 +412,7 @@ class PlayerFragment : Fragment() {
         }
 
         // Replaces with "" if it's null
-        return preTitle + data?.card?.name + fillerInfo + postTitle
+        return preTitle + (data?.card?.anime?.title ?: "") + fillerInfo + postTitle
     }
 
     private fun savePos() {
@@ -414,8 +429,9 @@ class PlayerFragment : Fragment() {
 
     override fun onDestroy() {
         savePos()
-        // DON'T SAVE DATA OF TRAILERS
+        releasePlayer()
 
+        // DON'T SAVE DATA OF TRAILERS
         isInPlayer = false
         onPlayerNavigated.invoke(false)
         activity?.showSystemUI()
@@ -437,7 +453,6 @@ class PlayerFragment : Fragment() {
         }
         activity?.window?.attributes = lp
         handler.removeCallbacks(checkProgressAction)
-
 
         super.onDestroy()
         //MainActivity.showSystemUI()
@@ -463,7 +478,7 @@ class PlayerFragment : Fragment() {
     }
 
     private fun setIsClickable(isClickable: Boolean) {
-        activity?.runOnUiThread {
+        main {
             exo_play?.isClickable = isClickable
             exo_pause?.isClickable = isClickable
             exo_ffwd?.isClickable = isClickable
@@ -496,13 +511,24 @@ class PlayerFragment : Fragment() {
             activity?.isInMultiWindowMode ?: false
         } else false
 
+        handler.postDelayed({
+            unFuckLayout()
+        }, 200)
+        handler.postDelayed({
+            unFuckLayout()
+        }, 1000)
+        handler.postDelayed({
+            unFuckLayout()
+        }, 5000)
+
         changePlayerTextVisibility(newConfig.orientation != SCREEN_ORIENTATION_PORTRAIT && !isInMultiWindow)
         super.onConfigurationChanged(newConfig)
     }
 
     private var receiver: BroadcastReceiver? = null
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
-        MainActivity.isInPIPMode = isInPictureInPictureMode
+        isInPIPMode = isInPictureInPictureMode
+
         if (isInPictureInPictureMode) {
             // Hide the full-screen UI (controls, etc.) while in picture-in-picture mode.
             player_holder?.alpha = 0f
@@ -531,9 +557,12 @@ class PlayerFragment : Fragment() {
                 activity?.unregisterReceiver(it)
             }
             nav_view?.visibility = VISIBLE
+
             activity?.hideSystemUI()
-            this.view?.let { activity?.hideKeyboard(it) }
+            view?.hideKeyboard()
         }
+        unFuckLayout()
+
     }
 
     private fun getPen(code: PlayerEventType): PendingIntent {
@@ -611,8 +640,10 @@ class PlayerFragment : Fragment() {
         video_lock?.isClickable = isShowing
         //handler.postDelayed(restoreLockClickable, time + 50L)
 
-        if (!isLocked || video_holder?.alpha != 1.0f || shadow_overlay?.alpha != 1.0f) {
+        bottom_player_bar?.startAnimation(fadeAnimation)
+        if (!isLocked || video_holder?.alpha != 1.0f || shadow_overlay?.alpha != 1.0f || bottom_player_bar_button_holder?.alpha != 1.0f) {
             video_holder?.startAnimation(fadeAnimation)
+            bottom_player_bar_button_holder?.startAnimation(fadeAnimation)
             shadow_overlay?.startAnimation(fadeAnimation)
         }
     }
@@ -725,7 +756,12 @@ class PlayerFragment : Fragment() {
                                 progressBarLeft?.max = 100 * 100
                                 progressBarLeft?.progress = ((vol) * 100 * 100).toInt()
 
-                                if (audioManager.isVolumeFixed) {
+                                if (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                        audioManager.isVolumeFixed
+                                    } else {
+                                        false
+                                    }
+                                ) {
                                     exoPlayer.volume = minOf(1f, maxOf(vol, 0f))
                                 } else {
                                     // audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, vol*, 0)
@@ -850,12 +886,16 @@ class PlayerFragment : Fragment() {
             playerViewModel?.videoSize?.postValue(null)
         }
 
-        navigationBarHeight = requireContext().getNavigationBarHeight()
-        statusBarHeight = requireContext().getStatusBarHeight()
+        navigationBarHeight = guaranteedContext(context).getNavigationBarHeight()
+        statusBarHeight = guaranteedContext(context).getStatusBarHeight()
 
-        next_episode_progressbar?.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
-        progressBarLeft.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
-        progressBarRight.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
+        shadow_overlay?.isVisible = !settingsManager.getBoolean("disable_player_shadow", false)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            next_episode_progressbar?.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
+            progressBarLeft.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
+            progressBarRight.progressTintList = ColorStateList.valueOf(Cyanea.instance.primary)
+        }
 
 //        val isInMultiWindow = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 //            activity?.isInMultiWindowMode ?: false
@@ -863,7 +903,7 @@ class PlayerFragment : Fragment() {
 //
 //        changePlayerTextVisibility(resources.configuration.orientation != SCREEN_ORIENTATION_PORTRAIT && !isInMultiWindow)
 
-        activity?.contentResolver
+        guaranteedContext(context).contentResolver
             ?.registerContentObserver(
                 Settings.System.CONTENT_URI, true, volumeObserver
             )
@@ -877,6 +917,10 @@ class PlayerFragment : Fragment() {
 
         updateLock()
 
+        handler.postDelayed({
+            unFuckLayout()
+        }, 200)
+
         video_lock.setOnClickListener {
             updateHideTime()
             isLocked = !isLocked
@@ -887,6 +931,7 @@ class PlayerFragment : Fragment() {
             //   fadeAnimation.startOffset = 100
             fadeAnimation.fillAfter = true
             video_holder.startAnimation(fadeAnimation)
+            bottom_player_bar_button_holder?.startAnimation(fadeAnimation)
 
             updateLock()
         }
@@ -989,7 +1034,7 @@ class PlayerFragment : Fragment() {
 
             override fun onDoubleClickRight(clicks: Int, posX: Float, posY: Float) {
                 if (!isLocked) {
-                    activity?.runOnUiThread {
+                    main {
                         circleClipTapView?.alpha = 1f
                         secondsView?.visibility = VISIBLE
                         secondsView?.start()
@@ -1014,7 +1059,7 @@ class PlayerFragment : Fragment() {
 
             override fun onDoubleClickLeft(clicks: Int, posX: Float, posY: Float) {
                 if (!isLocked) {
-                    activity?.runOnUiThread {
+                    main {
                         circleClipTapView?.alpha = 1f
                         secondsView.visibility = VISIBLE
                         secondsView.start()
@@ -1039,7 +1084,7 @@ class PlayerFragment : Fragment() {
             }
 
             override fun onSingleClick() {
-                activity?.runOnUiThread {
+                main {
                     onClickChange()
                 }
                 activity?.hideSystemUI()
@@ -1057,78 +1102,33 @@ class PlayerFragment : Fragment() {
         player_holder.setOnTouchListener(
             detectorListener
         )
-        /*
-        click_overlay.setOnTouchListener(
-            detectorListener
-        )
-        player_holder.setOnClickListener { }*/
-
-        /*player_holder.setOnTouchListener(
-            Listener()
-        )*/
-
-        // player_holder.setOnClickListener {
-        //onClickChange()
-        /*if(!isShowing) {
-            video_holder.postDelayed({
-                video_holder.setVisibility(View.INVISIBLE);
-                video_lock_holder.setVisibility(View.INVISIBLE);
-            }, 100);
-        }*/
-
-        //isClickable WILL CAUSE UI BUG
-        /*  exo_play.isClickable = isShowing
-
-          exo_pause.isClickable = isShowing
-          //exo_pause.isFocusable = isShowing
-          exo_ffwd.isClickable = isShowing
-          //exo_ffwd.isFocusable = isShowing
-          exo_prev.isClickable = isShowing
-          //exo_prev.isFocusable = isShowing
-          video_lock.isClickable = isShowing
-          //video_lock.isFocusable = isShowing
-          video_go_back.isClickable = isShowing
-          //video_go_back.isFocusable = isShowing
-          exo_progress.isClickable = isShowing*/
-        //  exo_progress.isFocusable = isShowing
-        // }
 
         isInPlayer = true
         retainInstance = true // OTHERWISE IT WILL CAUSE A CRASH
 
         video_go_back.setOnClickListener {
             // Local player
-            if (playerActivity != null && data?.title != null) {
-                playerActivity!!.finish()
-                playerActivity = null
+            if (data?.title != null && data?.title == data?.url) {
+                playerActivity?.finish()
+                activity?.onBackPressed()
             } else {
-                activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
+                activity?.onBackPressed()
             }
         }
         video_go_back_holder.setOnClickListener {
             // Local player
-            if (playerActivity != null && data?.title != null && data?.title == data?.url) {
-                playerActivity!!.finish()
-                playerActivity = null
+            if (data?.title != null && data?.title == data?.url) {
+                playerActivity?.finish()
+                activity?.onBackPressed()
             } else {
-                activity?.popCurrentPage(isInPlayer, isInExpandedView, isInResults)
+                activity?.onBackPressed()
             }
         }
-        exo_rew_text.text = fastForwardTime.toString()
-        exo_ffwd_text.text = fastForwardTime.toString()
-        /*exo_rew.setOnClickListener {
-            val rotateLeft = AnimationUtils.loadAnimation(context, R.anim.rotate_left)
-            exo_rew.startAnimation(rotateLeft)
-            seekTime(fastForwardTime * -1000L)
-        }
-        exo_ffwd.setOnClickListener {
-            val rotateRight = AnimationUtils.loadAnimation(context, R.anim.rotate_right)
-            exo_ffwd.startAnimation(rotateRight)
-            seekTime(fastForwardTime * 1000L)
-        }*/
+        exo_rew_text?.text = fastForwardTime.toString()
+        exo_ffwd_text?.text = fastForwardTime.toString()
 
-        exo_rew_text.text = fastForwardTime.toString()
-        exo_ffwd_text.text = fastForwardTime.toString()
+        exo_rew_text?.text = fastForwardTime.toString()
+        exo_ffwd_text?.text = fastForwardTime.toString()
         exo_rew.setOnClickListener {
             updateHideTime()
             val rotateLeft = AnimationUtils.loadAnimation(context, R.anim.rotate_left)
@@ -1144,11 +1144,11 @@ class PlayerFragment : Fragment() {
                 }
 
                 override fun onAnimationEnd(animation: Animation?) {
-                    exo_rew_text.post { exo_rew_text.text = "$fastForwardTime" }
+                    exo_rew_text?.post { exo_rew_text?.text = "$fastForwardTime" }
                 }
             })
-            exo_rew_text.startAnimation(goLeft)
-            exo_rew_text.text = "-$fastForwardTime"
+            exo_rew_text?.startAnimation(goLeft)
+            exo_rew_text?.text = "-$fastForwardTime"
             seekTime(fastForwardTime * -1000L)
 
         }
@@ -1177,11 +1177,11 @@ class PlayerFragment : Fragment() {
                 }
 
                 override fun onAnimationEnd(animation: Animation?) {
-                    exo_ffwd_text.post { exo_ffwd_text.text = "$fastForwardTime" }
+                    exo_ffwd_text?.post { exo_ffwd_text?.text = "$fastForwardTime" }
                 }
             })
-            exo_ffwd_text.startAnimation(goRight)
-            exo_ffwd_text.text = "+$fastForwardTime"
+            exo_ffwd_text?.startAnimation(goRight)
+            exo_ffwd_text?.text = "+$fastForwardTime"
             seekTime(fastForwardTime * 1000L)
         }
 
@@ -1223,7 +1223,7 @@ class PlayerFragment : Fragment() {
             updateHideTime()
             sources.second?.let {
                 val sourcesText = it.map { link -> link.name }
-                val dialog = Dialog(getCurrentActivity()!!, R.style.AlertDialogCustom)
+                val dialog = Dialog(guaranteedContext(context), R.style.AlertDialogCustom)
 
                 val index = maxOf(sources.second?.indexOf(playerViewModel?.selectedSource?.value) ?: -1, 0)
                 //dialog = builder.create()
@@ -1232,7 +1232,7 @@ class PlayerFragment : Fragment() {
                 val res = dialog.sort_click
 
                 res.choiceMode = CHOICE_MODE_SINGLE
-                val arrayAdapter = ArrayAdapter<String>(getCurrentActivity()!!, R.layout.bottom_single_choice)
+                val arrayAdapter = ArrayAdapter<String>(guaranteedContext(context), R.layout.bottom_single_choice)
                 arrayAdapter.addAll(ArrayList(sourcesText))
                 res.adapter = arrayAdapter
                 res.setItemChecked(
@@ -1254,8 +1254,8 @@ class PlayerFragment : Fragment() {
 
 
         if (skipOpEnabled) {
-            skip_op.visibility = VISIBLE
-            skip_op.setOnClickListener {
+            skip_op?.visibility = VISIBLE
+            skip_op?.setOnClickListener {
                 updateHideTime()
                 seekTime(85000L)
             }
@@ -1301,29 +1301,31 @@ class PlayerFragment : Fragment() {
     fun queueNextEpisode() {
         if (episodesSinceInteraction <= 3) {
             activity?.let {
-                it.runOnUiThread {
+                main {
                     val time = 5000L
                     next_episode_overlay?.visibility = VISIBLE
                     next_episode_progressbar?.progress = 0
+                    next_episode_progressbar?.let { progressBar ->
+                        val animation =
+                            ObjectAnimator.ofInt(
+                                progressBar,
+                                "progress",
+                                progressBar.progress,
+                                100
+                            )
+                        val animScale =
+                            Settings.Global.getFloat(it.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
+                        animation.duration = (time / animScale).toLong()
+                        animation.setAutoCancel(true)
+                        animation.interpolator = LinearInterpolator()
+                        animation.start()
+                    }
 
-                    val animation =
-                        ObjectAnimator.ofInt(
-                            next_episode_progressbar,
-                            "progress",
-                            next_episode_progressbar.progress,
-                            100
-                        )
-                    val animScale =
-                        Settings.Global.getFloat(it.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
-                    animation.duration = (time / animScale).toLong()
-                    animation.setAutoCancel(true)
-                    animation.interpolator = LinearInterpolator()
-                    animation.start()
                     handler.postDelayed(nextEpisodeAction, time)
                     var timeLeft = time
                     timer = fixedRateTimer("timer", false, 0L, 1000) {
                         if (timeLeft < 0) this.cancel()
-                        it.runOnUiThread {
+                        main {
                             next_episode_time_text?.text = "Next episode in ${(timeLeft / 1000).toInt()}..."
                             timeLeft -= 1000L
                         }
@@ -1336,7 +1338,7 @@ class PlayerFragment : Fragment() {
     private fun playNextEpisode() {
         // Hack
         episodesSinceInteraction++
-        activity?.runOnUiThread {
+        main {
             next_episode_btt?.performClick()
         }
     }
@@ -1364,18 +1366,27 @@ class PlayerFragment : Fragment() {
     }
 
     private fun releasePlayer() {
-        val alphaAnimation = AlphaAnimation(0f, 1f)
-        alphaAnimation.duration = 100
-        alphaAnimation.fillAfter = true
-        loading_overlay.startAnimation(alphaAnimation)
-        video_go_back_holder.visibility = VISIBLE
-        playerViewModel?.videoSize?.postValue(null)
-        isCurrentlyPlaying = false
-        if (this::exoPlayer.isInitialized) {
-            isPlayerPlaying = exoPlayer.playWhenReady
-            playbackPosition = exoPlayer.currentPosition
-            currentWindow = exoPlayer.currentWindowIndex
-            exoPlayer.release()
+        thread {
+            simpleCache?.release()
+        }
+        main {
+            if (this::exoPlayer.isInitialized) {
+                isPlayerPlaying = exoPlayer.playWhenReady
+                playbackPosition = exoPlayer.currentPosition
+                currentWindow = exoPlayer.currentWindowIndex
+                exoPlayer.release()
+                println("RELEASED PLAYER")
+            }
+            // Because otherwise the height and width are fucked (especially from PiP), I don't know why
+            // Placing these in some places just fixes it
+            unFuckLayout()
+            val alphaAnimation = AlphaAnimation(0f, 1f)
+            alphaAnimation.duration = 100
+            alphaAnimation.fillAfter = true
+            loading_overlay?.startAnimation(alphaAnimation)
+            video_go_back_holder?.visibility = VISIBLE
+            playerViewModel?.videoSize?.postValue(null)
+            isCurrentlyPlaying = false
         }
     }
 
@@ -1402,12 +1413,17 @@ class PlayerFragment : Fragment() {
         val time = 5000L
 
         // Disabled if it's 0
-        val setPercentage: Float = settingsManager!!.getInt("completed_percentage", 80).toFloat() / 100
+        val setPercentage: Float = settingsManager.getInt("completed_percentage", 80).toFloat() / 100
         val saveHistory: Boolean = settingsManager.getBoolean("save_history", true)
 
         if (this::exoPlayer.isInitialized && setPercentage != 0.0f && saveHistory) {
-            val currentPercentage = exoPlayer.currentPosition.toFloat() / exoPlayer.duration.toFloat()
-            if (currentPercentage > setPercentage && lastSyncedEpisode < data?.episodeIndex!!) {
+            val currentPos = exoPlayer.currentPosition
+            val currentDur = exoPlayer.duration
+            val currentPercentage = currentPos.toFloat() / currentDur.toFloat()
+            if (currentPercentage > setPercentage && lastSyncedEpisode < data?.episodeIndex!!
+                && currentDur != TIME_UNSET
+                && !isLoadingNextEpisode
+            ) {
                 lastSyncedEpisode = data?.episodeIndex!!
                 thread {
                     context?.updateProgress()
@@ -1454,7 +1470,7 @@ class PlayerFragment : Fragment() {
 
         var type = if (holder != null) {
             val type =
-                if (holder.type == AniListApi.Companion.AniListStatusType.None) AniListApi.Companion.AniListStatusType.Watching else holder.type
+                if (holder.type == AniListApi.Companion.AniListStatusType.None || holder.type == AniListApi.Companion.AniListStatusType.Planning) AniListApi.Companion.AniListStatusType.Watching else holder.type
             AniListApi.fromIntToAnimeStatus(type.value)
         } else {
             var type =
@@ -1464,13 +1480,13 @@ class PlayerFragment : Fragment() {
                     )
                 )
             type =
-                if (type.value == MALApi.Companion.MalStatusType.None.value) AniListApi.Companion.AniListStatusType.Watching else type
+                if (type.value == MALApi.Companion.MalStatusType.None.value || type.value == MALApi.Companion.MalStatusType.PlanToWatch.value) AniListApi.Companion.AniListStatusType.Watching else type
             type
         }
 
         if (currentEpisodeProgress == holder?.episodes ?: data?.card?.episodes?.size?.plus(episodeOffset)
             && type.value != AniListApi.Companion.AniListStatusType.Completed.value
-            && data?.card?.status?.lowercase() == "finished"
+            && data?.card?.anime?.status?.lowercase() == "finished airing"
         ) {
             type = AniListApi.Companion.AniListStatusType.Completed
         }
@@ -1495,7 +1511,7 @@ class PlayerFragment : Fragment() {
                     )
                 } ?: false else true
             if (!anilistPost || !malPost) {
-                getCurrentActivity()!!.runOnUiThread {
+                main {
                     Toast.makeText(
                         getCurrentActivity()!!,
                         "Error updating episode progress",
@@ -1503,13 +1519,29 @@ class PlayerFragment : Fragment() {
                     ).show()
                 }
             } else {
-                resultViewModel?.visibleEpisodeProgress?.postValue(currentEpisodeProgress)
-                getCurrentActivity()!!.runOnUiThread {
-                    Toast.makeText(
+
+                publicResultViewModel?.localData.notNull {
+                    it.postValue(it.value?.apply {
+                        status = when {
+                            episodes != 0 && currentEpisodeProgress != episodes && fromIntToAnimeStatus(status)
+                                    == AniListApi.Companion.AniListStatusType.Completed -> AniListApi.Companion.AniListStatusType.Watching.value
+                            episodes != 0 && currentEpisodeProgress == episodes && fromIntToAnimeStatus(status)
+                                    != AniListApi.Companion.AniListStatusType.Completed -> AniListApi.Companion.AniListStatusType.Completed.value
+                            else -> status
+                        }
+                        this.progress = currentEpisodeProgress
+                    })
+                }
+
+
+                main {
+                    val toast = Toast.makeText(
                         getCurrentActivity()!!,
                         "Marked episode $currentEpisodeProgress as seen",
-                        Toast.LENGTH_LONG
-                    ).show()
+                        LENGTH_LONG
+                    )
+                    toast.setGravity(Gravity.TOP, 0, 60.toPx)
+                    toast.show()
                 }
                 setKey(MAL_SHOULD_UPDATE_LIST, true)
                 setKey(ANILIST_SHOULD_UPDATE_LIST, true)
@@ -1519,22 +1551,38 @@ class PlayerFragment : Fragment() {
         }
     }
 
+    // Layout somehow has more height than it's supposed to
+    private fun unFuckLayout() {
+        view.notNull {
+            it.layoutParams = it.layoutParams.apply {
+                if (isInPIPMode) {
+                    height = MATCH_PARENT
+                    width = MATCH_PARENT
+                } else {
+                    height = it.rootView?.height ?: it.height
+                }
+            }
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     private fun initPlayer(inputUrl: ExtractorLink? = null) {
+        unFuckLayout()
         isCurrentlyPlaying = true
         view?.setOnTouchListener { _, _ ->
-            println("OVERRIDDEN TOUCH")
             return@setOnTouchListener true
         } // VERY IMPORTANT https://stackoverflow.com/questions/28818926/prevent-clicking-on-a-button-in-an-activity-while-showing-a-fragment
         thread {
             val currentUrl = inputUrl ?: getCurrentUrl()
+            println("CURRENT URL: $currentUrl")
             if (currentUrl == null) {
-                activity?.runOnUiThread {
-                    Toast.makeText(activity, "No links found", LENGTH_LONG).show()
+                main {
+                    Toast.makeText(getCurrentContext() ?: context, "No links found", LENGTH_LONG).show()
                     //MainActivity.popCurrentPage()
                 }
             } else {
                 try {
+                    // main{} here starts playing the video in background
                     activity?.runOnUiThread {
                         val isOnline =
                             currentUrl.url.startsWith("https://") || currentUrl.url.startsWith("http://")
@@ -1550,24 +1598,36 @@ class PlayerFragment : Fragment() {
                             HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
                         }
 
-                        class CustomFactory : DataSource.Factory {
-                            override fun createDataSource(): DataSource {
-                                return if (isOnline) {
-                                    val dataSource = DefaultHttpDataSourceFactory(USER_AGENT).createDataSource()
-                                    /*FastAniApi.currentHeaders?.forEach {
-                                        dataSource.setRequestProperty(it.key, it.value)
-                                    }*/
-                                    dataSource.setRequestProperty("Referer", currentUrl.referer)
-                                    dataSource
-                                } else {
-                                    DefaultDataSourceFactory(getCurrentActivity()!!, USER_AGENT).createDataSource()
+                        fun newDataSourceFactory(): DataSource.Factory {
+                            return if (isOnline) {
+                                DefaultHttpDataSource.Factory().apply {
+                                    val headers = mapOf("Referer" to currentUrl.referer)
+                                    setDefaultRequestProperties(headers)
+                                    setUserAgent(USER_AGENT)
                                 }
+                            } else {
+                                DefaultDataSourceFactory(getCurrentActivity()!!, USER_AGENT)
                             }
                         }
 
+//                        class CustomFactory : DataSource.Factory {
+//                            override fun createDataSource(): DataSource {
+//                                return if (isOnline) {
+//                                    val dataSource = DefaultHttpDataSourceFactory(USER_AGENT).createDataSource()
+//                                    /*FastAniApi.currentHeaders?.forEach {
+//                                        dataSource.setRequestProperty(it.key, it.value)
+//                                    }*/
+//                                    dataSource.setRequestProperty("Referer", currentUrl.referer)
+//                                    dataSource
+//                                } else {
+//                                    DefaultDataSourceFactory(getCurrentActivity()!!, USER_AGENT).createDataSource()
+//                                }
+//                            }
+//                        }
+
                         if (data?.card != null || (data?.slug != null && data?.episodeIndex != null && data?.seasonIndex != null)) {
                             val pro = context?.getViewPosDur(
-                                if (data?.card != null) data?.card!!.slug else data?.slug!!,
+                                data?.card?.anime?.slug ?: data?.slug!!,
                                 data?.episodeIndex!!
                             )
                             if (pro != null) {
@@ -1579,7 +1639,7 @@ class PlayerFragment : Fragment() {
                                     }
                             }
                         } else if (data?.startAt != null) {
-                            playbackPosition = data?.startAt!!
+                            playbackPosition = data?.startAt ?: 0
                         }
                         video_title?.text = getCurrentTitle()
 
@@ -1588,13 +1648,14 @@ class PlayerFragment : Fragment() {
 
                         if (currentUrl.name == "Downloaded" && data != null) {
                             data?.slug?.let { slug ->
-                                val episodes = context?.getAllDownloadedEpisodes(slug)?.map { it.key }
-                                val prevEpisode = episodes?.filter { it?.episodeIndex == data!!.episodeIndex!! - 1 }
-                                val nextEpisode = episodes?.filter { it?.episodeIndex == data!!.episodeIndex!! + 1 }
+                                val episodes = context?.getSortedEpisodes(slug)
+                                val prevEpisode = episodes?.filter { it.episodeIndex == data!!.episodeIndex!! - 1 }
+                                val nextEpisode = episodes?.filter { it.episodeIndex == data!!.episodeIndex!! + 1 }
+
                                 if (!nextEpisode.isNullOrEmpty()) {
                                     val fileInfo = VideoDownloadManager.getDownloadFileInfoAndUpdateSettings(
-                                        requireContext(),
-                                        nextEpisode[0]!!.internalId
+                                        guaranteedContext(context),
+                                        nextEpisode[0].internalId
                                     )
                                     if (fileInfo != null) {
                                         next_episode_btt?.visibility = VISIBLE
@@ -1617,20 +1678,21 @@ class PlayerFragment : Fragment() {
                                             handler.postDelayed(checkProgressAction, 5000L)
 
                                             data!!.title =
-                                                "Episode ${nextEpisode[0]!!.episodeIndex + 1 + episodeOffset} · ${nextEpisode[0]!!.videoTitle}"
+                                                "Episode ${nextEpisode[0].episodeIndex + 1 + episodeOffset} · ${nextEpisode[0]!!.videoTitle}"
                                             data?.url = fileInfo.path.toString()
                                             data?.episodeIndex = data!!.episodeIndex!! + 1
                                         }
                                     }
                                 } else {
-                                    next_episode_btt?.visibility = GONE
+                                    // Invisible because of layout issues with prev button
+                                    next_episode_btt?.visibility = INVISIBLE
                                 }
                                 if (!prevEpisode.isNullOrEmpty()) {
                                     val fileInfo = VideoDownloadManager.getDownloadFileInfoAndUpdateSettings(
-                                        requireContext(),
-                                        prevEpisode[0]!!.internalId
+                                        guaranteedContext(context),
+                                        prevEpisode[0].internalId
                                     )
-                                    if (fileInfo != null) {
+                                    if (fileInfo != null && !hidePrevButton) {
                                         prev_episode_btt?.visibility = VISIBLE
                                         prev_episode_btt?.setOnClickListener {
                                             handler.removeCallbacks(checkProgressAction)
@@ -1651,7 +1713,7 @@ class PlayerFragment : Fragment() {
                                             handler.postDelayed(checkProgressAction, 5000L)
 
                                             data!!.title =
-                                                "Episode ${prevEpisode[0]!!.episodeIndex - 1 + episodeOffset} · ${prevEpisode[0]!!.videoTitle}"
+                                                "Episode ${prevEpisode[0].episodeIndex + 1 + episodeOffset} · ${prevEpisode[0].videoTitle}"
                                             data?.url = fileInfo.path.toString()
                                             data?.episodeIndex = data!!.episodeIndex!! - 1
                                         }
@@ -1676,7 +1738,7 @@ class PlayerFragment : Fragment() {
                                     /*val next =
                                         data!!.card!!.episodes!!.size > data!!.episodeIndex!! + 1*/
                                     val key = getViewKey(
-                                        data?.card!!.slug,
+                                        data?.card!!.anime.slug,
                                         data!!.episodeIndex!! + 1
                                     )
                                     context?.removeKey(VIEW_POS_KEY, key)
@@ -1702,11 +1764,12 @@ class PlayerFragment : Fragment() {
                                     handler.postDelayed(checkProgressAction, 5000L)
                                 }
                             } else {
-                                next_episode_btt?.visibility = GONE
+                                next_episode_btt?.visibility = INVISIBLE
                             }
 
-                            if (canPlayEpisode(false)) {
+                            if (canPlayEpisode(false) && !hidePrevButton) {
                                 prev_episode_btt?.visibility = VISIBLE
+                                prev_episode_btt?.isVisible = true
                                 prev_episode_btt?.setOnClickListener {
                                     handler.removeCallbacks(checkProgressAction)
                                     cancelNextEpisode()
@@ -1719,7 +1782,7 @@ class PlayerFragment : Fragment() {
                                     /*val next =
                                         data!!.card!!.episodes!!.size > data!!.episodeIndex!! + 1*/
                                     val key = getViewKey(
-                                        data?.card!!.slug,
+                                        data?.card!!.anime.slug,
                                         data!!.episodeIndex!! - 1
                                     )
                                     context?.removeKey(VIEW_POS_KEY, key)
@@ -1754,7 +1817,7 @@ class PlayerFragment : Fragment() {
                                     //      video_title?.text = uriPrimary.toString()
                                 } else {
                                     //mediaItemBuilder.setUri(Uri.parse(currentUrl.url))
-                                    val uri = getVideoContentUri(requireContext(), currentUrl.url)
+                                    val uri = getVideoContentUri(getCurrentActivity()!!, currentUrl.url)
                                     //    video_title?.text = uri.toString()
                                     mediaItemBuilder.setUri(uri)
                                 }
@@ -1778,11 +1841,30 @@ class PlayerFragment : Fragment() {
                             SimpleExoPlayer.Builder(getCurrentActivity()!!)
                                 .setTrackSelector(trackSelector)
 
-                        exoPlayerBuilder.setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
+                        val factory = newDataSourceFactory()
+                        val dbProvider = ExoDatabaseProvider(getCurrentActivity()!!)
+                        normalSafeApiCall {
+                            simpleCache = SimpleCache(
+                                File(
+                                    getCurrentContext()!!.filesDir, "exoplayer"
+                                ),
+                                LeastRecentlyUsedCacheEvictor(cacheSize),
+                                dbProvider
+                            )
+                        }
+                        val cacheFactory = CacheDataSource.Factory().apply {
+                            simpleCache?.let { setCache(it) }
+                            setUpstreamDataSourceFactory(factory)
+                        }
+
                         exoPlayer = exoPlayerBuilder.build().apply {
                             playWhenReady = isPlayerPlaying
                             seekTo(currentWindow, playbackPosition)
-                            setMediaItem(mediaItem, false)
+                            setMediaSource(
+                                DefaultMediaSourceFactory(cacheFactory).createMediaSource(mediaItem),
+                                playbackPosition
+                            )
+//                            setMediaItem(mediaItem, false)
                             prepare()
                         }
 
@@ -1817,7 +1899,6 @@ class PlayerFragment : Fragment() {
 
                             override fun onVideoSizeChanged(videoSize: VideoSize) {
                                 playerViewModel?.videoSize?.postValue(videoSize)
-                                println("onVideoSizeChanged ${videoSize.height} ${videoSize.width}")
                                 super.onVideoSizeChanged(videoSize)
                             }
 
@@ -1827,7 +1908,7 @@ class PlayerFragment : Fragment() {
                                     ExoPlaybackException.TYPE_SOURCE -> {
                                         if (currentUrl.url != "") {
                                             Toast.makeText(
-                                                activity,
+                                                getCurrentContext() ?: context,
                                                 "Source error\n" + error.sourceException.message,
                                                 LENGTH_LONG
                                             )
@@ -1835,12 +1916,12 @@ class PlayerFragment : Fragment() {
                                         }
                                     }
                                     ExoPlaybackException.TYPE_REMOTE -> {
-                                        Toast.makeText(activity, "Remote error", LENGTH_LONG)
+                                        Toast.makeText(getCurrentContext() ?: context, "Remote error", LENGTH_LONG)
                                             .show()
                                     }
                                     ExoPlaybackException.TYPE_RENDERER -> {
                                         Toast.makeText(
-                                            activity,
+                                            getCurrentContext() ?: context,
                                             "Renderer error\n" + error.rendererException.message,
                                             LENGTH_LONG
                                         )
@@ -1848,7 +1929,7 @@ class PlayerFragment : Fragment() {
                                     }
                                     ExoPlaybackException.TYPE_UNEXPECTED -> {
                                         Toast.makeText(
-                                            activity,
+                                            getCurrentContext() ?: context,
                                             "Unexpected player error\n" + error.unexpectedException.message,
                                             LENGTH_LONG
                                         ).show()
@@ -1870,7 +1951,7 @@ class PlayerFragment : Fragment() {
         super.onStart()
         activity?.hideSystemUI()
         if (data?.card != null && getCurrentActivity() != null) {
-            val pro = getCurrentActivity()!!.getViewPosDur(data?.card!!.slug, data?.episodeIndex!!)
+            val pro = getCurrentActivity()!!.getViewPosDur(data?.card?.anime?.slug ?: data!!.slug, data?.episodeIndex!!)
             if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
                 playbackPosition = pro.pos
             }
@@ -1891,7 +1972,7 @@ class PlayerFragment : Fragment() {
         if (settingsManager?.getBoolean("allow_player_rotation", false) == true) {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER
         } else {
-            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && fullscreenNotch) {

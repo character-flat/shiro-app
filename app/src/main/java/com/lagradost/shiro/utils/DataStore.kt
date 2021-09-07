@@ -16,7 +16,10 @@ const val DOWNLOAD_PARENT_KEY: String = "dload_parent" // DownloadParentFileMeta
 const val PLAYBACK_SPEED_KEY: String = "playback_speed" // Last used playback speed
 const val RESIZE_MODE_KEY: String = "resize_mode" // Last used resize mode
 
-const val LEGACY_BOOKMARKS: String = "legacy_bookmarks" // for converting old bookmark system
+const val LEGACY_BOOKMARKS: String = "legacy_bookmarks_1" // for converting old bookmark system
+const val LEGACY_SUBS: String = "legacy_subbed" // for converting old subbed system
+
+const val LEGACY_RECENTS: String = "legacy_recents" // for converting old bookmark system
 
 const val SUBSCRIPTIONS_KEY: String = "subscriptions"
 const val SUBSCRIPTIONS_BOOKMARK_KEY: String = "subscriptions_bookmarked"
@@ -39,6 +42,11 @@ const val MAL_SHOULD_UPDATE_LIST: String = "mal_should_update_list"
 const val HAS_DISMISSED_SEARCH_INFO: String = "HAS_DISMISSED_SEARCH_INFO" // For the search tutorial
 
 const val LIBRARY_IS_MAL: String = "library_is_mal"
+
+const val RESULTS_PAGE_OVERRIDE_MAL: String = "override_mal_id"
+const val RESULTS_PAGE_OVERRIDE_ANILIST: String = "override_anilist_id"
+
+const val LIBRARY_PAGE_MAL_OVERRIDE_SLUG: String = "override_slug_mal"
 
 
 object DataStore {
